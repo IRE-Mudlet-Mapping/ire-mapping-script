@@ -1,0 +1,749 @@
+<MudletPackage version="1.0">
+  <TriggerPackage>
+    <TriggerGroup isActive="yes" isFolder="yes" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+      <name>Mudlet Mapper</name>
+      <script/>
+      <triggerType>0</triggerType>
+      <conditonLineDelta>0</conditonLineDelta>
+      <mStayOpen>0</mStayOpen>
+      <mCommand/>
+      <mFgColor>#ff0000</mFgColor>
+      <mBgColor>#ffff00</mBgColor>
+      <mSoundFile/>
+      <colorTriggerFgColor>#000000</colorTriggerFgColor>
+      <colorTriggerBgColor>#000000</colorTriggerBgColor>
+      <regexCodeList/>
+      <regexCodePropertyList/>
+      <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+        <name>swim exit</name>
+        <script>send("swim " .. speedWalkDir[speedWalkCounter], false)</script>
+        <triggerType>0</triggerType>
+        <conditonLineDelta>0</conditonLineDelta>
+        <mStayOpen>0</mStayOpen>
+        <mCommand/>
+        <mFgColor>#ff0000</mFgColor>
+        <mBgColor>#ffff00</mBgColor>
+        <mSoundFile/>
+        <colorTriggerFgColor>#000000</colorTriggerFgColor>
+        <colorTriggerBgColor>#000000</colorTriggerBgColor>
+        <regexCodeList>
+          <string>There's water ahead of you. You'll have to swim in that direction to make it through.</string>
+          <string>There's water ahead of you. You'll have to swim in that direction to make it </string>
+        </regexCodeList>
+        <regexCodePropertyList>
+          <integer>3</integer>
+          <integer>3</integer>
+        </regexCodePropertyList>
+      </Trigger>
+      <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+        <name>door </name>
+        <script>mmp.failpath()</script>
+        <triggerType>0</triggerType>
+        <conditonLineDelta>0</conditonLineDelta>
+        <mStayOpen>0</mStayOpen>
+        <mCommand/>
+        <mFgColor>#ff0000</mFgColor>
+        <mBgColor>#ffff00</mBgColor>
+        <mSoundFile/>
+        <colorTriggerFgColor>#000000</colorTriggerFgColor>
+        <colorTriggerBgColor>#000000</colorTriggerBgColor>
+        <regexCodeList>
+          <string>There is a door in the way, to the</string>
+          <string>There is a door in the way.</string>
+        </regexCodeList>
+        <regexCodePropertyList>
+          <integer>2</integer>
+          <integer>3</integer>
+        </regexCodePropertyList>
+      </Trigger>
+      <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+        <name>Gallop</name>
+        <script>speedWalkCounter = speedWalkCounter - 1
+speedwalking("Room", speedWalkPath[speedWalkCounter])</script>
+        <triggerType>0</triggerType>
+        <conditonLineDelta>99</conditonLineDelta>
+        <mStayOpen>0</mStayOpen>
+        <mCommand/>
+        <mFgColor>#ff0000</mFgColor>
+        <mBgColor>#ffff00</mBgColor>
+        <mSoundFile/>
+        <colorTriggerFgColor>#000000</colorTriggerFgColor>
+        <colorTriggerBgColor>#000000</colorTriggerBgColor>
+        <regexCodeList>
+          <string>You kick your mount in the haunches.</string>
+        </regexCodeList>
+        <regexCodePropertyList>
+          <integer>0</integer>
+        </regexCodePropertyList>
+      </Trigger>
+      <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+        <name>Too quick</name>
+        <script>mmp.deleteLineP()</script>
+        <triggerType>0</triggerType>
+        <conditonLineDelta>99</conditonLineDelta>
+        <mStayOpen>0</mStayOpen>
+        <mCommand/>
+        <mFgColor>#ff0000</mFgColor>
+        <mBgColor>#ffff00</mBgColor>
+        <mSoundFile/>
+        <colorTriggerFgColor>#000000</colorTriggerFgColor>
+        <colorTriggerBgColor>#000000</colorTriggerBgColor>
+        <regexCodeList>
+          <string>Now now, don't be so hasty!</string>
+        </regexCodeList>
+        <regexCodePropertyList>
+          <integer>3</integer>
+        </regexCodePropertyList>
+      </Trigger>
+      <TriggerGroup isActive="yes" isFolder="yes" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+        <name>Lusternia</name>
+        <script/>
+        <triggerType>0</triggerType>
+        <conditonLineDelta>0</conditonLineDelta>
+        <mStayOpen>0</mStayOpen>
+        <mCommand/>
+        <mFgColor>#ff0000</mFgColor>
+        <mBgColor>#ffff00</mBgColor>
+        <mSoundFile/>
+        <colorTriggerFgColor>#000000</colorTriggerFgColor>
+        <colorTriggerBgColor>#000000</colorTriggerBgColor>
+        <regexCodeList/>
+        <regexCodePropertyList/>
+        <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+          <name>Mudlet Mapper Lusternia Scent</name>
+          <script/>
+          <triggerType>0</triggerType>
+          <conditonLineDelta>99</conditonLineDelta>
+          <mStayOpen>100</mStayOpen>
+          <mCommand/>
+          <mFgColor>#ff0000</mFgColor>
+          <mBgColor>#ffff00</mBgColor>
+          <mSoundFile/>
+          <colorTriggerFgColor>#000000</colorTriggerFgColor>
+          <colorTriggerBgColor>#000000</colorTriggerBgColor>
+          <regexCodeList>
+            <string>You scent at the air, your skilled nose picking up the faint traces of others in the surrounding area.</string>
+          </regexCodeList>
+          <regexCodePropertyList>
+            <integer>3</integer>
+          </regexCodePropertyList>
+          <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+            <name>Got line</name>
+            <script>selectString(line, 1) replace""
+
+-- get the name
+cecho("&lt;green&gt;"..matches[2].."&lt;reset&gt;: ")
+
+-- ids
+mmp.echonums(matches[3])
+
+-- pad spaces so we have aligned roomname
+echo(string.rep(" ", 25 - #getCurrentLine()))
+
+-- and finally, the roomname
+echo(matches[3])
+
+-- save in our person tracking db
+mmp.pdb[matches[2]] = matches[3]</script>
+            <triggerType>0</triggerType>
+            <conditonLineDelta>0</conditonLineDelta>
+            <mStayOpen>0</mStayOpen>
+            <mCommand/>
+            <mFgColor>#ff0000</mFgColor>
+            <mBgColor>#ffff00</mBgColor>
+            <mSoundFile/>
+            <colorTriggerFgColor>#000000</colorTriggerFgColor>
+            <colorTriggerBgColor>#000000</colorTriggerBgColor>
+            <regexCodeList>
+              <string>^You make out the scent of (\w+) coming from (.+)\.$</string>
+            </regexCodeList>
+            <regexCodePropertyList>
+              <integer>1</integer>
+            </regexCodePropertyList>
+          </Trigger>
+          <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+            <name>Stop capturing</name>
+            <script>setTriggerStayOpen("Mudlet Mapper Lusternia Scent", 0)
+
+raiseEvent("mmapper updated pdb")</script>
+            <triggerType>0</triggerType>
+            <conditonLineDelta>0</conditonLineDelta>
+            <mStayOpen>0</mStayOpen>
+            <mCommand/>
+            <mFgColor>#ff0000</mFgColor>
+            <mBgColor>#ffff00</mBgColor>
+            <mSoundFile/>
+            <colorTriggerFgColor>#000000</colorTriggerFgColor>
+            <colorTriggerBgColor>#000000</colorTriggerBgColor>
+            <regexCodeList>
+              <string>return isPrompt()</string>
+            </regexCodeList>
+            <regexCodePropertyList>
+              <integer>4</integer>
+            </regexCodePropertyList>
+          </Trigger>
+        </Trigger>
+        <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="yes" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+          <name>Deathsight</name>
+          <script>echo " "; mmp.echonums(multimatches[2][2])</script>
+          <triggerType>0</triggerType>
+          <conditonLineDelta>0</conditonLineDelta>
+          <mStayOpen>0</mStayOpen>
+          <mCommand/>
+          <mFgColor>#ff0000</mFgColor>
+          <mBgColor>#ffff00</mBgColor>
+          <mSoundFile/>
+          <colorTriggerFgColor>#000000</colorTriggerFgColor>
+          <colorTriggerBgColor>#000000</colorTriggerBgColor>
+          <regexCodeList>
+            <string>You see the death occur at</string>
+            <string>^You see the death occur at (.+)\.$</string>
+          </regexCodeList>
+          <regexCodePropertyList>
+            <integer>2</integer>
+            <integer>1</integer>
+          </regexCodePropertyList>
+        </Trigger>
+      </TriggerGroup>
+    </TriggerGroup>
+  </TriggerPackage>
+  <TimerPackage>
+        </TimerPackage>
+  <AliasPackage>
+    <AliasGroup isActive="yes" isFolder="yes">
+      <name>Mudlet Mapper</name>
+      <script/>
+      <command/>
+      <regex/>
+      <Alias isActive="no" isFolder="no">
+        <name>Go to ID or area</name>
+        <script>local where = matches[2]
+
+-- goto room ID
+if tonumber(where) then
+	gotoRoom(where)
+else
+	-- locate area
+
+	-- goto area?
+end</script>
+        <command/>
+        <regex>^goto (.+)$</regex>
+      </Alias>
+      <Alias isActive="yes" isFolder="no">
+        <name>Toggle pause</name>
+        <script>mmp.pause(matches[2])</script>
+        <command/>
+        <regex>^mpp(?:\s?(on|off))?$</regex>
+      </Alias>
+      <Alias isActive="yes" isFolder="no">
+        <name>Stop walking</name>
+        <script>mmp.stop()</script>
+        <command/>
+        <regex>^mstop$</regex>
+      </Alias>
+      <Alias isActive="yes" isFolder="no">
+        <name>Option</name>
+        <script>if not matches[2] then
+	mmp.settings:showAllOptions()
+	return
+end
+
+local val = matches[4]
+if val == "true" or val == "yes" or val == "on" then val = true end
+if val == "false" or val == "no" or val == "off" then val = false end
+
+mmp.settings:setOption(matches[3], val)</script>
+        <command/>
+        <regex>^mconfig( (\w+) (.*))?$</regex>
+      </Alias>
+      <Alias isActive="yes" isFolder="no">
+        <name>Display Area for Lock/Unlock</name>
+        <script>mmp.doLockArea(matches[2])</script>
+        <command/>
+        <regex>^mmp arealock(?: (.*))?$</regex>
+      </Alias>
+    </AliasGroup>
+  </AliasPackage>
+  <ActionPackage>
+        </ActionPackage>
+  <ScriptPackage>
+    <ScriptGroup isActive="yes" isFolder="yes">
+      <name>Mudlet Mapper</name>
+      <script>-------------------------------------------------
+--         Put your Lua functions here.        --
+--                                             --
+-- Note that you can also use external Scripts --
+-------------------------------------------------
+</script>
+      <eventHandlerList/>
+      <Script isActive="yes" isFolder="no">
+        <name>Utilities</name>
+        <script>function mmp.echo(what)
+	moveCursorEnd("main") if getCurrentLine() ~= "" then echo"\n" end
+	decho("&lt;112,229,0&gt;(&lt;73,149,0&gt;mapper&lt;112,229,0&gt;): &lt;255,255,255&gt;")
+	cecho(what)
+end
+
+function mmp.deleteLineP()
+	deleteLine()
+	tempLineTrigger(1,1,[[
+		if isPrompt() then deleteLine() end
+	]])
+end
+
+function mmp.pause(what)
+	assert(what == nil or what == "on" or what == "off", "mmp.pause wants 'on', 'off' or nothing as an argument")
+
+	if what == "on" or (what == nil and not mmp.paused) then
+		mmp.paused = true
+	elseif 	what == "off" or (what == nil and mmp.paused) then
+		mmp.paused = false
+	end
+
+	mmp.echo("Speedwalking " .. (mmp.paused and "paused" or "unpaused") .. ".")
+end
+
+-- for a given room name, we'll echo all the vnums
+function mmp.echonums(roomname)
+	local t = mmp.searchRoom(roomname)
+
+	if not next(t) then
+		echo "?" return end
+
+	-- transform the kv table into a table of tables for cleaner code. 
+		-- + perhaps Mudlet in future will give this us anyway, sorted by relevancy
+	local dt = {}
+	for k,v in pairs(t) do dt[#dt+1] = {name = k, id = v} end
+
+	-- display first three ids. Can't really nicely table.concat them.
+	echoLink(dt[1].id, 'gotoRoom('..dt[1].id..')', string.format("Go to %s (%s)", dt[1].id, dt[1].name))
+	if not dt[2] then return end
+
+	echo", "
+	echoLink(dt[2].id, 'gotoRoom('..dt[2].id..')', string.format("Go to %s (%s)", dt[2].id, dt[2].name))
+	if not dt[3] then return end
+
+	echo", "
+	echoLink(dt[3].id, 'gotoRoom('..dt[3].id..')', string.format("Go to %s (%s)", dt[3].id, dt[3].name))
+	if not dt[4] then return end
+
+	echo", ..."
+end
+
+-- searchRoom with a cache!
+local cache = {}
+setmetatable(cache, {__mode = "kv"}) -- weak keys/values = it'll periodically get cleaned up by gc
+
+function mmp.searchRoom(what)
+	local result = cache[what]
+	if not result then
+		result = searchRoom(what)
+		cache[what] = result
+	end
+	return result
+end
+</script>
+        <eventHandlerList/>
+      </Script>
+      <Script isActive="yes" isFolder="no">
+        <name>Person tracking</name>
+        <script>mmp.pdb = mmp.pdb or {}</script>
+        <eventHandlerList/>
+      </Script>
+      <Script isActive="yes" isFolder="no">
+        <name>Create Option Table</name>
+        <script>-------------------------------------------------
+--         Put your Lua functions here.        --
+--                                             --
+-- Note that you can also use external Scripts --
+-------------------------------------------------
+
+function createOption(startingValue, onChangeFunc, allowedVarTypes, use)
+	if allowedVarTypes then -- make sure our starting Value follows type rules
+		if not table.contains(allowedVarTypes, type(startingValue)) then
+			echo("Starting type is not of allowed type!\n")
+			display(allowedVarTypes)
+			echo("type: " .. type(startingValue) .. "\n")
+			return
+		end
+	end
+
+	local option = {
+		value = startingValue,
+		onChange = onChangeFunc,
+		allowedVarTypes = allowedVarTypes,
+		use = use or ""
+	}
+
+	return option
+end
+
+function createOptionsTable(defaultTable)
+	local index = {} -- index to store the default table at in our proxy table
+
+
+	local proxyTable = {} -- This is the table that is returned to the user
+
+	proxyTable.disp = echo
+
+	proxyTable.dispDefaultWriteError = function()
+		echo("Can't overwrite default options. Please use the SetOption function to change the value\n")
+	end
+
+	proxyTable.dispOption = function(opt, val)
+		if not opt or not val then return end
+		echo("Name: " .. string.title(opt) .. string.rep(" ", 10 - string.len(opt)))
+		echo("Val: " .. tostring(val.value))
+		echo(string.rep(" ", 10 - string.len(tostring(val.value))) ..  "- " .. val.use .. "\n")
+	end
+
+	function proxyTable:showAllOptions()
+		proxyTable.disp("Available options: \n")
+		for k, v in pairs(self[index]) do
+			self.dispOption(k, v)
+		end
+		echo("\n")
+		for k, v in pairs(self["_customOptions"]) do
+			self.dispOption(k, v)
+		end
+
+	end
+
+   function proxyTable:setOption(option, value)
+		if self[option] == nil then
+			proxyTable.disp("No such option!\n")
+			return
+		end
+
+		-- otherwise, set the option
+		if self["_customOptions"][option] then
+			if not table.contains(self["_customOptions"][option].allowedVarTypes, type(value)) then
+				proxyTable.disp("You can't set '" .. option .. "' to that!\n")
+				return
+			end
+			self["_customOptions"][option].value = value
+			if self["_customOptions"][option].onChange then
+				self["_customOptions"][option].onChange(option, value)
+			end
+		else
+			if not table.contains(self[index][option].allowedVarTypes, type(value)) then
+				proxyTable.disp("You can't set '" .. option .. "' to that!\n")
+				return
+			end
+			rawset(self[index][option], "value", value)
+			local opt = rawget(self[index], option)
+			if opt.onChange then opt.onChange(option, value) end
+		end
+
+		if value.onChange then value.onChange(option, value) end
+	end
+
+
+	proxyTable._customOptions = {}
+
+	local mt = {
+		__index = function(t, k)
+			local custOp = rawget(t, "_customOptions")
+			if custOp[k] then
+			 	local opt = custOp[k]
+				if opt then return opt.value else return nil end
+			else
+				local opt = t[index][k]
+				if opt then return opt.value else return nil end
+			end
+		end,
+
+		__newindex = function (t, k, v)
+			if t[index][k] then
+				proxyTable.dispDefaultWriteError()
+			else
+				t["_customOptions"][k] = v
+			end
+		end
+	}
+
+
+	proxyTable[index] = defaultTable
+
+	setmetatable(proxyTable, mt)
+
+	return proxyTable
+
+end</script>
+        <eventHandlerList/>
+      </Script>
+      <Script isActive="yes" isFolder="no">
+        <name>speedwalking</name>
+        <script>speedWalkWatch = createStopWatch()
+speedWalkPath = speedWalkPath or {}
+speedWalkDir = speedWalkDir or {}
+speedWalkCounter = 0
+
+-- mmp = mudlet mapper
+mmp = mmp or {
+  paused = false,
+  autowalking = false,
+  currentroom = false,
+  firstRun = true
+}
+
+function mmp.startup()
+  if not mmp.firstRun then
+    return
+  end
+
+  local private_settings = {}
+  private_settings["dash"] = createOption(false, mmp.changeBoolFunc, { "boolean" }, "Use Dash?")
+  private_settings["gallop"] = createOption(false, mmp.changeBoolFunc, { "boolean" }, "Use Gallop?")
+
+
+  mmp.settings = createOptionsTable(private_settings)
+  mmp.settings.disp = mmp.echo
+
+  mmp.settings.dispOption = function(opt, val)
+    cecho("&lt;white&gt;Use &lt;green&gt;" .. opt .. "&lt;white&gt;?" .. string.rep(" ", 15 - opt:len()) .. tostring(val.value) .. "\n")
+  end
+
+  mmp.settings.dispDefaultWriteError = function()
+    mmp.echo("Please use the mconfig alias to set options!\n")
+  end
+
+  mmp.firstRun = false
+end
+
+-- moves to the next room we need to.
+local function move()
+  if mmp.paused or not mmp.autowalking then return end
+  send(speedWalkDir[speedWalkCounter], false)
+  cecho(string.format("&lt;red&gt;(&lt;maroon&gt;%d - &lt;dark_slate_grey&gt;%s&lt;red&gt;)", #speedWalkDir - speedWalkCounter + 1, speedWalkDir[speedWalkCounter]))
+
+  -- timeout
+  if mmp.movetimer then killTimer(mmp.movetimer) end
+  mmp.movetimer = tempTimer(getNetworkLatency()+0.5, function ()
+    mmp.movetimer = false
+    move()
+  end)
+end
+
+function mmp.stop()
+  speedWalkPath = {}
+  speedWalkDir = {}
+  speedWalkCounter = 0
+  stopStopWatch(speedWalkWatch)
+  killTimer( speedWalkTimerID )
+  mmp.autowalking = false
+
+  mmp.echo("Stopped walking.")
+end
+
+local oldnum
+function speedwalking( event, num )
+  local num = tonumber(num) or tonumber(gmcp.Room.Info.num)
+
+  -- workaround for Aetolia spamming us with multiple nums per room
+  if oldnum == num or not mmp.autowalking then return else oldnum = num end
+
+  mmp.currentroom = num
+  if mmp.movetimer then killTimer(mmp.movetimer); mmp.movetimer = false end
+  if num == speedWalkPath[#speedWalkPath] then
+    local walktime = stopStopWatch(speedWalkWatch)
+    mmp.echo(string.format("We've arrived! Took us %.1fs.\n", walktime))
+    raiseEvent("mmapper arrived")
+    speedWalkPath = {}
+    speedWalkDir = {}
+    speedWalkCounter = 0
+    mmp.autowalking = false
+  elseif speedWalkPath[speedWalkCounter] == num then
+    speedWalkCounter = speedWalkCounter + 1
+    move()
+  elseif #speedWalkPath&gt; 0 then -- ended up somewhere we didn't want to be?
+    speedWalkMoved = false
+
+    -- re-calculate path then
+    mmp.echo("Ended up off the path, recalculating a new path...")
+    local destination = speedWalkPath[#speedWalkPath]
+    if not getPath(num, destination) then
+      mmp.echo(string.format("Don't know how to get to %d (%s) anymore :(",
+        destination, mmp.searchRoom(destination)))
+    else
+      speedWalkCounter = 1; move()
+    end
+  end
+end
+
+function mmp.gotoRoom (where)
+  if not where or not tonumber(where) then
+    mmp.echo("Where do you want to go to?") return end
+
+  if not getPath(mmp.currentroom, tonumber(where)) then
+    mmp.echo("Don't know how to get there from here :(") return end
+
+  doSpeedWalk()
+end
+
+function doSpeedWalk()
+  resetStopWatch(speedWalkWatch)
+  startStopWatch(speedWalkWatch)
+  if mmp.settings["gallop"] or mmp.settings["dash"] then
+    calcSpeedWalkDash()
+  end
+
+  if #speedWalkPath == 0 then
+    mmp.echo("Couldn't find a path to the destination :(")
+    raiseEvent("mmapper failed path")
+    return
+  end
+
+  mmp.autowalking = true
+
+  -- this is a fix: convert nums to actual numbers
+  for i = 1, #speedWalkPath do
+    speedWalkPath[i] = tonumber(speedWalkPath[i])
+  end
+
+  if not mmp.paused then
+    mmp.echo("Starting speedwalk from "..(atcp.RoomNum or gmcp.Room.Info.num).." to ") echoLink(speedWalkPath[#speedWalkPath], 'gotoRoom "' .. speedWalkPath[#speedWalkPath].. '"', 'Go to ' .. speedWalkPath[#speedWalkPath]) echo(": ")
+    speedWalkCounter = 1
+    move()
+  else
+    mmp.echo("Will go to "..speedWalkPath[#speedWalkPath].." as soon as the mapper is unpaused.")
+  end
+end
+
+function mmp.failpath()
+  local walktime = stopStopWatch(speedWalkWatch)
+  mmp.echo(string.format("Can't continue further! Took us %.1fs to get here.\n", walktime))
+  raiseEvent("mmapper failedpath")
+  speedWalkPath = {}
+  speedWalkDir = {}
+  speedWalkCounter = 0
+  killTimer( speedWalkTimerID )
+end
+
+function mmp.changeBoolFunc(name, option)
+  local en
+  if option then en = "will now use" else en = "will no longer use" end
+  mmp.echo("&lt;green&gt;Okay, the mapper " .. en .. " &lt;white&gt;" .. name .. "&lt;green&gt;!\n")
+end
+
+function calcSpeedWalkDash()
+  local cmd = ""
+  if mmp.settings["dash"] then cmd = "dash" else cmd = "gallop" end
+
+  local pos = 2 -- this is where we start
+  local dir = speedWalkDir[1]
+  local dirStartPos = 1
+  local rep = 1
+  while pos &lt;= #speedWalkDir do
+    if speedWalkDir[pos] == dir and pos ~= #speedWalkDir then
+      rep = rep + 1
+    else
+      if rep &gt;= 3 then
+        local exits = getRoomExits(speedWalkPath[pos - 1])
+        if not exits[dir] then
+          if pos ~= #speedWalkDir then rep = rep - 1 end
+          for i = 1, rep do
+            table.remove(speedWalkDir, dirStartPos)
+            table.remove(speedWalkPath, dirStartPos)
+          end
+          speedWalkDir[dirStartPos] = cmd .. " " .. speedWalkDir[dirStartPos]
+          pos = dirStartPos
+        end
+      end
+      dirStartPos = pos
+      dir = speedWalkDir[pos]
+      rep = 1
+    end
+
+    pos = pos + 1
+  end
+end
+mmp.startup()
+</script>
+        <eventHandlerList>
+          <string>RoomNum</string>
+          <string>gmcp.Room</string>
+        </eventHandlerList>
+      </Script>
+      <Script isActive="yes" isFolder="no">
+        <name>Lock Area</name>
+        <script>
+			
+	mmp.locked = mmp.locked or {}
+mmp.lastLockSearch = nil
+
+function mmp.doLockArea(search)
+	local areaList
+	if search ~= nil then
+		local r = rex.new(string.lower(search))
+		mmp.lastLockSearch = search
+		for name, id in pairs(getAreaTable()) do
+			if r:match(string.lower(name)) then
+				areaList = areaList or {}
+				areaList[name] = id
+			end
+		end
+		if areaList == nil then
+			mmp.echo("'" .. search .. "' did not match any known areas!")
+			return
+		end
+	else
+		mmp.lastLockSearch = nil
+		areaList = getAreaTable()
+	end
+
+	for name, id in pairs(areaList) do
+		mmp.echo(name .. string.rep(" ", 40 - string.len(name)))
+		if not mmp.locked[id] then
+			setFgColor(0, 200, 0)
+			setUnderline(true)
+			echoLink("Lock!", [[mmp.lockArea( ']] .. name .. [[', true )]], "Click to lock area '" .. name .. "'", true)
+		else
+			setFgColor(200, 0, 0)
+			setUnderline(true)
+			echoLink("Unlock!", [[mmp.lockArea( ']] .. name .. [[', false )]], "Click to unlock area '" .. name .. "'", true)
+		end
+	end
+end
+
+function mmp.lockArea(name, lock)
+	local areas = getAreaTable()
+	local rooms = getAreaRooms(areas[name])
+	for _, room in ipairs(rooms) do
+		lockRoom(room, lock)
+	end
+	
+	mmp.locked[areas[name]] = lock and true or nil
+	if lock then
+		mmp.echo("Area '" .. name .. "' locked!")
+	else
+		mmp.echo("Area '" .. name .. "' unlocked!")
+	end
+
+	mmp.doLockArea(mmp.lastLockSearch)
+end
+
+
+</script>
+        <eventHandlerList/>
+      </Script>
+      <Script isActive="yes" isFolder="no">
+        <name>Center view via GMCP</name>
+        <script/>
+        <eventHandlerList/>
+        <Script isActive="yes" isFolder="no">
+          <name>mmp_center_roominfo</name>
+          <script>function mmp_center_roominfo()
+	centerview(gmcp.Room.Info.num)
+end</script>
+          <eventHandlerList>
+            <string>gmcp.Room</string>
+          </eventHandlerList>
+        </Script>
+      </Script>
+    </ScriptGroup>
+  </ScriptPackage>
+  <KeyPackage>
+        </KeyPackage>
+</MudletPackage>
