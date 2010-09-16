@@ -215,13 +215,13 @@ raiseEvent("mmapper updated pdb")</script>
       <script/>
       <command/>
       <regex/>
-      <Alias isActive="no" isFolder="no">
+      <Alias isActive="yes" isFolder="no">
         <name>Go to ID or area</name>
         <script>local where = matches[2]
 
 -- goto room ID
 if tonumber(where) then
-	gotoRoom(where)
+	mmp.gotoRoom(where)
 else
 	-- locate area
 
@@ -317,15 +317,15 @@ function mmp.echonums(roomname)
 	for k,v in pairs(t) do dt[#dt+1] = {name = k, id = v} end
 
 	-- display first three ids. Can't really nicely table.concat them.
-	echoLink(dt[1].id, 'gotoRoom('..dt[1].id..')', string.format("Go to %s (%s)", dt[1].id, dt[1].name))
+	echoLink(dt[1].id, 'mmp.gotoRoom('..dt[1].id..')', string.format("Go to %s (%s)", dt[1].id, dt[1].name))
 	if not dt[2] then return end
 
 	echo", "
-	echoLink(dt[2].id, 'gotoRoom('..dt[2].id..')', string.format("Go to %s (%s)", dt[2].id, dt[2].name))
+	echoLink(dt[2].id, 'mmp.gotoRoom('..dt[2].id..')', string.format("Go to %s (%s)", dt[2].id, dt[2].name))
 	if not dt[3] then return end
 
 	echo", "
-	echoLink(dt[3].id, 'gotoRoom('..dt[3].id..')', string.format("Go to %s (%s)", dt[3].id, dt[3].name))
+	echoLink(dt[3].id, 'mmp.gotoRoom('..dt[3].id..')', string.format("Go to %s (%s)", dt[3].id, dt[3].name))
 	if not dt[4] then return end
 
 	echo", ..."
@@ -540,11 +540,11 @@ end
 local oldnum
 function speedwalking( event, num )
   local num = tonumber(num) or tonumber(gmcp.Room.Info.num)
+  mmp.currentroom = num
 
   -- workaround for Aetolia spamming us with multiple nums per room
   if oldnum == num or not mmp.autowalking then return else oldnum = num end
 
-  mmp.currentroom = num
   if mmp.movetimer then killTimer(mmp.movetimer); mmp.movetimer = false end
   if num == speedWalkPath[#speedWalkPath] then
     local walktime = stopStopWatch(speedWalkWatch)
