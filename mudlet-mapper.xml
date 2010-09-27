@@ -123,8 +123,10 @@ speedwalking("Room", speedWalkPath[speedWalkCounter])</script>
           <colorTriggerBgColor>#000000</colorTriggerBgColor>
           <regexCodeList>
             <string>You scent at the air, your skilled nose picking up the faint traces of others in the surrounding area.</string>
+            <string>You snort and snuffle at the air, sensing through a ridiculous pig nose upon your face the faint traces of others in the surrounding area.</string>
           </regexCodeList>
           <regexCodePropertyList>
+            <integer>3</integer>
             <integer>3</integer>
           </regexCodePropertyList>
           <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
@@ -185,7 +187,18 @@ raiseEvent("mmapper updated pdb")</script>
         </Trigger>
         <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="yes" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
           <name>Deathsight</name>
-          <script>echo " "; mmp.echonums(multimatches[2][2])</script>
+          <script>echo " "; mmp.echonums(multimatches[2][2])
+
+local t = mmp.getnums(multimatches[2][2])
+if not t then return end
+
+echo"\n"
+
+if #t == 1 then
+	cecho("&lt;red&gt;From your knowledge, that happened in &lt;orange_red&gt;"..mmp.areatabler[getRoomArea(t[1])].."&lt;red&gt;.")
+else
+	cecho("&lt;red&gt;From your knowledge, that possibly happened in &lt;orange_red&gt;"..mmp.areatabler[getRoomArea(t[1])].."&lt;red&gt;.")
+end</script>
           <triggerType>0</triggerType>
           <conditonLineDelta>0</conditonLineDelta>
           <mStayOpen>0</mStayOpen>
@@ -221,14 +234,14 @@ raiseEvent("mmapper updated pdb")</script>
 
 -- goto room ID
 if tonumber(where) then
-	mmp.gotoRoom(where)
+	mmp.gotoRoom(where, matches[3])
 else
 	-- locate area
 
 	-- goto area?
 end</script>
         <command/>
-        <regex>^goto (.+)$</regex>
+        <regex>^goto (\w+)(?: (\w+))?$</regex>
       </Alias>
       <Alias isActive="yes" isFolder="no">
         <name>Toggle pause</name>
@@ -278,6 +291,234 @@ mmp.settings:setOption(matches[3], val)</script>
 </script>
       <eventHandlerList/>
       <Script isActive="yes" isFolder="no">
+        <name>speedwalking</name>
+        <script>speedWalkWatch = createStopWatch()
+speedWalkPath = speedWalkPath or {}
+speedWalkDir = speedWalkDir or {}
+speedWalkCounter = 0
+
+-- mmp = mudlet mapper
+mmp = mmp or {
+  paused = false,
+  autowalking = false,
+  currentroom = false,
+  firstRun = true
+}
+
+function mmp.startup()
+  if not mmp.firstRun then
+    return
+  end
+
+  local private_settings = {}
+  private_settings["dash"] = createOption(false, mmp.changeBoolFunc, { "boolean" }, "Use Dash?")
+  private_settings["gallop"] = createOption(false, mmp.changeBoolFunc, { "boolean" }, "Use Gallop?")
+  private_settings["sprint"] = createOption(false, mmp.changeBoolFunc, { "boolean" }, "Use Sprint?")
+
+
+  mmp.settings = createOptionsTable(private_settings)
+  mmp.settings.disp = mmp.echo
+
+  mmp.settings.dispOption = function(opt, val)
+    cecho("&lt;white&gt;Use &lt;green&gt;" .. opt .. "&lt;white&gt;?" .. string.rep(" ", 15 - opt:len()) .. tostring(val.value) .. "\n")
+  end
+
+  mmp.settings.dispDefaultWriteError = function()
+    mmp.echo("Please use the mconfig alias to set options!\n")
+  end
+
+  mmp.firstRun = false
+end
+
+-- moves to the next room we need to.
+function mmp.move()
+  if mmp.paused or not mmp.autowalking or mmp.movetimer then return end
+  send(speedWalkDir[speedWalkCounter], false)
+  cecho(string.format("&lt;red&gt;(&lt;maroon&gt;%d - &lt;dark_slate_grey&gt;%s&lt;red&gt;)", #speedWalkDir - speedWalkCounter + 1, speedWalkDir[speedWalkCounter]))
+
+  -- timeout
+  if mmp.movetimer then killTimer(mmp.movetimer) end
+  mmp.movetimer = tempTimer(getNetworkLatency()+0.5, function ()
+    mmp.movetimer = false
+    mmp.move()
+  end)
+end
+
+function mmp.stop()
+  speedWalkPath = {}
+  speedWalkDir = {}
+  speedWalkCounter = 0
+  stopStopWatch(speedWalkWatch)
+  if speedWalkTimerID then killTimer( speedWalkTimerID ) end
+  mmp.autowalking = false
+
+  mmp.echo("Stopped walking.")
+end
+
+local oldnum
+function speedwalking( event, num )
+  local num = tonumber(num) or tonumber(gmcp.Room.Info.num)
+  mmp.currentroom = num
+
+  -- workaround for Aetolia spamming us with multiple nums per room
+  if oldnum == num or not mmp.autowalking then return else oldnum = num end
+  if mmp.movetimer then killTimer(mmp.movetimer) end
+
+  if mmp.movetimer then killTimer(mmp.movetimer); mmp.movetimer = false end
+  if num == speedWalkPath[#speedWalkPath] then
+    local walktime = stopStopWatch(speedWalkWatch)
+    mmp.echo(string.format("We've arrived! Took us %.1fs.\n", walktime))
+    raiseEvent("mmapper arrived")
+    speedWalkPath = {}
+    speedWalkDir = {}
+    speedWalkCounter = 0
+    mmp.autowalking = false
+  elseif speedWalkPath[speedWalkCounter] == num then
+    speedWalkCounter = speedWalkCounter + 1
+    mmp.move()
+  elseif #speedWalkPath&gt; 0 then -- ended up somewhere we didn't want to be?
+    speedWalkMoved = false
+
+    -- re-calculate path then
+    mmp.echo("Ended up off the path, recalculating a new path...")
+    local destination = speedWalkPath[#speedWalkPath]
+    if not getPath(num, destination) then
+      mmp.echo(string.format("Don't know how to get to %d (%s) anymore :(",
+        destination, mmp.searchRoom(destination)))
+    else
+      speedWalkCounter = 1; mmp.move()
+    end
+  end
+end
+
+function mmp.gotoRoom (where, dashtype)
+  if not where or not tonumber(where) then
+    mmp.echo("Where do you want to go to?") return end
+
+  if tonumber(where) == mmp.currentroom then
+    mmp.echo("We're already at "..where.."!")
+   raiseEvent("mmapper arrived")
+   return
+  end
+
+  if not getPath(mmp.currentroom, tonumber(where)) then
+    mmp.echo("Don't know how to get there from here :(")
+    speedWalkPath = {}
+    speedWalkDir = {}
+    speedWalkCounter = 0
+    raiseEvent("mmapper failed path")
+    return
+  end
+
+  doSpeedWalk(dashtype)
+end
+
+function doSpeedWalk(dashtype)
+  resetStopWatch(speedWalkWatch)
+  startStopWatch(speedWalkWatch)
+  if mmp.settings["gallop"] or mmp.settings["dash"] or mmp.settings.sprint or dashtype then
+    mmp.fixPath(mmp.currentroom, speedWalkPath[#speedWalkPath],
+      (mmp.settings["gallop"] and "gallop") or (mmp.settings["dash"] and "dash") or (mmp.settings.sprint and "sprint") or dashtype)
+  end
+
+  if #speedWalkPath == 0 then
+    mmp.echo("Couldn't find a path to the destination :(")
+    raiseEvent("mmapper failed path")
+    return
+  end
+
+  mmp.autowalking = true
+
+  -- this is a fix: convert nums to actual numbers
+  for i = 1, #speedWalkPath do
+    speedWalkPath[i] = tonumber(speedWalkPath[i])
+  end
+
+  if not mmp.paused then
+    mmp.echo("Starting speedwalk from "..(atcp.RoomNum or gmcp.Room.Info.num).." to ") echoLink(speedWalkPath[#speedWalkPath], 'gotoRoom "' .. speedWalkPath[#speedWalkPath].. '"', 'Go to ' .. speedWalkPath[#speedWalkPath]) echo(": ")
+    speedWalkCounter = 1
+    mmp.move()
+  else
+    mmp.echo("Will go to "..speedWalkPath[#speedWalkPath].." as soon as the mapper is unpaused.")
+  end
+end
+
+function mmp.failpath()
+  local walktime = stopStopWatch(speedWalkWatch)
+  mmp.echo(string.format("Can't continue further! Took us %.1fs to get here.\n", walktime))
+  raiseEvent("mmapper failedpath")
+  speedWalkPath = {}
+  speedWalkDir = {}
+  speedWalkCounter = 0
+  killTimer( speedWalkTimerID )
+end
+
+function mmp.changeBoolFunc(name, option)
+  local en
+  if option then en = "will now use" else en = "will no longer use" end
+  mmp.echo("&lt;green&gt;Okay, the mapper " .. en .. " &lt;white&gt;" .. name .. "&lt;green&gt;!\n")
+end
+
+function mmp.fixPath(rFrom,rTo,dashtype)
+  local currentPath, currentIds = {}, {}
+  local dRef = {}
+  if not getPath(rFrom,rTo) then return false end
+
+  -- Logic: Look for a direction repeated at least two times.
+  -- count the number of times it repeats, then look that many rooms ahead.
+  -- if that room also contains the direction we're headed, just travel that many directions.
+  -- otherwise, dash.
+
+  local repCount = 1
+  local index = 1
+  local dashExaust = false
+  while speedWalkDir[index] do
+    dashExaust = false
+    repCount = 1
+    while speedWalkDir[index+repCount] == speedWalkDir[index] do
+      repCount = repCount + 1
+      if repCount == 11 then
+        dashExaust = true
+        break
+      end
+    end
+    if repCount &gt; 1 then
+      -- Found direction repitition. Calculate dash path.
+      local exits = getRoomExits(speedWalkPath[index+(repCount-1)])
+      local pname = ""
+      for word in speedWalkDir[index]:gmatch("%w") do pname = pname .. (dRef[word] or word) end
+      if not exits[pname] or dashExaust then
+        -- Final room in this direction does not continue, dash!
+        table.insert(currentPath,string.format("%s %s",dashtype,speedWalkDir[index]))
+        currentIds[#currentIds+1] = speedWalkPath[index+repCount-1]
+      else
+        -- Final room in this direction continues onwards, don't dash
+        for i = 1,repCount do
+          table.insert(currentPath,speedWalkDir[index])
+          currentIds[#currentIds+1] = speedWalkPath[index]
+        end
+      end
+      index = index + repCount
+    else
+      -- No repetition, just add the direction.
+      table.insert(currentPath,speedWalkDir[index])
+      currentIds[#currentIds+1] = speedWalkPath[index]
+      index = index + 1
+    end
+  end
+
+  speedWalkDir = currentPath
+  speedWalkPath = currentIds
+  return true
+end
+mmp.startup()
+</script>
+        <eventHandlerList>
+          <string>RoomNum</string>
+          <string>gmcp.Room</string>
+        </eventHandlerList>
+      </Script>
+      <Script isActive="yes" isFolder="no">
         <name>Utilities</name>
         <script>function mmp.echo(what)
 	moveCursorEnd("main") if getCurrentLine() ~= "" then echo"\n" end
@@ -302,6 +543,21 @@ function mmp.pause(what)
 	end
 
 	mmp.echo("Speedwalking " .. (mmp.paused and "paused" or "unpaused") .. ".")
+	if not mmp.paused then mmp.move() end
+end
+
+function mmp.getnums(roomname)
+	local t = mmp.searchRoom(roomname)
+
+	if not next(t) then
+		return nil end
+
+	local result = {}
+
+	for k,v in pairs(t) do
+		result[#result+1] = tonumber(v) end
+
+	return result
 end
 
 -- for a given room name, we'll echo all the vnums
@@ -309,7 +565,7 @@ function mmp.echonums(roomname)
 	local t = mmp.searchRoom(roomname)
 
 	if not next(t) then
-		echo "?" return end
+		echo "?" return nil end
 
 	-- transform the kv table into a table of tables for cleaner code. 
 		-- + perhaps Mudlet in future will give this us anyway, sorted by relevancy
@@ -343,7 +599,17 @@ function mmp.searchRoom(what)
 	end
 	return result
 end
-</script>
+
+-- cached arearooms
+mmp.areatable = getAreaTable()
+mmp.areatabler = {}
+
+local t = getAreaTable()
+for k,v in pairs(t) do
+	mmp.areatabler[tonumber(v)] = k
+end
+
+t = nil</script>
         <eventHandlerList/>
       </Script>
       <Script isActive="yes" isFolder="no">
@@ -472,199 +738,6 @@ function createOptionsTable(defaultTable)
 
 end</script>
         <eventHandlerList/>
-      </Script>
-      <Script isActive="yes" isFolder="no">
-        <name>speedwalking</name>
-        <script>speedWalkWatch = createStopWatch()
-speedWalkPath = speedWalkPath or {}
-speedWalkDir = speedWalkDir or {}
-speedWalkCounter = 0
-
--- mmp = mudlet mapper
-mmp = mmp or {
-  paused = false,
-  autowalking = false,
-  currentroom = false,
-  firstRun = true
-}
-
-function mmp.startup()
-  if not mmp.firstRun then
-    return
-  end
-
-  local private_settings = {}
-  private_settings["dash"] = createOption(false, mmp.changeBoolFunc, { "boolean" }, "Use Dash?")
-  private_settings["gallop"] = createOption(false, mmp.changeBoolFunc, { "boolean" }, "Use Gallop?")
-
-
-  mmp.settings = createOptionsTable(private_settings)
-  mmp.settings.disp = mmp.echo
-
-  mmp.settings.dispOption = function(opt, val)
-    cecho("&lt;white&gt;Use &lt;green&gt;" .. opt .. "&lt;white&gt;?" .. string.rep(" ", 15 - opt:len()) .. tostring(val.value) .. "\n")
-  end
-
-  mmp.settings.dispDefaultWriteError = function()
-    mmp.echo("Please use the mconfig alias to set options!\n")
-  end
-
-  mmp.firstRun = false
-end
-
--- moves to the next room we need to.
-local function move()
-  if mmp.paused or not mmp.autowalking then return end
-  send(speedWalkDir[speedWalkCounter], false)
-  cecho(string.format("&lt;red&gt;(&lt;maroon&gt;%d - &lt;dark_slate_grey&gt;%s&lt;red&gt;)", #speedWalkDir - speedWalkCounter + 1, speedWalkDir[speedWalkCounter]))
-
-  -- timeout
-  if mmp.movetimer then killTimer(mmp.movetimer) end
-  mmp.movetimer = tempTimer(getNetworkLatency()+0.5, function ()
-    mmp.movetimer = false
-    move()
-  end)
-end
-
-function mmp.stop()
-  speedWalkPath = {}
-  speedWalkDir = {}
-  speedWalkCounter = 0
-  stopStopWatch(speedWalkWatch)
-  killTimer( speedWalkTimerID )
-  mmp.autowalking = false
-
-  mmp.echo("Stopped walking.")
-end
-
-local oldnum
-function speedwalking( event, num )
-  local num = tonumber(num) or tonumber(gmcp.Room.Info.num)
-  mmp.currentroom = num
-
-  -- workaround for Aetolia spamming us with multiple nums per room
-  if oldnum == num or not mmp.autowalking then return else oldnum = num end
-
-  if mmp.movetimer then killTimer(mmp.movetimer); mmp.movetimer = false end
-  if num == speedWalkPath[#speedWalkPath] then
-    local walktime = stopStopWatch(speedWalkWatch)
-    mmp.echo(string.format("We've arrived! Took us %.1fs.\n", walktime))
-    raiseEvent("mmapper arrived")
-    speedWalkPath = {}
-    speedWalkDir = {}
-    speedWalkCounter = 0
-    mmp.autowalking = false
-  elseif speedWalkPath[speedWalkCounter] == num then
-    speedWalkCounter = speedWalkCounter + 1
-    move()
-  elseif #speedWalkPath&gt; 0 then -- ended up somewhere we didn't want to be?
-    speedWalkMoved = false
-
-    -- re-calculate path then
-    mmp.echo("Ended up off the path, recalculating a new path...")
-    local destination = speedWalkPath[#speedWalkPath]
-    if not getPath(num, destination) then
-      mmp.echo(string.format("Don't know how to get to %d (%s) anymore :(",
-        destination, mmp.searchRoom(destination)))
-    else
-      speedWalkCounter = 1; move()
-    end
-  end
-end
-
-function mmp.gotoRoom (where)
-  if not where or not tonumber(where) then
-    mmp.echo("Where do you want to go to?") return end
-
-  if not getPath(mmp.currentroom, tonumber(where)) then
-    mmp.echo("Don't know how to get there from here :(") return end
-
-  doSpeedWalk()
-end
-
-function doSpeedWalk()
-  resetStopWatch(speedWalkWatch)
-  startStopWatch(speedWalkWatch)
-  if mmp.settings["gallop"] or mmp.settings["dash"] then
-    calcSpeedWalkDash()
-  end
-
-  if #speedWalkPath == 0 then
-    mmp.echo("Couldn't find a path to the destination :(")
-    raiseEvent("mmapper failed path")
-    return
-  end
-
-  mmp.autowalking = true
-
-  -- this is a fix: convert nums to actual numbers
-  for i = 1, #speedWalkPath do
-    speedWalkPath[i] = tonumber(speedWalkPath[i])
-  end
-
-  if not mmp.paused then
-    mmp.echo("Starting speedwalk from "..(atcp.RoomNum or gmcp.Room.Info.num).." to ") echoLink(speedWalkPath[#speedWalkPath], 'gotoRoom "' .. speedWalkPath[#speedWalkPath].. '"', 'Go to ' .. speedWalkPath[#speedWalkPath]) echo(": ")
-    speedWalkCounter = 1
-    move()
-  else
-    mmp.echo("Will go to "..speedWalkPath[#speedWalkPath].." as soon as the mapper is unpaused.")
-  end
-end
-
-function mmp.failpath()
-  local walktime = stopStopWatch(speedWalkWatch)
-  mmp.echo(string.format("Can't continue further! Took us %.1fs to get here.\n", walktime))
-  raiseEvent("mmapper failedpath")
-  speedWalkPath = {}
-  speedWalkDir = {}
-  speedWalkCounter = 0
-  killTimer( speedWalkTimerID )
-end
-
-function mmp.changeBoolFunc(name, option)
-  local en
-  if option then en = "will now use" else en = "will no longer use" end
-  mmp.echo("&lt;green&gt;Okay, the mapper " .. en .. " &lt;white&gt;" .. name .. "&lt;green&gt;!\n")
-end
-
-function calcSpeedWalkDash()
-  local cmd = ""
-  if mmp.settings["dash"] then cmd = "dash" else cmd = "gallop" end
-
-  local pos = 2 -- this is where we start
-  local dir = speedWalkDir[1]
-  local dirStartPos = 1
-  local rep = 1
-  while pos &lt;= #speedWalkDir do
-    if speedWalkDir[pos] == dir and pos ~= #speedWalkDir then
-      rep = rep + 1
-    else
-      if rep &gt;= 3 then
-        local exits = getRoomExits(speedWalkPath[pos - 1])
-        if not exits[dir] then
-          if pos ~= #speedWalkDir then rep = rep - 1 end
-          for i = 1, rep do
-            table.remove(speedWalkDir, dirStartPos)
-            table.remove(speedWalkPath, dirStartPos)
-          end
-          speedWalkDir[dirStartPos] = cmd .. " " .. speedWalkDir[dirStartPos]
-          pos = dirStartPos
-        end
-      end
-      dirStartPos = pos
-      dir = speedWalkDir[pos]
-      rep = 1
-    end
-
-    pos = pos + 1
-  end
-end
-mmp.startup()
-</script>
-        <eventHandlerList>
-          <string>RoomNum</string>
-          <string>gmcp.Room</string>
-        </eventHandlerList>
       </Script>
       <Script isActive="yes" isFolder="no">
         <name>Lock Area</name>
