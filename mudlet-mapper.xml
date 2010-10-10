@@ -111,7 +111,7 @@ speedwalking("Room", speedWalkPath[speedWalkCounter])</script>
         <regexCodePropertyList/>
         <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
           <name>Mudlet Mapper Lusternia Scent</name>
-          <script/>
+          <script>mmp.tempscent = {}</script>
           <triggerType>0</triggerType>
           <conditonLineDelta>99</conditonLineDelta>
           <mStayOpen>100</mStayOpen>
@@ -131,7 +131,9 @@ speedwalking("Room", speedWalkPath[speedWalkCounter])</script>
           </regexCodePropertyList>
           <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
             <name>Got line</name>
-            <script>selectString(line, 1) replace""
+            <script>--deleteLine()
+
+selectString(line, 1) replace""
 
 -- get the name
 cecho("&lt;green&gt;"..matches[2].."&lt;reset&gt;: ")
@@ -144,6 +146,13 @@ echo(string.rep(" ", 25 - #getCurrentLine()))
 
 -- and finally, the roomname
 echo(matches[3])
+
+
+if mmp.tempscent[matches[3]] then
+	mmp.tempscent[matches[3]][#mmp.tempscent[matches[3]]+1] = matches[2]
+else
+	mmp.tempscent[matches[3]] = {matches[2]}
+end
 
 -- save in our person tracking db
 mmp.pdb[matches[2]] = matches[3]</script>
@@ -166,6 +175,24 @@ mmp.pdb[matches[2]] = matches[3]</script>
           <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
             <name>Stop capturing</name>
             <script>setTriggerStayOpen("Mudlet Mapper Lusternia Scent", 0)
+
+--[[for area, names in pairs(mmp.tempscent) do
+	for _, name in ipairs(names) do
+
+-- get the name
+cecho("\n&lt;green&gt;"..name.."&lt;reset&gt;: ")
+
+-- ids
+mmp.echonums(area)
+
+-- pad spaces so we have aligned roomname
+echo(string.rep(" ", 25 - #getCurrentLine()))
+
+-- and finally, the roomname
+echo(area)
+end
+end]]
+
 
 raiseEvent("mmapper updated pdb")</script>
             <triggerType>0</triggerType>
@@ -275,6 +302,12 @@ mmp.settings:setOption(matches[3], val)</script>
         <script>mmp.doLockArea(matches[2])</script>
         <command/>
         <regex>^mmp arealock(?: (.*))?$</regex>
+      </Alias>
+      <Alias isActive="yes" isFolder="no">
+        <name>Room find</name>
+        <script>mmp.roomFind(matches[2])</script>
+        <command/>
+        <regex>^(?:rf|room find) (.+)$</regex>
       </Alias>
     </AliasGroup>
   </AliasPackage>
@@ -461,7 +494,7 @@ end
 
 function mmp.fixPath(rFrom,rTo,dashtype)
   local currentPath, currentIds = {}, {}
-  local dRef = {}
+  local dRef = {["n"] = "north", ["e"] = "east", ["s"] = "south", ["w"] = "west"}
   if not getPath(rFrom,rTo) then return false end
 
   -- Logic: Look for a direction repeated at least two times.
@@ -600,9 +633,23 @@ function mmp.searchRoom(what)
 	return result
 end
 
--- cached arearooms
-mmp.areatable = getAreaTable()
-mmp.areatabler = {}
+function mmp.roomFind(query)
+	local result = mmp.searchRoom(query)
+
+	if type(result) == "string" then
+		cecho("&lt;grey&gt;You have no recollection of any room with that name.") return end
+
+	for roomname, roomid in pairs(result) do roomid = tonumber(roomid)
+		cecho(string.format("&lt;grey&gt;You remember the room '%s' (%d) in the %s.\n",
+			roomname, roomid, mmp.areatabler[getRoomArea(roomid)]		
+		))
+	end
+	cecho(string.format("  &lt;grey&gt;%d rooms found.\n", table.size(result)))
+end
+
+-- cached data
+mmp.areatable = getAreaTable() -- this translates an area name to an ID
+mmp.areatabler = {} -- this translates an ID to an area name
 
 local t = getAreaTable()
 for k,v in pairs(t) do
