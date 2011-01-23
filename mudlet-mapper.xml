@@ -111,7 +111,8 @@ speedwalking("Room", speedWalkPath[speedWalkCounter])</script>
         <regexCodePropertyList/>
         <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
           <name>Mudlet Mapper Lusternia Scent</name>
-          <script>mmp.tempscent = {}</script>
+          <script>mmp.tempscent = {}
+mmp.pdb_lastupdate = {}</script>
           <triggerType>0</triggerType>
           <conditonLineDelta>99</conditonLineDelta>
           <mStayOpen>100</mStayOpen>
@@ -155,7 +156,8 @@ else
 end
 
 -- save in our person tracking db
-mmp.pdb[matches[2]] = matches[3]</script>
+mmp.pdb[matches[2]] = matches[3]
+mmp.pdb_lastupdate[matches[2]] = true</script>
             <triggerType>0</triggerType>
             <conditonLineDelta>0</conditonLineDelta>
             <mStayOpen>0</mStayOpen>
@@ -186,7 +188,7 @@ cecho("\n&lt;green&gt;"..name.."&lt;reset&gt;: ")
 mmp.echonums(area)
 
 -- pad spaces so we have aligned roomname
-echo(string.rep(" ", 25 - #getCurrentLine()))
+echo(string.rep(" ", 25))
 
 -- and finally, the roomname
 echo(area)
@@ -324,6 +326,128 @@ mmp.settings:setOption(matches[3], val)</script>
 </script>
       <eventHandlerList/>
       <Script isActive="yes" isFolder="no">
+        <name>Create Option Table</name>
+        <script>-------------------------------------------------
+--         Put your Lua functions here.        --
+--                                             --
+-- Note that you can also use external Scripts --
+-------------------------------------------------
+
+function createOption(startingValue, onChangeFunc, allowedVarTypes, use)
+	if allowedVarTypes then -- make sure our starting Value follows type rules
+		if not table.contains(allowedVarTypes, type(startingValue)) then
+			echo("Starting type is not of allowed type!\n")
+			display(allowedVarTypes)
+			echo("type: " .. type(startingValue) .. "\n")
+			return
+		end
+	end
+
+	local option = {
+		value = startingValue,
+		onChange = onChangeFunc,
+		allowedVarTypes = allowedVarTypes,
+		use = use or ""
+	}
+
+	return option
+end
+
+function createOptionsTable(defaultTable)
+	local index = {} -- index to store the default table at in our proxy table
+
+
+	local proxyTable = {} -- This is the table that is returned to the user
+
+	proxyTable.disp = echo
+
+	proxyTable.dispDefaultWriteError = function()
+		echo("Can't overwrite default options. Please use the SetOption function to change the value\n")
+	end
+
+	proxyTable.dispOption = function(opt, val)
+		if not opt or not val then return end
+		echo("Name: " .. string.title(opt) .. string.rep(" ", 10 - string.len(opt)))
+		echo("Val: " .. tostring(val.value))
+		echo(string.rep(" ", 10 - string.len(tostring(val.value))) ..  "- " .. val.use .. "\n")
+	end
+
+	function proxyTable:showAllOptions()
+		proxyTable.disp("Available options: \n")
+		for k, v in pairs(self[index]) do
+			self.dispOption(k, v)
+		end
+		echo("\n")
+		for k, v in pairs(self["_customOptions"]) do
+			self.dispOption(k, v)
+		end
+
+	end
+
+   function proxyTable:setOption(option, value)
+		if self[option] == nil then
+			proxyTable.disp("No such option!\n")
+			return
+		end
+
+		-- otherwise, set the option
+		if self["_customOptions"][option] then
+			if not table.contains(self["_customOptions"][option].allowedVarTypes, type(value)) then
+				proxyTable.disp("You can't set '" .. option .. "' to that!\n")
+				return
+			end
+			self["_customOptions"][option].value = value
+			if self["_customOptions"][option].onChange then
+				self["_customOptions"][option].onChange(option, value)
+			end
+		else
+			if not table.contains(self[index][option].allowedVarTypes, type(value)) then
+				proxyTable.disp("You can't set '" .. option .. "' to that!\n")
+				return
+			end
+			rawset(self[index][option], "value", value)
+			local opt = rawget(self[index], option)
+			if opt.onChange then opt.onChange(option, value) end
+		end
+
+		if value.onChange then value.onChange(option, value) end
+	end
+
+
+	proxyTable._customOptions = {}
+
+	local mt = {
+		__index = function(t, k)
+			local custOp = rawget(t, "_customOptions")
+			if custOp[k] then
+			 	local opt = custOp[k]
+				if opt then return opt.value else return nil end
+			else
+				local opt = t[index][k]
+				if opt then return opt.value else return nil end
+			end
+		end,
+
+		__newindex = function (t, k, v)
+			if t[index][k] then
+				proxyTable.dispDefaultWriteError()
+			else
+				t["_customOptions"][k] = v
+			end
+		end
+	}
+
+
+	proxyTable[index] = defaultTable
+
+	setmetatable(proxyTable, mt)
+
+	return proxyTable
+
+end</script>
+        <eventHandlerList/>
+      </Script>
+      <Script isActive="yes" isFolder="no">
         <name>speedwalking</name>
         <script>speedWalkWatch = createStopWatch()
 speedWalkPath = speedWalkPath or {}
@@ -419,7 +543,7 @@ function speedwalking( event, num )
       mmp.echo(string.format("Don't know how to get to %d (%s) anymore :(",
         destination, mmp.searchRoom(destination)))
     else
-      speedWalkCounter = 1; mmp.move()
+		mmp.gotoRoom (destination)
     end
   end
 end
@@ -587,8 +711,13 @@ function mmp.getnums(roomname)
 
 	local result = {}
 
-	for k,v in pairs(t) do
-		result[#result+1] = tonumber(v) end
+	if not tonumber(t[1]) then
+		for roomid,_ in pairs(t) do
+			result[#result+1] = tonumber(roomid) end
+	else
+		for _,roomid in pairs(t) do
+			result[#result+1] = tonumber(roomid) end
+	end
 
 	return result
 end
@@ -603,7 +732,11 @@ function mmp.echonums(roomname)
 	-- transform the kv table into a table of tables for cleaner code. 
 		-- + perhaps Mudlet in future will give this us anyway, sorted by relevancy
 	local dt = {}
-	for k,v in pairs(t) do dt[#dt+1] = {name = k, id = v} end
+	if not tonumber(t[1]) then
+		for roomid,roomname in pairs(t) do dt[#dt+1] = {name = roomname, id = roomid} end
+	else
+		for roomname,roomid in pairs(t) do dt[#dt+1] = {name = roomname, id = roomid} end
+	end
 
 	-- display first three ids. Can't really nicely table.concat them.
 	echoLink(dt[1].id, 'mmp.gotoRoom('..dt[1].id..')', string.format("Go to %s (%s)", dt[1].id, dt[1].name))
@@ -639,12 +772,25 @@ function mmp.roomFind(query)
 	if type(result) == "string" then
 		cecho("&lt;grey&gt;You have no recollection of any room with that name.") return end
 
-	for roomname, roomid in pairs(result) do roomid = tonumber(roomid)
-		cecho(string.format("&lt;grey&gt;You remember the room '%s' (%d) in the %s.\n",
-			roomname, roomid, mmp.areatabler[getRoomArea(roomid)]		
-		))
+	cecho("&lt;DarkSlateGrey&gt;You the following relevant rooms:\n")
+	if not tonumber(result[1]) then
+		for roomid, roomname in pairs(result) do roomid = tonumber(roomid)
+			cecho(string.format("  &lt;LightSlateGray&gt;%s&lt;DarkSlateGrey&gt; (&lt;blue&gt;",
+				tostring(roomname)))
+			echoLink(roomid, 'mmp.gotoRoom('..roomid..')', string.format("Go to %s (%s)", roomid, tostring(roomname)))
+			cecho(string.format("&lt;DarkSlateGrey&gt;) in the &lt;LightSlateGray&gt;%s&lt;DarkSlateGrey&gt;.\n", tostring(mmp.areatabler[getRoomArea(roomid)])))
+		end
+
+	else
+		for roomname, roomid in pairs(result) do roomid = tonumber(roomid)
+			cecho(string.format("  &lt;LightSlateGray&gt;%s&lt;DarkSlateGrey&gt; (&lt;blue&gt;",
+				tostring(roomname)))
+			echoLink(roomid, 'mmp.gotoRoom('..roomid..')', string.format("Go to %s (%s)", roomid, tostring(roomname)))
+			cecho(string.format("&lt;DarkSlateGrey&gt;) in the &lt;LightSlateGray&gt;%s&lt;DarkSlateGrey&gt;.\n", tostring(mmp.areatabler[getRoomArea(roomid)])))
+		end
 	end
-	cecho(string.format("  &lt;grey&gt;%d rooms found.\n", table.size(result)))
+
+	cecho(string.format("  &lt;DarkSlateGrey&gt;%d rooms found.\n", table.size(result)))
 end
 
 -- cached data
@@ -662,128 +808,6 @@ t = nil</script>
       <Script isActive="yes" isFolder="no">
         <name>Person tracking</name>
         <script>mmp.pdb = mmp.pdb or {}</script>
-        <eventHandlerList/>
-      </Script>
-      <Script isActive="yes" isFolder="no">
-        <name>Create Option Table</name>
-        <script>-------------------------------------------------
---         Put your Lua functions here.        --
---                                             --
--- Note that you can also use external Scripts --
--------------------------------------------------
-
-function createOption(startingValue, onChangeFunc, allowedVarTypes, use)
-	if allowedVarTypes then -- make sure our starting Value follows type rules
-		if not table.contains(allowedVarTypes, type(startingValue)) then
-			echo("Starting type is not of allowed type!\n")
-			display(allowedVarTypes)
-			echo("type: " .. type(startingValue) .. "\n")
-			return
-		end
-	end
-
-	local option = {
-		value = startingValue,
-		onChange = onChangeFunc,
-		allowedVarTypes = allowedVarTypes,
-		use = use or ""
-	}
-
-	return option
-end
-
-function createOptionsTable(defaultTable)
-	local index = {} -- index to store the default table at in our proxy table
-
-
-	local proxyTable = {} -- This is the table that is returned to the user
-
-	proxyTable.disp = echo
-
-	proxyTable.dispDefaultWriteError = function()
-		echo("Can't overwrite default options. Please use the SetOption function to change the value\n")
-	end
-
-	proxyTable.dispOption = function(opt, val)
-		if not opt or not val then return end
-		echo("Name: " .. string.title(opt) .. string.rep(" ", 10 - string.len(opt)))
-		echo("Val: " .. tostring(val.value))
-		echo(string.rep(" ", 10 - string.len(tostring(val.value))) ..  "- " .. val.use .. "\n")
-	end
-
-	function proxyTable:showAllOptions()
-		proxyTable.disp("Available options: \n")
-		for k, v in pairs(self[index]) do
-			self.dispOption(k, v)
-		end
-		echo("\n")
-		for k, v in pairs(self["_customOptions"]) do
-			self.dispOption(k, v)
-		end
-
-	end
-
-   function proxyTable:setOption(option, value)
-		if self[option] == nil then
-			proxyTable.disp("No such option!\n")
-			return
-		end
-
-		-- otherwise, set the option
-		if self["_customOptions"][option] then
-			if not table.contains(self["_customOptions"][option].allowedVarTypes, type(value)) then
-				proxyTable.disp("You can't set '" .. option .. "' to that!\n")
-				return
-			end
-			self["_customOptions"][option].value = value
-			if self["_customOptions"][option].onChange then
-				self["_customOptions"][option].onChange(option, value)
-			end
-		else
-			if not table.contains(self[index][option].allowedVarTypes, type(value)) then
-				proxyTable.disp("You can't set '" .. option .. "' to that!\n")
-				return
-			end
-			rawset(self[index][option], "value", value)
-			local opt = rawget(self[index], option)
-			if opt.onChange then opt.onChange(option, value) end
-		end
-
-		if value.onChange then value.onChange(option, value) end
-	end
-
-
-	proxyTable._customOptions = {}
-
-	local mt = {
-		__index = function(t, k)
-			local custOp = rawget(t, "_customOptions")
-			if custOp[k] then
-			 	local opt = custOp[k]
-				if opt then return opt.value else return nil end
-			else
-				local opt = t[index][k]
-				if opt then return opt.value else return nil end
-			end
-		end,
-
-		__newindex = function (t, k, v)
-			if t[index][k] then
-				proxyTable.dispDefaultWriteError()
-			else
-				t["_customOptions"][k] = v
-			end
-		end
-	}
-
-
-	proxyTable[index] = defaultTable
-
-	setmetatable(proxyTable, mt)
-
-	return proxyTable
-
-end</script>
         <eventHandlerList/>
       </Script>
       <Script isActive="yes" isFolder="no">
