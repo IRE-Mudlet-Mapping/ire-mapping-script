@@ -711,7 +711,7 @@ function mmp.getnums(roomname)
 
 	local result = {}
 
-	if not tonumber(t[1]) then
+	if not tonumber(select(2, next(t))) then
 		for roomid,_ in pairs(t) do
 			result[#result+1] = tonumber(roomid) end
 	else
@@ -732,7 +732,7 @@ function mmp.echonums(roomname)
 	-- transform the kv table into a table of tables for cleaner code. 
 		-- + perhaps Mudlet in future will give this us anyway, sorted by relevancy
 	local dt = {}
-	if not tonumber(t[1]) then
+	if not tonumber(select(2, next(t))) then
 		for roomid,roomname in pairs(t) do dt[#dt+1] = {name = roomname, id = roomid} end
 	else
 		for roomname,roomid in pairs(t) do dt[#dt+1] = {name = roomname, id = roomid} end
@@ -773,7 +773,9 @@ function mmp.roomFind(query)
 		cecho("&lt;grey&gt;You have no recollection of any room with that name.") return end
 
 	cecho("&lt;DarkSlateGrey&gt;You the following relevant rooms:\n")
-	if not tonumber(result[1]) then
+
+
+	if not tonumber(select(2, next(result))) then
 		for roomid, roomname in pairs(result) do roomid = tonumber(roomid)
 			cecho(string.format("  &lt;LightSlateGray&gt;%s&lt;DarkSlateGrey&gt; (&lt;blue&gt;",
 				tostring(roomname)))
