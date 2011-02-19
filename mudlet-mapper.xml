@@ -246,6 +246,312 @@ end</script>
             <integer>1</integer>
           </regexCodePropertyList>
         </Trigger>
+        <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+          <name>Wildnodes nodes</name>
+          <script>local t = mmp.getnums(matches[3])
+if not t then return end
+if #t == 1 then
+	cecho(" &lt;orange_red&gt;("..mmp.areatabler[getRoomArea(t[1])]..")")
+else
+	cecho(" &lt;orange_red&gt;Maybe ("..mmp.areatabler[getRoomArea(t[1])]..")")
+end
+echo " "; mmp.echonums(matches[3])</script>
+          <triggerType>0</triggerType>
+          <conditonLineDelta>99</conditonLineDelta>
+          <mStayOpen>0</mStayOpen>
+          <mCommand/>
+          <mFgColor>#ff0000</mFgColor>
+          <mBgColor>#ffff00</mBgColor>
+          <mSoundFile/>
+          <colorTriggerFgColor>#000000</colorTriggerFgColor>
+          <colorTriggerBgColor>#000000</colorTriggerBgColor>
+          <regexCodeList>
+            <string>^\(Planted\) Node (\d+) - (.*)\.$</string>
+            <string>^Node (\d+) - (.*)\.$</string>
+          </regexCodeList>
+          <regexCodePropertyList>
+            <integer>1</integer>
+            <integer>1</integer>
+          </regexCodePropertyList>
+        </Trigger>
+        <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+          <name>Window search</name>
+          <script>local t = mmp.getnums(matches[4])
+if not t then return end
+if #t == 1 then
+	cecho(" &lt;orange_red&gt;("..mmp.areatabler[getRoomArea(t[1])]..")")
+else
+	cecho(" &lt;orange_red&gt;Maybe ("..mmp.areatabler[getRoomArea(t[1])]..")")
+end
+echo " "; mmp.echonums(matches[4])</script>
+          <triggerType>0</triggerType>
+          <conditonLineDelta>39</conditonLineDelta>
+          <mStayOpen>0</mStayOpen>
+          <mCommand/>
+          <mFgColor>#ff0000</mFgColor>
+          <mBgColor>#ffff00</mBgColor>
+          <mSoundFile/>
+          <colorTriggerFgColor>#000000</colorTriggerFgColor>
+          <colorTriggerBgColor>#000000</colorTriggerBgColor>
+          <regexCodeList>
+            <string>^You open up a window in the cosmic fabric and search out (\w+). Through the cosmic window, you see (\w+) at (.*)\.$</string>
+            <string>^You open up a window in the cosmic fabric and search out (\w+). Through the cosmic window, you see (\w+) at (.*) \((.*)\)\.$</string>
+          </regexCodeList>
+          <regexCodePropertyList>
+            <integer>1</integer>
+            <integer>1</integer>
+          </regexCodePropertyList>
+        </Trigger>
+        <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="yes" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+          <name>Scry search</name>
+          <script>echo " "; mmp.echonums(multimatches[2][3])
+
+local t = mmp.getnums(multimatches[2][3])
+if not t then return end
+
+echo"\n"
+
+if #t == 1 then
+	cecho("&lt;red&gt;From your knowledge, that room is in &lt;orange_red&gt;"..mmp.areatabler[getRoomArea(t[1])].."&lt;red&gt;.")
+else
+	cecho("&lt;red&gt;From your knowledge, that room might be in &lt;orange_red&gt;"..mmp.areatabler[getRoomArea(t[1])].."&lt;red&gt;.")
+end</script>
+          <triggerType>0</triggerType>
+          <conditonLineDelta>1</conditonLineDelta>
+          <mStayOpen>0</mStayOpen>
+          <mCommand/>
+          <mFgColor>#ff0000</mFgColor>
+          <mBgColor>#ffff00</mBgColor>
+          <mSoundFile/>
+          <colorTriggerFgColor>#000000</colorTriggerFgColor>
+          <colorTriggerBgColor>#000000</colorTriggerBgColor>
+          <regexCodeList>
+            <string>^You rub (.*) and it begins to glow with a pulsating light\.$</string>
+            <string>^Within the enchanted item, an image forms of (\w+) at (.*)\.$</string>
+          </regexCodeList>
+          <regexCodePropertyList>
+            <integer>1</integer>
+            <integer>1</integer>
+          </regexCodePropertyList>
+        </Trigger>
+        <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="yes" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+          <name>Map walk</name>
+          <script>mmp.gotoRoom(multimatches[4][2])</script>
+          <triggerType>0</triggerType>
+          <conditonLineDelta>3</conditonLineDelta>
+          <mStayOpen>0</mStayOpen>
+          <mCommand/>
+          <mFgColor>#ff0000</mFgColor>
+          <mBgColor>#ffff00</mBgColor>
+          <mSoundFile/>
+          <colorTriggerFgColor>#000000</colorTriggerFgColor>
+          <colorTriggerBgColor>#000000</colorTriggerBgColor>
+          <regexCodeList>
+            <string>As you inscribe the name of </string>
+            <string>^As you inscribe the name of \w+ with a flourish, lines crawl across the surface of the map, centered upon (.*)\.$</string>
+            <string>You see the following in detail:</string>
+            <string>v(\d+)</string>
+          </regexCodeList>
+          <regexCodePropertyList>
+            <integer>2</integer>
+            <integer>1</integer>
+            <integer>3</integer>
+            <integer>1</integer>
+          </regexCodePropertyList>
+        </Trigger>
+        <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="yes" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+          <name>map scry</name>
+          <script>local t = mmp.getnums(multimatches[2][3])
+if not t then return end
+if #t == 1 then
+	cecho(" &lt;orange_red&gt;("..mmp.areatabler[getRoomArea(t[1])]..")")
+else
+	cecho(" &lt;orange_red&gt;Maybe ("..mmp.areatabler[getRoomArea(t[1])]..")")
+end
+echo " "; mmp.echonums(multimatches[2][3])</script>
+          <triggerType>0</triggerType>
+          <conditonLineDelta>0</conditonLineDelta>
+          <mStayOpen>0</mStayOpen>
+          <mCommand/>
+          <mFgColor>#ff0000</mFgColor>
+          <mBgColor>#ffff00</mBgColor>
+          <mSoundFile/>
+          <colorTriggerFgColor>#000000</colorTriggerFgColor>
+          <colorTriggerBgColor>#000000</colorTriggerBgColor>
+          <regexCodeList>
+            <string>As you inscribe the name of</string>
+            <string>^As you inscribe the name of (\w+) with a flourish, lines crawl across the surface of the map, centered upon (.*)\.</string>
+          </regexCodeList>
+          <regexCodePropertyList>
+            <integer>2</integer>
+            <integer>1</integer>
+          </regexCodePropertyList>
+        </Trigger>
+        <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+          <name>World events</name>
+          <script>local t = mmp.getnums(matches[2])
+if not t then return end
+if #t == 1 then
+	cecho(" &lt;orange_red&gt;("..mmp.areatabler[getRoomArea(t[1])]..")")
+else
+	cecho(" &lt;orange_red&gt;Maybe ("..mmp.areatabler[getRoomArea(t[1])]..")")
+end
+
+echo " "; mmp.echonums(matches[2])</script>
+          <triggerType>0</triggerType>
+          <conditonLineDelta>0</conditonLineDelta>
+          <mStayOpen>0</mStayOpen>
+          <mCommand/>
+          <mFgColor>#ff0000</mFgColor>
+          <mBgColor>#ffff00</mBgColor>
+          <mSoundFile/>
+          <colorTriggerFgColor>#000000</colorTriggerFgColor>
+          <colorTriggerBgColor>#000000</colorTriggerBgColor>
+          <regexCodeList>
+            <string>^The Staff of Ascension is at (.*)\.$</string>
+            <string>^The Purple Hamster of Chaos is at (.*)\.$</string>
+          </regexCodeList>
+          <regexCodePropertyList>
+            <integer>1</integer>
+            <integer>1</integer>
+          </regexCodePropertyList>
+        </Trigger>
+        <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="yes" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+          <name>Seeing stone</name>
+          <script>local t = mmp.getnums(multimatches[3][2])
+if not t then return end
+if #t == 1 then
+	cecho(" &lt;orange_red&gt;("..mmp.areatabler[getRoomArea(t[1])]..")")
+else
+	cecho(" &lt;orange_red&gt;Maybe ("..mmp.areatabler[getRoomArea(t[1])]..")")
+end
+echo " "; mmp.echonums(multimatches[3][2])
+</script>
+          <triggerType>0</triggerType>
+          <conditonLineDelta>3</conditonLineDelta>
+          <mStayOpen>0</mStayOpen>
+          <mCommand/>
+          <mFgColor>#ff0000</mFgColor>
+          <mBgColor>#ffff00</mBgColor>
+          <mSoundFile/>
+          <colorTriggerFgColor>#000000</colorTriggerFgColor>
+          <colorTriggerBgColor>#000000</colorTriggerBgColor>
+          <regexCodeList>
+            <string>You gaze into a seeing stone.</string>
+            <string>1</string>
+            <string>^(.*)\.$</string>
+          </regexCodeList>
+          <regexCodePropertyList>
+            <integer>3</integer>
+            <integer>5</integer>
+            <integer>1</integer>
+          </regexCodePropertyList>
+        </Trigger>
+        <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="yes" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+          <name>Birdseye</name>
+          <script>echo " "; mmp.echonums(multimatches[2][3])
+</script>
+          <triggerType>0</triggerType>
+          <conditonLineDelta>0</conditonLineDelta>
+          <mStayOpen>0</mStayOpen>
+          <mCommand/>
+          <mFgColor>#ff0000</mFgColor>
+          <mBgColor>#ffff00</mBgColor>
+          <mSoundFile/>
+          <colorTriggerFgColor>#000000</colorTriggerFgColor>
+          <colorTriggerBgColor>#000000</colorTriggerBgColor>
+          <regexCodeList>
+            <string>From your vantage point in the sky, your crow senses perceive that</string>
+            <string>^From your vantage point in the sky, your crow senses perceive that (\w+) is (.*) within the vicinity of (.*)\.$</string>
+          </regexCodeList>
+          <regexCodePropertyList>
+            <integer>2</integer>
+            <integer>1</integer>
+          </regexCodePropertyList>
+        </Trigger>
+        <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="yes" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+          <name>Bond look</name>
+          <script>echo " "; mmp.echonums(multimatches[3][2])</script>
+          <triggerType>0</triggerType>
+          <conditonLineDelta>3</conditonLineDelta>
+          <mStayOpen>0</mStayOpen>
+          <mCommand/>
+          <mFgColor>#ff0000</mFgColor>
+          <mBgColor>#ffff00</mBgColor>
+          <mSoundFile/>
+          <colorTriggerFgColor>#000000</colorTriggerFgColor>
+          <colorTriggerBgColor>#000000</colorTriggerBgColor>
+          <regexCodeList>
+            <string>^You look through the mind of (.*)\:$</string>
+            <string>1</string>
+            <string>^(.*)\.$</string>
+          </regexCodeList>
+          <regexCodePropertyList>
+            <integer>1</integer>
+            <integer>5</integer>
+            <integer>1</integer>
+          </regexCodePropertyList>
+        </Trigger>
+        <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+          <name>Pyramid probe</name>
+          <script>local t = mmp.getnums(multimatches[2][2])
+if not t then return end
+
+echo"\n"
+
+if #t == 1 then
+	cecho("&lt;red&gt;From your knowledge, that room is in &lt;orange_red&gt;"..mmp.areatabler[getRoomArea(t[1])].."&lt;red&gt;.")
+else
+	cecho("&lt;red&gt;From your knowledge, that room might be in &lt;orange_red&gt;"..mmp.areatabler[getRoomArea(t[1])].."&lt;red&gt;.")
+end</script>
+          <triggerType>0</triggerType>
+          <conditonLineDelta>99</conditonLineDelta>
+          <mStayOpen>0</mStayOpen>
+          <mCommand/>
+          <mFgColor>#ff0000</mFgColor>
+          <mBgColor>#ffff00</mBgColor>
+          <mSoundFile/>
+          <colorTriggerFgColor>#000000</colorTriggerFgColor>
+          <colorTriggerBgColor>#000000</colorTriggerBgColor>
+          <regexCodeList>
+            <string>You lightly caress a button on a paradox puzzle pyramid and suddenly a hazy image of</string>
+            <string>^You lightly caress a button on a paradox puzzle pyramid and suddenly a hazy image of (.*) flashes momentarily in front of you\.$</string>
+          </regexCodeList>
+          <regexCodePropertyList>
+            <integer>2</integer>
+            <integer>1</integer>
+          </regexCodePropertyList>
+        </Trigger>
+        <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="yes" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+          <name>Pyramid port</name>
+          <script>local t = mmp.getnums(multimatches[2][2])
+if not t then return end
+
+echo"\n"
+
+if #t == 1 then
+	cecho("&lt;red&gt;Porting to &lt;orange_red&gt;"..mmp.areatabler[getRoomArea(t[1])].."&lt;red&gt;.")
+else
+	cecho("&lt;red&gt;Might be porting to &lt;orange_red&gt;"..mmp.areatabler[getRoomArea(t[1])].."&lt;red&gt;.")
+end</script>
+          <triggerType>0</triggerType>
+          <conditonLineDelta>0</conditonLineDelta>
+          <mStayOpen>0</mStayOpen>
+          <mCommand/>
+          <mFgColor>#ff0000</mFgColor>
+          <mBgColor>#ffff00</mBgColor>
+          <mSoundFile/>
+          <colorTriggerFgColor>#000000</colorTriggerFgColor>
+          <colorTriggerBgColor>#000000</colorTriggerBgColor>
+          <regexCodeList>
+            <string>Your hands become a blur as you twist and turn a paradox puzzle pyramid until each side is made up of the same colour, solving the puzzle in mere moments. Suddenly the image of</string>
+            <string>^Your hands become a blur as you twist and turn a paradox puzzle pyramid until each side is made up of the same colour, solving the puzzle in mere moments. Suddenly the image of (.*) appears in the back of your mind and you feel drawn towards it\.$</string>
+          </regexCodeList>
+          <regexCodePropertyList>
+            <integer>2</integer>
+            <integer>1</integer>
+          </regexCodePropertyList>
+        </Trigger>
       </TriggerGroup>
     </TriggerGroup>
   </TriggerPackage>
@@ -310,6 +616,12 @@ mmp.settings:setOption(matches[3], val)</script>
         <script>mmp.roomFind(matches[2])</script>
         <command/>
         <regex>^(?:rf|room find) (.+)$</regex>
+      </Alias>
+      <Alias isActive="yes" isFolder="no">
+        <name>Area list</name>
+        <script>mmp.echoRoomList(matches[2])</script>
+        <command/>
+        <regex>^area list (.+)$</regex>
       </Alias>
     </AliasGroup>
   </AliasPackage>
@@ -510,6 +822,7 @@ function mmp.stop()
   mmp.autowalking = false
 
   mmp.echo("Stopped walking.")
+  raiseEvent("mmapper stopped")
 end
 
 local oldnum
@@ -607,7 +920,7 @@ function mmp.failpath()
   speedWalkPath = {}
   speedWalkDir = {}
   speedWalkCounter = 0
-  killTimer( speedWalkTimerID )
+  if speedWalkTimerID then killTimer( speedWalkTimerID ) end
 end
 
 function mmp.changeBoolFunc(name, option)
@@ -766,6 +1079,28 @@ function mmp.searchRoom(what)
 	return result
 end
 
+local getpathcache = {}
+setmetatable(getpathcache, {__mode = "kv"}) -- weak keys/values = it'll periodically get cleaned up by gc
+
+-- DOES NOT ACCOUNT FOR CHANGING THE MAP YET (within a profile load)
+function mmp.getPath(from, to)
+	local key = string.format("%s_%s", from, to)
+	local resulttbl = getpathcache[key]
+
+	-- not in cache?
+	if not resulttbl then
+		local boolean = getPath(from, to)
+		-- save it into the cache &amp; send away
+		getpathcache[key] = {boolean, speedWalkDir, speedWalkPath}
+		return boolean
+	end
+
+	-- or if it is, retrieve &amp; send away
+	speedWalkDir = getpathcache[key][2]
+	speedWalkPath = getpathcache[key][3]
+	return getpathcache[key][1]
+end
+
 function mmp.roomFind(query)
 	local result = mmp.searchRoom(query)
 
@@ -799,12 +1134,58 @@ end
 mmp.areatable = getAreaTable() -- this translates an area name to an ID
 mmp.areatabler = {} -- this translates an ID to an area name
 
-local t = getAreaTable()
-for k,v in pairs(t) do
-	mmp.areatabler[tonumber(v)] = k
+do
+	local t = getAreaTable()
+	for k,v in pairs(t) do
+		mmp.areatabler[tonumber(v)] = k
+	end
 end
 
-t = nil</script>
+function mmp.findAreaID(areaname)
+  local areaname = areaname:lower()
+  local list = getAreaTable()
+
+  -- iterate over the list of areas, matching them with substring match. 
+  -- if we get match a single area, then return it's ID, otherwise return
+  -- 'false' and a message that there are than one are matches
+  local returnid, fullareaname
+  for area, id in pairs(list) do
+    if area:lower():find(areaname, 1, true) then
+      if returnid then return false, "more than one area matches" end
+      returnid = id; fullareaname = area
+    end
+  end
+  
+  return returnid, fullareaname
+end
+
+function mmp.echoRoomList(areaname)
+  local id, msg = mmp.findAreaID(areaname)
+  if id then
+    local roomlist, endresult = getAreaRooms(id), {}
+  
+    -- obtain a room list for each of the room IDs we got
+    for _, id in ipairs(roomlist) do
+      endresult[id] = getRoomName(id)
+    end
+  
+	-- sort room IDs so we can display them in order
+    table.sort(roomlist)
+
+    -- now display something half-decent looking
+    cecho(string.format(
+      "&lt;DarkSlateGrey&gt;List of all rooms in &lt;grey&gt;%s&lt;DarkSlateGrey&gt; (&lt;grey&gt;%d&lt;DarkSlateGrey&gt;):\n", msg, table.size(endresult)))
+    for _, roomid in ipairs(roomlist) do
+		local roomname = endresult[roomid]
+      fg("blue") echoLink(string.format("%6s", roomid), 'mmp.gotoRoom('..roomid..')', string.format("Go to %s (%s)", roomid, tostring(roomname)), true)
+       cecho(string.format("&lt;DarkSlateGrey&gt;: &lt;LightSlateGray&gt;%s&lt;DarkSlateGrey&gt;.\n", roomname))
+    end
+  elseif not id and msg then
+    echo("Area not found; " .. msg)
+  else
+    mmp.echo(string.format("Don't know of any area named '%s'.", areaname))
+  end
+end</script>
         <eventHandlerList/>
       </Script>
       <Script isActive="yes" isFolder="no">
