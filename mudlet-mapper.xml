@@ -618,10 +618,16 @@ mmp.settings:setOption(matches[3], val)</script>
         <regex>^(?:rf|room find) (.+)$</regex>
       </Alias>
       <Alias isActive="yes" isFolder="no">
-        <name>Area list</name>
+        <name>Room list</name>
         <script>mmp.echoRoomList(matches[2])</script>
         <command/>
-        <regex>^area list (.+)$</regex>
+        <regex>^room list (.+)$</regex>
+      </Alias>
+      <Alias isActive="yes" isFolder="no">
+        <name>Area list</name>
+        <script>mmp.echoAreaList()</script>
+        <command/>
+        <regex>^area list$</regex>
       </Alias>
     </AliasGroup>
   </AliasPackage>
@@ -991,79 +997,79 @@ mmp.startup()
       <Script isActive="yes" isFolder="no">
         <name>Utilities</name>
         <script>function mmp.echo(what)
-	moveCursorEnd("main") if getCurrentLine() ~= "" then echo"\n" end
-	decho("&lt;112,229,0&gt;(&lt;73,149,0&gt;mapper&lt;112,229,0&gt;): &lt;255,255,255&gt;")
-	cecho(what)
+  moveCursorEnd("main") if getCurrentLine() ~= "" then echo"\n" end
+  decho("&lt;112,229,0&gt;(&lt;73,149,0&gt;mapper&lt;112,229,0&gt;): &lt;255,255,255&gt;")
+  cecho(what)
 end
 
 function mmp.deleteLineP()
-	deleteLine()
-	tempLineTrigger(1,1,[[
-		if isPrompt() then deleteLine() end
-	]])
+  deleteLine()
+  tempLineTrigger(1,1,[[
+    if isPrompt() then deleteLine() end
+  ]])
 end
 
 function mmp.pause(what)
-	assert(what == nil or what == "on" or what == "off", "mmp.pause wants 'on', 'off' or nothing as an argument")
+  assert(what == nil or what == "on" or what == "off", "mmp.pause wants 'on', 'off' or nothing as an argument")
 
-	if what == "on" or (what == nil and not mmp.paused) then
-		mmp.paused = true
-	elseif 	what == "off" or (what == nil and mmp.paused) then
-		mmp.paused = false
-	end
+  if what == "on" or (what == nil and not mmp.paused) then
+    mmp.paused = true
+  elseif  what == "off" or (what == nil and mmp.paused) then
+    mmp.paused = false
+  end
 
-	mmp.echo("Speedwalking " .. (mmp.paused and "paused" or "unpaused") .. ".")
-	if not mmp.paused then mmp.move() end
+  mmp.echo("Speedwalking " .. (mmp.paused and "paused" or "unpaused") .. ".")
+  if not mmp.paused then mmp.move() end
 end
 
 function mmp.getnums(roomname)
-	local t = mmp.searchRoom(roomname)
+  local t = mmp.searchRoom(roomname)
 
-	if not next(t) then
-		return nil end
+  if not next(t) then
+    return nil end
 
-	local result = {}
+  local result = {}
 
-	if not tonumber(select(2, next(t))) then
-		for roomid,_ in pairs(t) do
-			result[#result+1] = tonumber(roomid) end
-	else
-		for _,roomid in pairs(t) do
-			result[#result+1] = tonumber(roomid) end
-	end
+  if not tonumber(select(2, next(t))) then
+    for roomid,_ in pairs(t) do
+      result[#result+1] = tonumber(roomid) end
+  else
+    for _,roomid in pairs(t) do
+      result[#result+1] = tonumber(roomid) end
+  end
 
-	return result
+  return result
 end
 
 -- for a given room name, we'll echo all the vnums
 function mmp.echonums(roomname)
-	local t = mmp.searchRoom(roomname)
+  local t = mmp.searchRoom(roomname)
 
-	if not next(t) then
-		echo "?" return nil end
+  if not next(t) then
+    echo "?" return nil end
 
-	-- transform the kv table into a table of tables for cleaner code. 
-		-- + perhaps Mudlet in future will give this us anyway, sorted by relevancy
-	local dt = {}
-	if not tonumber(select(2, next(t))) then
-		for roomid,roomname in pairs(t) do dt[#dt+1] = {name = roomname, id = roomid} end
-	else
-		for roomname,roomid in pairs(t) do dt[#dt+1] = {name = roomname, id = roomid} end
-	end
+  -- transform the kv table into a table of tables for cleaner code. 
+    -- + perhaps Mudlet in future will give this us anyway, sorted by relevancy
+  local dt = {}
+  if not tonumber(select(2, next(t))) then
+    for roomid,roomname in pairs(t) do dt[#dt+1] = {name = roomname, id = roomid} end
+  else
+    for roomname,roomid in pairs(t) do dt[#dt+1] = {name = roomname, id = roomid} end
+  end
 
-	-- display first three ids. Can't really nicely table.concat them.
-	echoLink(dt[1].id, 'mmp.gotoRoom('..dt[1].id..')', string.format("Go to %s (%s)", dt[1].id, dt[1].name))
-	if not dt[2] then return end
+  -- display first three ids. Can't really nicely table.concat them.
+  echoLink(dt[1].id, 'mmp.gotoRoom('..dt[1].id..')', string.format("Go to %s (%s)", dt[1].id, dt[1].name))
+  if not dt[2] then return end
 
-	echo", "
-	echoLink(dt[2].id, 'mmp.gotoRoom('..dt[2].id..')', string.format("Go to %s (%s)", dt[2].id, dt[2].name))
-	if not dt[3] then return end
+  echo", "
+  echoLink(dt[2].id, 'mmp.gotoRoom('..dt[2].id..')', string.format("Go to %s (%s)", dt[2].id, dt[2].name))
+  if not dt[3] then return end
 
-	echo", "
-	echoLink(dt[3].id, 'mmp.gotoRoom('..dt[3].id..')', string.format("Go to %s (%s)", dt[3].id, dt[3].name))
-	if not dt[4] then return end
+  echo", "
+  echoLink(dt[3].id, 'mmp.gotoRoom('..dt[3].id..')', string.format("Go to %s (%s)", dt[3].id, dt[3].name))
+  if not dt[4] then return end
 
-	echo", ..."
+  echo", ..."
 end
 
 -- searchRoom with a cache!
@@ -1071,12 +1077,12 @@ local cache = {}
 setmetatable(cache, {__mode = "kv"}) -- weak keys/values = it'll periodically get cleaned up by gc
 
 function mmp.searchRoom(what)
-	local result = cache[what]
-	if not result then
-		result = searchRoom(what)
-		cache[what] = result
-	end
-	return result
+  local result = cache[what]
+  if not result then
+    result = searchRoom(what)
+    cache[what] = result
+  end
+  return result
 end
 
 local getpathcache = {}
@@ -1084,50 +1090,50 @@ setmetatable(getpathcache, {__mode = "kv"}) -- weak keys/values = it'll periodic
 
 -- DOES NOT ACCOUNT FOR CHANGING THE MAP YET (within a profile load)
 function mmp.getPath(from, to)
-	local key = string.format("%s_%s", from, to)
-	local resulttbl = getpathcache[key]
+  local key = string.format("%s_%s", from, to)
+  local resulttbl = getpathcache[key]
 
-	-- not in cache?
-	if not resulttbl then
-		local boolean = getPath(from, to)
-		-- save it into the cache &amp; send away
-		getpathcache[key] = {boolean, speedWalkDir, speedWalkPath}
-		return boolean
-	end
+  -- not in cache?
+  if not resulttbl then
+    local boolean = getPath(from, to)
+    -- save it into the cache &amp; send away
+    getpathcache[key] = {boolean, speedWalkDir, speedWalkPath}
+    return boolean
+  end
 
-	-- or if it is, retrieve &amp; send away
-	speedWalkDir = getpathcache[key][2]
-	speedWalkPath = getpathcache[key][3]
-	return getpathcache[key][1]
+  -- or if it is, retrieve &amp; send away
+  speedWalkDir = getpathcache[key][2]
+  speedWalkPath = getpathcache[key][3]
+  return getpathcache[key][1]
 end
 
 function mmp.roomFind(query)
-	local result = mmp.searchRoom(query)
+  local result = mmp.searchRoom(query)
 
-	if type(result) == "string" then
-		cecho("&lt;grey&gt;You have no recollection of any room with that name.") return end
+  if type(result) == "string" then
+    cecho("&lt;grey&gt;You have no recollection of any room with that name.") return end
 
-	cecho("&lt;DarkSlateGrey&gt;You the following relevant rooms:\n")
+  cecho("&lt;DarkSlateGrey&gt;You the following relevant rooms:\n")
 
 
-	if not tonumber(select(2, next(result))) then
-		for roomid, roomname in pairs(result) do roomid = tonumber(roomid)
-			cecho(string.format("  &lt;LightSlateGray&gt;%s&lt;DarkSlateGrey&gt; (&lt;blue&gt;",
-				tostring(roomname)))
-			echoLink(roomid, 'mmp.gotoRoom('..roomid..')', string.format("Go to %s (%s)", roomid, tostring(roomname)))
-			cecho(string.format("&lt;DarkSlateGrey&gt;) in the &lt;LightSlateGray&gt;%s&lt;DarkSlateGrey&gt;.\n", tostring(mmp.areatabler[getRoomArea(roomid)])))
-		end
+  if not tonumber(select(2, next(result))) then
+    for roomid, roomname in pairs(result) do roomid = tonumber(roomid)
+      cecho(string.format("  &lt;LightSlateGray&gt;%s&lt;DarkSlateGrey&gt; (&lt;blue&gt;",
+        tostring(roomname)))
+      echoLink(roomid, 'mmp.gotoRoom('..roomid..')', string.format("Go to %s (%s)", roomid, tostring(roomname)))
+      cecho(string.format("&lt;DarkSlateGrey&gt;) in the &lt;LightSlateGray&gt;%s&lt;DarkSlateGrey&gt;.\n", tostring(mmp.areatabler[getRoomArea(roomid)])))
+    end
 
-	else
-		for roomname, roomid in pairs(result) do roomid = tonumber(roomid)
-			cecho(string.format("  &lt;LightSlateGray&gt;%s&lt;DarkSlateGrey&gt; (&lt;blue&gt;",
-				tostring(roomname)))
-			echoLink(roomid, 'mmp.gotoRoom('..roomid..')', string.format("Go to %s (%s)", roomid, tostring(roomname)))
-			cecho(string.format("&lt;DarkSlateGrey&gt;) in the &lt;LightSlateGray&gt;%s&lt;DarkSlateGrey&gt;.\n", tostring(mmp.areatabler[getRoomArea(roomid)])))
-		end
-	end
+  else
+    for roomname, roomid in pairs(result) do roomid = tonumber(roomid)
+      cecho(string.format("  &lt;LightSlateGray&gt;%s&lt;DarkSlateGrey&gt; (&lt;blue&gt;",
+        tostring(roomname)))
+      echoLink(roomid, 'mmp.gotoRoom('..roomid..')', string.format("Go to %s (%s)", roomid, tostring(roomname)))
+      cecho(string.format("&lt;DarkSlateGrey&gt;) in the &lt;LightSlateGray&gt;%s&lt;DarkSlateGrey&gt;.\n", tostring(mmp.areatabler[getRoomArea(roomid)])))
+    end
+  end
 
-	cecho(string.format("  &lt;DarkSlateGrey&gt;%d rooms found.\n", table.size(result)))
+  cecho(string.format("  &lt;DarkSlateGrey&gt;%d rooms found.\n", table.size(result)))
 end
 
 -- cached data
@@ -1135,32 +1141,35 @@ mmp.areatable = getAreaTable() -- this translates an area name to an ID
 mmp.areatabler = {} -- this translates an ID to an area name
 
 do
-	local t = getAreaTable()
-	for k,v in pairs(t) do
-		mmp.areatabler[tonumber(v)] = k
-	end
+  local t = getAreaTable()
+  for k,v in pairs(t) do
+    mmp.areatabler[tonumber(v)] = k
+  end
 end
 
-function mmp.findAreaID(areaname)
+function mmp.findAreaID(areaname, exact)
   local areaname = areaname:lower()
   local list = getAreaTable()
 
   -- iterate over the list of areas, matching them with substring match. 
   -- if we get match a single area, then return it's ID, otherwise return
   -- 'false' and a message that there are than one are matches
-  local returnid, fullareaname
+  local returnid, fullareaname, multipleareas = nil, nil, {}
   for area, id in pairs(list) do
-    if area:lower():find(areaname, 1, true) then
-      if returnid then return false, "more than one area matches" end
-      returnid = id; fullareaname = area
+    if (not exact and area:lower():find(areaname, 1, true)) or (exact and areaname == area:lower()) then
+      returnid = id; fullareaname = area; multipleareas[#multipleareas+1] = area
     end
   end
   
-  return returnid, fullareaname
+  if #multipleareas == 1 then
+    return returnid, fullareaname
+  else
+    return nil, nil, multipleareas
+  end
 end
 
-function mmp.echoRoomList(areaname)
-  local id, msg = mmp.findAreaID(areaname)
+function mmp.echoRoomList(areaname, exact)
+  local id, msg, multiples = mmp.findAreaID(areaname, exact)
   if id then
     local roomlist, endresult = getAreaRooms(id), {}
   
@@ -1169,21 +1178,42 @@ function mmp.echoRoomList(areaname)
       endresult[id] = getRoomName(id)
     end
   
-	-- sort room IDs so we can display them in order
+  -- sort room IDs so we can display them in order
     table.sort(roomlist)
 
     -- now display something half-decent looking
     cecho(string.format(
       "&lt;DarkSlateGrey&gt;List of all rooms in &lt;grey&gt;%s&lt;DarkSlateGrey&gt; (&lt;grey&gt;%d&lt;DarkSlateGrey&gt;):\n", msg, table.size(endresult)))
     for _, roomid in ipairs(roomlist) do
-		local roomname = endresult[roomid]
+    local roomname = endresult[roomid]
       fg("blue") echoLink(string.format("%6s", roomid), 'mmp.gotoRoom('..roomid..')', string.format("Go to %s (%s)", roomid, tostring(roomname)), true)
        cecho(string.format("&lt;DarkSlateGrey&gt;: &lt;LightSlateGray&gt;%s&lt;DarkSlateGrey&gt;.\n", roomname))
     end
-  elseif not id and msg then
-    echo("Area not found; " .. msg)
+  elseif not id and #multiples &gt; 0 then
+    mmp.echo(string.format("Which area specifically would you like to look up?\n"))
+
+  fg("DimGrey")
+    for _, areaname in ipairs(multiples) do
+      echo"  "; setUnderline(true) echoLink(areaname, 'mmp.echoRoomList("'..areaname..'", true)', "Click to view the room list for "..areaname, true) setUnderline(false) echo"\n"
+    end
+  resetFormat()
   else
     mmp.echo(string.format("Don't know of any area named '%s'.", areaname))
+  end
+end
+
+function mmp.echoAreaList()
+  local list = getAreaTable()
+  local ids, rlist = {}, {}
+  for area, id in pairs(list) do 
+    if id ~= 0 then ids[#ids+1] = id; rlist[id] = area end end
+  table.sort(ids)
+  
+  cecho(string.format(
+      "&lt;DarkSlateGrey&gt;List of all areas we know of:\n"))
+  for _, id in pairs(ids) do
+    cecho(string.format("&lt;blue&gt;%s%d ", string.rep(" ", (6-#tostring(id))), id))
+    fg("DarkSlateGrey") echoLink(rlist[id], 'mmp.echoRoomList("'..rlist[id]..'", true)', "View the room list for "..rlist[id], true) echo("\n")
   end
 end</script>
         <eventHandlerList/>
