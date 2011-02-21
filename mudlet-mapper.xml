@@ -267,7 +267,7 @@ echo " "; mmp.echonums(matches[3])</script>
           <colorTriggerBgColor>#000000</colorTriggerBgColor>
           <regexCodeList>
             <string>^\(Planted\) Node (\d+) - (.*)\.$</string>
-            <string>^Node (\d+) - (.*)\.$</string>
+            <string>^ +Node (\d+) - (.*)\.$</string>
           </regexCodeList>
           <regexCodePropertyList>
             <integer>1</integer>
@@ -553,6 +553,42 @@ end</script>
           </regexCodePropertyList>
         </Trigger>
       </TriggerGroup>
+      <TriggerGroup isActive="yes" isFolder="yes" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+        <name>Achaea</name>
+        <script/>
+        <triggerType>0</triggerType>
+        <conditonLineDelta>0</conditonLineDelta>
+        <mStayOpen>0</mStayOpen>
+        <mCommand/>
+        <mFgColor>#ff0000</mFgColor>
+        <mBgColor>#ffff00</mBgColor>
+        <mSoundFile/>
+        <colorTriggerFgColor>#000000</colorTriggerFgColor>
+        <colorTriggerBgColor>#000000</colorTriggerBgColor>
+        <regexCodeList/>
+        <regexCodePropertyList/>
+        <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="yes" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+          <name>Local area farsee</name>
+          <script>mmp.roomEcho(multimatches[2][2])</script>
+          <triggerType>0</triggerType>
+          <conditonLineDelta>0</conditonLineDelta>
+          <mStayOpen>0</mStayOpen>
+          <mCommand/>
+          <mFgColor>#ff0000</mFgColor>
+          <mBgColor>#ffff00</mBgColor>
+          <mSoundFile/>
+          <colorTriggerFgColor>#000000</colorTriggerFgColor>
+          <colorTriggerBgColor>#000000</colorTriggerBgColor>
+          <regexCodeList>
+            <string>You see that </string>
+            <string>^You see that \w+ is at (.+)\.$</string>
+          </regexCodeList>
+          <regexCodePropertyList>
+            <integer>2</integer>
+            <integer>1</integer>
+          </regexCodePropertyList>
+        </Trigger>
+      </TriggerGroup>
     </TriggerGroup>
   </TriggerPackage>
   <TimerPackage>
@@ -609,13 +645,19 @@ mmp.settings:setOption(matches[3], val)</script>
         <name>Display Area for Lock/Unlock</name>
         <script>mmp.doLockArea(matches[2])</script>
         <command/>
-        <regex>^mmp arealock(?: (.*))?$</regex>
+        <regex>^arealock(?: (.*))?$</regex>
       </Alias>
       <Alias isActive="yes" isFolder="no">
         <name>Room find</name>
         <script>mmp.roomFind(matches[2])</script>
         <command/>
         <regex>^(?:rf|room find) (.+)$</regex>
+      </Alias>
+      <Alias isActive="yes" isFolder="no">
+        <name>Room look</name>
+        <script>mmp.roomLook(matches[2])</script>
+        <command/>
+        <regex>^(?:rl|room look) ?(.+)?$</regex>
       </Alias>
       <Alias isActive="yes" isFolder="no">
         <name>Room list</name>
@@ -1072,6 +1114,26 @@ function mmp.echonums(roomname)
   echo", ..."
 end
 
+function mmp.roomEcho(query)
+  local result = mmp.searchRoom(query)
+
+  if not tonumber(select(2, next(result))) then
+    for roomid, roomname in pairs(result) do roomid = tonumber(roomid)
+      cecho("&lt;DarkSlateGrey&gt; (&lt;blue&gt;")
+      echoLink(roomid, 'mmp.gotoRoom('..roomid..')', string.format("Go to %s (%s)", roomid, tostring(roomname)))
+      cecho("&lt;DarkSlateGrey&gt;)")
+    end
+
+  else
+    for roomname, roomid in pairs(result) do roomid = tonumber(roomid)
+      cecho("&lt;DarkSlateGrey&gt; (&lt;blue&gt;")
+      echoLink(roomid, 'mmp.gotoRoom('..roomid..')', string.format("Go to %s (%s)", roomid, tostring(roomname)))
+      cecho("&lt;DarkSlateGrey&gt;)")
+    end
+  end
+end
+
+
 -- searchRoom with a cache!
 local cache = {}
 setmetatable(cache, {__mode = "kv"}) -- weak keys/values = it'll periodically get cleaned up by gc
@@ -1116,7 +1178,7 @@ function mmp.roomFind(query)
   cecho("&lt;DarkSlateGrey&gt;You the following relevant rooms:\n")
 
 
-  if not tonumber(select(2, next(result))) then
+  if not tonumber(select(2, next(result))) then -- old style
     for roomid, roomname in pairs(result) do roomid = tonumber(roomid)
       cecho(string.format("  &lt;LightSlateGray&gt;%s&lt;DarkSlateGrey&gt; (&lt;blue&gt;",
         tostring(roomname)))
@@ -1124,7 +1186,7 @@ function mmp.roomFind(query)
       cecho(string.format("&lt;DarkSlateGrey&gt;) in the &lt;LightSlateGray&gt;%s&lt;DarkSlateGrey&gt;.\n", tostring(mmp.areatabler[getRoomArea(roomid)])))
     end
 
-  else
+  else -- new style
     for roomname, roomid in pairs(result) do roomid = tonumber(roomid)
       cecho(string.format("  &lt;LightSlateGray&gt;%s&lt;DarkSlateGrey&gt; (&lt;blue&gt;",
         tostring(roomname)))
@@ -1190,7 +1252,7 @@ function mmp.echoRoomList(areaname, exact)
        cecho(string.format("&lt;DarkSlateGrey&gt;: &lt;LightSlateGray&gt;%s&lt;DarkSlateGrey&gt;.\n", roomname))
     end
   elseif not id and #multiples &gt; 0 then
-    mmp.echo(string.format("Which area specifically would you like to look up?\n"))
+    mmp.echo("Which area specifically would you like to look up?\n")
 
   fg("DimGrey")
     for _, areaname in ipairs(multiples) do
@@ -1210,10 +1272,89 @@ function mmp.echoAreaList()
   table.sort(ids)
   
   cecho(string.format(
-      "&lt;DarkSlateGrey&gt;List of all areas we know of:\n"))
+      "&lt;DarkSlateGrey&gt;List of all areas we know of (click to view room list):\n"))
   for _, id in pairs(ids) do
     cecho(string.format("&lt;blue&gt;%s%d ", string.rep(" ", (6-#tostring(id))), id))
     fg("DarkSlateGrey") echoLink(rlist[id], 'mmp.echoRoomList("'..rlist[id]..'", true)', "View the room list for "..rlist[id], true) echo("\n")
+  end
+end
+
+function mmp.roomLook(input)
+  -- we can do a report with a number
+  local function handle_number(num)
+    -- compile all available data
+    local exits = getRoomExits(num)
+    local name = getRoomName(num)
+    local areanum = getRoomArea(num)
+    local islocked = roomLocked(num)
+    local weight = (getRoomWeight(num) and getRoomWeight(num) or "?") -- getRoomWeight is buggy in one of the versions, is actually linked to setRoomWeight and thus returns nil
+    local coords = {getRoomCoordinates(num)}
+    local specexits = getSpecialExits(num)
+    local env = getRoomEnv(num)
+
+    -- generate a report
+    mmp.echo(string.format("Room: %s #: %d area: %s (%d)",
+      name, num, tostring(mmp.areatabler[areanum]), areanum))
+    
+    mmp.echo(string.format("Coordinates: x:%d, y:%d, z:%d, locked? %s, weight: %s", coords[1], coords[2], coords[3], (islocked and "yep" or "nope"), tostring(weight)))
+
+    mmp.echo(string.format("Exits (%d):\n", table.size(exits)))
+    for exit, leadsto in pairs(exits) do
+      echo(string.format("  %s -&gt; %s (%d)\n", exit, getRoomName(leadsto), leadsto))
+    end
+
+  -- display special exits if we got any
+    if next(specexits) then
+      mmp.echo(string.format("Special exits (%d):\n",table.size(specexits)))
+      for leadsto, command in pairs(specexits) do
+        echo(string.format("  %s -&gt; %s (%d)\n", command, getRoomName(leadsto), leadsto))
+      end
+    end
+
+  end
+
+  -- see if we can do anything with the name
+  local function handle_name(name)
+    local result = mmp.searchRoom(name)
+
+    if type(result) == "string" then
+      cecho("&lt;grey&gt;You have no recollection of any room with that name.") return end
+
+    -- if we got one result, then act on it
+    if table.size(result) == 1 then
+      if type(next(result)) == "number" then
+        handle_number(next(result))
+      else
+        handle_number(select(2, next(result)))
+      end
+      return
+    end
+
+    -- if not, then ask the user to clarify which one would they want
+    mmp.echo("Which room specifically would you like to look up?\n")
+    if not tonumber(select(2, next(result))) then
+      for roomid, roomname in pairs(result) do roomid = tonumber(roomid)
+        cecho(string.format("  &lt;LightSlateGray&gt;%s&lt;DarkSlateGrey&gt; (&lt;blue&gt;",
+          tostring(roomname)))
+        echoLink(roomid, 'mmp.roomLook('..roomid..')', string.format("View room details for %s (%s)", roomid, tostring(roomname)))
+        cecho(string.format("&lt;DarkSlateGrey&gt;) in the &lt;LightSlateGray&gt;%s&lt;DarkSlateGrey&gt;.\n", tostring(mmp.areatabler[getRoomArea(roomid)])))
+      end
+
+    else
+      for roomname, roomid in pairs(result) do roomid = tonumber(roomid)
+        cecho(string.format("  &lt;LightSlateGray&gt;%s&lt;DarkSlateGrey&gt; (&lt;blue&gt;",
+          tostring(roomname)))
+        echoLink(roomid, 'mmp.roomLook('..roomid..')', string.format("View room details for %s (%s)", roomid, tostring(roomname)))
+        cecho(string.format("&lt;DarkSlateGrey&gt;) in the &lt;LightSlateGray&gt;%s&lt;DarkSlateGrey&gt;.\n", tostring(mmp.areatabler[getRoomArea(roomid)])))
+      end
+    end    
+  end
+
+  if not input then input = mmp.currentroom end
+  if tonumber(input) then
+    handle_number(tonumber(input))
+  else
+    handle_name(input)
   end
 end</script>
         <eventHandlerList/>
