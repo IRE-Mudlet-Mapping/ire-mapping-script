@@ -112,7 +112,8 @@ speedwalking("Room", speedWalkPath[speedWalkCounter])</script>
         <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
           <name>Mudlet Mapper Lusternia Scent</name>
           <script>mmp.tempscent = {}
-mmp.pdb_lastupdate = {}</script>
+mmp.pdb_lastupdate = {}
+</script>
           <triggerType>0</triggerType>
           <conditonLineDelta>99</conditonLineDelta>
           <mStayOpen>100</mStayOpen>
@@ -492,7 +493,7 @@ echo " "; mmp.echonums(multimatches[3][2])
             <integer>1</integer>
           </regexCodePropertyList>
         </Trigger>
-        <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+        <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="yes" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
           <name>Pyramid probe</name>
           <script>local t = mmp.getnums(multimatches[2][2])
 if not t then return end
@@ -505,7 +506,7 @@ else
 	cecho("&lt;red&gt;From your knowledge, that room might be in &lt;orange_red&gt;"..mmp.areatabler[getRoomArea(t[1])].."&lt;red&gt;.")
 end</script>
           <triggerType>0</triggerType>
-          <conditonLineDelta>99</conditonLineDelta>
+          <conditonLineDelta>0</conditonLineDelta>
           <mStayOpen>0</mStayOpen>
           <mCommand/>
           <mFgColor>#ff0000</mFgColor>
@@ -1402,6 +1403,10 @@ function mmp.doLockArea(search)
 			setUnderline(true)
 			echoLink("Unlock!", [[mmp.lockArea( ']] .. name .. [[', false )]], "Click to unlock area '" .. name .. "'", true)
 		end
+	end
+
+	if not search then
+		echo"\n\n" mmp.echo("Use &lt;green&gt;arealock &lt;ForestGreen&gt;area&lt;white&gt; to filter areas.")
 	end
 end
 
