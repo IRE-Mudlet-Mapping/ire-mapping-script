@@ -643,7 +643,7 @@ mmp.settings:setOption(matches[3], val)</script>
         <regex>^mconfig( (\w+) (.*))?$</regex>
       </Alias>
       <Alias isActive="yes" isFolder="no">
-        <name>Display Area for Lock/Unlock</name>
+        <name>Display area for lock/unlock</name>
         <script>mmp.doLockArea(matches[2])</script>
         <command/>
         <regex>^arealock(?: (.*))?$</regex>
@@ -658,13 +658,13 @@ mmp.settings:setOption(matches[3], val)</script>
         <name>Room look</name>
         <script>mmp.roomLook(matches[2])</script>
         <command/>
-        <regex>^(?:rl|room look) ?(.+)?$</regex>
+        <regex>^(?:rl|room look)(?: (.+))?$</regex>
       </Alias>
       <Alias isActive="yes" isFolder="no">
         <name>Room list</name>
-        <script>mmp.echoRoomList(matches[2])</script>
+        <script>mmp.echoRoomList(matches[2] or mmp.areatabler[getRoomArea(mmp.currentroom)])</script>
         <command/>
-        <regex>^room list (.+)$</regex>
+        <regex>^room list(?: (.+))?$</regex>
       </Alias>
       <Alias isActive="yes" isFolder="no">
         <name>Area list</name>
@@ -672,6 +672,393 @@ mmp.settings:setOption(matches[3], val)</script>
         <command/>
         <regex>^area list$</regex>
       </Alias>
+      <AliasGroup isActive="yes" isFolder="yes">
+        <name>Mapping</name>
+        <script/>
+        <command/>
+        <regex/>
+        <Alias isActive="yes" isFolder="no">
+          <name>Manually set the room coordinates</name>
+          <script>-- want the current room, but we're lost
+if matches[2] == '' and (not mmp.currentroom or not mmp.roomexists(mmp.currentroom)) then mmp.echo("Don't know where we are at the moment.") return end
+
+-- want another room, but it doesn't actually exist
+if matches[2] ~= '' and not mmp.roomexists(matches[2]) then mmp.echo("v"..matches[2].." doesn't exist.") return end
+
+local m = matches[3]
+local rid, rname = (matches[2] ~= "" and matches[2] or mmp.currentroom), 
+  (matches[2] ~= "" and getRoomName(matches[2]) or mmp.currentroomname)
+local x,y,z
+
+local function set() -- small func to set things
+  setRoomCoordinates(rid, x, y, z)
+  mmp.echo(string.format("%s (%d) is now at %dx, %dy, %dz.\n", rname, rid, x,y,z))
+  centerview(rid)
+end
+
+-- let's be flexible and allow several ways if giving an arg
+-- rc x y z
+x,y,z = string.match(m, "(%-?%d+) (%-?%d+) (%-?%d+)")
+if x then
+  set(); return
+end
+
+-- rc xx? yy? zz?
+x,y,z = string.match(m, "(%-?%d+)x"), string.match(m, "(%-?%d+)y"), string.match(m, "(%-?%d+)z")
+if x or y or z then
+  -- merge w/ old coords if any are missing
+  local ox, oy, oz = getRoomCoordinates(rid)
+  x = x or ox; y = y or oy; z = z or oz
+  set(); return
+end
+
+-- rc left/west, right/east, ...
+local ox, oy, oz = getRoomCoordinates(rid)
+local has = table.contains
+for w in string.gmatch(m, "%a+") do
+  if has({"west", "left", "w", "l"}, w) then
+    x = (x or ox) - 1; y = (y or oy); z = (z or oz)
+  elseif has({"east", "right", "e", "r"}, w) then
+    x = (x or ox) + 1; y = (y or oy); z = (z or oz)
+  elseif has({"north", "top", "n", "t"}, w) then
+    x = (x or ox); y = (y or oy) + 1; z = (z or oz)
+  elseif has({"south", "bottom", "s", "b"}, w) then
+    x = (x or ox); y = (y or oy) - 1; z = (z or oz)
+  elseif has({"northwest", "topleft", "nw", "tl"}, w) then
+    x = (x or ox) - 1; y = (y or oy) + 1; z = (z or oz)
+  elseif has({"northeast", "topright", "ne", "tr"}, w) then
+    x = (x or ox) + 1; y = (y or oy) + 1; z = (z or oz)
+  elseif has({"southeast", "bottomright", "se", "br"}, w) then
+    x = (x or ox) + 1; y = (y or oy) - 1; z = (z or oz)
+  elseif has({"southwest", "bottomleft", "sw", "bl"}, w) then
+    x = (x or ox) - 1; y = (y or oy) - 1; z = (z or oz)
+  elseif has({"up", "u"}, w) then
+    x = (x or ox); y = (y or oy); z = (z or oz) + 1
+  elseif has({"down", "d"}, w) then
+    x = (x or ox); y = (y or oy); z = (z or oz) - 1
+  end
+
+end
+if x then set(); return end
+
+mmp.echo([[Where do you want to move the room to?
+  You can use direct coordinates or relative directions.]])</script>
+          <command/>
+          <regex>^(?:rc|room coords) (?:v(\d+) )?(.+)$</regex>
+        </Alias>
+        <Alias isActive="yes" isFolder="no">
+          <name>Add a special exit</name>
+          <script>-- spe clear matches on this
+if matches[2] == "clear" then return end
+
+-- need the current room, but we're lost
+if not mmp.currentroom or not mmp.roomexists(mmp.currentroom) then mmp.echo("Don't know where we are at the moment.") return end
+
+local otherroom = tonumber(matches[2]) or mmp.relativeroom(mmp.currentroom, matches[2])
+
+-- need the another room, but it doesn't actually exist
+if not otherroom or not mmp.roomexists(otherroom) then mmp.echo(matches[2].." doesn't exist.") return end
+
+addSpecialExit(mmp.currentroom, tonumber(otherroom), matches[3])
+mmp.echo(string.format("Added special exit command %s to %s (%d).", matches[3], getRoomName(otherroom), otherroom))
+centerview(mmp.currentroom)</script>
+          <command/>
+          <regex>^(?:spe|exit special) (\w+) (.+)$</regex>
+        </Alias>
+        <Alias isActive="yes" isFolder="no">
+          <name>Clear all special exits</name>
+          <script>-- want the current room, but we're lost
+if not matches[2] and (not mmp.currentroom or not mmp.roomexists(mmp.currentroom)) then mmp.echo("Don't know where we are at the moment.") return end
+
+-- want another room, but it doesn't exist
+if matches[2] and tonumber(matches[2]) and not mmp.roomexists(matches[2]) then mmp.echo("v"..matches[2].." doesn't exist.") return end
+
+-- or a relative one
+if matches[2] and not tonumber(matches[2]) and not mmp.relativeroom(mmp.currentroom, matches[2]) then mmp.echo("There is no room "..matches[2].. " of us.") return end
+
+local rid = (not matches[2] and mmp.currentroom or (tonumber(matches[2]) or mmp.relativeroom(mmp.currentroom, matches[2])))
+
+clearSpecialExits(rid)
+mmp.echo(string.format("Cleared all special exits in %s (%d).\n", getRoomName(rid), rid))</script>
+          <command/>
+          <regex>^(?:spe clear|exit special clear) ?(\w+)?$</regex>
+        </Alias>
+        <Alias isActive="yes" isFolder="no">
+          <name>Create a room</name>
+          <script>-- want the current room, but we're lost
+if (not mmp.currentroom or not mmp.roomexists(mmp.currentroom)) then mmp.echo("Don't know where we are at the moment.") return end
+
+local m = matches[2]
+local rid, rname = mmp.currentroom, mmp.currentroomname
+local x,y,z
+
+local function set() -- small func to set things
+  local rid = createRoomID()
+  addRoom(rid)
+  setRoomCoordinates(rid, x, y, z)
+  setRoomArea(rid, getRoomArea(mmp.currentroom))
+  setRoomEnv(rid, getRoomEnv(mmp.currentroom))
+  setExit(mmp.currentroom, rid, m)
+  mmp.echo(string.format("Created new room (%d) at %dx, %dy, %dz.\n", rid, x,y,z))
+  centerview(mmp.currentroom)
+end
+
+-- let's be flexible and allow several ways if giving an arg
+-- rc x y z
+x,y,z = string.match(m, "(%-?%d+) (%-?%d+) (%-?%d+)")
+if x then
+  set(); return
+end
+
+-- rc xx? yy? zz?
+x,y,z = string.match(m, "(%-?%d+)x"), string.match(m, "(%-?%d+)y"), string.match(m, "(%-?%d+)z")
+if x or y or z then
+  -- merge w/ old coords if any are missing
+  local ox, oy, oz = getRoomCoordinates(rid)
+  x = x or ox; y = y or oy; z = z or oz
+  set(); return
+end
+
+-- rc left/west, right/east, ...
+local ox, oy, oz = getRoomCoordinates(rid)
+local has = table.contains
+for w in string.gmatch(m, "%a+") do
+  if has({"west", "left", "w", "l"}, w) then
+    x = (x or ox) - 1; y = (y or oy); z = (z or oz)
+  elseif has({"east", "right", "e", "r"}, w) then
+    x = (x or ox) + 1; y = (y or oy); z = (z or oz)
+  elseif has({"north", "top", "n", "t"}, w) then
+    x = (x or ox); y = (y or oy) + 1; z = (z or oz)
+  elseif has({"south", "bottom", "s", "b"}, w) then
+    x = (x or ox); y = (y or oy) - 1; z = (z or oz)
+  elseif has({"northwest", "topleft", "nw", "tl"}, w) then
+    x = (x or ox) - 1; y = (y or oy) + 1; z = (z or oz)
+  elseif has({"northeast", "topright", "ne", "tr"}, w) then
+    x = (x or ox) + 1; y = (y or oy) + 1; z = (z or oz)
+  elseif has({"southeast", "bottomright", "se", "br"}, w) then
+    x = (x or ox) + 1; y = (y or oy) - 1; z = (z or oz)
+  elseif has({"southwest", "bottomleft", "sw", "bl"}, w) then
+    x = (x or ox) - 1; y = (y or oy) - 1; z = (z or oz)
+  elseif has({"up", "u"}, w) then
+    x = (x or ox); y = (y or oy); z = (z or oz) + 1
+  elseif has({"down", "d"}, w) then
+    x = (x or ox); y = (y or oy); z = (z or oz) - 1
+  end
+
+end
+if x then set(); return end
+
+mmp.echo([[Where do you want to move the room to?
+  You can use direct coordinates or relative directions.]])</script>
+          <command/>
+          <regex>^(?:rlc|room create) (\w+)?$</regex>
+        </Alias>
+        <Alias isActive="yes" isFolder="no">
+          <name>Create a link between two rooms</name>
+          <script>-- need the current room, but we're lost
+if not mmp.currentroom or not mmp.roomexists(mmp.currentroom) then mmp.echo("Don't know where we are at the moment.") return end
+
+-- make sure the dir is valid
+local dir = mmp.anytolong(matches[3])
+if not dir then mmp.echo(matches[3].." isn't a valid normal exit.") return end
+
+-- if we don't give a room number, then we want to auto-locate an appropriate room nearby.
+local otherroom
+if matches[2] == "" then
+  local w = matches[3]
+  local ox, oy, oz, x,y,z = getRoomCoordinates(mmp.currentroom)
+  local has = table.contains
+  if has({"west", "left", "w", "l"}, w) then
+    x = (x or ox) - 1; y = (y or oy); z = (z or oz)
+  elseif has({"east", "right", "e", "r"}, w) then
+    x = (x or ox) + 1; y = (y or oy); z = (z or oz)
+  elseif has({"north", "top", "n", "t"}, w) then
+    x = (x or ox); y = (y or oy) + 1; z = (z or oz)
+  elseif has({"south", "bottom", "s", "b"}, w) then
+    x = (x or ox); y = (y or oy) - 1; z = (z or oz)
+  elseif has({"northwest", "topleft", "nw", "tl"}, w) then
+    x = (x or ox) - 1; y = (y or oy) + 1; z = (z or oz)
+  elseif has({"northeast", "topright", "ne", "tr"}, w) then
+    x = (x or ox) + 1; y = (y or oy) + 1; z = (z or oz)
+  elseif has({"southeast", "bottomright", "se", "br"}, w) then
+    x = (x or ox) + 1; y = (y or oy) - 1; z = (z or oz)
+  elseif has({"southwest", "bottomleft", "sw", "bl"}, w) then
+    x = (x or ox) - 1; y = (y or oy) - 1; z = (z or oz)
+  elseif has({"up", "u"}, w) then
+    x = (x or ox); y = (y or oy); z = (z or oz) + 1
+  elseif has({"down", "d"}, w) then
+    x = (x or ox); y = (y or oy); z = (z or oz) - 1
+  end
+
+  local carea = getRoomArea(mmp.currentroom)
+  if not carea then mmp.echo("Don't know what area are we in.") return end
+
+  otherroom = select(2, next(getRoomsByPosition(carea,x,y,z)))
+
+  if not otherroom then
+    mmp.echo("There isn't a room to the "..w.." that I see - try with an exact room id.") return
+  end
+
+else
+  if not mmp.roomexists(matches[2]) then -- check that an explicit other room ID is valid
+    mmp.echo("A room with id "..matches[2].. " doesn't exist.") return
+  else
+    otherroom = tonumber(matches[2])
+  end
+end
+
+if setExit(mmp.currentroom, otherroom, matches[3]) and setExit(otherroom, mmp.currentroom, mmp.ranytolong(matches[3])) then
+
+  mmp.echo(string.format("Linked %s (%d) to %s (%d) via a %s exit.",
+    getRoomName(mmp.currentroom), mmp.currentroom, getRoomName(otherroom), otherroom, matches[3]))
+else
+  mmp.echo("Couldn't create an exit.")
+end
+centerview(mmp.currentroom)</script>
+          <command/>
+          <regex>^(?:rlk|room link) ?(\d+)? (\w+)$</regex>
+        </Alias>
+        <Alias isActive="yes" isFolder="no">
+          <name>Delete a room</name>
+          <script>-- want the current room, but we're lost
+if not matches[2] and (not mmp.currentroom or not mmp.roomexists(mmp.currentroom)) then mmp.echo("Don't know where we are at the moment.") return end
+
+-- want another room, but it doesn't exist
+if matches[2] and tonumber(matches[2]) and not mmp.roomexists(matches[2]) then mmp.echo("v"..matches[2].." doesn't exist.") return end
+
+-- or a relative one
+if matches[2] and not tonumber(matches[2]) and not mmp.relativeroom(mmp.currentroom, matches[2]) then mmp.echo("There is no room "..matches[2].. " of us.") return end
+
+local rid = (not matches[2] and mmp.currentroom or (tonumber(matches[2]) or mmp.relativeroom(mmp.currentroom, matches[2])))
+
+local n = getRoomName(rid)
+deleteRoom(rid)
+mmp.echo(string.format("Deleted the %s (%d) room.\n", n, rid))
+centerview(mmp.currentroom)</script>
+          <command/>
+          <regex>^(?:rld|room delete) ?(\d+)?$</regex>
+        </Alias>
+        <Alias isActive="yes" isFolder="no">
+          <name>Delete a link</name>
+          <script>-- need the current room, but we're lost
+if not mmp.currentroom or not mmp.roomexists(mmp.currentroom) then mmp.echo("Don't know where we are at the moment.") return end
+
+-- make sure the dir is valid
+local dir = mmp.anytolong(matches[2])
+if not dir then mmp.echo(matches[2].." isn't a valid normal exit.") return end
+
+-- gone already?
+if not getRoomExits(mmp.currentroom)[dir] then mmp.echo(dir.." link doesn't exist already.") end
+
+-- locate the room on the other end, so we can unlink it from there as well if necessary
+local otherroom
+if getRoomExits(getRoomExits(mmp.currentroom)[dir])[mmp.ranytolong(dir)] then
+  otherroom = getRoomExits(mmp.currentroom)[dir]
+end
+
+if setExit(mmp.currentroom, -1, dir) then
+  if otherroom then
+    if setExit(otherroom, -1, mmp.ranytolong(dir)) then
+      mmp.echo(string.format("Deleted the %s exit from %s (%d).",
+        dir, getRoomName(mmp.currentroom), mmp.currentroom))
+     else mmp.echo("Couldn't delete the incoming exit.") end
+  else
+    mmp.echo(string.format("Deleted the one-way %s exit from %s (%d).",
+      dir, getRoomName(mmp.currentroom), mmp.currentroom))
+  end
+else
+  mmp.echo("Couldn't delete the outgoing exit.")
+end
+centerview(mmp.currentroom)</script>
+          <command/>
+          <regex>^(?:urlk|room unlink) (\w+)$</regex>
+        </Alias>
+        <Alias isActive="yes" isFolder="no">
+          <name>Move room to another area</name>
+          <script>mmp.roomArea(matches[2])</script>
+          <command/>
+          <regex>^room area (.+)$</regex>
+        </Alias>
+        <Alias isActive="no" isFolder="no">
+          <name>--</name>
+          <script/>
+          <command/>
+          <regex/>
+        </Alias>
+        <Alias isActive="yes" isFolder="no">
+          <name>Create an area</name>
+          <script>local t = getAreaTable(); local tr = {}; for k,v in pairs(t) do tr[v] = k end
+local newid = table.maxn(tr) + 1
+
+setAreaName( newid, matches[2] )
+mmp.echo(string.format("Created new area %s (%d)", matches[2], newid))
+centerview(mmp.currentroom)</script>
+          <command/>
+          <regex>^area add (.+)$</regex>
+        </Alias>
+        <Alias isActive="yes" isFolder="no">
+          <name>Delete an area</name>
+          <script>mmp.deleteArea(matches[2])</script>
+          <command/>
+          <regex>^area del (.+)$</regex>
+        </Alias>
+        <Alias isActive="yes" isFolder="no">
+          <name>Rename an area</name>
+          <script>mmp.renameArea(matches[2])</script>
+          <command/>
+          <regex>^area rename (.+)$</regex>
+        </Alias>
+        <Alias isActive="no" isFolder="no">
+          <name>--</name>
+          <script/>
+          <command/>
+          <regex/>
+        </Alias>
+        <Alias isActive="yes" isFolder="no">
+          <name>Save a map</name>
+          <script>local function s(loc)
+    if not saveMap(loc) then
+      mmp.echo("Couldn't save the map :(")
+    else
+      if loc ~= "" then mmp.echo("Map saved.") else mmp.echo("Saved the default map.") end
+    end
+end
+
+if not saveMap then
+  mmp.echo("Your Mudlet can't save maps. Please upgrade it!")
+else
+  if matches[2] then
+	s(getMudletHomeDir().."/map/"..matches[2])
+  else
+    s("")
+  end
+end</script>
+          <command/>
+          <regex>^map save(?: (.+))?$</regex>
+        </Alias>
+        <Alias isActive="yes" isFolder="no">
+          <name>Load a map</name>
+          <script>local function s(loc)
+    if not loadMap(loc) then
+      mmp.echo("Couldn't save the map :(")
+    else
+      if loc ~= "" then mmp.echo("Map saved.") else mmp.echo("Loaded the default map.") end
+    end
+end
+
+if not loadMap then
+  mmp.echo("Your Mudlet can't load maps. Please upgrade it!")
+else
+  if matches[2] then
+	s(getMudletHomeDir().."/map/"..matches[2])
+  else
+    s("")
+  end
+end</script>
+          <command/>
+          <regex>^map load(?: (.+))?$</regex>
+        </Alias>
+      </AliasGroup>
     </AliasGroup>
   </AliasPackage>
   <ActionPackage>
@@ -684,7 +1071,7 @@ mmp.settings:setOption(matches[3], val)</script>
 --                                             --
 -- Note that you can also use external Scripts --
 -------------------------------------------------
-</script>
+mudlet = mudlet or {}; mudlet.mapper_script = true</script>
       <eventHandlerList/>
       <Script isActive="yes" isFolder="no">
         <name>Create Option Table</name>
@@ -820,6 +1207,7 @@ mmp = mmp or {
   paused = false,
   autowalking = false,
   currentroom = false,
+  currentroomname = false,
   firstRun = true
 }
 
@@ -842,7 +1230,7 @@ function mmp.startup()
   end
 
   mmp.settings.dispDefaultWriteError = function()
-    mmp.echo("Please use the mconfig alias to set options!\n")
+    mmp.echo("Please use the mconfig alias to set options!")
   end
 
   mmp.firstRun = false
@@ -878,6 +1266,7 @@ local oldnum
 function speedwalking( event, num )
   local num = tonumber(num) or tonumber(gmcp.Room.Info.num)
   mmp.currentroom = num
+  mmp.currentroomname = next(gmcp) and gmcp.Room.Info.name or atcp.RoomName
 
   -- workaround for Aetolia spamming us with multiple nums per room
   if oldnum == num or not mmp.autowalking then return else oldnum = num end
@@ -963,19 +1352,22 @@ function doSpeedWalk(dashtype)
 end
 
 function mmp.failpath()
-  local walktime = stopStopWatch(speedWalkWatch)
-  mmp.echo(string.format("Can't continue further! Took us %.1fs to get here.\n", walktime))
+  if speedWalkTimerID then
+    local walktime = stopStopWatch(speedWalkWatch)
+    mmp.echo(string.format("Can't continue further! Took us %.1fs to get here.\n", walktime))
+  end
+
   raiseEvent("mmapper failedpath")
   speedWalkPath = {}
   speedWalkDir = {}
   speedWalkCounter = 0
-  if speedWalkTimerID then killTimer( speedWalkTimerID ) end
+  if speedWalkTimerID then killTimer( speedWalkTimerID ); speedWalkTimerID = nil end
 end
 
 function mmp.changeBoolFunc(name, option)
   local en
   if option then en = "will now use" else en = "will no longer use" end
-  mmp.echo("&lt;green&gt;Okay, the mapper " .. en .. " &lt;white&gt;" .. name .. "&lt;green&gt;!\n")
+  mmp.echo("&lt;green&gt;Okay, the mapper " .. en .. " &lt;white&gt;" .. name .. "&lt;green&gt;!")
 end
 
 function mmp.fixPath(rFrom,rTo,dashtype)
@@ -1043,6 +1435,7 @@ mmp.startup()
   moveCursorEnd("main") if getCurrentLine() ~= "" then echo"\n" end
   decho("&lt;112,229,0&gt;(&lt;73,149,0&gt;mapper&lt;112,229,0&gt;): &lt;255,255,255&gt;")
   cecho(what)
+  echo("\n")
 end
 
 function mmp.deleteLineP()
@@ -1253,7 +1646,7 @@ function mmp.echoRoomList(areaname, exact)
        cecho(string.format("&lt;DarkSlateGrey&gt;: &lt;LightSlateGray&gt;%s&lt;DarkSlateGrey&gt;.\n", roomname))
     end
   elseif not id and #multiples &gt; 0 then
-    mmp.echo("Which area specifically would you like to look up?\n")
+    mmp.echo("For which area would you want to list rooms for?")
 
   fg("DimGrey")
     for _, areaname in ipairs(multiples) do
@@ -1281,12 +1674,15 @@ function mmp.echoAreaList()
 end
 
 function mmp.roomLook(input)
+
   -- we can do a report with a number
   local function handle_number(num)
     -- compile all available data
+    local s, areanum = pcall(getRoomArea,num)
+    if not s then mmp.echo(areanum); return; end
+
     local exits = getRoomExits(num)
     local name = getRoomName(num)
-    local areanum = getRoomArea(num)
     local islocked = roomLocked(num)
     local weight = (getRoomWeight(num) and getRoomWeight(num) or "?") -- getRoomWeight is buggy in one of the versions, is actually linked to setRoomWeight and thus returns nil
     local coords = {getRoomCoordinates(num)}
@@ -1299,7 +1695,7 @@ function mmp.roomLook(input)
     
     mmp.echo(string.format("Coordinates: x:%d, y:%d, z:%d, locked? %s, weight: %s", coords[1], coords[2], coords[3], (islocked and "yep" or "nope"), tostring(weight)))
 
-    mmp.echo(string.format("Exits (%d):\n", table.size(exits)))
+    mmp.echo(string.format("Exits (%d):", table.size(exits)))
     for exit, leadsto in pairs(exits) do
       echo(string.format("  %s -&gt; %s (%d)\n", exit, getRoomName(leadsto), leadsto))
     end
@@ -1332,8 +1728,8 @@ function mmp.roomLook(input)
     end
 
     -- if not, then ask the user to clarify which one would they want
-    mmp.echo("Which room specifically would you like to look up?\n")
-    if not tonumber(select(2, next(result))) then
+    mmp.echo("Which room specifically would you like to look up?")
+    if not select(2, next(result)) or not tonumber(select(2, next(result))) then
       for roomid, roomname in pairs(result) do roomid = tonumber(roomid)
         cecho(string.format("  &lt;LightSlateGray&gt;%s&lt;DarkSlateGrey&gt; (&lt;blue&gt;",
           tostring(roomname)))
@@ -1357,6 +1753,120 @@ function mmp.roomLook(input)
   else
     handle_name(input)
   end
+end
+
+function mmp.roomexists(num)
+  local s,m = pcall(getRoomArea, tonumber(num))
+  return (s and true or false)
+end
+
+-- translates n to north and so forth
+function mmp.anytolong(exit)
+  local t = {
+    n = "north",
+    e = "east",
+    s = "south",
+    w = "west",
+    ne = "northeast",
+    se = "southeast",
+    sw = "southwest",
+    nw = "northwest",
+    u = "up",
+    d = "down",
+    i = "in",
+    o = "out"
+  }
+
+  for s, l in pairs(t) do t[l] = l end
+
+  return t[exit]
+end
+
+function mmp.ranytolong(exit)
+  local t = {
+    n = "south",
+    north = "south",
+    e = "west",
+    east = "west",
+    s = "north",
+    south = "north",
+    w = "east",
+    west = "east",
+    ne = "southwest",
+    northeast = "southwest",
+    se = "northwest",
+    southeast = "northwest",
+    sw = "northeast",
+    southwest = "northeast",
+    nw = "southeast",
+    northwest = "southeast",
+    u = "down",
+    up = "down",
+    d = "up",
+    down = "up",
+    i = "out",
+    o = "in"
+  }
+
+  return t[exit]
+end
+
+-- returns nil or the room number relative to this one
+function mmp.relativeroom(from, dir)
+  if not mmp.roomexists(from) then return end
+
+  local exits = getRoomExits(tonumber(from))
+  return exits[mmp.anytolong(dir)]
+end
+
+function mmp.deleteArea(name, exact)
+	local id, fname, ma = mmp.findAreaID(name, exact)
+
+	if id then
+	  deleteArea(id)
+	  mmp.echo(string.format("Deleted %s (%d).", fname, id))
+	  centerview(mmp.currentroom)
+	elseif next(ma) then
+	  mmp.echo("Which one of these specifically would you like to delete?")
+
+	  fg("DimGrey") 
+	  for _,name in ipairs(ma) do
+		echo "  " setUnderline(true) echoLink(name, [[mmp.deleteArea("]]..name..[[", true)]], "Delete "..name, true) setUnderline(false) echo"\n"
+	  end
+	  resetFormat()
+    else
+      mmp.echo("Don't know of that area.")
+	end
+end
+
+function mmp.renameArea(name, exact)
+  if not (mmp.currentroom or getRoomArea(mmp.currentroom)) then
+    mmp.echo("Don't know what area are we in at the moment, to rename it.")
+  else
+	setAreaName(getRoomArea(mmp.currentroom), name)
+	mmp.echo(string.format("Renamed %s to %s (%d).", mmp.areatabler[getRoomArea(mmp.currentroom)], name, getRoomArea(mmp.currentroom)))
+	centerview(mmp.currentroom)
+  end
+end
+
+function mmp.roomArea(name, exact)
+	local id, fname, ma = mmp.findAreaID(name, exact)
+
+	if id then
+	  setRoomArea(mmp.currentroom, id)
+	  mmp.echo(string.format("Moved %s to %s (%d).", mmp.currentroomname, name, id))
+	  centerview(mmp.currentroom)
+	elseif next(ma) then
+	  mmp.echo("Into which area exactly would you like to move the room?")
+
+	  fg("DimGrey") 
+	  for _,name in ipairs(ma) do
+		echo "  " setUnderline(true) echoLink(name, [[mmp.roomArea("]]..name..[[", true)]], "Move the room to "..name, true) setUnderline(false) echo"\n"
+	  end
+	  resetFormat()
+    else
+      mmp.echo("Don't know of that area.")
+	end
 end</script>
         <eventHandlerList/>
       </Script>
@@ -1444,6 +1954,44 @@ end</script>
             <string>gmcp.Room</string>
           </eventHandlerList>
         </Script>
+      </Script>
+      <Script isActive="yes" isFolder="no">
+        <name>Fix setExit</name>
+        <script>do
+local oldsetExit = setExit
+
+local exitmap = {
+  n = 1,
+  north = 1,
+  ne = 2,
+  northeast = 2,
+  nw = 3,
+  northwest = 3,
+  e = 4,
+  east = 4,
+  w = 5,
+  west = 5,
+  s = 6,
+  south = 6,
+  se = 7,
+  southeast = 7,
+  sw = 8,
+  southwest = 8,
+  u = 9,
+  up = 9,
+  d = 10,
+  down = 10,
+  ["in"] = 11,
+  out = 12
+}
+
+function setExit(from, to, direction)
+  if type(direction) == "string" and not exitmap[direction] then return false end
+
+  return oldsetExit(from, to, type(direction) == "string" and exitmap[direction] or direction)
+end
+end</script>
+        <eventHandlerList/>
       </Script>
     </ScriptGroup>
   </ScriptPackage>
