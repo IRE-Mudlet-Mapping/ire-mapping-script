@@ -673,7 +673,7 @@ mmp.settings:setOption(matches[3], val)</script>
         <regex>^area list$</regex>
       </Alias>
       <AliasGroup isActive="yes" isFolder="yes">
-        <name>Mapping</name>
+        <name>mm Mapping</name>
         <script/>
         <command/>
         <regex/>
@@ -851,7 +851,7 @@ if x then set(); return end
 mmp.echo([[Where do you want to move the room to?
   You can use direct coordinates or relative directions.]])</script>
           <command/>
-          <regex>^(?:rlc|room create) (\w+)?$</regex>
+          <regex>^(?:rlc|room create) (.+)?$</regex>
         </Alias>
         <Alias isActive="yes" isFolder="no">
           <name>Create a link between two rooms</name>
@@ -933,10 +933,10 @@ local rid = (not matches[2] and mmp.currentroom or (tonumber(matches[2]) or mmp.
 
 local n = getRoomName(rid)
 deleteRoom(rid)
-mmp.echo(string.format("Deleted the %s (%d) room.\n", n, rid))
+mmp.echo(string.format("Deleted the %s (%d) room.\n", (n ~= "" and n or "''"), rid))
 centerview(mmp.currentroom)</script>
           <command/>
-          <regex>^(?:rld|room delete) ?(\d+)?$</regex>
+          <regex>^(?:rld|room delete) ?(\w+)?$</regex>
         </Alias>
         <Alias isActive="yes" isFolder="no">
           <name>Delete a link</name>
@@ -1000,7 +1000,7 @@ centerview(mmp.currentroom)</script>
           <name>Delete an area</name>
           <script>mmp.deleteArea(matches[2])</script>
           <command/>
-          <regex>^area del (.+)$</regex>
+          <regex>^area delete (.+)$</regex>
         </Alias>
         <Alias isActive="yes" isFolder="no">
           <name>Rename an area</name>
@@ -1042,7 +1042,7 @@ end</script>
     if not loadMap(loc) then
       mmp.echo("Couldn't save the map :(")
     else
-      if loc ~= "" then mmp.echo("Map saved.") else mmp.echo("Loaded the default map.") end
+      if loc ~= "" then mmp.echo("Map loaded.") else mmp.echo("Loaded the default map.") end
     end
 end
 
@@ -1058,7 +1058,43 @@ end</script>
           <command/>
           <regex>^map load(?: (.+))?$</regex>
         </Alias>
+        <Alias isActive="yes" isFolder="no">
+          <name>Clear the map completely</name>
+          <script>if not mmp.map_delete_warning then
+  mmp.echo("Are you really, really, really sure you want to delete all of the map to go to a blank state?")
+  mmp.map_delete_warning = true
+  return
+end
+
+mmp.echo("Okay, deleting...")
+
+tempTimer(0.01, function()
+  for name, id in pairs(getAreaTable()) do
+    deleteArea(tonumber(id))
+  end
+
+  mmp.echo("Deleted... everything. Boom.")
+  mmp.map_delete_warning = nil
+  centerview(1)
+end)</script>
+          <command/>
+          <regex>^map delete all$</regex>
+        </Alias>
       </AliasGroup>
+      <Alias isActive="yes" isFolder="no">
+        <name>Toggle mapping mode</name>
+        <script>if (matches[2] and matches[2] == "on") or (not matches[2] and not mmp.editing) then
+  mmp.editing = true
+  enableAlias("mm Mapping")
+  mmp.echo("Mapping mode enabled. Happy mapping!")
+elseif (matches[2] and matches[2] == "off") or (not matches[2] and mmp.editing) then
+  mmp.editing = false
+  disableAlias("mm Mapping")
+  mmp.echo("Mapping mode disabled.")
+end</script>
+        <command/>
+        <regex>^(?:mc|map create) ?(on|off)?$</regex>
+      </Alias>
     </AliasGroup>
   </AliasPackage>
   <ActionPackage>
@@ -1756,6 +1792,8 @@ function mmp.roomLook(input)
 end
 
 function mmp.roomexists(num)
+  if roomExists then return roomExists(num) end
+
   local s,m = pcall(getRoomArea, tonumber(num))
   return (s and true or false)
 end
@@ -1781,6 +1819,30 @@ function mmp.anytolong(exit)
 
   return t[exit]
 end
+
+function mmp.anytoshort(exit)
+  local t = {
+    n = "north",
+    e = "east",
+    s = "south",
+    w = "west",
+    ne = "northeast",
+    se = "southeast",
+    sw = "southwest",
+    nw = "northwest",
+    u = "up",
+    d = "down",
+    i = "in",
+    o = "out"
+  }
+  local rt = {}
+  for s,l in pairs(t) do
+    rt[l] = s; rt[s] = s
+  end
+
+  return rt[exit]
+end
+
 
 function mmp.ranytolong(exit)
   local t = {
@@ -1854,14 +1916,14 @@ function mmp.roomArea(name, exact)
 
 	if id then
 	  setRoomArea(mmp.currentroom, id)
-	  mmp.echo(string.format("Moved %s to %s (%d).", mmp.currentroomname, name, id))
+	  mmp.echo(string.format("Moved %s to %s (%d).", mmp.currentroomname, fname, id))
 	  centerview(mmp.currentroom)
 	elseif next(ma) then
 	  mmp.echo("Into which area exactly would you like to move the room?")
 
 	  fg("DimGrey") 
 	  for _,name in ipairs(ma) do
-		echo "  " setUnderline(true) echoLink(name, [[mmp.roomArea("]]..name..[[", true)]], "Move the room to "..name, true) setUnderline(false) echo"\n"
+		echo "  " setUnderline(true) echoLink(name, [[mmp.roomArea("]]..name..[[", true)]], "Move the room to "..fname, true) setUnderline(false) echo"\n"
 	  end
 	  resetFormat()
     else
@@ -1993,6 +2055,135 @@ end
 end</script>
         <eventHandlerList/>
       </Script>
+      <ScriptGroup isActive="yes" isFolder="yes">
+        <name>mm Mapping</name>
+        <script>-------------------------------------------------
+--         Put your Lua functions here.        --
+--                                             --
+-- Note that you can also use external Scripts --
+-------------------------------------------------
+</script>
+        <eventHandlerList/>
+        <Script isActive="yes" isFolder="no">
+          <name>mmp_mapping_newroom</name>
+          <script>--mmp_mapping_newroom
+local function makeroom(oldid, newid, x,y,z)
+  addRoom(newid)
+  setRoomCoordinates(newid, x, y, z)
+  setRoomArea(newid, getRoomArea(oldid))
+  setRoomEnv(newid, getRoomEnv(oldid))
+  return string.format("Created new room %d at %dx,%dy,%dz.", newid, x,y,z) 
+end
+
+-- gives the reverse shifted coordinates, ie asking for the sw exit + coords will give the coords at ne
+local function getshiftedcoords(w,ox,oy,oz)
+  local x,y,z
+  local has = table.contains
+
+  -- reverse the exit
+  w = mmp.ranytolong(w)
+
+  if has({"west", "left", "w", "l"}, w) then
+    x = (x or ox) - 1; y = (y or oy); z = (z or oz)
+  elseif has({"east", "right", "e", "r"}, w) then
+    x = (x or ox) + 1; y = (y or oy); z = (z or oz)
+  elseif has({"north", "top", "n", "t"}, w) then
+    x = (x or ox); y = (y or oy) + 1; z = (z or oz)
+  elseif has({"south", "bottom", "s", "b"}, w) then
+    x = (x or ox); y = (y or oy) - 1; z = (z or oz)
+  elseif has({"northwest", "topleft", "nw", "tl"}, w) then
+    x = (x or ox) - 1; y = (y or oy) + 1; z = (z or oz)
+  elseif has({"northeast", "topright", "ne", "tr"}, w) then
+    x = (x or ox) + 1; y = (y or oy) + 1; z = (z or oz)
+  elseif has({"southeast", "bottomright", "se", "br"}, w) then
+    x = (x or ox) + 1; y = (y or oy) - 1; z = (z or oz)
+  elseif has({"southwest", "bottomleft", "sw", "bl"}, w) then
+    x = (x or ox) - 1; y = (y or oy) - 1; z = (z or oz)
+  elseif has({"up", "u"}, w) then
+    x = (x or ox); y = (y or oy); z = (z or oz) + 1
+  elseif has({"down", "d"}, w) then
+    x = (x or ox); y = (y or oy); z = (z or oz) - 1
+  end
+
+  return x,y,z
+end
+
+function mmp_mapping_newroom(_, num)
+local s,m = pcall(function()
+  if not mmp.editing then return end
+  local num = tonumber(num) or tonumber(gmcp.Room.Info.num)
+  local currentexits = gmcp.Room.Info.exits
+  local s = ""
+  if not mmp.roomexists(num) then 
+    -- two-step method: if we can't determine a link via GMCP, we'll do it via last dir
+    -- see if we can create and link this room with an existing one
+    for exit, id in pairs(currentexits) do
+      if mmp.roomexists(id) then
+        s = makeroom(id, num, getshiftedcoords(exit, getRoomCoordinates(id)))
+      end
+    end
+
+  end
+
+  -- if we created it, and some data could be filled in
+  if mmp.roomexists then
+    -- update room name
+    if getRoomName(num) ~= gmcp.Room.Info.name then 
+      setRoomName(num, gmcp.Room.Info.name)
+      s = s .. (#s &gt; 0 and " " or "") .. "Updated room name to "..gmcp.Room.Info.name.."."
+    end
+
+    -- autolink exits
+    local x = getRoomExits(num)
+    -- check for missing exits
+    for exit, id in pairs(currentexits) do
+      if not x[mmp.anytolong(exit)] then
+        if not mmp.roomexists(id) then
+          s = makeroom(num, id, getshiftedcoords(mmp.ranytolong(exit), getRoomCoordinates(num)))
+        end
+        if setExit(num, id, exit) then
+          s = s .. (#s &gt; 0 and " " or "") .. "Added missing exit "..exit.." to "..(getRoomName(id) ~= "" and getRoomName(id) or "''").." ("..id..")."
+        else 
+          s = s .. (#s &gt; 0 and " " or "") .. string.format("Failed to link %d withh %d via %s exit for some reason :/", num, id, exit)
+        end          
+      end
+    end
+
+    -- check for unexisting exits
+    for exit, id in pairs(getRoomExits(num)) do
+      if not currentexits[mmp.anytoshort(exit)] then
+        setExit(num, -1, exit)
+        s = s .. (#s &gt; 0 and " " or "") .. exit .. " exit to "..id.." doesn't actually exist, removed it."
+      end
+    end
+    
+  end
+
+  if #s &gt; 0 then mmp.echo(s); centerview(mmp.currentroom) end
+end)
+
+if not s then display(m) end
+end</script>
+          <eventHandlerList>
+            <string>gmcp.Room.Info</string>
+            <string>RoomNum</string>
+          </eventHandlerList>
+        </Script>
+        <Script isActive="yes" isFolder="no">
+          <name>mmp_track_exits</name>
+          <script>function mmp_track_exits(_, cmd)
+  if not mmp.editing then return end
+
+  local dir = mmp.anytolong(cmd)
+  if not dir then return end
+
+  mmp.lastdir = dir
+end</script>
+          <eventHandlerList>
+            <string>sysDataSendRequest</string>
+          </eventHandlerList>
+        </Script>
+      </ScriptGroup>
     </ScriptGroup>
   </ScriptPackage>
   <KeyPackage>
