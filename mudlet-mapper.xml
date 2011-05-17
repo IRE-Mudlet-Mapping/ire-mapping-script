@@ -592,8 +592,7 @@ end</script>
       </TriggerGroup>
     </TriggerGroup>
   </TriggerPackage>
-  <TimerPackage>
-        </TimerPackage>
+  <TimerPackage/>
   <AliasPackage>
     <AliasGroup isActive="yes" isFolder="yes">
       <name>Mudlet Mapper</name>
@@ -1110,8 +1109,7 @@ end</script>
       </Alias>
     </AliasGroup>
   </AliasPackage>
-  <ActionPackage>
-        </ActionPackage>
+  <ActionPackage/>
   <ScriptPackage>
     <ScriptGroup isActive="yes" isFolder="yes">
       <name>Mudlet Mapper</name>
@@ -1471,7 +1469,6 @@ function mmp.fixPath(rFrom,rTo,dashtype)
   speedWalkPath = currentIds
   return true
 end
-mmp.startup()
 </script>
         <eventHandlerList>
           <string>RoomNum</string>
@@ -2213,8 +2210,13 @@ end</script>
           </eventHandlerList>
         </Script>
       </ScriptGroup>
+      <Script isActive="yes" isFolder="no">
+        <name>Startup Mapper</name>
+        <script>--Initalize everything!  This should be called last
+mmp.startup()</script>
+        <eventHandlerList/>
+      </Script>
     </ScriptGroup>
   </ScriptPackage>
-  <KeyPackage>
-        </KeyPackage>
+  <KeyPackage/>
 </MudletPackage>
