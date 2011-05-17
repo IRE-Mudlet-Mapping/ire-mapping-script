@@ -592,7 +592,8 @@ end</script>
       </TriggerGroup>
     </TriggerGroup>
   </TriggerPackage>
-  <TimerPackage/>
+  <TimerPackage>
+        </TimerPackage>
   <AliasPackage>
     <AliasGroup isActive="yes" isFolder="yes">
       <name>Mudlet Mapper</name>
@@ -671,7 +672,7 @@ mmp.settings:setOption(matches[3], val)</script>
         <command/>
         <regex>^area list$</regex>
       </Alias>
-      <AliasGroup isActive="yes" isFolder="yes">
+      <AliasGroup isActive="no" isFolder="yes">
         <name>mm Mapping</name>
         <script/>
         <command/>
@@ -1109,7 +1110,8 @@ end</script>
       </Alias>
     </AliasGroup>
   </AliasPackage>
-  <ActionPackage/>
+  <ActionPackage>
+        </ActionPackage>
   <ScriptPackage>
     <ScriptGroup isActive="yes" isFolder="yes">
       <name>Mudlet Mapper</name>
@@ -2161,7 +2163,7 @@ function mmp_mapping_newroom(_, num)
     end
 
     -- autolink exits
-    local x = getRoomExits(num)
+    local x = getRoomExits(num) or {}
     -- check for missing exits
     for exit, id in pairs(currentexits) do
       if not x[mmp.anytolong(exit)] then
@@ -2211,12 +2213,12 @@ end</script>
         </Script>
       </ScriptGroup>
       <Script isActive="yes" isFolder="no">
-        <name>Startup Mapper</name>
-        <script>--Initalize everything!  This should be called last
-mmp.startup()</script>
+        <name>Initialize</name>
+        <script>mmp.startup()</script>
         <eventHandlerList/>
       </Script>
     </ScriptGroup>
   </ScriptPackage>
-  <KeyPackage/>
+  <KeyPackage>
+        </KeyPackage>
 </MudletPackage>
