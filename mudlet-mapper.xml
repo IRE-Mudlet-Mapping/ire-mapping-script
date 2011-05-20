@@ -1166,7 +1166,16 @@ function createOptionsTable(defaultTable)
 
 	end
 
-   function proxyTable:setOption(option, value)
+	function proxyTable:getAllOptions()
+		local t = {}
+		for k, v in pairs(self[index]) do
+			t[k] = v.value
+		end
+
+		return t
+	end
+
+   function proxyTable:setOption(option, value, silent)
 		if self[option] == nil then
 			proxyTable.disp("No such option!\n")
 			return
@@ -1189,10 +1198,8 @@ function createOptionsTable(defaultTable)
 			end
 			rawset(self[index][option], "value", value)
 			local opt = rawget(self[index], option)
-			if opt.onChange then opt.onChange(option, value) end
+			if opt.onChange  and not silent then opt.onChange(option, value) end
 		end
-
-		if value.onChange then value.onChange(option, value) end
 	end
 
 
@@ -1938,7 +1945,7 @@ end</script>
         <name>Lock Area</name>
         <script>
 			
-	mmp.locked = mmp.locked or {}
+mmp.locked = mmp.locked or {}
 mmp.lastLockSearch = nil
 
 function mmp.doLockArea(search)
@@ -2178,6 +2185,47 @@ end</script>
 end</script>
           <eventHandlerList>
             <string>sysDataSendRequest</string>
+          </eventHandlerList>
+        </Script>
+        <Script isActive="yes" isFolder="no">
+          <name>mmp_save_options</name>
+          <script>function mmp_save_options()
+	local saveTable = {
+		locked_areas = mmp.locked,
+		options = mmp.settings:getAllOptions()
+	}
+
+	if string.char(getMudletHomeDir():byte()) == "/" then _sep = "/" else  _sep = "\\" end
+	local saveFile = getMudletHomeDir() ..  _sep .. "mapper.options.lua"
+
+	table.save(saveFile, saveTable)
+end</script>
+          <eventHandlerList>
+            <string>sysExitEvent</string>
+          </eventHandlerList>
+        </Script>
+        <Script isActive="yes" isFolder="no">
+          <name>mmp_load_options</name>
+          <script>function mmp_load_options()
+	local loadTable = {}
+
+	if string.char(getMudletHomeDir():byte()) == "/" then _sep = "/" else  _sep = "\\" end
+	local loadFile = getMudletHomeDir() ..  _sep .. "mapper.options.lua"
+
+	table.load(loadFile, loadTable)
+
+	if loadTable.locked_areas then
+		mmp.locked = loadTable.locked_areas
+	end
+
+	if loadTable.options then
+		for k, v in pairs(loadTable.options) do
+			mmp.settings:setOption(k, v, true)
+		end
+	end
+end</script>
+          <eventHandlerList>
+            <string>sysLoadEvent</string>
           </eventHandlerList>
         </Script>
       </ScriptGroup>
