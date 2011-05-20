@@ -592,7 +592,6 @@ end</script>
       </TriggerGroup>
     </TriggerGroup>
   </TriggerPackage>
-  <TimerPackage/>
   <AliasPackage>
     <AliasGroup isActive="yes" isFolder="yes">
       <name>Mudlet Mapper</name>
@@ -671,7 +670,7 @@ mmp.settings:setOption(matches[3], val)</script>
         <command/>
         <regex>^area list$</regex>
       </Alias>
-      <AliasGroup isActive="yes" isFolder="yes">
+      <AliasGroup isActive="no" isFolder="yes">
         <name>mm Mapping</name>
         <script/>
         <command/>
@@ -784,29 +783,42 @@ mmp.echo(string.format("Cleared all special exits in %s (%d).\n", getRoomName(ri
         </Alias>
         <Alias isActive="yes" isFolder="no">
           <name>Create a room</name>
-          <script>-- want the current room, but we're lost
-if (not mmp.currentroom or not mmp.roomexists(mmp.currentroom)) then mmp.echo("Don't know where we are at the moment.") return end
-
-local m = matches[2]
-local rid, rname = mmp.currentroom, mmp.currentroomname
+          <script>local m = matches[2]
+local rid, rname
+if mmp.roomexists(mmp.currentroom) then
+  rid, rname = mmp.currentroom, mmp.currentroomname
+end
 local x,y,z
 
-local function set() -- small func to set things
-  local rid = createRoomID()
+local function set(newid) -- small func to set things
+  local rid = newid or createRoomID()
   addRoom(rid)
   setRoomCoordinates(rid, x, y, z)
-  setRoomArea(rid, getRoomArea(mmp.currentroom))
-  setRoomEnv(rid, getRoomEnv(mmp.currentroom))
+  if mmp.roomexists(mmp.currentroom) then setRoomArea(rid, getRoomArea(mmp.currentroom)) end
+  if mmp.roomexists(mmp.currentroom) then setRoomEnv(rid, getRoomEnv(mmp.currentroom)) end
   setExit(mmp.currentroom, rid, m)
   mmp.echo(string.format("Created new room (%d) at %dx, %dy, %dz.\n", rid, x,y,z))
-  centerview(mmp.currentroom)
+  centerview(mmp.roomexists(mmp.currentroom) and mmp.currentroom or rid)
+  if not mmp.roomexists(mmp.currentroom) then mmp.currentroom = rid; mmp.currentroomname = "" end
 end
 
 -- let's be flexible and allow several ways if giving an arg
+-- rc v# x y z
+newid, x,y,z = string.match(m, "v(%d+) (%-?%d+) (%-?%d+) (%-?%d+)")
+if x then
+  set(newid); return
+end
+
 -- rc x y z
 x,y,z = string.match(m, "(%-?%d+) (%-?%d+) (%-?%d+)")
 if x then
   set(); return
+end
+
+
+if not rid then
+  mmp.echo("Don't know where we are at the moment in order to use relative coordinates.")
+  return
 end
 
 -- rc xx? yy? zz?
@@ -909,7 +921,7 @@ end
 if setExit(mmp.currentroom, otherroom, matches[3]) and setExit(otherroom, mmp.currentroom, mmp.ranytolong(matches[3])) then
 
   mmp.echo(string.format("Linked %s (%d) to %s (%d) via a %s exit.",
-    getRoomName(mmp.currentroom), mmp.currentroom, getRoomName(otherroom), otherroom, matches[3]))
+    (getRoomName(mmp.currentroom) ~= "" and getRoomName(mmp.currentroom) or "''"), mmp.currentroom, (getRoomName(otherroom) ~= "" and getRoomName(otherroom) or "''"), otherroom, matches[3]))
 else
   mmp.echo("Couldn't create an exit.")
 end
@@ -974,9 +986,9 @@ centerview(mmp.currentroom)</script>
         </Alias>
         <Alias isActive="yes" isFolder="no">
           <name>Move room to another area</name>
-          <script>mmp.roomArea(matches[2])</script>
+          <script>mmp.roomArea(matches[2], matches[3])</script>
           <command/>
-          <regex>^room area (.+)$</regex>
+          <regex>^room area (?:v(\d+) )?(.+)$</regex>
         </Alias>
         <Alias isActive="no" isFolder="no">
           <name>--</name>
@@ -1096,7 +1108,8 @@ end</script>
       </Alias>
     </AliasGroup>
   </AliasPackage>
-  <ActionPackage/>
+  <ActionPackage>
+        </ActionPackage>
   <ScriptPackage>
     <ScriptGroup isActive="yes" isFolder="yes">
       <name>Mudlet Mapper</name>
@@ -1718,6 +1731,7 @@ function mmp.roomLook(input)
   -- we can do a report with a number
   local function handle_number(num)
     -- compile all available data
+    if not mmp.roomexists(num) then mmp.echo(num.." doesn't seem to exist.") return end
     local s, areanum = pcall(getRoomArea,num)
     if not s then mmp.echo(areanum); return; end
 
@@ -1742,7 +1756,7 @@ function mmp.roomLook(input)
 
   -- display special exits if we got any
     if next(specexits) then
-      mmp.echo(string.format("Special exits (%d):\n",table.size(specexits)))
+      mmp.echo(string.format("Special exits (%d):",table.size(specexits)))
       for leadsto, command in pairs(specexits) do
         echo(string.format("  %s -&gt; %s (%d)\n", command, getRoomName(leadsto), leadsto))
       end
@@ -1787,7 +1801,10 @@ function mmp.roomLook(input)
     end    
   end
 
-  if not input then input = mmp.currentroom end
+  if not input and not mmp.roomexists(mmp.currentroom) then
+    mmp.echo(mmp.currentroom.. " doesn't seem to be mapped yet.")
+  else input = mmp.currentroom end
+
   if tonumber(input) then
     handle_number(tonumber(input))
   else
@@ -1796,6 +1813,7 @@ function mmp.roomLook(input)
 end
 
 function mmp.roomexists(num)
+  if not num then return false end
   if roomExists then return roomExists(num) end
 
   local s,m = pcall(getRoomArea, tonumber(num))
@@ -1915,19 +1933,31 @@ function mmp.renameArea(name, exact)
   end
 end
 
-function mmp.roomArea(name, exact)
-	local id, fname, ma = mmp.findAreaID(name, exact)
+function mmp.roomArea(otherroom, name, exact)
+    local id,fname,ma
+    if tonumber(name) then id = tonumber(name); fname = mmp.areatabler[id]
+    else id, fname, ma = mmp.findAreaID(name, exact) end
+
+    if otherroom ~= "" and not mmp.roomexists(otherroom) then
+      mmp.echo("Room id "..otherroom.." doesn't seem to exist.")
+      return
+    elseif otherroom == "" and not mmp.roomexists(mmp.currentroom) then
+      mmp.echo("Don't know where we are at the moment.")
+      return
+    end
+
+   if otherroom == "" then otherroom = mmp.currentroom end
 
 	if id then
-	  setRoomArea(mmp.currentroom, id)
-	  mmp.echo(string.format("Moved %s to %s (%d).", mmp.currentroomname, fname, id))
-	  centerview(mmp.currentroom)
+	  setRoomArea(otherroom, id)
+	  mmp.echo(string.format("Moved %s to %s (%d).", (getRoomName(otherroom) ~= "" and getRoomName(otherroom) or "''"), fname, id))
+	  centerview(otherroom)
 	elseif next(ma) then
 	  mmp.echo("Into which area exactly would you like to move the room?")
 
 	  fg("DimGrey") 
 	  for _,name in ipairs(ma) do
-		echo "  " setUnderline(true) echoLink(name, [[mmp.roomArea("]]..name..[[", true)]], "Move the room to "..fname, true) setUnderline(false) echo"\n"
+		echo "  " setUnderline(true) echoLink(name, [[mmp.roomArea('', "]]..name..[[", true)]], "Move the room to "..name, true) setUnderline(false) echo"\n"
 	  end
 	  resetFormat()
     else
@@ -2072,6 +2102,7 @@ end</script>
           <name>mmp_mapping_newroom</name>
           <script>--mmp_mapping_newroom
 local function makeroom(oldid, newid, x,y,z)
+  assert(x and y and z, "makeroom: need all 3 coordinates")
   addRoom(newid)
   setRoomCoordinates(newid, x, y, z)
   setRoomArea(newid, getRoomArea(oldid))
@@ -2113,7 +2144,6 @@ local function getshiftedcoords(w,ox,oy,oz)
 end
 
 function mmp_mapping_newroom(_, num)
-local s,m = pcall(function()
   if not mmp.editing then return end
   local num = tonumber(num) or tonumber(gmcp.Room.Info.num)
   local currentexits = gmcp.Room.Info.exits
@@ -2130,15 +2160,15 @@ local s,m = pcall(function()
   end
 
   -- if we created it, and some data could be filled in
-  if mmp.roomexists then
+  if mmp.roomexists(num) then
     -- update room name
-    if getRoomName(num) ~= gmcp.Room.Info.name then 
+    if getRoomName(num):lower() ~= gmcp.Room.Info.name:lower() then 
       setRoomName(num, gmcp.Room.Info.name)
       s = s .. (#s &gt; 0 and " " or "") .. "Updated room name to "..gmcp.Room.Info.name.."."
     end
 
     -- autolink exits
-    local x = getRoomExits(num)
+    local x = getRoomExits(num) or {}
     -- check for missing exits
     for exit, id in pairs(currentexits) do
       if not x[mmp.anytolong(exit)] then
@@ -2154,19 +2184,18 @@ local s,m = pcall(function()
     end
 
     -- check for unexisting exits
-    for exit, id in pairs(getRoomExits(num)) do
-      if not currentexits[mmp.anytoshort(exit)] then
-        setExit(num, -1, exit)
-        s = s .. (#s &gt; 0 and " " or "") .. exit .. " exit to "..id.." doesn't actually exist, removed it."
+    if mmp.settings["autoclear"] then
+      for exit, id in pairs(getRoomExits(num)) do
+        if not currentexits[mmp.anytoshort(exit)] then
+          setExit(num, -1, exit)
+          s = s .. (#s &gt; 0 and " " or "") .. exit .. " exit to "..id.." doesn't actually exist, removed it."
+        end
       end
     end
     
   end
 
   if #s &gt; 0 then mmp.echo(s); centerview(mmp.currentroom) end
-end)
-
-if not s then display(m) end
 end</script>
           <eventHandlerList>
             <string>gmcp.Room.Info</string>
@@ -2230,12 +2259,10 @@ end</script>
         </Script>
       </ScriptGroup>
       <Script isActive="yes" isFolder="no">
-        <name>Startup Mapper</name>
-        <script>--Initalize everything!  This should be called last
-mmp.startup()</script>
+        <name>Initialize</name>
+        <script>mmp.startup()</script>
         <eventHandlerList/>
       </Script>
     </ScriptGroup>
   </ScriptPackage>
-  <KeyPackage/>
 </MudletPackage>
