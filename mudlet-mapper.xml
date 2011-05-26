@@ -1946,7 +1946,7 @@ function mmp.roomArea(otherroom, name, exact)
       return
     end
 
-   if otherroom == "" then otherroom = mmp.currentroom end
+   otherroom = otherroom ~= "" and otherroom or mmp.currentroom
 
 	if id then
 	  setRoomArea(otherroom, id)
@@ -2016,7 +2016,7 @@ function mmp.doLockArea(search)
 	end
 end
 
-function mmp.lockArea(name, lock)
+function mmp.lockArea(name, lock, dontreshow)
 	local areas = getAreaTable()
 	local rooms = getAreaRooms(areas[name])
 	for _, room in ipairs(rooms) do
@@ -2030,7 +2030,7 @@ function mmp.lockArea(name, lock)
 		mmp.echo("Area '" .. name .. "' unlocked!")
 	end
 
-	mmp.doLockArea(mmp.lastLockSearch)
+	if not dontreshow then mmp.doLockArea(mmp.lastLockSearch) end
 end
 
 
