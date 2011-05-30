@@ -7,6 +7,7 @@
       <conditonLineDelta>0</conditonLineDelta>
       <mStayOpen>0</mStayOpen>
       <mCommand/>
+      <packageName/>
       <mFgColor>#ff0000</mFgColor>
       <mBgColor>#ffff00</mBgColor>
       <mSoundFile/>
@@ -15,12 +16,13 @@
       <regexCodeList/>
       <regexCodePropertyList/>
       <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
-        <name>swim exit</name>
-        <script>send("swim " .. speedWalkDir[speedWalkCounter], false)</script>
+        <name>Swim exit</name>
+        <script>mmp.swim()</script>
         <triggerType>0</triggerType>
         <conditonLineDelta>0</conditonLineDelta>
         <mStayOpen>0</mStayOpen>
         <mCommand/>
+        <packageName/>
         <mFgColor>#ff0000</mFgColor>
         <mBgColor>#ffff00</mBgColor>
         <mSoundFile/>
@@ -29,19 +31,22 @@
         <regexCodeList>
           <string>There's water ahead of you. You'll have to swim in that direction to make it through.</string>
           <string>There's water ahead of you. You'll have to swim in that direction to make it </string>
+          <string>There's water ahead of you. You'll have to SWIM </string>
         </regexCodeList>
         <regexCodePropertyList>
           <integer>3</integer>
           <integer>3</integer>
+          <integer>2</integer>
         </regexCodePropertyList>
       </Trigger>
       <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
-        <name>door </name>
+        <name>Door </name>
         <script>mmp.failpath()</script>
         <triggerType>0</triggerType>
         <conditonLineDelta>0</conditonLineDelta>
         <mStayOpen>0</mStayOpen>
         <mCommand/>
+        <packageName/>
         <mFgColor>#ff0000</mFgColor>
         <mBgColor>#ffff00</mBgColor>
         <mSoundFile/>
@@ -64,6 +69,7 @@ speedwalking("Room", speedWalkPath[speedWalkCounter])</script>
         <conditonLineDelta>99</conditonLineDelta>
         <mStayOpen>0</mStayOpen>
         <mCommand/>
+        <packageName/>
         <mFgColor>#ff0000</mFgColor>
         <mBgColor>#ffff00</mBgColor>
         <mSoundFile/>
@@ -71,9 +77,11 @@ speedwalking("Room", speedWalkPath[speedWalkCounter])</script>
         <colorTriggerBgColor>#000000</colorTriggerBgColor>
         <regexCodeList>
           <string>You kick your mount in the haunches.</string>
+          <string>You kick your mount in the haunches towards the</string>
         </regexCodeList>
         <regexCodePropertyList>
-          <integer>0</integer>
+          <integer>3</integer>
+          <integer>2</integer>
         </regexCodePropertyList>
       </Trigger>
       <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
@@ -83,6 +91,7 @@ speedwalking("Room", speedWalkPath[speedWalkCounter])</script>
         <conditonLineDelta>99</conditonLineDelta>
         <mStayOpen>0</mStayOpen>
         <mCommand/>
+        <packageName/>
         <mFgColor>#ff0000</mFgColor>
         <mBgColor>#ffff00</mBgColor>
         <mSoundFile/>
@@ -102,6 +111,7 @@ speedwalking("Room", speedWalkPath[speedWalkCounter])</script>
         <conditonLineDelta>0</conditonLineDelta>
         <mStayOpen>0</mStayOpen>
         <mCommand/>
+        <packageName/>
         <mFgColor>#ff0000</mFgColor>
         <mBgColor>#ffff00</mBgColor>
         <mSoundFile/>
@@ -118,6 +128,7 @@ mmp.pdb_lastupdate = {}
           <conditonLineDelta>99</conditonLineDelta>
           <mStayOpen>100</mStayOpen>
           <mCommand/>
+          <packageName/>
           <mFgColor>#ff0000</mFgColor>
           <mBgColor>#ffff00</mBgColor>
           <mSoundFile/>
@@ -163,6 +174,7 @@ mmp.pdb_lastupdate[matches[2]] = true</script>
             <conditonLineDelta>0</conditonLineDelta>
             <mStayOpen>0</mStayOpen>
             <mCommand/>
+            <packageName/>
             <mFgColor>#ff0000</mFgColor>
             <mBgColor>#ffff00</mBgColor>
             <mSoundFile/>
@@ -202,6 +214,7 @@ raiseEvent("mmapper updated pdb")</script>
             <conditonLineDelta>0</conditonLineDelta>
             <mStayOpen>0</mStayOpen>
             <mCommand/>
+            <packageName/>
             <mFgColor>#ff0000</mFgColor>
             <mBgColor>#ffff00</mBgColor>
             <mSoundFile/>
@@ -233,6 +246,7 @@ end</script>
           <conditonLineDelta>0</conditonLineDelta>
           <mStayOpen>0</mStayOpen>
           <mCommand/>
+          <packageName/>
           <mFgColor>#ff0000</mFgColor>
           <mBgColor>#ffff00</mBgColor>
           <mSoundFile/>
@@ -261,6 +275,7 @@ echo " "; mmp.echonums(matches[3])</script>
           <conditonLineDelta>99</conditonLineDelta>
           <mStayOpen>0</mStayOpen>
           <mCommand/>
+          <packageName/>
           <mFgColor>#ff0000</mFgColor>
           <mBgColor>#ffff00</mBgColor>
           <mSoundFile/>
@@ -289,6 +304,7 @@ echo " "; mmp.echonums(matches[4])</script>
           <conditonLineDelta>39</conditonLineDelta>
           <mStayOpen>0</mStayOpen>
           <mCommand/>
+          <packageName/>
           <mFgColor>#ff0000</mFgColor>
           <mBgColor>#ffff00</mBgColor>
           <mSoundFile/>
@@ -321,6 +337,7 @@ end</script>
           <conditonLineDelta>1</conditonLineDelta>
           <mStayOpen>0</mStayOpen>
           <mCommand/>
+          <packageName/>
           <mFgColor>#ff0000</mFgColor>
           <mBgColor>#ffff00</mBgColor>
           <mSoundFile/>
@@ -342,6 +359,7 @@ end</script>
           <conditonLineDelta>3</conditonLineDelta>
           <mStayOpen>0</mStayOpen>
           <mCommand/>
+          <packageName/>
           <mFgColor>#ff0000</mFgColor>
           <mBgColor>#ffff00</mBgColor>
           <mSoundFile/>
@@ -374,6 +392,7 @@ echo " "; mmp.echonums(multimatches[2][3])</script>
           <conditonLineDelta>0</conditonLineDelta>
           <mStayOpen>0</mStayOpen>
           <mCommand/>
+          <packageName/>
           <mFgColor>#ff0000</mFgColor>
           <mBgColor>#ffff00</mBgColor>
           <mSoundFile/>
@@ -403,6 +422,7 @@ echo " "; mmp.echonums(matches[2])</script>
           <conditonLineDelta>0</conditonLineDelta>
           <mStayOpen>0</mStayOpen>
           <mCommand/>
+          <packageName/>
           <mFgColor>#ff0000</mFgColor>
           <mBgColor>#ffff00</mBgColor>
           <mSoundFile/>
@@ -432,6 +452,7 @@ echo " "; mmp.echonums(multimatches[3][2])
           <conditonLineDelta>3</conditonLineDelta>
           <mStayOpen>0</mStayOpen>
           <mCommand/>
+          <packageName/>
           <mFgColor>#ff0000</mFgColor>
           <mBgColor>#ffff00</mBgColor>
           <mSoundFile/>
@@ -456,6 +477,7 @@ echo " "; mmp.echonums(multimatches[3][2])
           <conditonLineDelta>0</conditonLineDelta>
           <mStayOpen>0</mStayOpen>
           <mCommand/>
+          <packageName/>
           <mFgColor>#ff0000</mFgColor>
           <mBgColor>#ffff00</mBgColor>
           <mSoundFile/>
@@ -477,6 +499,7 @@ echo " "; mmp.echonums(multimatches[3][2])
           <conditonLineDelta>3</conditonLineDelta>
           <mStayOpen>0</mStayOpen>
           <mCommand/>
+          <packageName/>
           <mFgColor>#ff0000</mFgColor>
           <mBgColor>#ffff00</mBgColor>
           <mSoundFile/>
@@ -509,6 +532,7 @@ end</script>
           <conditonLineDelta>0</conditonLineDelta>
           <mStayOpen>0</mStayOpen>
           <mCommand/>
+          <packageName/>
           <mFgColor>#ff0000</mFgColor>
           <mBgColor>#ffff00</mBgColor>
           <mSoundFile/>
@@ -539,6 +563,7 @@ end</script>
           <conditonLineDelta>0</conditonLineDelta>
           <mStayOpen>0</mStayOpen>
           <mCommand/>
+          <packageName/>
           <mFgColor>#ff0000</mFgColor>
           <mBgColor>#ffff00</mBgColor>
           <mSoundFile/>
@@ -561,6 +586,7 @@ end</script>
         <conditonLineDelta>0</conditonLineDelta>
         <mStayOpen>0</mStayOpen>
         <mCommand/>
+        <packageName/>
         <mFgColor>#ff0000</mFgColor>
         <mBgColor>#ffff00</mBgColor>
         <mSoundFile/>
@@ -575,6 +601,7 @@ end</script>
           <conditonLineDelta>0</conditonLineDelta>
           <mStayOpen>0</mStayOpen>
           <mCommand/>
+          <packageName/>
           <mFgColor>#ff0000</mFgColor>
           <mBgColor>#ffff00</mBgColor>
           <mSoundFile/>
@@ -592,11 +619,14 @@ end</script>
       </TriggerGroup>
     </TriggerGroup>
   </TriggerPackage>
+  <TimerPackage>
+        </TimerPackage>
   <AliasPackage>
     <AliasGroup isActive="yes" isFolder="yes">
       <name>Mudlet Mapper</name>
       <script/>
       <command/>
+      <packageName/>
       <regex/>
       <Alias isActive="yes" isFolder="no">
         <name>Go to ID or area</name>
@@ -611,18 +641,21 @@ else
 	-- goto area?
 end</script>
         <command/>
+        <packageName/>
         <regex>^goto (\w+)(?: (\w+))?$</regex>
       </Alias>
       <Alias isActive="yes" isFolder="no">
         <name>Toggle pause</name>
         <script>mmp.pause(matches[2])</script>
         <command/>
+        <packageName/>
         <regex>^mpp(?:\s?(on|off))?$</regex>
       </Alias>
       <Alias isActive="yes" isFolder="no">
         <name>Stop walking</name>
         <script>mmp.stop()</script>
         <command/>
+        <packageName/>
         <regex>^mstop$</regex>
       </Alias>
       <Alias isActive="yes" isFolder="no">
@@ -638,42 +671,49 @@ if val == "false" or val == "no" or val == "off" then val = false end
 
 mmp.settings:setOption(matches[3], val)</script>
         <command/>
+        <packageName/>
         <regex>^mconfig( (\w+) (.*))?$</regex>
       </Alias>
       <Alias isActive="yes" isFolder="no">
         <name>Display area for lock/unlock</name>
         <script>mmp.doLockArea(matches[2])</script>
         <command/>
+        <packageName/>
         <regex>^arealock(?: (.*))?$</regex>
       </Alias>
       <Alias isActive="yes" isFolder="no">
         <name>Room find</name>
         <script>mmp.roomFind(matches[2])</script>
         <command/>
+        <packageName/>
         <regex>^(?:rf|room find) (.+)$</regex>
       </Alias>
       <Alias isActive="yes" isFolder="no">
         <name>Room look</name>
         <script>mmp.roomLook(matches[2])</script>
         <command/>
+        <packageName/>
         <regex>^(?:rl|room look)(?: (.+))?$</regex>
       </Alias>
       <Alias isActive="yes" isFolder="no">
         <name>Room list</name>
         <script>mmp.echoRoomList(matches[2] or mmp.areatabler[getRoomArea(mmp.currentroom)])</script>
         <command/>
+        <packageName/>
         <regex>^room list(?: (.+))?$</regex>
       </Alias>
       <Alias isActive="yes" isFolder="no">
         <name>Area list</name>
         <script>mmp.echoAreaList()</script>
         <command/>
+        <packageName/>
         <regex>^area list$</regex>
       </Alias>
       <AliasGroup isActive="no" isFolder="yes">
         <name>mm Mapping</name>
         <script/>
         <command/>
+        <packageName/>
         <regex/>
         <Alias isActive="yes" isFolder="no">
           <name>Manually set the room coordinates</name>
@@ -742,6 +782,7 @@ if x then set(); return end
 mmp.echo([[Where do you want to move the room to?
   You can use direct coordinates or relative directions.]])</script>
           <command/>
+          <packageName/>
           <regex>^(?:rc|room coords) (?:v(\d+) )?(.+)$</regex>
         </Alias>
         <Alias isActive="yes" isFolder="no">
@@ -761,6 +802,7 @@ addSpecialExit(mmp.currentroom, tonumber(otherroom), matches[3])
 mmp.echo(string.format("Added special exit command %s to %s (%d).", matches[3], getRoomName(otherroom), otherroom))
 centerview(mmp.currentroom)</script>
           <command/>
+          <packageName/>
           <regex>^(?:spe|exit special) (\w+) (.+)$</regex>
         </Alias>
         <Alias isActive="yes" isFolder="no">
@@ -779,6 +821,7 @@ local rid = (not matches[2] and mmp.currentroom or (tonumber(matches[2]) or mmp.
 clearSpecialExits(rid)
 mmp.echo(string.format("Cleared all special exits in %s (%d).\n", getRoomName(rid), rid))</script>
           <command/>
+          <packageName/>
           <regex>^(?:spe clear|exit special clear) ?(\w+)?$</regex>
         </Alias>
         <Alias isActive="yes" isFolder="no">
@@ -862,6 +905,7 @@ if x then set(); return end
 mmp.echo([[Where do you want to move the room to?
   You can use direct coordinates or relative directions.]])</script>
           <command/>
+          <packageName/>
           <regex>^(?:rlc|room create) (.+)?$</regex>
         </Alias>
         <Alias isActive="yes" isFolder="no">
@@ -927,6 +971,7 @@ else
 end
 centerview(mmp.currentroom)</script>
           <command/>
+          <packageName/>
           <regex>^(?:rlk|room link) ?(\d+)? (\w+)$</regex>
         </Alias>
         <Alias isActive="yes" isFolder="no">
@@ -947,6 +992,7 @@ deleteRoom(rid)
 mmp.echo(string.format("Deleted the %s (%d) room.\n", (n ~= "" and n or "''"), rid))
 centerview(mmp.currentroom)</script>
           <command/>
+          <packageName/>
           <regex>^(?:rld|room delete) ?(\w+)?$</regex>
         </Alias>
         <Alias isActive="yes" isFolder="no">
@@ -982,18 +1028,21 @@ else
 end
 centerview(mmp.currentroom)</script>
           <command/>
+          <packageName/>
           <regex>^(?:urlk|room unlink) (\w+)$</regex>
         </Alias>
         <Alias isActive="yes" isFolder="no">
           <name>Move room to another area</name>
           <script>mmp.roomArea(matches[2], matches[3])</script>
           <command/>
+          <packageName/>
           <regex>^room area (?:v(\d+) )?(.+)$</regex>
         </Alias>
         <Alias isActive="no" isFolder="no">
           <name>--</name>
           <script/>
           <command/>
+          <packageName/>
           <regex/>
         </Alias>
         <Alias isActive="yes" isFolder="no">
@@ -1005,24 +1054,28 @@ setAreaName( newid, matches[2] )
 mmp.echo(string.format("Created new area %s (%d)", matches[2], newid))
 centerview(mmp.currentroom)</script>
           <command/>
+          <packageName/>
           <regex>^area add (.+)$</regex>
         </Alias>
         <Alias isActive="yes" isFolder="no">
           <name>Delete an area</name>
           <script>mmp.deleteArea(matches[2])</script>
           <command/>
+          <packageName/>
           <regex>^area delete (.+)$</regex>
         </Alias>
         <Alias isActive="yes" isFolder="no">
           <name>Rename an area</name>
           <script>mmp.renameArea(matches[2])</script>
           <command/>
+          <packageName/>
           <regex>^area rename (.+)$</regex>
         </Alias>
         <Alias isActive="no" isFolder="no">
           <name>--</name>
           <script/>
           <command/>
+          <packageName/>
           <regex/>
         </Alias>
         <Alias isActive="yes" isFolder="no">
@@ -1045,6 +1098,7 @@ else
   end
 end</script>
           <command/>
+          <packageName/>
           <regex>^map save(?: (.+))?$</regex>
         </Alias>
         <Alias isActive="yes" isFolder="no">
@@ -1067,6 +1121,7 @@ else
   end
 end</script>
           <command/>
+          <packageName/>
           <regex>^map load(?: (.+))?$</regex>
         </Alias>
         <Alias isActive="yes" isFolder="no">
@@ -1089,6 +1144,7 @@ tempTimer(0.01, function()
   centerview(1)
 end)</script>
           <command/>
+          <packageName/>
           <regex>^map delete all$</regex>
         </Alias>
       </AliasGroup>
@@ -1104,6 +1160,7 @@ elseif (matches[2] and matches[2] == "off") or (not matches[2] and mmp.editing) 
   mmp.echo("Mapping mode disabled.")
 end</script>
         <command/>
+        <packageName/>
         <regex>^(?:mc|map create) ?(on|off)?$</regex>
       </Alias>
     </AliasGroup>
@@ -1113,6 +1170,7 @@ end</script>
   <ScriptPackage>
     <ScriptGroup isActive="yes" isFolder="yes">
       <name>Mudlet Mapper</name>
+      <packageName/>
       <script>-------------------------------------------------
 --         Put your Lua functions here.        --
 --                                             --
@@ -1122,6 +1180,7 @@ mudlet = mudlet or {}; mudlet.mapper_script = true</script>
       <eventHandlerList/>
       <Script isActive="yes" isFolder="no">
         <name>Create Option Table</name>
+        <packageName/>
         <script>-------------------------------------------------
 --         Put your Lua functions here.        --
 --                                             --
@@ -1251,6 +1310,7 @@ end</script>
       </Script>
       <Script isActive="yes" isFolder="no">
         <name>speedwalking</name>
+        <packageName/>
         <script>speedWalkWatch = createStopWatch()
 speedWalkPath = speedWalkPath or {}
 speedWalkDir = speedWalkDir or {}
@@ -1299,6 +1359,17 @@ function mmp.move()
   -- timeout
   if mmp.movetimer then killTimer(mmp.movetimer) end
   mmp.movetimer = tempTimer(getNetworkLatency()+0.5, function ()
+    mmp.movetimer = false
+    mmp.move()
+  end)
+end
+
+function mmp.swim()
+  send("swim " .. speedWalkDir[speedWalkCounter], false)
+  cecho(string.format("&lt;red&gt;(&lt;maroon&gt;%d - &lt;dark_slate_grey&gt;swim %s&lt;red&gt;)", #speedWalkDir - speedWalkCounter + 1, speedWalkDir[speedWalkCounter]))
+
+  if mmp.movetimer then killTimer(mmp.movetimer) end
+  mmp.movetimer = tempTimer(getNetworkLatency()+2.5, function ()
     mmp.movetimer = false
     mmp.move()
   end)
@@ -1484,6 +1555,7 @@ end
       </Script>
       <Script isActive="yes" isFolder="no">
         <name>Utilities</name>
+        <packageName/>
         <script>function mmp.echo(what)
   moveCursorEnd("main") if getCurrentLine() ~= "" then echo"\n" end
   decho("&lt;112,229,0&gt;(&lt;73,149,0&gt;mapper&lt;112,229,0&gt;): &lt;255,255,255&gt;")
@@ -1854,8 +1926,8 @@ function mmp.anytoshort(exit)
     nw = "northwest",
     u = "up",
     d = "down",
-    i = "in",
-    o = "out"
+    ["in"] = "in",
+    out = "out"
   }
   local rt = {}
   for s,l in pairs(t) do
@@ -1889,7 +1961,9 @@ function mmp.ranytolong(exit)
     d = "up",
     down = "up",
     i = "out",
-    o = "in"
+    ["in"] = "out",
+    o = "in",
+    out = "in"
   }
 
   return t[exit]
@@ -1968,11 +2042,13 @@ end</script>
       </Script>
       <Script isActive="yes" isFolder="no">
         <name>Person tracking</name>
+        <packageName/>
         <script>mmp.pdb = mmp.pdb or {}</script>
         <eventHandlerList/>
       </Script>
       <Script isActive="yes" isFolder="no">
         <name>Lock Area</name>
+        <packageName/>
         <script>
 			
 mmp.locked = mmp.locked or {}
@@ -2039,10 +2115,12 @@ end
       </Script>
       <Script isActive="yes" isFolder="no">
         <name>Center view via GMCP</name>
+        <packageName/>
         <script/>
         <eventHandlerList/>
         <Script isActive="yes" isFolder="no">
           <name>mmp_center_roominfo</name>
+          <packageName/>
           <script>function mmp_center_roominfo()
 	centerview(gmcp.Room.Info.num)
 end</script>
@@ -2053,6 +2131,7 @@ end</script>
       </Script>
       <Script isActive="yes" isFolder="no">
         <name>Fix setExit</name>
+        <packageName/>
         <script>do
 local oldsetExit = setExit
 
@@ -2091,6 +2170,7 @@ end</script>
       </Script>
       <ScriptGroup isActive="yes" isFolder="yes">
         <name>mm Mapping</name>
+        <packageName/>
         <script>-------------------------------------------------
 --         Put your Lua functions here.        --
 --                                             --
@@ -2100,6 +2180,7 @@ end</script>
         <eventHandlerList/>
         <Script isActive="yes" isFolder="no">
           <name>mmp_mapping_newroom</name>
+          <packageName/>
           <script>--mmp_mapping_newroom
 local function makeroom(oldid, newid, x,y,z)
   assert(x and y and z, "makeroom: need all 3 coordinates")
@@ -2111,12 +2192,12 @@ local function makeroom(oldid, newid, x,y,z)
 end
 
 -- gives the reverse shifted coordinates, ie asking for the sw exit + coords will give the coords at ne
-local function getshiftedcoords(w,ox,oy,oz)
+local function getshiftedcoords(original,ox,oy,oz)
   local x,y,z
   local has = table.contains
 
   -- reverse the exit
-  w = mmp.ranytolong(w)
+  w = mmp.ranytolong(original)
 
   if has({"west", "left", "w", "l"}, w) then
     x = (x or ox) - 1; y = (y or oy); z = (z or oz)
@@ -2138,12 +2219,19 @@ local function getshiftedcoords(w,ox,oy,oz)
     x = (x or ox); y = (y or oy); z = (z or oz) + 1
   elseif has({"down", "d"}, w) then
     x = (x or ox); y = (y or oy); z = (z or oz) - 1
+  elseif has({"in", "i"}, w) then
+    x = (x or ox); y = (y or oy); z = (z or oz) - 1
+  elseif has({"out", "o"}, w) then
+    x = (x or ox); y = (y or oy); z = (z or oz) + 1
+  else
+    mmp.echo("Don't know where to shift the coordinates for a "..tostring(w).." ("..tostring(original)..") exit.")
   end
 
   return x,y,z
 end
 
 function mmp_mapping_newroom(_, num)
+local s,m = pcall(function ()
   if not mmp.editing then return end
   local num = tonumber(num) or tonumber(gmcp.Room.Info.num)
   local currentexits = gmcp.Room.Info.exits
@@ -2196,6 +2284,8 @@ function mmp_mapping_newroom(_, num)
   end
 
   if #s &gt; 0 then mmp.echo(s); centerview(mmp.currentroom) end
+end)
+if not s then mmp.echo(m) end
 end</script>
           <eventHandlerList>
             <string>gmcp.Room.Info</string>
@@ -2204,6 +2294,7 @@ end</script>
         </Script>
         <Script isActive="yes" isFolder="no">
           <name>mmp_track_exits</name>
+          <packageName/>
           <script>function mmp_track_exits(_, cmd)
   if not mmp.editing then return end
 
@@ -2218,6 +2309,7 @@ end</script>
         </Script>
         <Script isActive="yes" isFolder="no">
           <name>mmp_save_options</name>
+          <packageName/>
           <script>function mmp_save_options()
 	local saveTable = {
 		locked_areas = mmp.locked,
@@ -2235,6 +2327,7 @@ end</script>
         </Script>
         <Script isActive="yes" isFolder="no">
           <name>mmp_load_options</name>
+          <packageName/>
           <script>function mmp_load_options()
 	local loadTable = {}
 
@@ -2260,9 +2353,12 @@ end</script>
       </ScriptGroup>
       <Script isActive="yes" isFolder="no">
         <name>Initialize</name>
+        <packageName/>
         <script>mmp.startup()</script>
         <eventHandlerList/>
       </Script>
     </ScriptGroup>
   </ScriptPackage>
+  <KeyPackage>
+        </KeyPackage>
 </MudletPackage>
