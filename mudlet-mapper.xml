@@ -1691,7 +1691,7 @@ end
 function mmp.roomFind(query)
   local result = mmp.searchRoom(query)
 
-  if type(result) == "string" then
+  if type(result) == "string" or not next(result) then
     cecho("&lt;grey&gt;You have no recollection of any room with that name.") return end
 
   cecho("&lt;DarkSlateGrey&gt;You the following relevant rooms:\n")
@@ -2233,6 +2233,11 @@ end
 function mmp_mapping_newroom(_, num)
 local s,m = pcall(function ()
   if not mmp.editing then return end
+  if not gmcp.Room then
+    mmp.echo("You need to have GMCP turned on (see preferences) for mapping stuff.")
+    return
+  end
+
   local num = tonumber(num) or tonumber(gmcp.Room.Info.num)
   local currentexits = gmcp.Room.Info.exits
   local s = ""
