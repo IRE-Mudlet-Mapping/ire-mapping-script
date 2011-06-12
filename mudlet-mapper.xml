@@ -1,3 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE MudletPackage>
 <MudletPackage version="1.0">
   <TriggerPackage>
     <TriggerGroup isActive="yes" isFolder="yes" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
@@ -631,18 +633,29 @@ end</script>
       <Alias isActive="yes" isFolder="no">
         <name>Go to ID or area</name>
         <script>local where = matches[2]
+local gallop
+if command:ends("gallop") then 
+  gallop = "gallop"
+  where = where:sub(1, -8)
+elseif command:ends("sprint") then
+  gallop = "sprint"
+  where = where:sub(1, -8)
+elseif command:ends("dash") then
+  gallop = "dash"
+  where = where:sub(1, -7)
+end
+
 
 -- goto room ID
 if tonumber(where) then
-	mmp.gotoRoom(where, matches[3])
+	mmp.gotoRoom(where, gallop)
 else
 	-- locate area
-
-	-- goto area?
+   mmp.gotoArea(where, gallop)
 end</script>
         <command/>
         <packageName/>
-        <regex>^goto (\w+)(?: (\w+))?$</regex>
+                <regex>^goto (.+)$</regex>
       </Alias>
       <Alias isActive="yes" isFolder="no">
         <name>Toggle pause</name>
@@ -1434,7 +1447,7 @@ function mmp.gotoRoom (where, dashtype)
    return
   end
 
-  if not getPath(mmp.currentroom, tonumber(where)) then
+  if not mmp.getPath(mmp.currentroom, tonumber(where)) then
     mmp.echo("Don't know how to get there from here :(")
     speedWalkPath = {}
     speedWalkDir = {}
@@ -1444,6 +1457,50 @@ function mmp.gotoRoom (where, dashtype)
   end
 
   doSpeedWalk(dashtype)
+end
+
+function mmp.gotoArea (where, dashtype, exact)
+  if not where or not type(where)==&quot;string&quot; then
+    mmp.echo(&quot;Where do you want to go to?&quot;) return end
+
+  local possibleRooms, shortestPath, shortestBorder = {}, {}, 0
+
+  local areaid, msg, multiples = mmp.findAreaID(where, exact)
+  if areaid then
+     possibleRooms = mmp.getAreaBorders(areaid)
+
+  elseif not areaid and #multiples &gt; 0 then
+    mmp.echo(&quot;Which area would you like to go to?&quot;)
+    fg(&quot;DimGrey&quot;)
+    for _, areaname in ipairs(multiples) do
+      echo&quot;  &quot;; setUnderline(true) echoLink(areaname, 'mmp.gotoArea(&quot;'..areaname..'&quot;, '..(dashtype and '&quot;'..'dashtype'..'&quot;' or &quot;nil&quot;)..', true)', &quot;Click to go to &quot;..areaname, true) setUnderline(false) echo&quot;\n&quot;
+    end
+    resetFormat()
+    return
+  else
+    mmp.echo(string.format(&quot;Don't know of any area named '%s'.&quot;, areaname))
+    return
+  end
+
+  for id, _ in pairs(possibleRooms) do
+    if mmp.getPath(mmp.currentroom, tonumber(id)) then
+      if shortestBorder==0 or #shortestPath &gt; #speedWalkPath then
+        shortestPath = speedWalkPath
+        shortestBorder = tonumber(id)
+      end
+    end
+  end
+
+  if shortestBorder == 0 then
+    mmp.echo(&quot;Don't know how to get there from here :(&quot;)
+    speedWalkPath = {}
+    speedWalkDir = {}
+    speedWalkCounter = 0
+    raiseEvent(&quot;mmapper failed path&quot;)
+    return
+  end
+
+  mmp.gotoRoom(shortestBorder, dashtype)
 end
 
 function doSpeedWalk(dashtype)
@@ -1755,7 +1812,7 @@ function mmp.echoRoomList(areaname, exact)
     local roomlist, endresult = getAreaRooms(id), {}
   
     -- obtain a room list for each of the room IDs we got
-    for _, id in ipairs(roomlist) do
+    for _, id in pairs(roomlist) do
       endresult[id] = getRoomName(id)
     end
   
@@ -1873,9 +1930,11 @@ function mmp.roomLook(input)
     end    
   end
 
-  if not input and not mmp.roomexists(mmp.currentroom) then
-    mmp.echo(mmp.currentroom.. " doesn't seem to be mapped yet.")
-  else input = mmp.currentroom end
+  if not input then
+    if not mmp.roomexists(mmp.currentroom) then
+      mmp.echo(mmp.currentroom.. &quot; doesn't seem to be mapped yet.&quot;)
+    else input = mmp.currentroom end
+  end
 
   if tonumber(input) then
     handle_number(tonumber(input))
@@ -2037,7 +2096,27 @@ function mmp.roomArea(otherroom, name, exact)
     else
       mmp.echo("Don't know of that area.")
 	end
-end</script>
+end
+
+function mmp.getAreaBorders(areaid)
+ 
+    local roomlist, endresult = getAreaRooms(areaid), {}
+  
+    -- obtain a room list for each of the room IDs we got
+    for _, id in pairs(roomlist) do
+      local exits = getRoomExits(id)
+      for _, to in pairs(exits) do
+        if not table.contains(roomlist, to) then
+          endresult[id] = getRoomName(id)
+        end
+      end
+    end
+
+
+    return endresult
+  
+end
+</script>
         <eventHandlerList/>
       </Script>
       <Script isActive="yes" isFolder="no">
@@ -2095,7 +2174,7 @@ end
 function mmp.lockArea(name, lock, dontreshow)
 	local areas = getAreaTable()
 	local rooms = getAreaRooms(areas[name])
-	for _, room in ipairs(rooms) do
+	for _, room in pairs(rooms) do
 		lockRoom(room, lock)
 	end
 	
