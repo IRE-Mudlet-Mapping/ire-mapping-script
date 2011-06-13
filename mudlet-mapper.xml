@@ -1473,12 +1473,12 @@ function mmp.gotoArea (where, dashtype, exact)
     mmp.echo(&quot;Which area would you like to go to?&quot;)
     fg(&quot;DimGrey&quot;)
     for _, areaname in ipairs(multiples) do
-      echo&quot;  &quot;; setUnderline(true) echoLink(areaname, 'mmp.gotoArea(&quot;'..areaname..'&quot;, '..(dashtype and '&quot;'..'dashtype'..'&quot;' or &quot;nil&quot;)..', true)', &quot;Click to go to &quot;..areaname, true) setUnderline(false) echo&quot;\n&quot;
+      echo&quot;  &quot;; setUnderline(true) echoLink(areaname, 'mmp.gotoArea(&quot;'..areaname..'&quot;, '..(dashtype and '&quot;'..dashtype..'&quot;' or &quot;nil&quot;)..', true)', &quot;Click to go to &quot;..areaname, true) setUnderline(false) echo&quot;\n&quot;
     end
     resetFormat()
     return
   else
-    mmp.echo(string.format(&quot;Don't know of any area named '%s'.&quot;, areaname))
+    mmp.echo(string.format(&quot;Don't know of any area named '%s'.&quot;, where))
     return
   end
 
