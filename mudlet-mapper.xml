@@ -1,5 +1,3 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE MudletPackage>
 <MudletPackage version="1.0">
   <TriggerPackage>
     <TriggerGroup isActive="yes" isFolder="yes" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
@@ -18,7 +16,7 @@
       <regexCodeList/>
       <regexCodePropertyList/>
       <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
-        <name>Swim exit</name>
+        <name>Have to swim</name>
         <script>mmp.swim()</script>
         <triggerType>0</triggerType>
         <conditonLineDelta>0</conditonLineDelta>
@@ -39,6 +37,26 @@
           <integer>3</integer>
           <integer>3</integer>
           <integer>2</integer>
+        </regexCodePropertyList>
+      </Trigger>
+      <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+        <name>Rubble at the exit</name>
+        <script>mmp.customwalkdelay(1)</script>
+        <triggerType>0</triggerType>
+        <conditonLineDelta>0</conditonLineDelta>
+        <mStayOpen>0</mStayOpen>
+        <mCommand/>
+        <packageName/>
+        <mFgColor>#ff0000</mFgColor>
+        <mBgColor>#ffff00</mBgColor>
+        <mSoundFile/>
+        <colorTriggerFgColor>#000000</colorTriggerFgColor>
+        <colorTriggerBgColor>#000000</colorTriggerBgColor>
+        <regexCodeList>
+          <string>You begin to slowly clamber over the rubble that blocks your way.</string>
+        </regexCodeList>
+        <regexCodePropertyList>
+          <integer>3</integer>
         </regexCodePropertyList>
       </Trigger>
       <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
@@ -655,7 +673,7 @@ else
 end</script>
         <command/>
         <packageName/>
-                <regex>^goto (.+)$</regex>
+        <regex>^goto (.+)$</regex>
       </Alias>
       <Alias isActive="yes" isFolder="no">
         <name>Toggle pause</name>
@@ -1388,6 +1406,14 @@ function mmp.swim()
   end)
 end
 
+function mmp.customwalkdelay(delay)
+  if mmp.movetimer then killTimer(mmp.movetimer) end
+  mmp.movetimer = tempTimer(getNetworkLatency()+delay, function ()
+    mmp.movetimer = false
+    mmp.move()
+  end)
+end
+
 function mmp.stop()
   speedWalkPath = {}
   speedWalkDir = {}
@@ -1460,8 +1486,8 @@ function mmp.gotoRoom (where, dashtype)
 end
 
 function mmp.gotoArea (where, dashtype, exact)
-  if not where or not type(where)==&quot;string&quot; then
-    mmp.echo(&quot;Where do you want to go to?&quot;) return end
+  if not where or not type(where)=="string" then
+    mmp.echo("Where do you want to go to?") return end
 
   local possibleRooms, shortestPath, shortestBorder = {}, {}, 0
 
@@ -1470,15 +1496,15 @@ function mmp.gotoArea (where, dashtype, exact)
      possibleRooms = mmp.getAreaBorders(areaid)
 
   elseif not areaid and #multiples &gt; 0 then
-    mmp.echo(&quot;Which area would you like to go to?&quot;)
-    fg(&quot;DimGrey&quot;)
+    mmp.echo("Which area would you like to go to?")
+    fg("DimGrey")
     for _, areaname in ipairs(multiples) do
-      echo&quot;  &quot;; setUnderline(true) echoLink(areaname, 'mmp.gotoArea(&quot;'..areaname..'&quot;, '..(dashtype and '&quot;'..dashtype..'&quot;' or &quot;nil&quot;)..', true)', &quot;Click to go to &quot;..areaname, true) setUnderline(false) echo&quot;\n&quot;
+      echo"  "; setUnderline(true) echoLink(areaname, 'mmp.gotoArea("'..areaname..'", '..(dashtype and '"'..dashtype..'"' or "nil")..', true)', "Click to go to "..areaname, true) setUnderline(false) echo"\n"
     end
     resetFormat()
     return
   else
-    mmp.echo(string.format(&quot;Don't know of any area named '%s'.&quot;, where))
+    mmp.echo(string.format("Don't know of any area named '%s'.", where))
     return
   end
 
@@ -1492,11 +1518,11 @@ function mmp.gotoArea (where, dashtype, exact)
   end
 
   if shortestBorder == 0 then
-    mmp.echo(&quot;Don't know how to get there from here :(&quot;)
+    mmp.echo("Don't know how to get there from here :(")
     speedWalkPath = {}
     speedWalkDir = {}
     speedWalkCounter = 0
-    raiseEvent(&quot;mmapper failed path&quot;)
+    raiseEvent("mmapper failed path")
     return
   end
 
@@ -1932,7 +1958,7 @@ function mmp.roomLook(input)
 
   if not input then
     if not mmp.roomexists(mmp.currentroom) then
-      mmp.echo(mmp.currentroom.. &quot; doesn't seem to be mapped yet.&quot;)
+      mmp.echo(mmp.currentroom.. " doesn't seem to be mapped yet.")
     else input = mmp.currentroom end
   end
 
