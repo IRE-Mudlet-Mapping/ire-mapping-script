@@ -41,7 +41,7 @@
       </Trigger>
       <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
         <name>Rubble at the exit</name>
-        <script>mmp.customwalkdelay(1)</script>
+        <script>mmp.customwalkdelay(2)</script>
         <triggerType>0</triggerType>
         <conditonLineDelta>0</conditonLineDelta>
         <mStayOpen>0</mStayOpen>
@@ -634,6 +634,46 @@ end</script>
           <regexCodePropertyList>
             <integer>2</integer>
             <integer>1</integer>
+          </regexCodePropertyList>
+        </Trigger>
+        <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+          <name>Entering wilderness</name>
+          <script>mmp.customwalkdelay(6)</script>
+          <triggerType>0</triggerType>
+          <conditonLineDelta>99</conditonLineDelta>
+          <mStayOpen>0</mStayOpen>
+          <mCommand/>
+          <packageName/>
+          <mFgColor>#ff0000</mFgColor>
+          <mBgColor>#ffff00</mBgColor>
+          <mSoundFile/>
+          <colorTriggerFgColor>#000000</colorTriggerFgColor>
+          <colorTriggerBgColor>#000000</colorTriggerBgColor>
+          <regexCodeList>
+            <string>You begin to look for that place to enter the wilderness. It's around here somewhere!</string>
+          </regexCodeList>
+          <regexCodePropertyList>
+            <integer>3</integer>
+          </regexCodePropertyList>
+        </Trigger>
+        <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+          <name>Icon enter/leave</name>
+          <script>mmp.customwalkdelay(10)</script>
+          <triggerType>0</triggerType>
+          <conditonLineDelta>1</conditonLineDelta>
+          <mStayOpen>0</mStayOpen>
+          <mCommand/>
+          <packageName/>
+          <mFgColor>#ff0000</mFgColor>
+          <mBgColor>#ffff00</mBgColor>
+          <mSoundFile/>
+          <colorTriggerFgColor>#000000</colorTriggerFgColor>
+          <colorTriggerBgColor>#000000</colorTriggerBgColor>
+          <regexCodeList>
+            <string>You reach out and touch a powerful Icon. For a moment, nothing happens, but soon you feel a humming deep inside you.</string>
+          </regexCodeList>
+          <regexCodePropertyList>
+            <integer>3</integer>
           </regexCodePropertyList>
         </Trigger>
       </TriggerGroup>
@@ -1887,12 +1927,15 @@ function mmp.roomLook(input)
     local coords = {getRoomCoordinates(num)}
     local specexits = getSpecialExits(num)
     local env = getRoomEnv(num)
+    local envname = mmp.envidsr[env]
 
     -- generate a report
     mmp.echo(string.format("Room: %s #: %d area: %s (%d)",
       name, num, tostring(mmp.areatabler[areanum]), areanum))
     
     mmp.echo(string.format("Coordinates: x:%d, y:%d, z:%d, locked: %s, weight: %s", coords[1], coords[2], coords[3], (islocked and "yep" or "nope"), tostring(weight)))
+
+    mmp.echo(string.format("Environment: %s (%d)", tostring(envname), env))
 
     mmp.echo(string.format("Exits (%d):", table.size(exits)))
     for exit, leadsto in pairs(exits) do
@@ -2054,37 +2097,37 @@ function mmp.relativeroom(from, dir)
 end
 
 function mmp.deleteArea(name, exact)
-	local id, fname, ma = mmp.findAreaID(name, exact)
+  local id, fname, ma = mmp.findAreaID(name, exact)
 
-	if id then
-	  deleteArea(id)
-	  mmp.echo(string.format("Deleted %s (%d).", fname, id))
-	  centerview(mmp.currentroom)
-	elseif next(ma) then
-	  mmp.echo("Which one of these specifically would you like to delete?")
+  if id then
+    deleteArea(id)
+    mmp.echo(string.format("Deleted %s (%d).", fname, id))
+    centerview(mmp.currentroom)
+  elseif next(ma) then
+    mmp.echo("Which one of these specifically would you like to delete?")
 
-	  fg("DimGrey") 
-	  for _,name in ipairs(ma) do
-		echo "  " setUnderline(true) echoLink(name, [[mmp.deleteArea("]]..name..[[", true)]], "Delete "..name, true) setUnderline(false) echo"\n"
-	  end
-	  resetFormat()
+    fg("DimGrey") 
+    for _,name in ipairs(ma) do
+    echo "  " setUnderline(true) echoLink(name, [[mmp.deleteArea("]]..name..[[", true)]], "Delete "..name, true) setUnderline(false) echo"\n"
+    end
+    resetFormat()
     else
       mmp.echo("Don't know of that area.")
-	end
-	
-	raiseEvent("mmp areas changed")
+  end
+  
+  raiseEvent("mmp areas changed")
 end
 
 function mmp.renameArea(name, exact)
   if not (mmp.currentroom or getRoomArea(mmp.currentroom)) then
     mmp.echo("Don't know what area are we in at the moment, to rename it.")
   else
-	setAreaName(getRoomArea(mmp.currentroom), name)
-	mmp.echo(string.format("Renamed %s to %s (%d).", mmp.areatabler[getRoomArea(mmp.currentroom)], name, getRoomArea(mmp.currentroom)))
-	centerview(mmp.currentroom)
+  setAreaName(getRoomArea(mmp.currentroom), name)
+  mmp.echo(string.format("Renamed %s to %s (%d).", mmp.areatabler[getRoomArea(mmp.currentroom)], name, getRoomArea(mmp.currentroom)))
+  centerview(mmp.currentroom)
   end
 
-	raiseEvent("mmp areas changed")
+  raiseEvent("mmp areas changed")
 end
 
 function mmp.roomArea(otherroom, name, exact)
@@ -2102,21 +2145,21 @@ function mmp.roomArea(otherroom, name, exact)
 
    otherroom = otherroom ~= "" and otherroom or mmp.currentroom
 
-	if id then
-	  setRoomArea(otherroom, id)
-	  mmp.echo(string.format("Moved %s to %s (%d).", (getRoomName(otherroom) ~= "" and getRoomName(otherroom) or "''"), fname, id))
-	  centerview(otherroom)
-	elseif next(ma) then
-	  mmp.echo("Into which area exactly would you like to move the room?")
+  if id then
+    setRoomArea(otherroom, id)
+    mmp.echo(string.format("Moved %s to %s (%d).", (getRoomName(otherroom) ~= "" and getRoomName(otherroom) or "''"), fname, id))
+    centerview(otherroom)
+  elseif next(ma) then
+    mmp.echo("Into which area exactly would you like to move the room?")
 
-	  fg("DimGrey") 
-	  for _,name in ipairs(ma) do
-		echo "  " setUnderline(true) echoLink(name, [[mmp.roomArea('', "]]..name..[[", true)]], "Move the room to "..name, true) setUnderline(false) echo"\n"
-	  end
-	  resetFormat()
+    fg("DimGrey") 
+    for _,name in ipairs(ma) do
+    echo "  " setUnderline(true) echoLink(name, [[mmp.roomArea('', "]]..name..[[", true)]], "Move the room to "..name, true) setUnderline(false) echo"\n"
+    end
+    resetFormat()
     else
       mmp.echo("Don't know of that area.")
-	end
+  end
 end
 
 function mmp.getAreaBorders(areaid)
@@ -2285,9 +2328,8 @@ local function makeroom(oldid, newid, x,y,z)
   assert(x and y and z, "makeroom: need all 3 coordinates")
   addRoom(newid)
   setRoomCoordinates(newid, x, y, z)
-display(oldid) display(tostring(newid))
   setRoomArea(newid, getRoomArea(oldid))
-  setRoomEnv(newid, getRoomEnv(oldid))
+  setRoomEnv(newid, mmp.envids[gmcp.Room.Info.environment])
   return string.format("Created new room %d at %dx,%dy,%dz.", newid, x,y,z) 
 end
 
@@ -2331,10 +2373,10 @@ local function getshiftedcoords(original,ox,oy,oz)
 end
 
 function mmp_mapping_newroom(_, num)
-local s,m = pcall(function ()
+local s,m = xpcall(function ()
   if not mmp.editing then return end
   if not gmcp.Room then
-    mmp.echo("You need to have GMCP turned on (see preferences) for mapping stuff.")
+    mmp.echo("You need to have GMCP turned on (see preferences on a recent Mudlet) for mapping stuff.")
     return
   end
 
@@ -2355,24 +2397,36 @@ local s,m = pcall(function ()
   -- if we created it, and some data could be filled in
   if mmp.roomexists(num) then
     -- update room name
-    if getRoomName(num):lower() ~= gmcp.Room.Info.name:lower() then 
-      setRoomName(num, gmcp.Room.Info.name)
-      s = s .. (#s &gt; 0 and " " or "") .. "Updated room name to "..gmcp.Room.Info.name.."."
+    local rootroomname = gmcp.Room.Info.name
+    if string.starts(rootroomname, "Flying above ") then
+      rootroomname = string.sub(rootroomname, -(#rootroomname-13))
+    end
+    if string.ends(rootroomname, " (road)") then
+      rootroomname = string.sub(rootroomname, 1, (#rootroomname-7))
+    end
+
+    if getRoomName(num):lower() ~= string.lower(rootroomname) then 
+      setRoomName(num, rootroomname)
+      s = s .. (#s &gt; 0 and " " or "") .. "Updated room name to "..rootroomname.."."
     end
 
     -- autolink exits
     local x = getRoomExits(num) or {}
     -- check for missing exits
     for exit, id in pairs(currentexits) do
-      if not x[mmp.anytolong(exit)] then
-        if not mmp.roomexists(id) then
-          s = makeroom(num, id, getshiftedcoords(mmp.ranytolong(exit), getRoomCoordinates(num)))
+      if id == 0 then
+        s = s .. (#s &gt; 0 and " " or "") .. "Can't link to the "..exit..", it leads to a room with ID 0 (and that's not supported yet)."
+      else
+        if not x[mmp.anytolong(exit)] then
+          if not mmp.roomexists(id) then
+            s = makeroom(num, id, getshiftedcoords(mmp.ranytolong(exit), getRoomCoordinates(num)))
+          end
+          if setExit(num, id, exit) then
+            s = s .. (#s &gt; 0 and " " or "") .. "Added missing exit "..exit.." to "..(getRoomName(id) ~= "" and getRoomName(id) or "''").." ("..id..")."
+          else 
+            s = s .. (#s &gt; 0 and " " or "") .. string.format("Failed to link %d withh %d via %s exit for some reason :/", num, id, exit)
+          end          
         end
-        if setExit(num, id, exit) then
-          s = s .. (#s &gt; 0 and " " or "") .. "Added missing exit "..exit.." to "..(getRoomName(id) ~= "" and getRoomName(id) or "''").." ("..id..")."
-        else 
-          s = s .. (#s &gt; 0 and " " or "") .. string.format("Failed to link %d withh %d via %s exit for some reason :/", num, id, exit)
-        end          
       end
     end
 
@@ -2385,10 +2439,18 @@ local s,m = pcall(function ()
         end
       end
     end
-    
+  
+    -- check for environment update
+    if mmp.envids[gmcp.Room.Info.environment] ~= getRoomEnv(num) then
+      setRoomEnv(num, mmp.envids[gmcp.Room.Info.environment])
+      s = s .. (#s &gt; 0 and " " or "") .. "Updated environment name to "..gmcp.Room.Info.environment.."."
+    end
   end
 
   if #s &gt; 0 then mmp.echo(s); centerview(mmp.currentroom) end
+end, function () 
+  mmp.echo("Oops! Has a small problem.")
+  echo"  " echoLink("view steps", 'echo[['..debug.traceback()..']]', "View steps of code that led up to it")
 end)
 if not s then mmp.echo(m) end
 end</script>
@@ -2474,7 +2536,7 @@ end</script>
         </eventHandlerList>
       </Script>
       <ScriptGroup isActive="yes" isFolder="yes">
-        <name>Test / one-time things</name>
+        <name>Game-specific</name>
         <packageName/>
         <script>-------------------------------------------------
 --         Put your Lua functions here.        --
@@ -2483,8 +2545,8 @@ end</script>
 -------------------------------------------------
 </script>
         <eventHandlerList/>
-        <Script isActive="no" isFolder="no">
-          <name>mmp_grabenvid</name>
+        <Script isActive="yes" isFolder="no">
+          <name>Achaea</name>
           <packageName/>
           <script>mmp.envids = 
 {
@@ -2523,8 +2585,25 @@ end</script>
   ["Ocean floor"] = 34
 }
 
-
-function mmp_grabenvid()
+mmp.envidsr = {};
+for name, id in pairs(mmp.envids) do mmp.envidsr[id] = name end</script>
+          <eventHandlerList/>
+        </Script>
+      </ScriptGroup>
+      <ScriptGroup isActive="yes" isFolder="yes">
+        <name>Test / one-time things</name>
+        <packageName/>
+        <script>-------------------------------------------------
+--         Put your Lua functions here.        --
+--                                             --
+-- Note that you can also use external Scripts --
+-------------------------------------------------
+</script>
+        <eventHandlerList/>
+        <Script isActive="no" isFolder="no">
+          <name>mmp_grabenvid</name>
+          <packageName/>
+          <script>function mmp_grabenvid()
   if not mmp.envids[gmcp.Room.Info.environment] then
     mmp.envids[gmcp.Room.Info.environment] = getRoomEnv(mmp.currentroom)
     mmp.echo(string.format("Remembered environment %s as %d", gmcp.Room.Info.environment, mmp.envids[gmcp.Room.Info.environment]))
