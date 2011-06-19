@@ -2330,7 +2330,11 @@ local function makeroom(oldid, newid, x,y,z)
   addRoom(newid)
   setRoomCoordinates(newid, x, y, z)
   setRoomArea(newid, getRoomArea(oldid))
-  setRoomEnv(newid, mmp.envids[gmcp.Room.Info.environment])
+
+  if mmp.envids[gmcp.Room.Info.environment] then
+    setRoomEnv(newid, mmp.envids[gmcp.Room.Info.environment])
+  else setRoomEnv(newid, getRoomEnv(oldid)) end
+
   return string.format("Created new room %d at %dx,%dy,%dz.", newid, x,y,z) 
 end
 
@@ -2441,8 +2445,8 @@ local s,m = xpcall(function ()
       end
     end
   
-    -- check for environment update
-    if mmp.envids[gmcp.Room.Info.environment] ~= getRoomEnv(num) then
+    -- check for environment update, if we have environments mapped out
+    if mmp.envids[gmcp.Room.Info.environment] and mmp.envids[gmcp.Room.Info.environment] ~= getRoomEnv(num) then
       setRoomEnv(num, mmp.envids[gmcp.Room.Info.environment])
       s = s .. (#s &gt; 0 and " " or "") .. "Updated environment name to "..gmcp.Room.Info.environment.."."
     end
