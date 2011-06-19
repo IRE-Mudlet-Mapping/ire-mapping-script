@@ -1813,6 +1813,7 @@ function mmp.getPath(from, to)
 end
 
 function mmp.roomFind(query)
+  if query:ends('.') then query = query:sub(1,-2) end
   local result = mmp.searchRoom(query)
 
   if type(result) == "string" or not next(result) then
