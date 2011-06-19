@@ -1083,7 +1083,8 @@ local newid = table.maxn(tr) + 1
 
 setAreaName( newid, matches[2] )
 mmp.echo(string.format("Created new area %s (%d)", matches[2], newid))
-centerview(mmp.currentroom)</script>
+centerview(mmp.currentroom)
+raiseEvent("mmp areas changed")</script>
           <command/>
           <packageName/>
           <regex>^area add (.+)$</regex>
@@ -1800,17 +1801,6 @@ function mmp.roomFind(query)
   cecho(string.format("  &lt;DarkSlateGrey&gt;%d rooms found.\n", table.size(result)))
 end
 
--- cached data
-mmp.areatable = getAreaTable() -- this translates an area name to an ID
-mmp.areatabler = {} -- this translates an ID to an area name
-
-do
-  local t = getAreaTable()
-  for k,v in pairs(t) do
-    mmp.areatabler[tonumber(v)] = k
-  end
-end
-
 function mmp.findAreaID(areaname, exact)
   local areaname = areaname:lower()
   local list = getAreaTable()
@@ -1902,11 +1892,12 @@ function mmp.roomLook(input)
     mmp.echo(string.format("Room: %s #: %d area: %s (%d)",
       name, num, tostring(mmp.areatabler[areanum]), areanum))
     
-    mmp.echo(string.format("Coordinates: x:%d, y:%d, z:%d, locked? %s, weight: %s", coords[1], coords[2], coords[3], (islocked and "yep" or "nope"), tostring(weight)))
+    mmp.echo(string.format("Coordinates: x:%d, y:%d, z:%d, locked: %s, weight: %s", coords[1], coords[2], coords[3], (islocked and "yep" or "nope"), tostring(weight)))
 
     mmp.echo(string.format("Exits (%d):", table.size(exits)))
     for exit, leadsto in pairs(exits) do
-      echo(string.format("  %s -&gt; %s (%d)\n", exit, getRoomName(leadsto), leadsto))
+      echo(string.format("  %s -&gt; %s (%d)%s\n", exit, getRoomName(leadsto), leadsto,
+        (getRoomArea(leadsto) == areanum and "" or " (in "..mmp.areatabler[getRoomArea(leadsto)]..")")))
     end
 
   -- display special exits if we got any
@@ -2080,6 +2071,8 @@ function mmp.deleteArea(name, exact)
     else
       mmp.echo("Don't know of that area.")
 	end
+	
+	raiseEvent("mmp areas changed")
 end
 
 function mmp.renameArea(name, exact)
@@ -2090,6 +2083,8 @@ function mmp.renameArea(name, exact)
 	mmp.echo(string.format("Renamed %s to %s (%d).", mmp.areatabler[getRoomArea(mmp.currentroom)], name, getRoomArea(mmp.currentroom)))
 	centerview(mmp.currentroom)
   end
+
+	raiseEvent("mmp areas changed")
 end
 
 function mmp.roomArea(otherroom, name, exact)
@@ -2141,8 +2136,7 @@ function mmp.getAreaBorders(areaid)
 
     return endresult
   
-end
-</script>
+end</script>
         <eventHandlerList/>
       </Script>
       <Script isActive="yes" isFolder="no">
@@ -2291,6 +2285,7 @@ local function makeroom(oldid, newid, x,y,z)
   assert(x and y and z, "makeroom: need all 3 coordinates")
   addRoom(newid)
   setRoomCoordinates(newid, x, y, z)
+display(oldid) display(tostring(newid))
   setRoomArea(newid, getRoomArea(oldid))
   setRoomEnv(newid, getRoomEnv(oldid))
   return string.format("Created new room %d at %dx,%dy,%dz.", newid, x,y,z) 
@@ -2458,6 +2453,113 @@ end</script>
 end</script>
           <eventHandlerList>
             <string>sysLoadEvent</string>
+          </eventHandlerList>
+        </Script>
+      </ScriptGroup>
+      <Script isActive="yes" isFolder="no">
+        <name>mmp_regenerate_areas</name>
+        <packageName/>
+        <script>function mmp_regenerate_areas()
+  -- cached data
+  mmp.areatable = getAreaTable() -- this translates an area name to an ID
+  mmp.areatabler = {} -- this translates an ID to an area name
+
+  local t = getAreaTable()
+  for k,v in pairs(t) do
+    mmp.areatabler[tonumber(v)] = k
+  end
+end</script>
+        <eventHandlerList>
+          <string>mmp areas changed</string>
+        </eventHandlerList>
+      </Script>
+      <ScriptGroup isActive="yes" isFolder="yes">
+        <name>Test / one-time things</name>
+        <packageName/>
+        <script>-------------------------------------------------
+--         Put your Lua functions here.        --
+--                                             --
+-- Note that you can also use external Scripts --
+-------------------------------------------------
+</script>
+        <eventHandlerList/>
+        <Script isActive="no" isFolder="no">
+          <name>mmp_grabenvid</name>
+          <packageName/>
+          <script>mmp.envids = 
+{
+  Path = 11,
+  Sewer = 23,
+  Freshwater = 22,
+  ["Natural underground"] = 3,
+  ["Magma Caves"] = 31,
+  Polar = 27,
+  Nothing = 0,
+  ["Constructed underground"] = 2,
+  Ruins = 32,
+  Blighted = 29,
+  Forest = 4,
+  Tundra = 16,
+  ["Tsol'aa city"] = 19,
+  ["Dwarven city"] = 18,
+  Jungle = 17,
+  Ocean = 20,
+  River = 10,
+  Mountains = 14,
+  ["Deep Ocean"] = 24,
+  Desert = 6,
+  Garden = 21,
+  Swamp = 15,
+  Road = 12,
+  Water = 30,
+  Grasslands = 7,
+  Valley = 13,
+  Reef = 25,
+  Hills = 9,
+  Vessel = 36,
+  Beach = 5,
+  Urban = 8,
+  Trees = 28,
+  ["Ocean floor"] = 34
+}
+
+
+function mmp_grabenvid()
+  if not mmp.envids[gmcp.Room.Info.environment] then
+    mmp.envids[gmcp.Room.Info.environment] = getRoomEnv(mmp.currentroom)
+    mmp.echo(string.format("Remembered environment %s as %d", gmcp.Room.Info.environment, mmp.envids[gmcp.Room.Info.environment]))
+  end
+end
+
+function mmp.getMaxID()
+  local roomIDs = {}
+  for area, _ in pairs(mmp.areatabler) do
+    local ok, t = pcall(getAreaRooms, area)
+    if ok then
+      for _, id in pairs(t) do
+        roomIDs[id] = true
+      end
+    end
+  end
+
+  return table.maxn(roomIDs)
+end
+
+function mmp.getUnknownEnvs()
+  local maxid, missing = mmp.getMaxID(), {}
+
+  for i = 1, maxid do
+    if mmp.roomexists(i) then
+      if not table.contains(mmp.envids, getRoomEnv(i)) and not table.contains(missing, getRoomEnv(i)) then
+        mmp.echo(string.format("Missing env %d from room %d ('%s' in '%s')", 
+          tostring(getRoomEnv(i)), i, tostring(getRoomName(i)), tostring(mmp.areatabler[getRoomArea(i)])))
+        missing[i] = getRoomEnv(i)
+      end
+    end
+  end
+end</script>
+          <eventHandlerList>
+            <string>gmcp.Room.Info</string>
           </eventHandlerList>
         </Script>
       </ScriptGroup>
