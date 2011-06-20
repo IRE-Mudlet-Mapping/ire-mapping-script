@@ -1419,6 +1419,7 @@ function mmp.startup()
     mmp.echo("Please use the mconfig alias to set options!")
   end
 
+  raiseEvent("mmp areas changed")
   mmp.firstRun = false
 end
 
