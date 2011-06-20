@@ -1410,6 +1410,7 @@ function mmp.startup()
 
   mmp.settings = createOptionsTable(private_settings)
   mmp.settings.disp = mmp.echo
+  mmp_regenerate_areas()
 
   mmp.settings.dispOption = function(opt, val)
     cecho("&lt;white&gt;Use &lt;green&gt;" .. opt .. "&lt;white&gt;?" .. string.rep(" ", 15 - opt:len()) .. tostring(val.value) .. "\n")
