@@ -544,9 +544,9 @@ if not t then return end
 echo"\n"
 
 if #t == 1 then
-	cecho("&lt;red&gt;From your knowledge, that room is in &lt;orange_red&gt;"..mmp.areatabler[getRoomArea(t[1])].."&lt;red&gt;.")
+    cecho("&lt;red&gt;From your knowledge, that room is in &lt;orange_red&gt;"..mmp.areatabler[getRoomArea(t[1])].."&lt;red&gt;.")
 else
-	cecho("&lt;red&gt;From your knowledge, that room might be in &lt;orange_red&gt;"..mmp.areatabler[getRoomArea(t[1])].."&lt;red&gt;.")
+    cecho("&lt;red&gt;From your knowledge, that room might be in &lt;orange_red&gt;"..mmp.areatabler[getRoomArea(t[1])].."&lt;red&gt;.")
 end</script>
           <triggerType>0</triggerType>
           <conditonLineDelta>0</conditonLineDelta>
@@ -575,9 +575,9 @@ if not t then return end
 echo"\n"
 
 if #t == 1 then
-	cecho("&lt;red&gt;Porting to &lt;orange_red&gt;"..mmp.areatabler[getRoomArea(t[1])].."&lt;red&gt;.")
+    cecho("&lt;red&gt;Porting to &lt;orange_red&gt;"..mmp.areatabler[getRoomArea(t[1])].."&lt;red&gt;.")
 else
-	cecho("&lt;red&gt;Might be porting to &lt;orange_red&gt;"..mmp.areatabler[getRoomArea(t[1])].."&lt;red&gt;.")
+    cecho("&lt;red&gt;Might be porting to &lt;orange_red&gt;"..mmp.areatabler[getRoomArea(t[1])].."&lt;red&gt;.")
 end</script>
           <triggerType>0</triggerType>
           <conditonLineDelta>0</conditonLineDelta>
@@ -629,7 +629,7 @@ end</script>
           <colorTriggerBgColor>#000000</colorTriggerBgColor>
           <regexCodeList>
             <string>You see that </string>
-              <string>^You see that (\w+) is at (.+)\.$</string>
+            <string>^You see that (\w+) is at (.+)\.$</string>
           </regexCodeList>
           <regexCodePropertyList>
             <integer>2</integer>
@@ -676,34 +676,32 @@ end</script>
             <integer>3</integer>
           </regexCodePropertyList>
         </Trigger>
-          <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="yes" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
-            <name>mindsense</name>
-            <script>mmp.locateAndEcho(multimatches[2][2])</script>
-            <triggerType>0</triggerType>
-            <conditonLineDelta>0</conditonLineDelta>
-            <mStayOpen>0</mStayOpen>
-            <mCommand/>
-            <packageName/>
-            <mFgColor>#ff0000</mFgColor>
-            <mBgColor>#ffff00</mBgColor>
-            <mSoundFile/>
-            <colorTriggerFgColor>#000000</colorTriggerFgColor>
-            <colorTriggerBgColor>#000000</colorTriggerBgColor>
-            <regexCodeList>
-              <string>An image of </string>
-              <string>^An image of (.+) appears in your mind\.$</string>
-            </regexCodeList>
-            <regexCodePropertyList>
-              <integer>2</integer>
-              <integer>1</integer>
-            </regexCodePropertyList>
-          </Trigger>
-        </TriggerGroup>
+        <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="yes" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+          <name>mindsense/skull locating</name>
+          <script>mmp.locateAndEcho(multimatches[2][2])</script>
+          <triggerType>0</triggerType>
+          <conditonLineDelta>0</conditonLineDelta>
+          <mStayOpen>0</mStayOpen>
+          <mCommand/>
+          <packageName/>
+          <mFgColor>#ff0000</mFgColor>
+          <mBgColor>#ffff00</mBgColor>
+          <mSoundFile/>
+          <colorTriggerFgColor>#000000</colorTriggerFgColor>
+          <colorTriggerBgColor>#000000</colorTriggerBgColor>
+          <regexCodeList>
+            <string>An image of </string>
+            <string>^An image of (.+) appears in your mind\.$</string>
+          </regexCodeList>
+          <regexCodePropertyList>
+            <integer>2</integer>
+            <integer>1</integer>
+          </regexCodePropertyList>
+        </Trigger>
       </TriggerGroup>
     </TriggerGroup>
   </TriggerPackage>
-  <TimerPackage>
-        </TimerPackage>
+  <TimerPackage/>
   <AliasPackage>
     <AliasGroup isActive="yes" isFolder="yes">
       <name>Mudlet Mapper</name>
@@ -1866,7 +1864,7 @@ function mmp.roomFind(query)
   if type(result) == "string" or not next(result) then
     cecho("&lt;grey&gt;You have no recollection of any room with that name.") return end
 
-  cecho("&lt;DarkSlateGrey&gt;You the following relevant rooms:\n")
+  cecho("&lt;DarkSlateGrey&gt;You know the following relevant rooms:\n")
 
 
   if not tonumber(select(2, next(result))) then -- old style
@@ -2232,6 +2230,7 @@ end
 function mmp.locateAndEcho(room, person)
 
     local t = mmp.searchRoom(room)
+    mmp.pdb_lastupdate = {}
 
     echo "  ("
     mmp.echonums(room, true)
@@ -2246,13 +2245,27 @@ function mmp.locateAndEcho(room, person)
     else
 	    cecho("&lt;red&gt;From your knowledge, that room might be in &lt;orange_red&gt;"..mmp.areatabler[getRoomArea(t[room])].."&lt;red&gt;.")
     end
+
+   if person then
+      mmp.pdb[person] = room
+      mmp.pdb_lastupdate[person] = room
+   end
 end</script>
         <eventHandlerList/>
       </Script>
       <Script isActive="yes" isFolder="no">
         <name>Person tracking</name>
         <packageName/>
-        <script>mmp.pdb = mmp.pdb or {}</script>
+        <script>--[[
+
+mmp will have 2 person tracking databases:
+- mmp.pdb  =  used to store the last known location of a person
+- mmp.pdb_lastupdate  =  used to store the output of the last locating command
+
+Both databases work with the person's name as key and the location name as value.
+
+]]
+mmp.pdb = mmp.pdb or {}</script>
         <eventHandlerList/>
       </Script>
       <Script isActive="yes" isFolder="no">
