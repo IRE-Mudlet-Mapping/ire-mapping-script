@@ -616,7 +616,7 @@ end</script>
         <regexCodePropertyList/>
         <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="yes" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
           <name>Local area farsee</name>
-          <script>mmp.roomEcho(multimatches[2][2])</script>
+          <script>mmp.locateAndEcho(multimatches[2][3], multimatches[2][2])</script>
           <triggerType>0</triggerType>
           <conditonLineDelta>0</conditonLineDelta>
           <mStayOpen>0</mStayOpen>
@@ -629,7 +629,7 @@ end</script>
           <colorTriggerBgColor>#000000</colorTriggerBgColor>
           <regexCodeList>
             <string>You see that </string>
-            <string>^You see that \w+ is at (.+)\.$</string>
+              <string>^You see that (\w+) is at (.+)\.$</string>
           </regexCodeList>
           <regexCodePropertyList>
             <integer>2</integer>
@@ -676,6 +676,29 @@ end</script>
             <integer>3</integer>
           </regexCodePropertyList>
         </Trigger>
+          <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="yes" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+            <name>mindsense</name>
+            <script>mmp.locateAndEcho(multimatches[2][2])</script>
+            <triggerType>0</triggerType>
+            <conditonLineDelta>0</conditonLineDelta>
+            <mStayOpen>0</mStayOpen>
+            <mCommand/>
+            <packageName/>
+            <mFgColor>#ff0000</mFgColor>
+            <mBgColor>#ffff00</mBgColor>
+            <mSoundFile/>
+            <colorTriggerFgColor>#000000</colorTriggerFgColor>
+            <colorTriggerBgColor>#000000</colorTriggerBgColor>
+            <regexCodeList>
+              <string>An image of </string>
+              <string>^An image of (.+) appears in your mind\.$</string>
+            </regexCodeList>
+            <regexCodePropertyList>
+              <integer>2</integer>
+              <integer>1</integer>
+            </regexCodePropertyList>
+          </Trigger>
+        </TriggerGroup>
       </TriggerGroup>
     </TriggerGroup>
   </TriggerPackage>
@@ -1410,7 +1433,6 @@ function mmp.startup()
 
   mmp.settings = createOptionsTable(private_settings)
   mmp.settings.disp = mmp.echo
-  mmp_regenerate_areas()
 
   mmp.settings.dispOption = function(opt, val)
     cecho("&lt;white&gt;Use &lt;green&gt;" .. opt .. "&lt;white&gt;?" .. string.rep(" ", 15 - opt:len()) .. tostring(val.value) .. "\n")
@@ -1729,7 +1751,7 @@ function mmp.getnums(roomname)
 end
 
 -- for a given room name, we'll echo all the vnums
-function mmp.echonums(roomname)
+function mmp.echonums(roomname, exact)
   local t = mmp.searchRoom(roomname)
 
   if not next(t) then
@@ -1739,9 +1761,25 @@ function mmp.echonums(roomname)
     -- + perhaps Mudlet in future will give this us anyway, sorted by relevancy
   local dt = {}
   if not tonumber(select(2, next(t))) then
-    for roomid,roomname in pairs(t) do dt[#dt+1] = {name = roomname, id = roomid} end
+    for roomid,room in pairs(t) do 
+        if not exact then
+            dt[#dt+1] = {name = room, id = roomid} 
+        else
+            if room == roomname then
+                dt[#dt+1] = {name = room, id = roomid}
+            end
+        end
+    end
   else
-    for roomname,roomid in pairs(t) do dt[#dt+1] = {name = roomname, id = roomid} end
+    for room,roomid in pairs(t) do
+        if not exact then
+            dt[#dt+1] = {name = room, id = roomid} 
+        else
+            if room == roomname then
+                dt[#dt+1] = {name = room, id = roomid}
+            end
+        end
+    end
   end
 
   -- display first three ids. Can't really nicely table.concat them.
@@ -1787,7 +1825,14 @@ function mmp.searchRoom(what)
   local result = cache[what]
   if not result then
     result = searchRoom(what)
-    cache[what] = result
+    local realResult = {}
+    for key, value in pairs(result) do
+        if tostring(key) then 
+            realResult[key:ends(" (road)") and key:sub(1, -8)  or key] = value
+        end
+    end
+    cache[what] = realResult
+    result = realResult
   end
   return result
 end
@@ -2182,6 +2227,25 @@ function mmp.getAreaBorders(areaid)
 
     return endresult
   
+end
+
+function mmp.locateAndEcho(room, person)
+
+    local t = mmp.searchRoom(room)
+
+    echo "  ("
+    mmp.echonums(room, true)
+    echo ")"
+
+    if not t[room] then return end
+
+    echo"\n"
+
+    if t[room] and type(t[room]) ~= "table" then
+	    cecho("&lt;red&gt;From your knowledge, that room is in &lt;orange_red&gt;"..mmp.areatabler[getRoomArea(t[room])].."&lt;red&gt;.")
+    else
+	    cecho("&lt;red&gt;From your knowledge, that room might be in &lt;orange_red&gt;"..mmp.areatabler[getRoomArea(t[room])].."&lt;red&gt;.")
+    end
 end</script>
         <eventHandlerList/>
       </Script>
