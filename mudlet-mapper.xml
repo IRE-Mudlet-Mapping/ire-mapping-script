@@ -125,6 +125,182 @@ speedwalking("Room", speedWalkPath[speedWalkCounter])</script>
         </regexCodePropertyList>
       </Trigger>
       <TriggerGroup isActive="yes" isFolder="yes" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+        <name>Achaea</name>
+        <script/>
+        <triggerType>0</triggerType>
+        <conditonLineDelta>0</conditonLineDelta>
+        <mStayOpen>0</mStayOpen>
+        <mCommand/>
+        <packageName/>
+        <mFgColor>#ff0000</mFgColor>
+        <mBgColor>#ffff00</mBgColor>
+        <mSoundFile/>
+        <colorTriggerFgColor>#000000</colorTriggerFgColor>
+        <colorTriggerBgColor>#000000</colorTriggerBgColor>
+        <regexCodeList/>
+        <regexCodePropertyList/>
+        <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+          <name>Login</name>
+          <script>raiseEvent("mmp logged in Achaea")</script>
+          <triggerType>0</triggerType>
+          <conditonLineDelta>0</conditonLineDelta>
+          <mStayOpen>0</mStayOpen>
+          <mCommand/>
+          <packageName/>
+          <mFgColor>#ff0000</mFgColor>
+          <mBgColor>#ffff00</mBgColor>
+          <mSoundFile/>
+          <colorTriggerFgColor>#000000</colorTriggerFgColor>
+          <colorTriggerBgColor>#000000</colorTriggerBgColor>
+          <regexCodeList>
+            <string>Password correct. Welcome to Achaea.</string>
+          </regexCodeList>
+          <regexCodePropertyList>
+            <integer>3</integer>
+          </regexCodePropertyList>
+        </Trigger>
+        <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="yes" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+          <name>Local area farsee</name>
+          <script>mmp.locateAndEcho(multimatches[2][3], multimatches[2][2])</script>
+          <triggerType>0</triggerType>
+          <conditonLineDelta>0</conditonLineDelta>
+          <mStayOpen>0</mStayOpen>
+          <mCommand/>
+          <packageName/>
+          <mFgColor>#ff0000</mFgColor>
+          <mBgColor>#ffff00</mBgColor>
+          <mSoundFile/>
+          <colorTriggerFgColor>#000000</colorTriggerFgColor>
+          <colorTriggerBgColor>#000000</colorTriggerBgColor>
+          <regexCodeList>
+            <string>You see that </string>
+            <string>^You see that (\w+) is at (.+)\.$</string>
+          </regexCodeList>
+          <regexCodePropertyList>
+            <integer>2</integer>
+            <integer>1</integer>
+          </regexCodePropertyList>
+        </Trigger>
+        <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+          <name>Entering wilderness</name>
+          <script>mmp.customwalkdelay(6)</script>
+          <triggerType>0</triggerType>
+          <conditonLineDelta>99</conditonLineDelta>
+          <mStayOpen>0</mStayOpen>
+          <mCommand/>
+          <packageName/>
+          <mFgColor>#ff0000</mFgColor>
+          <mBgColor>#ffff00</mBgColor>
+          <mSoundFile/>
+          <colorTriggerFgColor>#000000</colorTriggerFgColor>
+          <colorTriggerBgColor>#000000</colorTriggerBgColor>
+          <regexCodeList>
+            <string>You begin to look for that place to enter the wilderness. It's around here somewhere!</string>
+          </regexCodeList>
+          <regexCodePropertyList>
+            <integer>3</integer>
+          </regexCodePropertyList>
+        </Trigger>
+        <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+          <name>Icon enter/leave</name>
+          <script>mmp.customwalkdelay(10)</script>
+          <triggerType>0</triggerType>
+          <conditonLineDelta>1</conditonLineDelta>
+          <mStayOpen>0</mStayOpen>
+          <mCommand/>
+          <packageName/>
+          <mFgColor>#ff0000</mFgColor>
+          <mBgColor>#ffff00</mBgColor>
+          <mSoundFile/>
+          <colorTriggerFgColor>#000000</colorTriggerFgColor>
+          <colorTriggerBgColor>#000000</colorTriggerBgColor>
+          <regexCodeList>
+            <string>You reach out and touch a powerful Icon. For a moment, nothing happens, but soon you feel a humming deep inside you.</string>
+          </regexCodeList>
+          <regexCodePropertyList>
+            <integer>3</integer>
+          </regexCodePropertyList>
+        </Trigger>
+        <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+          <name>Underworld root</name>
+          <script>mmp.customwalkdelay(2)</script>
+          <triggerType>0</triggerType>
+          <conditonLineDelta>0</conditonLineDelta>
+          <mStayOpen>0</mStayOpen>
+          <mCommand/>
+          <packageName/>
+          <mFgColor>#ff0000</mFgColor>
+          <mBgColor>#ffff00</mBgColor>
+          <mSoundFile/>
+          <colorTriggerFgColor>#000000</colorTriggerFgColor>
+          <colorTriggerBgColor>#000000</colorTriggerBgColor>
+          <regexCodeList>
+            <string>As you touch a huge grey root, you feel dark energies coursing up your hand and throughout your body.</string>
+          </regexCodeList>
+          <regexCodePropertyList>
+            <integer>3</integer>
+          </regexCodePropertyList>
+        </Trigger>
+        <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="yes" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+          <name>Mindsense</name>
+          <script>mmp.locateAndEcho(multimatches[2][2])</script>
+          <triggerType>0</triggerType>
+          <conditonLineDelta>0</conditonLineDelta>
+          <mStayOpen>0</mStayOpen>
+          <mCommand/>
+          <packageName/>
+          <mFgColor>#ff0000</mFgColor>
+          <mBgColor>#ffff00</mBgColor>
+          <mSoundFile/>
+          <colorTriggerFgColor>#000000</colorTriggerFgColor>
+          <colorTriggerBgColor>#000000</colorTriggerBgColor>
+          <regexCodeList>
+            <string>An image of </string>
+            <string>^An image of (.+) appears in your mind\.$</string>
+          </regexCodeList>
+          <regexCodePropertyList>
+            <integer>2</integer>
+            <integer>1</integer>
+          </regexCodePropertyList>
+        </Trigger>
+      </TriggerGroup>
+      <TriggerGroup isActive="yes" isFolder="yes" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+        <name>Aetolia</name>
+        <script/>
+        <triggerType>0</triggerType>
+        <conditonLineDelta>1</conditonLineDelta>
+        <mStayOpen>0</mStayOpen>
+        <mCommand/>
+        <packageName/>
+        <mFgColor>#ff0000</mFgColor>
+        <mBgColor>#ffff00</mBgColor>
+        <mSoundFile/>
+        <colorTriggerFgColor>#000000</colorTriggerFgColor>
+        <colorTriggerBgColor>#000000</colorTriggerBgColor>
+        <regexCodeList/>
+        <regexCodePropertyList/>
+        <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+          <name>Login</name>
+          <script>raiseEvent("mmp logged in Aetolia")</script>
+          <triggerType>0</triggerType>
+          <conditonLineDelta>99</conditonLineDelta>
+          <mStayOpen>0</mStayOpen>
+          <mCommand/>
+          <packageName/>
+          <mFgColor>#ff0000</mFgColor>
+          <mBgColor>#ffff00</mBgColor>
+          <mSoundFile/>
+          <colorTriggerFgColor>#000000</colorTriggerFgColor>
+          <colorTriggerBgColor>#000000</colorTriggerBgColor>
+          <regexCodeList>
+            <string>Password correct. Welcome to Aetolia.</string>
+          </regexCodeList>
+          <regexCodePropertyList>
+            <integer>3</integer>
+          </regexCodePropertyList>
+        </Trigger>
+      </TriggerGroup>
+      <TriggerGroup isActive="yes" isFolder="yes" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
         <name>Lusternia</name>
         <script/>
         <triggerType>0</triggerType>
@@ -140,7 +316,27 @@ speedwalking("Room", speedWalkPath[speedWalkCounter])</script>
         <regexCodeList/>
         <regexCodePropertyList/>
         <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
-          <name>Mudlet Mapper Lusternia Scent</name>
+          <name>Login</name>
+          <script>raiseEvent("mmp logged in Lusternia")</script>
+          <triggerType>0</triggerType>
+          <conditonLineDelta>99</conditonLineDelta>
+          <mStayOpen>0</mStayOpen>
+          <mCommand/>
+          <packageName/>
+          <mFgColor>#ff0000</mFgColor>
+          <mBgColor>#ffff00</mBgColor>
+          <mSoundFile/>
+          <colorTriggerFgColor>#000000</colorTriggerFgColor>
+          <colorTriggerBgColor>#000000</colorTriggerBgColor>
+          <regexCodeList>
+            <string>Password correct. Welcome to Lusternia.</string>
+          </regexCodeList>
+          <regexCodePropertyList>
+            <integer>3</integer>
+          </regexCodePropertyList>
+        </Trigger>
+        <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+          <name>mmp Lusternia Scent</name>
           <script>mmp.tempscent = {}
 mmp.pdb_lastupdate = {}
 </script>
@@ -209,7 +405,7 @@ mmp.pdb_lastupdate[matches[2]] = true</script>
           </Trigger>
           <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
             <name>Stop capturing</name>
-            <script>setTriggerStayOpen("Mudlet Mapper Lusternia Scent", 0)
+            <script>setTriggerStayOpen("mmp Lusternia Scent", 0)
 
 --[[for area, names in pairs(mmp.tempscent) do
 	for _, name in ipairs(names) do
@@ -544,9 +740,9 @@ if not t then return end
 echo"\n"
 
 if #t == 1 then
-    cecho("&lt;red&gt;From your knowledge, that room is in &lt;orange_red&gt;"..mmp.areatabler[getRoomArea(t[1])].."&lt;red&gt;.")
+	cecho("&lt;red&gt;From your knowledge, that room is in &lt;orange_red&gt;"..mmp.areatabler[getRoomArea(t[1])].."&lt;red&gt;.")
 else
-    cecho("&lt;red&gt;From your knowledge, that room might be in &lt;orange_red&gt;"..mmp.areatabler[getRoomArea(t[1])].."&lt;red&gt;.")
+	cecho("&lt;red&gt;From your knowledge, that room might be in &lt;orange_red&gt;"..mmp.areatabler[getRoomArea(t[1])].."&lt;red&gt;.")
 end</script>
           <triggerType>0</triggerType>
           <conditonLineDelta>0</conditonLineDelta>
@@ -575,9 +771,9 @@ if not t then return end
 echo"\n"
 
 if #t == 1 then
-    cecho("&lt;red&gt;Porting to &lt;orange_red&gt;"..mmp.areatabler[getRoomArea(t[1])].."&lt;red&gt;.")
+	cecho("&lt;red&gt;Porting to &lt;orange_red&gt;"..mmp.areatabler[getRoomArea(t[1])].."&lt;red&gt;.")
 else
-    cecho("&lt;red&gt;Might be porting to &lt;orange_red&gt;"..mmp.areatabler[getRoomArea(t[1])].."&lt;red&gt;.")
+	cecho("&lt;red&gt;Might be porting to &lt;orange_red&gt;"..mmp.areatabler[getRoomArea(t[1])].."&lt;red&gt;.")
 end</script>
           <triggerType>0</triggerType>
           <conditonLineDelta>0</conditonLineDelta>
@@ -600,10 +796,10 @@ end</script>
         </Trigger>
       </TriggerGroup>
       <TriggerGroup isActive="yes" isFolder="yes" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
-        <name>Achaea</name>
+        <name>Imperian</name>
         <script/>
         <triggerType>0</triggerType>
-        <conditonLineDelta>0</conditonLineDelta>
+        <conditonLineDelta>99</conditonLineDelta>
         <mStayOpen>0</mStayOpen>
         <mCommand/>
         <packageName/>
@@ -614,9 +810,9 @@ end</script>
         <colorTriggerBgColor>#000000</colorTriggerBgColor>
         <regexCodeList/>
         <regexCodePropertyList/>
-        <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="yes" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
-          <name>Local area farsee</name>
-          <script>mmp.locateAndEcho(multimatches[2][3], multimatches[2][2])</script>
+        <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+          <name>Login</name>
+          <script>raiseEvent("mmp logged in Imperian")</script>
           <triggerType>0</triggerType>
           <conditonLineDelta>0</conditonLineDelta>
           <mStayOpen>0</mStayOpen>
@@ -628,57 +824,31 @@ end</script>
           <colorTriggerFgColor>#000000</colorTriggerFgColor>
           <colorTriggerBgColor>#000000</colorTriggerBgColor>
           <regexCodeList>
-            <string>You see that </string>
-            <string>^You see that (\w+) is at (.+)\.$</string>
-          </regexCodeList>
-          <regexCodePropertyList>
-            <integer>2</integer>
-            <integer>1</integer>
-          </regexCodePropertyList>
-        </Trigger>
-        <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
-          <name>Entering wilderness</name>
-          <script>mmp.customwalkdelay(6)</script>
-          <triggerType>0</triggerType>
-          <conditonLineDelta>99</conditonLineDelta>
-          <mStayOpen>0</mStayOpen>
-          <mCommand/>
-          <packageName/>
-          <mFgColor>#ff0000</mFgColor>
-          <mBgColor>#ffff00</mBgColor>
-          <mSoundFile/>
-          <colorTriggerFgColor>#000000</colorTriggerFgColor>
-          <colorTriggerBgColor>#000000</colorTriggerBgColor>
-          <regexCodeList>
-            <string>You begin to look for that place to enter the wilderness. It's around here somewhere!</string>
+            <string>Password correct. Welcome to Imperian.</string>
           </regexCodeList>
           <regexCodePropertyList>
             <integer>3</integer>
           </regexCodePropertyList>
         </Trigger>
+      </TriggerGroup>
+      <TriggerGroup isActive="yes" isFolder="yes" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+        <name>Midkemia Online</name>
+        <script/>
+        <triggerType>0</triggerType>
+        <conditonLineDelta>99</conditonLineDelta>
+        <mStayOpen>0</mStayOpen>
+        <mCommand/>
+        <packageName/>
+        <mFgColor>#ff0000</mFgColor>
+        <mBgColor>#ffff00</mBgColor>
+        <mSoundFile/>
+        <colorTriggerFgColor>#000000</colorTriggerFgColor>
+        <colorTriggerBgColor>#000000</colorTriggerBgColor>
+        <regexCodeList/>
+        <regexCodePropertyList/>
         <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
-          <name>Icon enter/leave</name>
-          <script>mmp.customwalkdelay(10)</script>
-          <triggerType>0</triggerType>
-          <conditonLineDelta>1</conditonLineDelta>
-          <mStayOpen>0</mStayOpen>
-          <mCommand/>
-          <packageName/>
-          <mFgColor>#ff0000</mFgColor>
-          <mBgColor>#ffff00</mBgColor>
-          <mSoundFile/>
-          <colorTriggerFgColor>#000000</colorTriggerFgColor>
-          <colorTriggerBgColor>#000000</colorTriggerBgColor>
-          <regexCodeList>
-            <string>You reach out and touch a powerful Icon. For a moment, nothing happens, but soon you feel a humming deep inside you.</string>
-          </regexCodeList>
-          <regexCodePropertyList>
-            <integer>3</integer>
-          </regexCodePropertyList>
-        </Trigger>
-        <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="yes" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
-          <name>mindsense/skull locating</name>
-          <script>mmp.locateAndEcho(multimatches[2][2])</script>
+          <name>Login</name>
+          <script>raiseEvent("mmp logged in Midkemia Online")</script>
           <triggerType>0</triggerType>
           <conditonLineDelta>0</conditonLineDelta>
           <mStayOpen>0</mStayOpen>
@@ -690,18 +860,17 @@ end</script>
           <colorTriggerFgColor>#000000</colorTriggerFgColor>
           <colorTriggerBgColor>#000000</colorTriggerBgColor>
           <regexCodeList>
-            <string>An image of </string>
-            <string>^An image of (.+) appears in your mind\.$</string>
+            <string>Password correct. Welcome to Midkemia Online.</string>
           </regexCodeList>
           <regexCodePropertyList>
-            <integer>2</integer>
-            <integer>1</integer>
+            <integer>3</integer>
           </regexCodePropertyList>
         </Trigger>
       </TriggerGroup>
     </TriggerGroup>
   </TriggerPackage>
-  <TimerPackage/>
+  <TimerPackage>
+        </TimerPackage>
   <AliasPackage>
     <AliasGroup isActive="yes" isFolder="yes">
       <name>Mudlet Mapper</name>
@@ -713,7 +882,7 @@ end</script>
         <name>Go to ID or area</name>
         <script>local where = matches[2]
 local gallop
-if command:ends("gallop") then 
+if command:ends("gallop") then
   gallop = "gallop"
   where = where:sub(1, -8)
 elseif command:ends("sprint") then
@@ -816,7 +985,7 @@ if matches[2] == '' and (not mmp.currentroom or not mmp.roomexists(mmp.currentro
 if matches[2] ~= '' and not mmp.roomexists(matches[2]) then mmp.echo("v"..matches[2].." doesn't exist.") return end
 
 local m = matches[3]
-local rid, rname = (matches[2] ~= "" and matches[2] or mmp.currentroom), 
+local rid, rname = (matches[2] ~= "" and matches[2] or mmp.currentroom),
   (matches[2] ~= "" and getRoomName(matches[2]) or mmp.currentroomname)
 local x,y,z
 
@@ -1258,18 +1427,12 @@ end</script>
       </Alias>
     </AliasGroup>
   </AliasPackage>
-  <ActionPackage>
-        </ActionPackage>
+  <ActionPackage/>
   <ScriptPackage>
     <ScriptGroup isActive="yes" isFolder="yes">
       <name>Mudlet Mapper</name>
       <packageName/>
-      <script>-------------------------------------------------
---         Put your Lua functions here.        --
---                                             --
--- Note that you can also use external Scripts --
--------------------------------------------------
-mudlet = mudlet or {}; mudlet.mapper_script = true</script>
+      <script/>
       <eventHandlerList/>
       <Script isActive="yes" isFolder="no">
         <name>Create Option Table</name>
@@ -1755,13 +1918,13 @@ function mmp.echonums(roomname, exact)
   if not next(t) then
     echo "?" return nil end
 
-  -- transform the kv table into a table of tables for cleaner code. 
+  -- transform the kv table into a table of tables for cleaner code.
     -- + perhaps Mudlet in future will give this us anyway, sorted by relevancy
   local dt = {}
   if not tonumber(select(2, next(t))) then
-    for roomid,room in pairs(t) do 
+    for roomid,room in pairs(t) do
         if not exact then
-            dt[#dt+1] = {name = room, id = roomid} 
+            dt[#dt+1] = {name = room, id = roomid}
         else
             if room == roomname then
                 dt[#dt+1] = {name = room, id = roomid}
@@ -1771,7 +1934,7 @@ function mmp.echonums(roomname, exact)
   else
     for room,roomid in pairs(t) do
         if not exact then
-            dt[#dt+1] = {name = room, id = roomid} 
+            dt[#dt+1] = {name = room, id = roomid}
         else
             if room == roomname then
                 dt[#dt+1] = {name = room, id = roomid}
@@ -1825,7 +1988,7 @@ function mmp.searchRoom(what)
     result = searchRoom(what)
     local realResult = {}
     for key, value in pairs(result) do
-        if tostring(key) then 
+        if tostring(key) then
             realResult[key:ends(" (road)") and key:sub(1, -8)  or key] = value
         end
     end
@@ -1864,7 +2027,7 @@ function mmp.roomFind(query)
   if type(result) == "string" or not next(result) then
     cecho("&lt;grey&gt;You have no recollection of any room with that name.") return end
 
-  cecho("&lt;DarkSlateGrey&gt;You know the following relevant rooms:\n")
+  cecho("&lt;DarkSlateGrey&gt;You know the following relevant rooms::\n")
 
 
   if not tonumber(select(2, next(result))) then -- old style
@@ -1891,7 +2054,7 @@ function mmp.findAreaID(areaname, exact)
   local areaname = areaname:lower()
   local list = getAreaTable()
 
-  -- iterate over the list of areas, matching them with substring match. 
+  -- iterate over the list of areas, matching them with substring match.
   -- if we get match a single area, then return it's ID, otherwise return
   -- 'false' and a message that there are than one are matches
   local returnid, fullareaname, multipleareas = nil, nil, {}
@@ -1900,7 +2063,7 @@ function mmp.findAreaID(areaname, exact)
       returnid = id; fullareaname = area; multipleareas[#multipleareas+1] = area
     end
   end
-  
+
   if #multipleareas == 1 then
     return returnid, fullareaname
   else
@@ -1912,12 +2075,12 @@ function mmp.echoRoomList(areaname, exact)
   local id, msg, multiples = mmp.findAreaID(areaname, exact)
   if id then
     local roomlist, endresult = getAreaRooms(id), {}
-  
+
     -- obtain a room list for each of the room IDs we got
     for _, id in pairs(roomlist) do
       endresult[id] = getRoomName(id)
     end
-  
+
   -- sort room IDs so we can display them in order
     table.sort(roomlist)
 
@@ -1945,10 +2108,10 @@ end
 function mmp.echoAreaList()
   local list = getAreaTable()
   local ids, rlist = {}, {}
-  for area, id in pairs(list) do 
+  for area, id in pairs(list) do
     if id ~= 0 then ids[#ids+1] = id; rlist[id] = area end end
   table.sort(ids)
-  
+
   cecho(string.format(
       "&lt;DarkSlateGrey&gt;List of all areas we know of (click to view room list):\n"))
   for _, id in pairs(ids) do
@@ -1978,7 +2141,7 @@ function mmp.roomLook(input)
     -- generate a report
     mmp.echo(string.format("Room: %s #: %d area: %s (%d)",
       name, num, tostring(mmp.areatabler[areanum]), areanum))
-    
+
     mmp.echo(string.format("Coordinates: x:%d, y:%d, z:%d, locked: %s, weight: %s", coords[1], coords[2], coords[3], (islocked and "yep" or "nope"), tostring(weight)))
 
     mmp.echo(string.format("Environment: %s (%d)", tostring(envname), env))
@@ -2033,7 +2196,7 @@ function mmp.roomLook(input)
         echoLink(roomid, 'mmp.roomLook('..roomid..')', string.format("View room details for %s (%s)", roomid, tostring(roomname)))
         cecho(string.format("&lt;DarkSlateGrey&gt;) in the &lt;LightSlateGray&gt;%s&lt;DarkSlateGrey&gt;.\n", tostring(mmp.areatabler[getRoomArea(roomid)])))
       end
-    end    
+    end
   end
 
   if not input then
@@ -2152,7 +2315,7 @@ function mmp.deleteArea(name, exact)
   elseif next(ma) then
     mmp.echo("Which one of these specifically would you like to delete?")
 
-    fg("DimGrey") 
+    fg("DimGrey")
     for _,name in ipairs(ma) do
     echo "  " setUnderline(true) echoLink(name, [[mmp.deleteArea("]]..name..[[", true)]], "Delete "..name, true) setUnderline(false) echo"\n"
     end
@@ -2160,7 +2323,7 @@ function mmp.deleteArea(name, exact)
     else
       mmp.echo("Don't know of that area.")
   end
-  
+
   raiseEvent("mmp areas changed")
 end
 
@@ -2198,7 +2361,7 @@ function mmp.roomArea(otherroom, name, exact)
   elseif next(ma) then
     mmp.echo("Into which area exactly would you like to move the room?")
 
-    fg("DimGrey") 
+    fg("DimGrey")
     for _,name in ipairs(ma) do
     echo "  " setUnderline(true) echoLink(name, [[mmp.roomArea('', "]]..name..[[", true)]], "Move the room to "..name, true) setUnderline(false) echo"\n"
     end
@@ -2209,9 +2372,9 @@ function mmp.roomArea(otherroom, name, exact)
 end
 
 function mmp.getAreaBorders(areaid)
- 
+
     local roomlist, endresult = getAreaRooms(areaid), {}
-  
+
     -- obtain a room list for each of the room IDs we got
     for _, id in pairs(roomlist) do
       local exits = getRoomExits(id)
@@ -2224,7 +2387,7 @@ function mmp.getAreaBorders(areaid)
 
 
     return endresult
-  
+
 end
 
 function mmp.locateAndEcho(room, person)
@@ -2265,14 +2428,15 @@ mmp will have 2 person tracking databases:
 Both databases work with the person's name as key and the location name as value.
 
 ]]
-mmp.pdb = mmp.pdb or {}</script>
+mmp.pdb = mmp.pdb or {}
+mmp.pdb_lastupdate = mmp.pdb_lastupdate or {}</script>
         <eventHandlerList/>
       </Script>
       <Script isActive="yes" isFolder="no">
         <name>Lock Area</name>
         <packageName/>
         <script>
-			
+
 mmp.locked = mmp.locked or {}
 mmp.lastLockSearch = nil
 
@@ -2320,7 +2484,7 @@ function mmp.lockArea(name, lock, dontreshow)
 	for _, room in pairs(rooms) do
 		lockRoom(room, lock)
 	end
-	
+
 	mmp.locked[areas[name]] = lock and true or nil
 	if lock then
 		mmp.echo("Area '" .. name .. "' locked!")
@@ -2414,7 +2578,7 @@ local function makeroom(oldid, newid, x,y,z)
     setRoomEnv(newid, mmp.envids[gmcp.Room.Info.environment])
   else setRoomEnv(newid, getRoomEnv(oldid)) end
 
-  return string.format("Created new room %d at %dx,%dy,%dz.", newid, x,y,z) 
+  return string.format("Created new room %d at %dx,%dy,%dz.", newid, x,y,z)
 end
 
 -- gives the reverse shifted coordinates, ie asking for the sw exit + coords will give the coords at ne
@@ -2467,7 +2631,7 @@ local s,m = xpcall(function ()
   local num = tonumber(num) or tonumber(gmcp.Room.Info.num)
   local currentexits = gmcp.Room.Info.exits
   local s = ""
-  if not mmp.roomexists(num) then 
+  if not mmp.roomexists(num) then
     -- two-step method: if we can't determine a link via GMCP, we'll do it via last dir
     -- see if we can create and link this room with an existing one
     for exit, id in pairs(currentexits) do
@@ -2489,7 +2653,7 @@ local s,m = xpcall(function ()
       rootroomname = string.sub(rootroomname, 1, (#rootroomname-7))
     end
 
-    if getRoomName(num):lower() ~= string.lower(rootroomname) then 
+    if getRoomName(num):lower() ~= string.lower(rootroomname) then
       setRoomName(num, rootroomname)
       s = s .. (#s &gt; 0 and " " or "") .. "Updated room name to "..rootroomname.."."
     end
@@ -2507,9 +2671,9 @@ local s,m = xpcall(function ()
           end
           if setExit(num, id, exit) then
             s = s .. (#s &gt; 0 and " " or "") .. "Added missing exit "..exit.." to "..(getRoomName(id) ~= "" and getRoomName(id) or "''").." ("..id..")."
-          else 
+          else
             s = s .. (#s &gt; 0 and " " or "") .. string.format("Failed to link %d withh %d via %s exit for some reason :/", num, id, exit)
-          end          
+          end
         end
       end
     end
@@ -2523,7 +2687,7 @@ local s,m = xpcall(function ()
         end
       end
     end
-  
+
     -- check for environment update, if we have environments mapped out
     if mmp.envids[gmcp.Room.Info.environment] and mmp.envids[gmcp.Room.Info.environment] ~= getRoomEnv(num) then
       setRoomEnv(num, mmp.envids[gmcp.Room.Info.environment])
@@ -2532,7 +2696,7 @@ local s,m = xpcall(function ()
   end
 
   if #s &gt; 0 then mmp.echo(s); centerview(mmp.currentroom) end
-end, function () 
+end, function ()
   mmp.echo("Oops! Has a small problem.")
   echo"  " echoLink("view steps", 'echo[['..debug.traceback()..']]', "View steps of code that led up to it")
 end)
@@ -2632,46 +2796,342 @@ end</script>
         <Script isActive="yes" isFolder="no">
           <name>Achaea</name>
           <packageName/>
-          <script>mmp.envids = 
-{
-  Path = 11,
-  Sewer = 23,
-  Freshwater = 22,
-  ["Natural underground"] = 3,
-  ["Magma Caves"] = 31,
-  Polar = 27,
-  Nothing = 0,
-  ["Constructed underground"] = 2,
-  Ruins = 32,
-  Blighted = 29,
-  Forest = 4,
-  Tundra = 16,
-  ["Tsol'aa city"] = 19,
-  ["Dwarven city"] = 18,
-  Jungle = 17,
-  Ocean = 20,
-  River = 10,
-  Mountains = 14,
-  ["Deep Ocean"] = 24,
-  Desert = 6,
-  Garden = 21,
-  Swamp = 15,
-  Road = 12,
-  Water = 30,
-  Grasslands = 7,
-  Valley = 13,
-  Reef = 25,
-  Hills = 9,
-  Vessel = 36,
-  Beach = 5,
-  Urban = 8,
-  Trees = 28,
-  ["Ocean floor"] = 34
-}
-
-mmp.envidsr = {};
-for name, id in pairs(mmp.envids) do mmp.envidsr[id] = name end</script>
+          <script/>
           <eventHandlerList/>
+          <Script isActive="yes" isFolder="no">
+            <name>register_achaeas_envdata</name>
+            <packageName/>
+            <script>function register_achaeas_envdata()
+  mmp.envids =
+  {
+    Path = 11,
+    Sewer = 23,
+    Freshwater = 22,
+    ["Natural underground"] = 3,
+    ["Magma Caves"] = 31,
+    Polar = 27,
+    Nothing = 0,
+    ["Constructed underground"] = 2,
+    Ruins = 32,
+    Blighted = 29,
+    Forest = 4,
+    Tundra = 16,
+    ["Tsol'aa city"] = 19,
+    ["Dwarven city"] = 18,
+    Jungle = 17,
+    Ocean = 20,
+    River = 10,
+    Mountains = 14,
+    ["Deep Ocean"] = 24,
+    Desert = 6,
+    Garden = 21,
+    Swamp = 15,
+    Road = 12,
+    Water = 30,
+    Grasslands = 7,
+    Valley = 13,
+    Reef = 25,
+    Hills = 9,
+    Vessel = 36,
+    Beach = 5,
+    Urban = 8,
+    Trees = 28,
+    ["Ocean floor"] = 34
+  }
+
+  mmp.envidsr = {};
+  for name, id in pairs(mmp.envids) do mmp.envidsr[id] = name end
+end</script>
+            <eventHandlerList>
+              <string>mmp logged in Achaea</string>
+            </eventHandlerList>
+          </Script>
+        </Script>
+        <Script isActive="yes" isFolder="no">
+          <name>Aetolia</name>
+          <packageName/>
+          <script>-------------------------------------------------
+--         Put your Lua functions here.        --
+--                                             --
+-- Note that you can also use external Scripts --
+-------------------------------------------------
+</script>
+          <eventHandlerList/>
+          <Script isActive="yes" isFolder="no">
+            <name>register_aetolias_envdata</name>
+            <packageName/>
+            <script>function register_aetolias_envdata()
+  mmp.envids =
+  {
+    Chaos = 1,
+    ["Constructed underground"] = 2,
+    ["Natural underground"] = 3,
+    Forest = 4,
+    Beach = 5,
+    Desert = 6,
+    Grasslands = 7,
+    Urban = 8,
+    Hills = 9,
+    River = 10,
+    Path = 11,
+    Road = 12,
+    Valley = 13,
+    Mountains = 14,
+    Swamp = 15,
+    Tundra = 16,
+    Jungle = 17,
+    ["Tsol'aa city"] = 19,
+    Ocean = 20,
+    Garden = 21,
+    Freshwater = 22,
+    Sewer = 23,
+    ["Deep ocean"] = 24,
+    Reef = 25,
+    Ruins = 26,
+    Village = 27,
+    ["Underwater city"] = 28,
+    Temple = 29,
+    Ice = 30,
+    Graveyard = 31,
+    Mines = 32,
+    Onboard = 33,
+    Canyon = 34,
+    ["within a tree"] = 36,
+    Crater = 37,
+    lava = 39,
+    ["lifeless sands"] = 54,
+    ["a bridge"] = 55,
+    ["logged forest"] = 56,
+    ["camp site"] = 57,
+    Shadows = 58,
+    Castle = 61,
+    ["Airship wreckage"] = 62,
+    Ethereal = 67,
+    Cavern = 69,
+    grotto = 70,
+  }
+
+  mmp.envidsr = {};
+  for name, id in pairs(mmp.envids) do mmp.envidsr[id] = name end
+end</script>
+            <eventHandlerList>
+              <string>mmp logged in Aetolia</string>
+            </eventHandlerList>
+          </Script>
+        </Script>
+        <Script isActive="yes" isFolder="no">
+          <name>Lusternia</name>
+          <packageName/>
+          <script>-------------------------------------------------
+--         Put your Lua functions here.        --
+--                                             --
+-- Note that you can also use external Scripts --
+-------------------------------------------------
+</script>
+          <eventHandlerList/>
+          <Script isActive="yes" isFolder="no">
+            <name>register_lusternias_envdata</name>
+            <packageName/>
+            <script>function register_lusternias_envdata()
+  mmp.envids =
+  {
+    darkness = 1,
+    ["constructed underground"] = 2,
+    ["natural underground"] = 3,
+    forest = 4,
+    beach = 5,
+    desert = 6,
+    grasslands = 7,
+    urban = 8,
+    hills = 9,
+    river = 10,
+    path = 11,
+    road = 12,
+    valley = 13,
+    mountains = 14,
+    swamp = 15,
+    tundra = 16,
+    jungle = 17,
+    flesh = 18,
+    ruins = 19,
+    ocean = 20,
+    garden = 21,
+    freshwater = 22,
+    sewer = 23,
+    ["deep ocean"] = 24,
+    reef = 25,
+    polar = 27,
+    trees = 28,
+    wasteland = 29,
+    farmlands = 30,
+    volcanic = 32,
+    divine = 33,
+    netherworld = 34,
+    astral = 35,
+    aether = 36,
+    clouds = 37,
+    concordance = 38,
+    chaos = 39,
+  }
+
+  mmp.envidsr = {};
+  for name, id in pairs(mmp.envids) do mmp.envidsr[id] = name end
+end</script>
+            <eventHandlerList>
+              <string>mmp logged in Lusternia</string>
+            </eventHandlerList>
+          </Script>
+        </Script>
+        <Script isActive="yes" isFolder="no">
+          <name>Imperian</name>
+          <packageName/>
+          <script>-------------------------------------------------
+--         Put your Lua functions here.        --
+--                                             --
+-- Note that you can also use external Scripts --
+-------------------------------------------------
+</script>
+          <eventHandlerList/>
+          <Script isActive="yes" isFolder="no">
+            <name>register_imperians_envdata</name>
+            <packageName/>
+            <script>function register_imperians_envdata()
+  mmp.envids =
+  {
+    ["Dark Forest"] = 1,
+    ["Constructed underground"] = 2,
+    ["Natural underground"] = 3,
+    Forest = 4,
+    Beach = 5,
+    Desert = 6,
+    Grasslands = 7,
+    Urban = 8,
+    Hills = 9,
+    River = 10,
+    Path = 11,
+    Road = 12,
+    Valley = 13,
+    Mountains = 14,
+    Swamp = 15,
+    Tundra = 16,
+    Jungle = 17,
+    ["Dwarven city"] = 18,
+    ["Sylayan city"] = 19,
+    Ocean = 20,
+    Garden = 21,
+    Freshwater = 22,
+    Sewer = 23,
+    ["Deep Ocean"] = 24,
+    ["Vast Ocean"] = 26,
+    Polar = 27,
+    Underworld = 28,
+    Docks = 30,
+    Warrens = 31,
+    Crags = 32,
+    Acropolis = 33,
+    ["Tainted Underground"] = 35,
+    ["Underground Lake"] = 36,
+    Ruins = 37,
+    ["Desert Ruins"] = 38,
+    ["Tainted Water"] = 39,
+    Farmland = 41,
+    Academia = 42,
+    ["Forestal Council"] = 44,
+    Graveyard = 46,
+    Village = 47,
+    transportation = 48,
+    Pond = 49,
+    Nobility = 50,
+    ["Noble Chambers"] = 51,
+    ["Noble Bar"] = 53,
+    Church = 54,
+    Village = 55,
+    ["Lake of Fire"] = 56,
+    Temple = 57,
+    ["Blackened Lands"] = 58,
+    Volcano = 59,
+    ["Blackstone Keep"] = 62,
+    Catacombs = 63,
+    ["Wetlands Village"] = 64,
+    ["Blackstone Dungeon"] = 65,
+    ["Arcane Temple"] = 66,
+    Cliffs = 67,
+    ["a sheltered dell"] = 68,
+    ["within a tent"] = 69,
+    quarry = 70,
+    garrison = 71,
+    pyramid = 72,
+    bog = 73,
+    Blighted = 74,
+    Villa = 75,
+    ["Frozen Bog"] = 76,
+    ["Rocky Shore"] = 77,
+    Scrublands = 78,
+    Tower = 79,
+  }
+
+  mmp.envidsr = {};
+  for name, id in pairs(mmp.envids) do mmp.envidsr[id] = name end
+end</script>
+            <eventHandlerList>
+              <string>mmp logged in Imperian</string>
+            </eventHandlerList>
+          </Script>
+        </Script>
+        <Script isActive="yes" isFolder="no">
+          <name>Midmekia Online</name>
+          <packageName/>
+          <script>-------------------------------------------------
+--         Put your Lua functions here.        --
+--                                             --
+-- Note that you can also use external Scripts --
+-------------------------------------------------
+</script>
+          <eventHandlerList/>
+          <Script isActive="yes" isFolder="no">
+            <name>register_midkemias_envdata</name>
+            <packageName/>
+            <script>function register_midkemias_envdata()
+  mmp.envids =
+  {
+    ["constructed underground"] = 2,
+    ["natural underground"] = 3,
+    forest = 4,
+    beach = 5,
+    grasslands = 7,
+    urban = 8,
+    hills = 9,
+    river = 10,
+    path = 11,
+    road = 12,
+    valley = 13,
+    mountains = 14,
+    swamp = 15,
+    tundra = 16,
+    ocean = 18,
+    garden = 19,
+    ["fresh water"] = 20,
+    sewers = 21,
+    reef = 23,
+    ruins = 24,
+    village = 25,
+    temple = 26,
+    ice = 27,
+    mines = 28,
+    canyon = 29,
+    plains = 30,
+    farmlands = 31,
+    volcanic = 32,
+    ["shores of Lake Moraelin"] = 33,
+  }
+
+  mmp.envidsr = {};
+  for name, id in pairs(mmp.envids) do mmp.envidsr[id] = name end
+end</script>
+            <eventHandlerList>
+              <string>mmp logged in Midkemia Online</string>
+            </eventHandlerList>
+          </Script>
         </Script>
       </ScriptGroup>
       <ScriptGroup isActive="yes" isFolder="yes">
@@ -2714,7 +3174,7 @@ function mmp.getUnknownEnvs()
   for i = 1, maxid do
     if mmp.roomexists(i) then
       if not table.contains(mmp.envids, getRoomEnv(i)) and not table.contains(missing, getRoomEnv(i)) then
-        mmp.echo(string.format("Missing env %d from room %d ('%s' in '%s')", 
+        mmp.echo(string.format("Missing env %d from room %d ('%s' in '%s')",
           tostring(getRoomEnv(i)), i, tostring(getRoomName(i)), tostring(mmp.areatabler[getRoomArea(i)])))
         missing[i] = getRoomEnv(i)
       end
