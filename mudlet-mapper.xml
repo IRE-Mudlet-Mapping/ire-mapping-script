@@ -906,6 +906,21 @@ end</script>
         <regex>^goto (.+)$</regex>
       </Alias>
       <Alias isActive="yes" isFolder="no">
+        <name>View roomID o area</name>
+        <script>local where = matches[2]
+
+if not where then
+	centerview(mmp.currentroom)
+elseif tonumber(where) then -- view a room ID
+	centerview(where)
+else -- view an area
+	mmp.viewArea (where)
+end</script>
+        <command/>
+        <packageName/>
+        <regex>^mmap ?(.+)?$</regex>
+      </Alias>
+      <Alias isActive="yes" isFolder="no">
         <name>Toggle pause</name>
         <script>mmp.pause(matches[2])</script>
         <command/>
@@ -2414,6 +2429,30 @@ function mmp.locateAndEcho(room, person)
       mmp.pdb[person] = room
       mmp.pdb_lastupdate[person] = room
    end
+end
+
+function mmp.viewArea (where, exact)
+  if not where or not type(where)=="string" then
+    mmp.echo("Which area would you like to view?") return end
+
+
+  local areaid, msg, multiples = mmp.findAreaID(where, exact)
+  if areaid then
+    -- center on the first room ID, which typically is the start of an area
+    centerview(getAreaRooms(areaid)[1])
+
+  elseif not areaid and #multiples &gt; 0 then
+    mmp.echo("Which area would you like to view exactly?")
+    fg("DimGrey")
+    for _, areaname in ipairs(multiples) do
+      echo"  "; setUnderline(true) echoLink(areaname, 'mmp.viewArea("'..areaname..'", true)', "Click to view "..areaname, true) setUnderline(false) echo"\n"
+    end
+    resetFormat()
+    return
+  else
+    mmp.echo(string.format("Don't know of any area named '%s'.", where))
+    return
+  end
 end</script>
         <eventHandlerList/>
       </Script>
