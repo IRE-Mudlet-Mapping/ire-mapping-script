@@ -1749,7 +1749,7 @@ function mmp.gotoArea (where, number, dashtype, exact)
     end
     mmp.echo("Which area would you like to go to?")
     fg("DimGrey")
-    for _, areaname in ipairs(multiples) do
+    for key, areaname in ipairs(multiples) do
       echo"  "; setUnderline(true) echoLink(key .. ".) " .. areaname, 'mmp.gotoArea("'..areaname..'", '..(dashtype and '"'..dashtype..'"' or "nil")..', true)', "Click to go to "..areaname, true) setUnderline(false) echo"\n"
     end
     resetFormat()
