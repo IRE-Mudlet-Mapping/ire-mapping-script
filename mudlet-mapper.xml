@@ -898,8 +898,13 @@ end
 if tonumber(where) then
 	mmp.gotoRoom(where, gallop)
 else
-	-- locate area
-   mmp.gotoArea(where, gallop)
+	-- goto area
+    local split = where:split(" ")
+    if tonumber(split[#split]) then
+        mmp.gotoArea(where:sub(1, -#(split[#split])-2), tonumber(split[#split]), gallop)
+    else
+        mmp.gotoArea(where, nil, gallop)
+    end
 end</script>
         <command/>
         <packageName/>
@@ -1727,7 +1732,7 @@ function mmp.gotoRoom (where, dashtype)
   doSpeedWalk(dashtype)
 end
 
-function mmp.gotoArea (where, dashtype, exact)
+function mmp.gotoArea (where, number, dashtype, exact)
   if not where or not type(where)=="string" then
     mmp.echo("Where do you want to go to?") return end
 
@@ -1738,6 +1743,10 @@ function mmp.gotoArea (where, dashtype, exact)
      possibleRooms = mmp.getAreaBorders(areaid)
 
   elseif not areaid and #multiples &gt; 0 then
+    if number and number&lt;=#multiples then
+        mmp.gotoArea(multiples[number], nil, dashtype, true)
+        return
+    end
     mmp.echo("Which area would you like to go to?")
     fg("DimGrey")
     for _, areaname in ipairs(multiples) do
