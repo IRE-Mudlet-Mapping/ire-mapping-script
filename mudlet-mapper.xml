@@ -2,7 +2,7 @@
   <TriggerPackage>
     <TriggerGroup isActive="yes" isFolder="yes" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
       <name>Mudlet Mapper</name>
-      <script/>
+      <script>mudlet = mudlet or {}; mudlet.mapper_script = true</script>
       <triggerType>0</triggerType>
       <conditonLineDelta>0</conditonLineDelta>
       <mStayOpen>0</mStayOpen>
@@ -261,6 +261,26 @@ speedwalking("Room", speedWalkPath[speedWalkCounter])</script>
           <regexCodePropertyList>
             <integer>2</integer>
             <integer>1</integer>
+          </regexCodePropertyList>
+        </Trigger>
+        <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+          <name>Destroyed room</name>
+          <script>mmp.customwalkdelay(3)</script>
+          <triggerType>0</triggerType>
+          <conditonLineDelta>0</conditonLineDelta>
+          <mStayOpen>0</mStayOpen>
+          <mCommand/>
+          <packageName/>
+          <mFgColor>#ff0000</mFgColor>
+          <mBgColor>#ffff00</mBgColor>
+          <mSoundFile/>
+          <colorTriggerFgColor>#000000</colorTriggerFgColor>
+          <colorTriggerBgColor>#000000</colorTriggerBgColor>
+          <regexCodeList>
+            <string>Your movement is slowed as you move through the decimated remains.</string>
+          </regexCodeList>
+          <regexCodePropertyList>
+            <integer>3</integer>
           </regexCodePropertyList>
         </Trigger>
       </TriggerGroup>
@@ -874,7 +894,7 @@ end</script>
   <AliasPackage>
     <AliasGroup isActive="yes" isFolder="yes">
       <name>Mudlet Mapper</name>
-      <script/>
+      <script>mudlet = mudlet or {}; mudlet.mapper_script = true</script>
       <command/>
       <packageName/>
       <regex/>
@@ -2696,6 +2716,9 @@ local s,m = xpcall(function ()
     -- update room name
     local rootroomname = gmcp.Room.Info.name
     if string.starts(rootroomname, "Flying above ") then
+      rootroomname = string.sub(rootroomname, -(#rootroomname-13))
+    end
+    if string.starts(rootroomname, "The ruins of ") then
       rootroomname = string.sub(rootroomname, -(#rootroomname-13))
     end
     if string.ends(rootroomname, " (road)") then
