@@ -1765,6 +1765,7 @@ end
 function mmp.gotoArea (where, number, dashtype, exact)
   if not where or not type(where)=="string" then
     mmp.echo("Where do you want to go to?") return end
+  number = tonumber(number)
 
   local possibleRooms, shortestPath, shortestBorder = {}, {}, 0
 
