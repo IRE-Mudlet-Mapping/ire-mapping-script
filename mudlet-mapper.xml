@@ -993,6 +993,20 @@ mmp.settings:setOption(matches[3], val)</script>
         <regex>^arealock(?: (.*))?$</regex>
       </Alias>
       <Alias isActive="yes" isFolder="no">
+        <name>Add a room label</name>
+        <script>mmp.roomLabel(matches[2])</script>
+        <command/>
+        <packageName/>
+        <regex>^room label (.+)$</regex>
+      </Alias>
+      <Alias isActive="yes" isFolder="no">
+        <name>View/delete area labels</name>
+        <script>mmp.areaLabels(matches[2])</script>
+        <command/>
+        <packageName/>
+        <regex>^area labels ?(.+)?$</regex>
+      </Alias>
+      <Alias isActive="yes" isFolder="no">
         <name>Room find</name>
         <script>mmp.roomFind(matches[2])</script>
         <command/>
@@ -1391,52 +1405,6 @@ raiseEvent("mmp areas changed")</script>
           <regex/>
         </Alias>
         <Alias isActive="yes" isFolder="no">
-          <name>Save a map</name>
-          <script>local function s(loc)
-    if not saveMap(loc) then
-      mmp.echo("Couldn't save the map :(")
-    else
-      if loc ~= "" then mmp.echo("Map saved.") else mmp.echo("Saved the default map.") end
-    end
-end
-
-if not saveMap then
-  mmp.echo("Your Mudlet can't save maps. Please upgrade it!")
-else
-  if matches[2] then
-	s(getMudletHomeDir().."/map/"..matches[2])
-  else
-    s("")
-  end
-end</script>
-          <command/>
-          <packageName/>
-          <regex>^map save(?: (.+))?$</regex>
-        </Alias>
-        <Alias isActive="yes" isFolder="no">
-          <name>Load a map</name>
-          <script>local function s(loc)
-    if not loadMap(loc) then
-      mmp.echo("Couldn't save the map :(")
-    else
-      if loc ~= "" then mmp.echo("Map loaded.") else mmp.echo("Loaded the default map.") end
-    end
-end
-
-if not loadMap then
-  mmp.echo("Your Mudlet can't load maps. Please upgrade it!")
-else
-  if matches[2] then
-	s(getMudletHomeDir().."/map/"..matches[2])
-  else
-    s("")
-  end
-end</script>
-          <command/>
-          <packageName/>
-          <regex>^map load(?: (.+))?$</regex>
-        </Alias>
-        <Alias isActive="yes" isFolder="no">
           <name>Clear the map completely</name>
           <script>if not mmp.map_delete_warning then
   mmp.echo("Are you really, really, really sure you want to delete all of the map to go to a blank state?")
@@ -1474,6 +1442,52 @@ end</script>
         <command/>
         <packageName/>
         <regex>^(?:mc|map create) ?(on|off)?$</regex>
+      </Alias>
+      <Alias isActive="yes" isFolder="no">
+        <name>Save a map</name>
+        <script>local function s(loc)
+    if not saveMap(loc) then
+      mmp.echo("Couldn't save the map :(")
+    else
+      if loc ~= "" then mmp.echo("Map saved.") else mmp.echo("Saved the default map.") end
+    end
+end
+
+if not saveMap then
+  mmp.echo("Your Mudlet can't save maps. Please upgrade it!")
+else
+  if matches[2] then
+	s(getMudletHomeDir().."/map/"..matches[2])
+  else
+    s("")
+  end
+end</script>
+        <command/>
+        <packageName/>
+        <regex>^map save(?: (.+))?$</regex>
+      </Alias>
+      <Alias isActive="yes" isFolder="no">
+        <name>Load a map</name>
+        <script>local function s(loc)
+    if not loadMap(loc) then
+      mmp.echo("Couldn't save the map :(")
+    else
+      if loc ~= "" then mmp.echo("Map loaded.") else mmp.echo("Loaded the default map.") end
+    end
+end
+
+if not loadMap then
+  mmp.echo("Your Mudlet can't load maps. Please upgrade it!")
+else
+  if matches[2] then
+	s(getMudletHomeDir().."/map/"..matches[2])
+  else
+    s("")
+  end
+end</script>
+        <command/>
+        <packageName/>
+        <regex>^map load(?: (.+))?$</regex>
       </Alias>
     </AliasGroup>
   </AliasPackage>
@@ -1781,7 +1795,8 @@ function mmp.gotoArea (where, number, dashtype, exact)
     mmp.echo("Which area would you like to go to?")
     fg("DimGrey")
     for key, areaname in ipairs(multiples) do
-      echo"  "; setUnderline(true) echoLink(key .. ".) " .. areaname, 'mmp.gotoArea("'..areaname..'", '..(dashtype and '"'..dashtype..'"' or "nil")..', true)', "Click to go to "..areaname, true) setUnderline(false) echo"\n"
+      echo"  "; echoLink(key .. ") ", 'mmp.gotoArea("'..areaname..'", '..(dashtype and '"'..dashtype..'"' or "nil")..', true)', "Click to go to "..areaname, true) 
+		setUnderline(true) echoLink(areaname, 'mmp.gotoArea("'..areaname..'", '..(dashtype and '"'..dashtype..'"' or "nil")..', true)', "Click to go to "..areaname, true) setUnderline(false) echo"\n"
     end
     resetFormat()
     return
@@ -2486,6 +2501,101 @@ function mmp.viewArea (where, exact)
     fg("DimGrey")
     for _, areaname in ipairs(multiples) do
       echo"  "; setUnderline(true) echoLink(areaname, 'mmp.viewArea("'..areaname..'", true)', "Click to view "..areaname, true) setUnderline(false) echo"\n"
+    end
+    resetFormat()
+    return
+  else
+    mmp.echo(string.format("Don't know of any area named '%s'.", where))
+    return
+  end
+end
+
+-- room label the room I'm in
+-- room label 342 this is a label in room 342
+-- room label green this is a green label where I'm at
+-- room label green black this is a green to black label where I'm at
+-- room label 34 green black this is a green to black label at room 34
+-- how it works: split input string into tokens by space, then determine
+-- what to do by checking first few tokens, and finally call the local
+-- function with the proper arguments
+function mmp.roomLabel(input)
+  if not createMapLabel then
+    mmp.echo("Your Mudlet doesn't support createMapLabel() yet - please update to 2.0-test3 or better.") return
+  end
+
+  local tk = input:split(" ")
+  local room, fg, bg, message = mmp.currentroom, "yellow", "red", "Some room label"
+
+  -- input always have to be something, so tk[1] at least always exists
+  if tonumber(tk[1]) then
+    room = tonumber(table.remove(tk, 1)) -- remove the number, so we're left with the colors or msg
+  end
+
+  -- next: is this a foreground color?
+  if tk[1] and color_table[tk[1]] then
+    fg = table.remove(tk, 1)
+  end
+
+  -- next: is this a backround color?
+  if tk[1] and color_table[tk[1]] then
+    bg = table.remove(tk, 1)
+  end
+
+  -- the rest would be our message
+  if tk[1] then
+    message = table.concat(tk, " ")
+  end
+
+  -- if we haven't provided a room ID and we don't know where we are yet, we can't make a label
+  if not room then
+    mmp.echo("We don't know where we are to make a label here.") return
+  end
+
+  local x,y = getRoomCoordinates(room)
+  local f1,f2,f3 = unpack(color_table[fg])
+  local b1,b2,b3 = unpack(color_table[bg])
+
+  -- finally: do it :)
+
+  local lid = createMapLabel(getRoomArea(room), message, x, y, f1,f2,f3, b1,b2,b3)
+  mmp.echo(string.format("Created new label #%d '%s' in %s.", lid, message, getRoomAreaName(getRoomArea(room))))
+end
+
+function mmp.areaLabels (where, exact)
+  if not getMapLabels then
+    mmp.echo("Your Mudlet doesn't support getMapLabels() yet - please update to 2.0-test3 or better.") return
+  end
+
+  if (not where or not type(where)=="string") and not mmp.currentroom then
+    mmp.echo("For which area would you like to view labels?") return end
+
+  if not where then
+	exact = true
+    where = getRoomAreaName(getRoomArea(mmp.currentroom))
+  end
+
+  local areaid, msg, multiples = mmp.findAreaID(where, exact)
+  if areaid then
+    local t = getMapLabels(areaid)
+    if type(t) ~= "table" or not next(t) then
+      mmp.echo(string.format("'%s' doesn't seem to have any labels.", getRoomAreaName(areaid)))
+      return
+    end
+
+    mmp.echo(string.format("Area labels for '%s'", getRoomAreaName(areaid)))
+    for labelid, labeltext in pairs(t) do      
+      fg("DimGrey")
+      echo(string.format("  %d) %s (", labelid, labeltext))
+      fg"orange_red" setUnderline(true) echoLink('-', string.format('deleteMapLabel(%d, %d)', areaid, labelid), "Delete label #"..labelid.." from "..getRoomAreaName(areaid))
+      setUnderline(false) echo")\n"
+    end
+    resetFormat()
+
+  elseif not areaid and #multiples &gt; 0 then
+    mmp.echo("Which area would you like to view exactly?")
+    fg("DimGrey")
+    for _, areaname in ipairs(multiples) do
+      echo"  "; setUnderline(true) echoLink(areaname, 'mmp.areaLabels("'..areaname..'", true)', "Click to view labels in "..areaname, true) setUnderline(false) echo"\n"
     end
     resetFormat()
     return
