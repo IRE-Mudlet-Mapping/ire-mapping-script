@@ -312,6 +312,28 @@ echo " "; mmp.echonums(multimatches[2][2])</script>
             <integer>1</integer>
           </regexCodePropertyList>
         </Trigger>
+        <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="yes" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+          <name>Dragonsense</name>
+          <script>mmp.locateAndEcho(multimatches[2][2])</script>
+          <triggerType>0</triggerType>
+          <conditonLineDelta>1</conditonLineDelta>
+          <mStayOpen>0</mStayOpen>
+          <mCommand/>
+          <packageName/>
+          <mFgColor>#ff0000</mFgColor>
+          <mBgColor>#ffff00</mBgColor>
+          <mSoundFile/>
+          <colorTriggerFgColor>#000000</colorTriggerFgColor>
+          <colorTriggerBgColor>#000000</colorTriggerBgColor>
+          <regexCodeList>
+            <string>Tapping into the unfathomable depths of your power, you sense that</string>
+            <string>Tapping into the unfathomable depths of your power, you sense that \w+ is at (.+?), in (.+)\.$</string>
+          </regexCodeList>
+          <regexCodePropertyList>
+            <integer>2</integer>
+            <integer>1</integer>
+          </regexCodePropertyList>
+        </Trigger>
       </TriggerGroup>
       <TriggerGroup isActive="yes" isFolder="yes" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
         <name>Aetolia</name>
@@ -997,6 +1019,9 @@ elseif command:ends("sprint") then
 elseif command:ends("dash") then
   gallop = "dash"
   where = where:sub(1, -7)
+elseif command:ends("runaway") then
+  gallop = "runaway"
+  where = where:sub(1, -9)
 end
 
 
@@ -1731,6 +1756,7 @@ function mmp.startup()
   private_settings["dash"] = createOption(false, mmp.changeBoolFunc, { "boolean" }, "Use Dash?")
   private_settings["gallop"] = createOption(false, mmp.changeBoolFunc, { "boolean" }, "Use Gallop?")
   private_settings["sprint"] = createOption(false, mmp.changeBoolFunc, { "boolean" }, "Use Sprint?")
+  private_settings["runaway"] = createOption(false, mmp.changeBoolFunc, { "boolean" }, "Use Jester Runaway?")
 
 
   mmp.settings = createOptionsTable(private_settings)
@@ -1907,7 +1933,7 @@ function doSpeedWalk(dashtype)
   startStopWatch(speedWalkWatch)
   if mmp.settings["gallop"] or mmp.settings["dash"] or mmp.settings.sprint or dashtype then
     mmp.fixPath(mmp.currentroom, speedWalkPath[#speedWalkPath],
-      (mmp.settings["gallop"] and "gallop") or (mmp.settings["dash"] and "dash") or (mmp.settings.sprint and "sprint") or dashtype)
+      (mmp.settings["gallop"] and "gallop") or (mmp.settings["dash"] and "dash") or (mmp.settings.sprint and "sprint") or (mmp.settings.runaway and "runaway") or dashtype)
   end
 
   if #speedWalkPath == 0 then
