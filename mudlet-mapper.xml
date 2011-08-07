@@ -255,8 +255,8 @@ speedwalking("Room", speedWalkPath[speedWalkCounter])</script>
           <colorTriggerFgColor>#000000</colorTriggerFgColor>
           <colorTriggerBgColor>#000000</colorTriggerBgColor>
           <regexCodeList>
-            <string>An image of </string>
-            <string>^An image of (.+) appears in your mind\.$</string>
+            <string>You seek out the mind of</string>
+            <string>^You seek out the mind of \w+ and an image of (.+) appears in your mind\.$</string>
           </regexCodeList>
           <regexCodePropertyList>
             <integer>2</integer>
