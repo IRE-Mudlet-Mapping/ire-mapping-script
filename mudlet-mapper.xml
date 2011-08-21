@@ -991,6 +991,28 @@ end</script>
             </regexCodePropertyList>
           </Trigger>
         </Trigger>
+        <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="yes" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+          <name>Astrology scry</name>
+          <script>mmp.locateAndEcho(multimatches[2][2])</script>
+          <triggerType>0</triggerType>
+          <conditonLineDelta>0</conditonLineDelta>
+          <mStayOpen>0</mStayOpen>
+          <mCommand/>
+          <packageName/>
+          <mFgColor>#ff0000</mFgColor>
+          <mBgColor>#ffff00</mBgColor>
+          <mSoundFile/>
+          <colorTriggerFgColor>#000000</colorTriggerFgColor>
+          <colorTriggerBgColor>#000000</colorTriggerBgColor>
+          <regexCodeList>
+            <string>Gazing up at the sky, you bring the image of</string>
+            <string>^Gazing up at the sky, you bring the image of (\w+) into your mind's eye and overlay it on the constellations\. The power of the stars manifests as an image of (.+?) forms before your eyes\.$</string>
+          </regexCodeList>
+          <regexCodePropertyList>
+            <integer>2</integer>
+            <integer>1</integer>
+          </regexCodePropertyList>
+        </Trigger>
       </TriggerGroup>
       <TriggerGroup isActive="yes" isFolder="yes" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
         <name>Imperian</name>
@@ -2184,6 +2206,9 @@ function mmp.echonums(roomname, exact)
         end
     end
   end
+
+  -- we can have nothing if we asked for exact match
+  if not dt[1] then echo "?" return end
 
   -- display first three ids. Can't really nicely table.concat them.
   echoLink(dt[1].id, 'mmp.gotoRoom('..dt[1].id..')', string.format("Go to %s (%s)", dt[1].id, dt[1].name))
