@@ -2663,6 +2663,8 @@ end
 function mmp.getAreaBorders(areaid)
 
     local roomlist, endresult = getAreaRooms(areaid), {}
+    -- sometimes getAreaRooms can give us no result :(
+    if not roomlist then mmp.echo("Sorry, seems we can't go there - getAreaRooms("..areaid..") didn't give us any results (Mudlet problem - redownloading the map might help fix it)") return end
 
     -- obtain a room list for each of the room IDs we got
     for _, id in pairs(roomlist) do
