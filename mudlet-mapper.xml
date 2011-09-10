@@ -1866,7 +1866,7 @@ mmp = mmp or {
   currentroom = false,
   currentroomname = false,
   firstRun = true,
-  version = "11.9.1"
+  version = "11.9.2"
 }
 
 function mmp.startup()
@@ -3681,28 +3681,48 @@ end</script>
           <script>function mmp_downloaded_file(_, filename)
   -- is the file that downloaded our map?
 
-  if filename ~= mmp.mapfile then return end
+  if filename == tostring(mmp.mapperfile) then
+    io.input(filename)
+    local s = io.read("*a")
 
-  local function needupdate(currentmd5, oldmd5)
-    mmp.echon("The games map was ")
-	echoLink("updated", '', "New MD5: "..tostring(currentmd5)..", previous MD5: "..(oldmd5 or "(none)"), true)
-	echo(" - you should update yours! Go to Settings -&gt; Special Options tab and click on the button there. Once you've updated, ")
-    echoLink("click here", "mmp.updatedmap('"..currentmd5.."')", "Click here to quiet the update reminder")
-    echo(" to remove the reminder.")
+    if s ~= tostring(mmp.version) then
+      mmp.retrievechangelog()
+    end
+
+  elseif filename == tostring(mmp.changelogfile) then
+    io.input(filename)
+    local s = io.read("*a")  
+    local changelog = string.match(s, [[&lt;div class="information"&gt;(.-)&lt;/div]])
+    changelog = string.gsub(changelog, "&#194;", '')
+    changelog = string.gsub(changelog, "&lt;br/&gt;", '\n')
+    changelog = string.gsub(changelog, "&amp;#39;", "'")
+    mmp.echon("")
+    echoLink("The mapper script was updated! Would you like to download the update? Click here if so.", "mmp.downloadmapperscript()", "Changelog for the latest update:\n"..changelog, true)
+
+  elseif filename == tostring(mmp.downloadedscript) then
+    mmp.echo("Your mapper script was downloaded to '"..filename.."' - uninstall the current copy and install the new one now!")
+
+  elseif filename == tostring(mmp.mapfile) then
+    local function needupdate(currentmd5, oldmd5)
+      mmp.echon("The games map was ")
+  	echoLink("updated", '', "New MD5: "..tostring(currentmd5)..", previous MD5: "..(oldmd5 or "(none)"), true)
+  	echo(" - you should update yours! Go to Settings -&gt; Special Options tab and click on the button there. Once you've updated, ")
+      echoLink("click here", "mmp.updatedmap('"..currentmd5.."')", "Click here to quiet the update reminder")
+      echo(" to remove the reminder.")
+    end
+
+    io.input(filename)
+    local s = io.read("*a")
+    local currentmd5 = string.match(s, "([a-z0-9]+)  map%.xml"); pcall(io.close); os.remove(filename)
+
+    -- never checked yet?
+    if not io.exists(getMudletHomeDir().."/map downloads/current") then needupdate(currentmd5) return end
+
+    -- otherwise read old file and check
+    io.input(getMudletHomeDir().."/map downloads/current")
+    local s = io.read("*a")
+    if s ~= currentmd5 then needupdate(currentmd5, s) end
   end
-
-  io.input(filename)
-  local s = io.read("*a")
-  local currentmd5 = string.match(s, "([a-z0-9]+)  map%.xml"); pcall(io.close); os.remove(filename)
-
-  -- never checked yet?
-  if not io.exists(getMudletHomeDir().."/map downloads/current") then needupdate(currentmd5) return end
-
-  -- otherwise read old file and check
-  io.input(getMudletHomeDir().."/map downloads/current")
-  local s = io.read("*a")
-  if s ~= currentmd5 then needupdate(currentmd5, s) end
-
 end</script>
           <eventHandlerList>
             <string>sysDownloadDone</string>
@@ -3724,7 +3744,7 @@ function mmp.checkforupdate()
   if not downloadFile then
     mmp.echo("Your version of Mudlet doesn't support downloading files - please upgrade to 2.0+")
   else
-    if not io.exists(downloadfolder) then 
+    if not lfs.attributes(downloadfolder) then 
       if lfs and lfs.mkdir then
          local t,s = lfs.mkdir(downloadfolder)
          if not t then mmp.echo("Couldn't make the '"..downloadfolder.."' folder; "..s) return end
@@ -3735,7 +3755,7 @@ function mmp.checkforupdate()
     end
 
     downloadFile(mmp.mapfile, "http://www."..game..".com/maps/MD5SUM")
-    downloadFile(mmp.mapperfile, "http://bazaar.launchpad.net/~mudlet-makers/mudlet/mapper-lua/files")
+    downloadFile(mmp.mapperfile, "http://bazaar.launchpad.net/~mudlet-makers/mudlet/mapper-lua/download/head:/version-20110910005237-2917fpevgi4koxqk-1/version")
   end
 end
 
@@ -3750,6 +3770,50 @@ function mmp.updatedmap(currentmd5)
 
   local t = {"Go you for updating!", "Thanks for updating the map!", "Alright, map updated!"}
   mmp.echo(t[math.random(1, #t)])
+end
+
+-- downloads the latest changelog for the mapper if it was updated
+function mmp.retrievechangelog()
+  mmp.changelogfile = downloadfolder.."changelog"
+
+  downloadFile(mmp.changelogfile, "http://bazaar.launchpad.net/~mudlet-makers/mudlet/mapper-lua/files")
+end
+
+-- downloads the mapper script for the user!
+function mmp.downloadmapperscript()
+  local downloadlocationfile = downloadfolder.."savepath"
+  local downloadlocation
+  local exists = lfs.attributes
+
+  -- somewhat complicated thing to nicely deal with all scenarios.
+  if not exists(downloadlocationfile) then
+    downloadlocation = whereisit()
+    if not downloadlocation then return end
+  end
+
+  if not downloadlocation then
+    io.input(downloadlocationfile); downloadlocation = io.read("*a")
+    if not exists(downloadlocation) then 
+      downloadlocation = whereisit()
+      if not downloadlocation or not exists(downloadlocation) then return end
+    end
+  end
+
+
+  mmp.downloadedscript = downloadlocation.."/mudlet-mapper.xml"
+  downloadFile(mmp.downloadedscript, "http://bazaar.launchpad.net/~mudlet-makers/mudlet/mapper-lua/download/head:/mudletmapper.xml-20100916000616-71kbxngi7b3nybta-1/mudlet-mapper.xml")
+
+  local f,err = io.open(downloadlocationfile, "w")
+  if not f then return mmp.echo("Couldn't write to the location file, because: "..err) end
+  f:write(downloadlocation)
+  f:close()
+  mmp.echo("Okay, downloading the mapper script...")
+end
+
+function whereisit()
+  local path = invokeFileDialog(false, "Where should we save the file? Select a folder and click Open")
+
+  if path == "" then return nil else return path end
 end</script>
           <eventHandlerList/>
           <Script isActive="yes" isFolder="no">
