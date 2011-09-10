@@ -144,7 +144,8 @@ speedwalking("Room", speedWalkPath[speedWalkCounter])
         <regexCodePropertyList/>
         <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
           <name>Login</name>
-          <script>raiseEvent("mmp logged in Achaea")</script>
+          <script>raiseEvent("mmp logged in Achaea")
+mmp.game = "achaea"</script>
           <triggerType>0</triggerType>
           <conditonLineDelta>0</conditonLineDelta>
           <mStayOpen>0</mStayOpen>
@@ -443,7 +444,8 @@ echo " "; mmp.echonums(multimatches[2][2])</script>
         <regexCodePropertyList/>
         <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
           <name>Login</name>
-          <script>raiseEvent("mmp logged in Aetolia")</script>
+          <script>raiseEvent("mmp logged in Aetolia")
+mmp.game = "aetolia"</script>
           <triggerType>0</triggerType>
           <conditonLineDelta>99</conditonLineDelta>
           <mStayOpen>0</mStayOpen>
@@ -479,7 +481,8 @@ echo " "; mmp.echonums(multimatches[2][2])</script>
         <regexCodePropertyList/>
         <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="yes" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
           <name>Login</name>
-          <script>raiseEvent("mmp logged in Lusternia")</script>
+          <script>raiseEvent("mmp logged in Lusternia")
+mmp.game = "lusternia"</script>
           <triggerType>0</triggerType>
           <conditonLineDelta>5</conditonLineDelta>
           <mStayOpen>0</mStayOpen>
@@ -1053,7 +1056,8 @@ end</script>
         <regexCodePropertyList/>
         <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
           <name>Login</name>
-          <script>raiseEvent("mmp logged in Imperian")</script>
+          <script>raiseEvent("mmp logged in Imperian")
+mmp.game = "imperian"</script>
           <triggerType>0</triggerType>
           <conditonLineDelta>0</conditonLineDelta>
           <mStayOpen>0</mStayOpen>
@@ -1089,7 +1093,8 @@ end</script>
         <regexCodePropertyList/>
         <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
           <name>Login</name>
-          <script>raiseEvent("mmp logged in Midkemia Online")</script>
+          <script>raiseEvent("mmp logged in Midkemia Online")
+mmp.game = "mko"</script>
           <triggerType>0</triggerType>
           <conditonLineDelta>0</conditonLineDelta>
           <mStayOpen>0</mStayOpen>
@@ -1135,8 +1140,10 @@ elseif command:ends("dash") then
 elseif command:ends("runaway") then
   gallop = "runaway"
   where = where:sub(1, -9)
+elseif command:ends("glide") then
+  gallop = "glide"
+  where = where:sub(1, -7)
 end
-
 
 -- goto room ID
 if tonumber(where) then
@@ -1711,7 +1718,8 @@ end</script>
     <ScriptGroup isActive="yes" isFolder="yes">
       <name>Mudlet Mapper</name>
       <packageName/>
-      <script>mudlet = mudlet or {}; mudlet.mapper_script = true</script>
+      <script>mudlet = mudlet or {}; mudlet.mapper_script = true
+</script>
       <eventHandlerList/>
       <Script isActive="yes" isFolder="no">
         <name>Create Option Table</name>
@@ -1857,7 +1865,8 @@ mmp = mmp or {
   autowalking = false,
   currentroom = false,
   currentroomname = false,
-  firstRun = true
+  firstRun = true,
+  version = "11.9.1"
 }
 
 function mmp.startup()
@@ -1902,6 +1911,9 @@ function mmp.move()
 end
 
 function mmp.swim()
+  -- not going anywhere? don't do anything
+  if not speedWalkDir[speedWalkCounter] then return end
+
   send("swim " .. speedWalkDir[speedWalkCounter], false)
   cecho(string.format("&lt;red&gt;(&lt;maroon&gt;%d - &lt;dark_slate_grey&gt;swim %s&lt;red&gt;)", #speedWalkDir - speedWalkCounter + 1, speedWalkDir[speedWalkCounter]))
 
@@ -2151,11 +2163,19 @@ end
       <Script isActive="yes" isFolder="no">
         <name>Utilities</name>
         <packageName/>
-        <script>function mmp.echo(what)
+        <script>mmp.game = false
+
+function mmp.echo(what)
   moveCursorEnd("main") if getCurrentLine() ~= "" then echo"\n" end
   decho("&lt;112,229,0&gt;(&lt;73,149,0&gt;mapper&lt;112,229,0&gt;): &lt;255,255,255&gt;")
   cecho(what)
   echo("\n")
+end
+
+function mmp.echon(what)
+  moveCursorEnd("main") if getCurrentLine() ~= "" then echo"\n" end
+  decho("&lt;112,229,0&gt;(&lt;73,149,0&gt;mapper&lt;112,229,0&gt;): &lt;255,255,255&gt;")
+  cecho(what)
 end
 
 function mmp.deleteLineP()
@@ -2845,7 +2865,7 @@ mmp.pdb_lastupdate = mmp.pdb_lastupdate or {}</script>
       <Script isActive="yes" isFolder="no">
         <name>Lock Area</name>
         <packageName/>
-        <script>
+        <script>-- Lock Area
 
 mmp.locked = mmp.locked or {}
 mmp.lastLockSearch = nil
@@ -2871,7 +2891,7 @@ function mmp.doLockArea(search)
 	end
 
 	for name, id in pairs(areaList) do
-		mmp.echo(name .. string.rep(" ", 40 - string.len(name)))
+		mmp.echon(name .. string.rep(" ", 40 - string.len(name)))
 		if not mmp.locked[id] then
 			setFgColor(0, 200, 0)
 			setUnderline(true)
@@ -2884,7 +2904,7 @@ function mmp.doLockArea(search)
 	end
 
 	if not search then
-		echo"\n\n" mmp.echo("Use &lt;green&gt;arealock &lt;ForestGreen&gt;area&lt;white&gt; to filter areas.")
+		echo"\n\n" mmp.echo("Use &lt;green&gt;arealock &lt;area&gt;&lt;white&gt; to filter areas.")
 	end
 end
 
@@ -3643,6 +3663,109 @@ end</script>
           <eventHandlerList>
             <string>gmcp.Room.Info</string>
           </eventHandlerList>
+        </Script>
+      </ScriptGroup>
+      <ScriptGroup isActive="yes" isFolder="yes">
+        <name>Check for map updates</name>
+        <packageName/>
+        <script>-------------------------------------------------
+--         Put your Lua functions here.        --
+--                                             --
+-- Note that you can also use external Scripts --
+-------------------------------------------------
+</script>
+        <eventHandlerList/>
+        <Script isActive="yes" isFolder="no">
+          <name>mmp_downloaded_file</name>
+          <packageName/>
+          <script>function mmp_downloaded_file(_, filename)
+  -- is the file that downloaded our map?
+
+  if filename ~= mmp.mapfile then return end
+
+  local function needupdate(currentmd5, oldmd5)
+    mmp.echon("The games map was ")
+	echoLink("updated", '', "New MD5: "..tostring(currentmd5)..", previous MD5: "..(oldmd5 or "(none)"), true)
+	echo(" - you should update yours! Go to Settings -&gt; Special Options tab and click on the button there. Once you've updated, ")
+    echoLink("click here", "mmp.updatedmap('"..currentmd5.."')", "Click here to quiet the update reminder")
+    echo(" to remove the reminder.")
+  end
+
+  io.input(filename)
+  local s = io.read("*a")
+  local currentmd5 = string.match(s, "([a-z0-9]+)  map%.xml"); pcall(io.close); os.remove(filename)
+
+  -- never checked yet?
+  if not io.exists(getMudletHomeDir().."/map downloads/current") then needupdate(currentmd5) return end
+
+  -- otherwise read old file and check
+  io.input(getMudletHomeDir().."/map downloads/current")
+  local s = io.read("*a")
+  if s ~= currentmd5 then needupdate(currentmd5, s) end
+
+end</script>
+          <eventHandlerList>
+            <string>sysDownloadDone</string>
+          </eventHandlerList>
+        </Script>
+        <Script isActive="yes" isFolder="no">
+          <name>Check for updates</name>
+          <packageName/>
+          <script>local downloadfolder = getMudletHomeDir().."/map downloads/"
+
+-- this should get called at start and every hour after that
+function mmp.checkforupdate()
+  if not mmp.game then return end
+
+  local game = (mmp.game == "mko") and "midkemiaonline" or mmp.game
+  mmp.mapfile = downloadfolder.."MD5"
+  mmp.mapperfile = downloadfolder.."mapper"
+
+  if not downloadFile then
+    mmp.echo("Your version of Mudlet doesn't support downloading files - please upgrade to 2.0+")
+  else
+    if not io.exists(downloadfolder) then 
+      if lfs and lfs.mkdir then
+         local t,s = lfs.mkdir(downloadfolder)
+         if not t then mmp.echo("Couldn't make the '"..downloadfolder.."' folder; "..s) return end
+      else
+        mmp.echo("Sorry, but you need LuaFileSystem (lfs) installed, or have the '"..downloadfolder.."' folder exist.")
+        return
+      end
+    end
+
+    downloadFile(mmp.mapfile, "http://www."..game..".com/maps/MD5SUM")
+    downloadFile(mmp.mapperfile, "http://bazaar.launchpad.net/~mudlet-makers/mudlet/mapper-lua/files")
+  end
+end
+
+-- called by the user when the map is updated to register the fact that it was
+function mmp.updatedmap(currentmd5)
+  assert(currentmd5, "need md5 sum to write to file")
+
+  local f,err = io.open(downloadfolder.."current", "w")
+  if not f then return mmp.echo("Couldn't write to the update file, because: "..err) end
+  f:write(currentmd5)
+  f:close()
+
+  local t = {"Go you for updating!", "Thanks for updating the map!", "Alright, map updated!"}
+  mmp.echo(t[math.random(1, #t)])
+end</script>
+          <eventHandlerList/>
+          <Script isActive="yes" isFolder="no">
+            <name>mmp_checkupdatestart</name>
+            <packageName/>
+            <script>function mmp_checkupdatestart()
+  tempTimer(math.random(3, 10), mmp.checkforupdate)
+end</script>
+            <eventHandlerList>
+              <string>mmp logged in Achaea</string>
+              <string>mmp logged in Aetolia</string>
+              <string>mmp logged in Lusternia</string>
+              <string>mmp logged in Imperian</string>
+              <string>mmp logged in Midkemia Online</string>
+            </eventHandlerList>
+          </Script>
         </Script>
       </ScriptGroup>
       <Script isActive="yes" isFolder="no">
