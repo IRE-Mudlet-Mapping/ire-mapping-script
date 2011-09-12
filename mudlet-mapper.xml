@@ -1866,7 +1866,7 @@ mmp = mmp or {
   currentroom = false,
   currentroomname = false,
   firstRun = true,
-  version = "11.9.2"
+  version = "11.9.3"
 }
 
 function mmp.startup()
@@ -2445,7 +2445,7 @@ function mmp.roomLook(input)
     local coords = {getRoomCoordinates(num)}
     local specexits = getSpecialExits(num)
     local env = getRoomEnv(num)
-    local envname = mmp.envidsr[env]
+    local envname = mmp.envidsr[env] or "?"
 
     -- generate a report
     mmp.echo(string.format("Room: %s #: %d area: %s (%d)",
@@ -2458,7 +2458,8 @@ function mmp.roomLook(input)
     mmp.echo(string.format("Exits (%d):", table.size(exits)))
     for exit, leadsto in pairs(exits) do
       echo(string.format("  %s -&gt; %s (%d)%s\n", exit, getRoomName(leadsto), leadsto,
-        (getRoomArea(leadsto) == areanum and "" or " (in "..mmp.areatabler[getRoomArea(leadsto)]..")")))
+        ((getRoomArea(leadsto) or "?") == areanum and "" 
+        or " (in "..(mmp.areatabler[getRoomArea(leadsto)] or "?")..")")))
     end
 
   -- display special exits if we got any
@@ -2519,6 +2520,8 @@ function mmp.roomLook(input)
   else
     handle_name(input)
   end
+
+  mmp.echo(string.format("version %s.", tostring(mmp.version)))
 end
 
 function mmp.roomexists(num)
