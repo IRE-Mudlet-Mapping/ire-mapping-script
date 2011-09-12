@@ -1866,7 +1866,7 @@ mmp = mmp or {
   currentroom = false,
   currentroomname = false,
   firstRun = true,
-  version = "11.9.3"
+  version = "11.9.4"
 }
 
 function mmp.startup()
@@ -2022,8 +2022,8 @@ function mmp.gotoArea (where, number, dashtype, exact)
     mmp.echo("Which area would you like to go to?")
     fg("DimGrey")
     for key, areaname in ipairs(multiples) do
-      echo"  "; echoLink(key .. ") ", 'mmp.gotoArea("'..areaname..'", '..(dashtype and '"'..dashtype..'"' or "nil")..', true)', "Click to go to "..areaname, true) 
-		setUnderline(true) echoLink(areaname, 'mmp.gotoArea("'..areaname..'", '..(dashtype and '"'..dashtype..'"' or "nil")..', true)', "Click to go to "..areaname, true) setUnderline(false) echo"\n"
+      echo"  "; echoLink(key .. ") ", 'mmp.gotoArea("'..areaname..'", nil, '..(dashtype and '"'..dashtype..'"' or "nil")..', true)', "Click to go to "..areaname, true) 
+        setUnderline(true) echoLink(areaname, 'mmp.gotoArea("'..areaname..'", nil, '..(dashtype and '"'..dashtype..'"' or "nil")..', true)', "Click to go to "..areaname, true) setUnderline(false) echo"\n"
     end
     resetFormat()
     return
