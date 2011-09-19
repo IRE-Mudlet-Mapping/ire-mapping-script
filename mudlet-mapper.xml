@@ -1886,7 +1886,7 @@ mmp = mmp or {
   currentroom = false,
   currentroomname = false,
   firstRun = true,
-  version = &quot;11.9.5&quot;
+  version = &quot;11.9.6&quot;
 }
 
 function mmp.startup()
@@ -1914,6 +1914,9 @@ function mmp.startup()
 
   raiseEvent(&quot;mmp areas changed&quot;)
   mmp.firstRun = false
+  mmp.echon(&quot;Mudlet Mapper script for IREs (&quot;..tostring(mmp.version)..&quot;) loaded! (&quot;)
+  echoLink(&quot;homepage&quot;,&quot;(openUrl or openURL)'http://wiki.mudlet.org/w/IRE_mapping_script'&quot;, &quot;Clicky clicky to read up on what's this about&quot;)
+  echo(&quot;)\n&quot;)
 end
 
 -- moves to the next room we need to.
@@ -3705,14 +3708,19 @@ end</script>
   -- is the file that downloaded our map?
 
   if filename == tostring(mmp.mapperfile) then
+	mmp.checkingupdates = false
+
     io.input(filename)
-    local s = io.read(&quot;*a&quot;)
+    local s = io.read(&quot;*l&quot;):trim()
 
     if s ~= tostring(mmp.version) then
+      mmp.newversion = s
       mmp.retrievechangelog()
     end
 
   elseif filename == tostring(mmp.changelogfile) then
+	mmp.checkingupdates = false
+
     io.input(filename)
     local s = io.read(&quot;*a&quot;)
     local changelog = string.match(s, [[&lt;div class=&quot;information&quot;&gt;(.-)&lt;/div]])
@@ -3720,12 +3728,15 @@ end</script>
     changelog = string.gsub(changelog, &quot;&lt;br/&gt;&quot;, '\n')
     changelog = string.gsub(changelog, &quot;&amp;#39;&quot;, &quot;'&quot;)
     mmp.echon(&quot;&quot;)
-    echoLink(&quot;The mapper script was updated! Would you like to download the update? Click here if so.&quot;, &quot;mmp.downloadmapperscript()&quot;, &quot;Changelog for the latest update:\n&quot;..changelog, true)
-
+    echoLink(&quot;The mapper script was updated! Would you like to download the update? Click here if so.&quot;, &quot;mmp.downloadmapperscript()&quot;, &quot;Changelog for the latest (&quot;..tostring(mmp.version)..&quot; -&gt; &quot;..tostring(mmp.newversion)..&quot;) update:\n&quot;..changelog, true)
   elseif filename == tostring(mmp.downloadedscript) then
+	mmp.checkingupdates = false
+
     mmp.echo(&quot;Your mapper script was downloaded to '&quot;..filename..&quot;' - uninstall the current copy and install the new one now!&quot;)
 
   elseif filename == tostring(mmp.mapfile) then
+	mmp.checkingupdates = false
+
     local function needupdate(currentmd5, oldmd5)
       mmp.echon(&quot;The games map was &quot;)
   	echoLink(&quot;updated&quot;, '', &quot;New MD5: &quot;..tostring(currentmd5)..&quot;, previous MD5: &quot;..(oldmd5 or &quot;(none)&quot;), true)
@@ -3757,7 +3768,7 @@ end</script>
 
 -- this should get called at start and every hour after that
 function mmp.checkforupdate()
-  if not mmp.game then return end
+  if not mmp.game or mmp.checkingupdates then return end
 
   local game = (mmp.game == &quot;mko&quot;) and &quot;midkemiaonline&quot; or mmp.game
   mmp.mapfile = downloadfolder..&quot;MD5&quot;
@@ -3778,6 +3789,7 @@ function mmp.checkforupdate()
 
     downloadFile(mmp.mapfile, &quot;http://www.&quot;..game..&quot;.com/maps/MD5SUM&quot;)
     downloadFile(mmp.mapperfile, &quot;http://bazaar.launchpad.net/~mudlet-makers/mudlet/mapper-lua/download/head:/version-20110910005237-2917fpevgi4koxqk-1/version&quot;)
+	mmp.checkingupdates = true
   end
 end
 
