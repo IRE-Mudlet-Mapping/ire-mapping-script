@@ -1886,7 +1886,7 @@ mmp = mmp or {
   currentroom = false,
   currentroomname = false,
   firstRun = true,
-  version = &quot;11.9.6&quot;
+  version = &quot;11.9.7&quot;
 }
 
 function mmp.startup()
@@ -3780,7 +3780,7 @@ function mmp.checkforupdate()
     if not lfs.attributes(downloadfolder) then
       if lfs and lfs.mkdir then
          local t,s = lfs.mkdir(downloadfolder)
-         if not t then mmp.echo(&quot;Couldn't make the '&quot;..downloadfolder..&quot;' folder; &quot;..s) return end
+         if not t and s ~= &quot;File exists&quot; then mmp.echo(&quot;Couldn't make the '&quot;..downloadfolder..&quot;' folder; &quot;..s) return end
       else
         mmp.echo(&quot;Sorry, but you need LuaFileSystem (lfs) installed, or have the '&quot;..downloadfolder..&quot;' folder exist.&quot;)
         return
