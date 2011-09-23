@@ -1886,7 +1886,7 @@ mmp = mmp or {
   currentroom = false,
   currentroomname = false,
   firstRun = true,
-  version = &quot;11.9.8&quot;
+  version = &quot;11.9.9&quot;
 }
 
 function mmp.startup()
@@ -1970,6 +1970,8 @@ end
 -- Aetolia and Lusternia support showing balances in GMCP. This is easy to support, so we do!
 -- if we can't move, setup a polling timer to prompt walking when we can again.
 function mmp.canmove(fromtimer)
+  if not gmcp.Char then return true end
+
   if (gmcp.Char and 
     (not gmcp.Char.Vitals.balance or gmcp.Char.Vitals.balance == &quot;1&quot;) and
     (not gmcp.Char.Vitals.equilibrium or gmcp.Char.Vitals.equilibrium == &quot;1&quot;) and
