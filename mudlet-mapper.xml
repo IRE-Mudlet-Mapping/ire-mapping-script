@@ -1060,6 +1060,28 @@ end</script>
                         <integer>1</integer>
                     </regexCodePropertyList>
                 </Trigger>
+                <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="yes" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+                    <name>Lusternia</name>
+                    <script>mmp.locateAndEcho(multimatches[2][2])</script>
+                    <triggerType>0</triggerType>
+                    <conditonLineDelta>1</conditonLineDelta>
+                    <mStayOpen>0</mStayOpen>
+                    <mCommand></mCommand>
+                    <packageName></packageName>
+                    <mFgColor>#ff0000</mFgColor>
+                    <mBgColor>#ffff00</mBgColor>
+                    <mSoundFile></mSoundFile>
+                    <colorTriggerFgColor>#000000</colorTriggerFgColor>
+                    <colorTriggerBgColor>#000000</colorTriggerBgColor>
+                    <regexCodeList>
+                        <string>You gaze into a glittering tierstone.</string>
+                        <string>^\w+ is at (.+?) in (.*)\.$</string>
+                    </regexCodeList>
+                    <regexCodePropertyList>
+                        <integer>3</integer>
+                        <integer>1</integer>
+                    </regexCodePropertyList>
+                </Trigger>
             </TriggerGroup>
             <TriggerGroup isActive="yes" isFolder="yes" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
                 <name>Imperian</name>
@@ -2346,8 +2368,11 @@ function mmp.searchRoom(what)
     result = searchRoom(what)
     local realResult = {}
     for key, value in pairs(result) do
-        if tostring(key) then
-            realResult[key:ends(&quot; (road)&quot;) and key:sub(1, -8)  or key] = value
+        -- both ways, because searchRoom can return either id-room name or the reverse
+        if type(key) == &quot;string&quot; then
+          realResult[key:ends(&quot; (road)&quot;) and key:sub(1, -8) or key] = value
+        else
+          realResult[key] = value:ends(&quot; (road)&quot;) and value:sub(1, -8) or value
         end
     end
     cache[what] = realResult
@@ -2359,8 +2384,10 @@ end
 local getpathcache = {}
 setmetatable(getpathcache, {__mode = &quot;kv&quot;}) -- weak keys/values = it'll periodically get cleaned up by gc
 
--- DOES NOT ACCOUNT FOR CHANGING THE MAP YET (within a profile load)
+-- DOES NOT ACCOUNT FOR CHANGING THE MAP YET (within a profile load), because we don't know when it happens
 function mmp.getPath(from, to)
+  assert(tonumber(from) and tonumber(to), &quot;mmp.getPath: both from and to have to be room IDs&quot;)
+
   local key = string.format(&quot;%s_%s&quot;, from, to)
   local resulttbl = getpathcache[key]
 
@@ -2478,6 +2505,15 @@ function mmp.echoAreaList()
   end
 end
 
+function mmp.clearLabels(areaid)
+  assert(type(areaid) == &quot;number&quot;, &quot;mmp.clearLabels: areaid must be a number&quot;)
+  local t = getMapLabels(areaid)
+  if type(t) ~= &quot;table&quot; then return end
+
+  for labelid, _ in pairs(t) do deleteMapLabel(areaid, labelid) end
+  mmp.echo(string.format(&quot;Cleared all labels in '%s'.&quot;, mmp.areatabler[areaid]))
+end
+
 function mmp.roomLook(input)
 
   -- we can do a report with a number
@@ -2511,7 +2547,7 @@ function mmp.roomLook(input)
         or &quot; (in &quot;..(mmp.areatabler[getRoomArea(leadsto)] or &quot;?&quot;)..&quot;)&quot;)))
     end
 
-  -- display special exits if we got any
+    -- display special exits if we got any
     if next(specexits) then
       mmp.echo(string.format(&quot;Special exits (%d):&quot;,table.size(specexits)))
       for leadsto, command in pairs(specexits) do
@@ -2519,6 +2555,9 @@ function mmp.roomLook(input)
       end
     end
 
+    -- actions we can do. This will be a short menu of sorts for actions
+    mmp.echo(&quot;Stuff you can do:&quot;)
+    echo&quot;  &quot; echoLink(&quot;Clear all labels in this area&quot;, 'mmp.clearLabels('..areanum..')', '') echo&quot;\n&quot;
   end
 
   -- see if we can do anything with the name
@@ -2754,7 +2793,6 @@ function mmp.getAreaBorders(areaid)
 end
 
 function mmp.locateAndEcho(room, person)
-
     local t = mmp.searchRoom(room)
     mmp.pdb_lastupdate = {}
 
@@ -2902,7 +2940,6 @@ end</script>
                 <name>Person tracking</name>
                 <packageName></packageName>
                 <script>--[[
-
 mmp will have 2 person tracking databases:
 - mmp.pdb  =  used to store the last known location of a person
 - mmp.pdb_lastupdate  =  used to store the output of the last locating command
