@@ -643,18 +643,7 @@ raiseEvent(&quot;mmapper updated pdb&quot;)</script>
                 </Trigger>
                 <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="yes" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
                     <name>Deathsight</name>
-                    <script>echo &quot; &quot;; mmp.echonums(multimatches[2][2])
-
-local t = mmp.getnums(multimatches[2][2])
-if not t then return end
-
-echo&quot;\n&quot;
-
-if #t == 1 then
-	cecho(&quot;&lt;red&gt;From your knowledge, that happened in &lt;orange_red&gt;&quot;..mmp.areatabler[getRoomArea(t[1])]..&quot;&lt;red&gt;.&quot;)
-else
-	cecho(&quot;&lt;red&gt;From your knowledge, that possibly happened in &lt;orange_red&gt;&quot;..mmp.areatabler[getRoomArea(t[1])]..&quot;&lt;red&gt;.&quot;)
-end</script>
+                    <script>mmp.locateAndEcho(multimatches[2][2])</script>
                     <triggerType>0</triggerType>
                     <conditonLineDelta>0</conditonLineDelta>
                     <mStayOpen>0</mStayOpen>
@@ -676,14 +665,7 @@ end</script>
                 </Trigger>
                 <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
                     <name>Wildnodes nodes</name>
-                    <script>local t = mmp.getnums(matches[3])
-if not t then return end
-if #t == 1 then
-	cecho(&quot; &lt;orange_red&gt;(&quot;..mmp.areatabler[getRoomArea(t[1])]..&quot;)&quot;)
-else
-	cecho(&quot; &lt;orange_red&gt;Maybe (&quot;..mmp.areatabler[getRoomArea(t[1])]..&quot;)&quot;)
-end
-echo &quot; &quot;; mmp.echonums(matches[3])</script>
+                    <script>mmp.locateAndEcho(matches[3])</script>
                     <triggerType>0</triggerType>
                     <conditonLineDelta>99</conditonLineDelta>
                     <mStayOpen>0</mStayOpen>
@@ -705,14 +687,7 @@ echo &quot; &quot;; mmp.echonums(matches[3])</script>
                 </Trigger>
                 <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
                     <name>Window search</name>
-                    <script>local t = mmp.getnums(matches[4])
-if not t then return end
-if #t == 1 then
-	cecho(&quot; &lt;orange_red&gt;(&quot;..mmp.areatabler[getRoomArea(t[1])]..&quot;)&quot;)
-else
-	cecho(&quot; &lt;orange_red&gt;Maybe (&quot;..mmp.areatabler[getRoomArea(t[1])]..&quot;)&quot;)
-end
-echo &quot; &quot;; mmp.echonums(matches[4])</script>
+                    <script>mmp.locateAndEcho(matches[4], matches[2])</script>
                     <triggerType>0</triggerType>
                     <conditonLineDelta>39</conditonLineDelta>
                     <mStayOpen>0</mStayOpen>
@@ -734,18 +709,7 @@ echo &quot; &quot;; mmp.echonums(matches[4])</script>
                 </Trigger>
                 <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="yes" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
                     <name>Scry search</name>
-                    <script>echo &quot; &quot;; mmp.echonums(multimatches[2][3])
-
-local t = mmp.getnums(multimatches[2][3])
-if not t then return end
-
-echo&quot;\n&quot;
-
-if #t == 1 then
-	cecho(&quot;&lt;red&gt;From your knowledge, that room is in &lt;orange_red&gt;&quot;..mmp.areatabler[getRoomArea(t[1])]..&quot;&lt;red&gt;.&quot;)
-else
-	cecho(&quot;&lt;red&gt;From your knowledge, that room might be in &lt;orange_red&gt;&quot;..mmp.areatabler[getRoomArea(t[1])]..&quot;&lt;red&gt;.&quot;)
-end</script>
+                    <script>mmp.locateAndEcho(multimatches[2][3], multimatches[2][2])</script>
                     <triggerType>0</triggerType>
                     <conditonLineDelta>1</conditonLineDelta>
                     <mStayOpen>0</mStayOpen>
@@ -757,7 +721,7 @@ end</script>
                     <colorTriggerFgColor>#000000</colorTriggerFgColor>
                     <colorTriggerBgColor>#000000</colorTriggerBgColor>
                     <regexCodeList>
-                        <string>^You rub (.*) and it begins to glow with a pulsating light\.$</string>
+                        <string>^You rub .* and it begins to glow with a pulsating light\.$</string>
                         <string>^Within the enchanted item, an image forms of (\w+) at (.*)\.$</string>
                     </regexCodeList>
                     <regexCodePropertyList>
@@ -793,14 +757,7 @@ end</script>
                 </Trigger>
                 <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="yes" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
                     <name>map scry</name>
-                    <script>local t = mmp.getnums(multimatches[2][3])
-if not t then return end
-if #t == 1 then
-	cecho(&quot; &lt;orange_red&gt;(&quot;..mmp.areatabler[getRoomArea(t[1])]..&quot;)&quot;)
-else
-	cecho(&quot; &lt;orange_red&gt;Maybe (&quot;..mmp.areatabler[getRoomArea(t[1])]..&quot;)&quot;)
-end
-echo &quot; &quot;; mmp.echonums(multimatches[2][3])</script>
+                    <script>mmp.locateAndEcho(multimatches[2][3], multimatches[2][2])</script>
                     <triggerType>0</triggerType>
                     <conditonLineDelta>0</conditonLineDelta>
                     <mStayOpen>0</mStayOpen>
@@ -822,15 +779,7 @@ echo &quot; &quot;; mmp.echonums(multimatches[2][3])</script>
                 </Trigger>
                 <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
                     <name>World events</name>
-                    <script>local t = mmp.getnums(matches[2])
-if not t then return end
-if #t == 1 then
-	cecho(&quot; &lt;orange_red&gt;(&quot;..mmp.areatabler[getRoomArea(t[1])]..&quot;)&quot;)
-else
-	cecho(&quot; &lt;orange_red&gt;Maybe (&quot;..mmp.areatabler[getRoomArea(t[1])]..&quot;)&quot;)
-end
-
-echo &quot; &quot;; mmp.echonums(matches[2])</script>
+                    <script>mmp.locateAndEcho(matches[1])</script>
                     <triggerType>0</triggerType>
                     <conditonLineDelta>0</conditonLineDelta>
                     <mStayOpen>0</mStayOpen>
@@ -852,15 +801,7 @@ echo &quot; &quot;; mmp.echonums(matches[2])</script>
                 </Trigger>
                 <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="yes" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
                     <name>Seeing stone</name>
-                    <script>local t = mmp.getnums(multimatches[3][2])
-if not t then return end
-if #t == 1 then
-	cecho(&quot; &lt;orange_red&gt;(&quot;..mmp.areatabler[getRoomArea(t[1])]..&quot;)&quot;)
-else
-	cecho(&quot; &lt;orange_red&gt;Maybe (&quot;..mmp.areatabler[getRoomArea(t[1])]..&quot;)&quot;)
-end
-echo &quot; &quot;; mmp.echonums(multimatches[3][2])
-</script>
+                    <script>mmp.locateAndEcho(multimatches[3][2])</script>
                     <triggerType>0</triggerType>
                     <conditonLineDelta>3</conditonLineDelta>
                     <mStayOpen>0</mStayOpen>
@@ -884,8 +825,7 @@ echo &quot; &quot;; mmp.echonums(multimatches[3][2])
                 </Trigger>
                 <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="yes" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
                     <name>Birdseye</name>
-                    <script>echo &quot; &quot;; mmp.echonums(multimatches[2][3])
-</script>
+                    <script>mmp.locateAndEcho(multimatches[2][3], multimatches[2][2])</script>
                     <triggerType>0</triggerType>
                     <conditonLineDelta>0</conditonLineDelta>
                     <mStayOpen>0</mStayOpen>
@@ -907,7 +847,7 @@ echo &quot; &quot;; mmp.echonums(multimatches[3][2])
                 </Trigger>
                 <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="yes" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
                     <name>Bond look</name>
-                    <script>echo &quot; &quot;; mmp.echonums(multimatches[3][2])</script>
+                    <script>mmp.locateAndEcho(multimatches[3][2])</script>
                     <triggerType>0</triggerType>
                     <conditonLineDelta>3</conditonLineDelta>
                     <mStayOpen>0</mStayOpen>
@@ -1061,7 +1001,7 @@ end</script>
                     </regexCodePropertyList>
                 </Trigger>
                 <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="yes" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
-                    <name>Lusternia</name>
+                    <name>Tierstone</name>
                     <script>mmp.locateAndEcho(multimatches[2][2])</script>
                     <triggerType>0</triggerType>
                     <conditonLineDelta>1</conditonLineDelta>
@@ -1908,7 +1848,7 @@ mmp = mmp or {
   currentroom = false,
   currentroomname = false,
   firstRun = true,
-  version = &quot;11.9.9&quot;
+  version = &quot;11.10.1&quot;
 }
 
 function mmp.startup()
@@ -2800,19 +2740,20 @@ function mmp.locateAndEcho(room, person)
     mmp.echonums(room, true)
     echo &quot;)&quot;
 
-    if not t[room] then return end
+    if not (t[room] or table.contains(t, room)) then return end
 
     echo&quot;\n&quot;
-
-    if t[room] and type(t[room]) ~= &quot;table&quot; then
-	    cecho(&quot;&lt;red&gt;From your knowledge, that room is in &lt;orange_red&gt;&quot;..mmp.areatabler[getRoomArea(t[room])]..&quot;&lt;red&gt;.&quot;)
+    if table.size(t) == 1 then
+      local k,v = next(t)
+      cecho(&quot;&lt;red&gt;From your knowledge, that room is in &lt;orange_red&gt;&quot;..mmp.areatabler[getRoomArea(type(k) == &quot;number&quot; and k or v)]..&quot;&lt;red&gt;.&quot;)
     else
-	    cecho(&quot;&lt;red&gt;From your knowledge, that room might be in &lt;orange_red&gt;&quot;..mmp.areatabler[getRoomArea(t[room])]..&quot;&lt;red&gt;.&quot;)
+	    cecho(&quot;&lt;red&gt;From your knowledge, that room might be in &lt;orange_red&gt;&quot;..mmp.areatabler[getRoomArea(t[room][1])]..&quot;&lt;red&gt;.&quot;)
     end
 
    if person then
       mmp.pdb[person] = room
-      mmp.pdb_lastupdate[person] = room
+      mmp.pdb_lastupdate = {[person] = room}
+      raiseEvent(&quot;mmapper updated pdb&quot;)
    end
 end
 
