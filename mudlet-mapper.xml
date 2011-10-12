@@ -1848,7 +1848,7 @@ mmp = mmp or {
   currentroom = false,
   currentroomname = false,
   firstRun = true,
-  version = &quot;11.10.2&quot;
+  version = &quot;11.10.3&quot;
 }
 
 function mmp.startup()
@@ -2747,7 +2747,19 @@ function mmp.locateAndEcho(room, person)
       local k,v = next(t)
       cecho(&quot;&lt;red&gt;From your knowledge, that room is in &lt;orange_red&gt;&quot;..mmp.areatabler[getRoomArea(type(k) == &quot;number&quot; and k or v)]..&quot;&lt;red&gt;.&quot;)
     else
-	    cecho(&quot;&lt;red&gt;From your knowledge, that room might be in &lt;orange_red&gt;&quot;..mmp.areatabler[getRoomArea(t[room][1])]..&quot;&lt;red&gt;.&quot;)
+      local k,v = next(t)
+    local areas = {}
+      if type(k) == &quot;number&quot; then
+        for k, _ in pairs(t) do
+          areas[mmp.areatabler[getRoomArea(k)] or &quot;?&quot;] = true
+        end
+      else
+        for _, k in pairs(t) do
+          areas[mmp.areatabler[getRoomArea(k)] or &quot;?&quot;] = true
+        end
+      end
+      local flattened_areas = {}; for k, _ in pairs(areas) do flattened_areas[#flattened_areas+1] = k end
+      cecho(&quot;&lt;red&gt;From your knowledge, that room might be in &lt;orange_red&gt;&quot;..table.concat(flattened_areas, &quot;, or &quot;)..&quot;&lt;red&gt;.&quot;)
     end
 
    if person then
@@ -2841,7 +2853,7 @@ function mmp.areaLabels (where, exact)
     mmp.echo(&quot;For which area would you like to view labels?&quot;) return end
 
   if not where then
-	exact = true
+  exact = true
     where = getRoomAreaName(getRoomArea(mmp.currentroom))
   end
 
