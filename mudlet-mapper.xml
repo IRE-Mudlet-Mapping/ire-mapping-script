@@ -318,10 +318,12 @@ if #t == 1 then
 else
 	cecho(&quot; &lt;orange_red&gt;Maybe (&quot;..mmp.areatabler[getRoomArea(t[1])]..&quot;)&quot;)
 end
-echo &quot; &quot;; mmp.echonums(multimatches[2][2])</script>
+echo &quot; &quot;; mmp.echonums(multimatches[2][2])
+
+mmp.temp_room = multimatches[2][2]</script>
                     <triggerType>0</triggerType>
                     <conditonLineDelta>0</conditonLineDelta>
-                    <mStayOpen>0</mStayOpen>
+                    <mStayOpen>100</mStayOpen>
                     <mCommand></mCommand>
                     <packageName></packageName>
                     <mFgColor>#ff0000</mFgColor>
@@ -337,10 +339,53 @@ echo &quot; &quot;; mmp.echonums(multimatches[2][2])</script>
                         <integer>2</integer>
                         <integer>1</integer>
                     </regexCodePropertyList>
+                    <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+                        <name>Each person</name>
+                        <script>mmp.pdb[matches[2]] = mmp.temp_room
+mmp.pdb_lastupdate[matches[2]] = true</script>
+                        <triggerType>0</triggerType>
+                        <conditonLineDelta>0</conditonLineDelta>
+                        <mStayOpen>0</mStayOpen>
+                        <mCommand></mCommand>
+                        <packageName></packageName>
+                        <mFgColor>#ff0000</mFgColor>
+                        <mBgColor>#ffff00</mBgColor>
+                        <mSoundFile></mSoundFile>
+                        <colorTriggerFgColor>#000000</colorTriggerFgColor>
+                        <colorTriggerBgColor>#000000</colorTriggerBgColor>
+                        <regexCodeList>
+                            <string> is with (\w+)\.$</string>
+                        </regexCodeList>
+                        <regexCodePropertyList>
+                            <integer>1</integer>
+                        </regexCodePropertyList>
+                    </Trigger>
+                    <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+                        <name>Stop</name>
+                        <script>setTriggerStayOpen(&quot;Angel sense&quot;, 0)
+mmp.temp_room = nil
+raiseEvent(&quot;mmapper updated pdb&quot;)</script>
+                        <triggerType>0</triggerType>
+                        <conditonLineDelta>99</conditonLineDelta>
+                        <mStayOpen>0</mStayOpen>
+                        <mCommand></mCommand>
+                        <packageName></packageName>
+                        <mFgColor>#ff0000</mFgColor>
+                        <mBgColor>#ffff00</mBgColor>
+                        <mSoundFile></mSoundFile>
+                        <colorTriggerFgColor>#000000</colorTriggerFgColor>
+                        <colorTriggerBgColor>#000000</colorTriggerBgColor>
+                        <regexCodeList>
+                            <string>return isPrompt()</string>
+                        </regexCodeList>
+                        <regexCodePropertyList>
+                            <integer>4</integer>
+                        </regexCodePropertyList>
+                    </Trigger>
                 </Trigger>
                 <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="yes" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
                     <name>Dragonsense</name>
-                    <script>mmp.locateAndEcho(multimatches[2][2])</script>
+                    <script>mmp.locateAndEcho(multimatches[2][3], multimatches[2][2])</script>
                     <triggerType>0</triggerType>
                     <conditonLineDelta>1</conditonLineDelta>
                     <mStayOpen>0</mStayOpen>
@@ -353,7 +398,7 @@ echo &quot; &quot;; mmp.echonums(multimatches[2][2])</script>
                     <colorTriggerBgColor>#000000</colorTriggerBgColor>
                     <regexCodeList>
                         <string>Tapping into the unfathomable depths of your power, you sense that</string>
-                        <string>Tapping into the unfathomable depths of your power, you sense that \w+ is at (.+?), in (.+)\.$</string>
+                        <string>Tapping into the unfathomable depths of your power, you sense that (\w+) is at (.+?), in (.+)\.$</string>
                     </regexCodeList>
                     <regexCodePropertyList>
                         <integer>2</integer>
@@ -406,7 +451,7 @@ echo &quot; &quot;; mmp.echonums(multimatches[2][2])</script>
                 </Trigger>
                 <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="yes" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
                     <name>View </name>
-                    <script>mmp.locateAndEcho(multimatches[2][2])</script>
+                    <script>mmp.locateAndEcho(multimatches[2][3], multimatches[2][2])</script>
                     <triggerType>0</triggerType>
                     <conditonLineDelta>0</conditonLineDelta>
                     <mStayOpen>0</mStayOpen>
@@ -419,7 +464,7 @@ echo &quot; &quot;; mmp.echonums(multimatches[2][2])</script>
                     <colorTriggerBgColor>#000000</colorTriggerBgColor>
                     <regexCodeList>
                         <string>You see</string>
-                        <string>^You see \w+ at (.+)\.$</string>
+                        <string>^You see (\w+) at (.+)\.$</string>
                     </regexCodeList>
                     <regexCodePropertyList>
                         <integer>2</integer>
@@ -709,7 +754,12 @@ raiseEvent(&quot;mmapper updated pdb&quot;)</script>
                 </Trigger>
                 <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="yes" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
                     <name>Scry search</name>
-                    <script>mmp.locateAndEcho(multimatches[2][3], multimatches[2][2])</script>
+                    <script>local room = multimatches[2][3]:trim()
+if string.endswith(room, &quot;.&quot;) then
+  room = string.cut(room, #room-1)
+end
+
+mmp.locateAndEcho(room, multimatches[2][2])</script>
                     <triggerType>0</triggerType>
                     <conditonLineDelta>1</conditonLineDelta>
                     <mStayOpen>0</mStayOpen>
@@ -722,7 +772,7 @@ raiseEvent(&quot;mmapper updated pdb&quot;)</script>
                     <colorTriggerBgColor>#000000</colorTriggerBgColor>
                     <regexCodeList>
                         <string>^You rub .* and it begins to glow with a pulsating light\.$</string>
-                        <string>^Within the enchanted item, an image forms of (\w+) at (.*)\.$</string>
+                        <string>^Within the enchanted item, an image forms of (\w+) at ([^(]+)</string>
                     </regexCodeList>
                     <regexCodePropertyList>
                         <integer>1</integer>
@@ -1848,7 +1898,7 @@ mmp = mmp or {
   currentroom = false,
   currentroomname = false,
   firstRun = true,
-  version = &quot;11.10.3&quot;
+  version = &quot;11.10.4&quot;
 }
 
 function mmp.startup()
@@ -2734,7 +2784,6 @@ end
 
 function mmp.locateAndEcho(room, person)
     local t = mmp.searchRoom(room)
-    mmp.pdb_lastupdate = {}
 
     echo &quot;  (&quot;
     mmp.echonums(room, true)
@@ -2764,7 +2813,7 @@ function mmp.locateAndEcho(room, person)
 
    if person then
       mmp.pdb[person] = room
-      mmp.pdb_lastupdate = {[person] = room}
+      mmp.pdb_lastupdate[person] = true
       raiseEvent(&quot;mmapper updated pdb&quot;)
    end
 end
