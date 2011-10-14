@@ -1898,7 +1898,7 @@ mmp = mmp or {
   currentroom = false,
   currentroomname = false,
   firstRun = true,
-  version = &quot;11.10.5&quot;
+  version = &quot;11.10.6&quot;
 }
 
 function mmp.startup()
@@ -2269,10 +2269,12 @@ function mmp.getnums(roomname)
 
   if not tonumber(select(2, next(t))) then
     for roomid,_ in pairs(t) do
-      result[#result+1] = tonumber(roomid) end
+      if roomid ~= 0 then result[#result+1] = tonumber(roomid) end
+    end
   else
-    for _,roomid in pairs(t) do
-      result[#result+1] = tonumber(roomid) end
+    for roomid,_ in pairs(t) do
+      if roomid ~= 0 then result[#result+1] = tonumber(roomid) end
+    end
   end
 
   return result
