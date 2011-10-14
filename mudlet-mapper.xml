@@ -1898,7 +1898,7 @@ mmp = mmp or {
   currentroom = false,
   currentroomname = false,
   firstRun = true,
-  version = &quot;11.10.4&quot;
+  version = &quot;11.10.5&quot;
 }
 
 function mmp.startup()
@@ -2794,7 +2794,7 @@ function mmp.locateAndEcho(room, person)
     echo&quot;\n&quot;
     if table.size(t) == 1 then
       local k,v = next(t)
-      cecho(&quot;&lt;red&gt;From your knowledge, that room is in &lt;orange_red&gt;&quot;..mmp.areatabler[getRoomArea(type(k) == &quot;number&quot; and k or v)]..&quot;&lt;red&gt;.&quot;)
+      cecho(&quot;&lt;red&gt;From your knowledge, that room is in &lt;orange_red&gt;&quot;..(mmp.areatabler[getRoomArea(type(k) == &quot;number&quot; and k or v)] or &quot;?&quot;)..&quot;&lt;red&gt;.&quot;)
     else
       local k,v = next(t)
     local areas = {}
@@ -2807,7 +2807,12 @@ function mmp.locateAndEcho(room, person)
           areas[mmp.areatabler[getRoomArea(k)] or &quot;?&quot;] = true
         end
       end
-      local flattened_areas = {}; for k, _ in pairs(areas) do flattened_areas[#flattened_areas+1] = k end
+
+      local flattened_areas = {}
+      for k, _ in pairs(areas) do 
+        if k ~= &quot;&quot; then flattened_areas[#flattened_areas+1] = k end
+      end
+
       cecho(&quot;&lt;red&gt;From your knowledge, that room might be in &lt;orange_red&gt;&quot;..table.concat(flattened_areas, &quot;, or &quot;)..&quot;&lt;red&gt;.&quot;)
     end
 
