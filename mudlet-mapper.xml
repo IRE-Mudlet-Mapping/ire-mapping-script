@@ -493,6 +493,28 @@ raiseEvent(&quot;mmapper updated pdb&quot;)</script>
                         <integer>1</integer>
                     </regexCodePropertyList>
                 </Trigger>
+                <Trigger isActive="no" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+                    <name>Parse wholist</name>
+                    <script>-- this trigger should be off by default. It's inefficient and gets auto-enabled
+-- when you check 'who'
+mmp.locateAndEcho(matches[2], getColorWildcard(14)[1])</script>
+                    <triggerType>0</triggerType>
+                    <conditonLineDelta>99</conditonLineDelta>
+                    <mStayOpen>0</mStayOpen>
+                    <mCommand></mCommand>
+                    <packageName></packageName>
+                    <mFgColor>#ff0000</mFgColor>
+                    <mBgColor>#ffff00</mBgColor>
+                    <mSoundFile></mSoundFile>
+                    <colorTriggerFgColor>#000000</colorTriggerFgColor>
+                    <colorTriggerBgColor>#000000</colorTriggerBgColor>
+                    <regexCodeList>
+                        <string>.+?\((.+)\)$</string>
+                    </regexCodeList>
+                    <regexCodePropertyList>
+                        <integer>1</integer>
+                    </regexCodePropertyList>
+                </Trigger>
             </TriggerGroup>
             <TriggerGroup isActive="yes" isFolder="yes" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
                 <name>Aetolia</name>
@@ -780,7 +802,7 @@ mmp.locateAndEcho(room, multimatches[2][2])</script>
                     </regexCodePropertyList>
                 </Trigger>
                 <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="yes" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
-                    <name>Map walk</name>
+                    <name>w</name>
                     <script>mmp.gotoRoom(multimatches[4][2])</script>
                     <triggerType>0</triggerType>
                     <conditonLineDelta>3</conditonLineDelta>
@@ -1898,7 +1920,7 @@ mmp = mmp or {
   currentroom = false,
   currentroomname = false,
   firstRun = true,
-  version = &quot;11.10.6&quot;
+  version = &quot;11.10.7&quot;
 }
 
 function mmp.startup()
@@ -3343,6 +3365,19 @@ end</script>
                     </eventHandlerList>
                 </Script>
             </ScriptGroup>
+            <Script isActive="yes" isFolder="no">
+                <name>mmp_parse_wholist</name>
+                <packageName></packageName>
+                <script>function mmp_parse_wholist(_, cmd)
+  if cmd ~= &quot;who&quot; then return end
+  
+  enableTrigger(&quot;Parse wholist&quot;)
+  tempTimer(10, [[disableTrigger'Parse wholist']])
+end</script>
+                <eventHandlerList>
+                    <string>sysDataSendRequest</string>
+                </eventHandlerList>
+            </Script>
             <Script isActive="yes" isFolder="no">
                 <name>mmp_regenerate_areas</name>
                 <packageName></packageName>
