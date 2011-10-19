@@ -732,7 +732,7 @@ raiseEvent(&quot;mmapper updated pdb&quot;)</script>
                 </Trigger>
                 <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
                     <name>Wildnodes nodes</name>
-                    <script>mmp.locateAndEcho(matches[3])</script>
+                    <script>mmp.locateAndEcho(matches[2]:sub(1,1):lower()..string.sub(matches[2], 2))</script>
                     <triggerType>0</triggerType>
                     <conditonLineDelta>99</conditonLineDelta>
                     <mStayOpen>0</mStayOpen>
@@ -744,8 +744,8 @@ raiseEvent(&quot;mmapper updated pdb&quot;)</script>
                     <colorTriggerFgColor>#000000</colorTriggerFgColor>
                     <colorTriggerBgColor>#000000</colorTriggerBgColor>
                     <regexCodeList>
-                        <string>^\(Planted\) Node (\d+) - (.*)\.$</string>
-                        <string>^ +Node (\d+) - (.*)\.$</string>
+                        <string>^\(Planted\) Node \d+ - (.*)\.$</string>
+                        <string>^ +Node \d+ - (.*)\.$</string>
                     </regexCodeList>
                     <regexCodePropertyList>
                         <integer>1</integer>
@@ -776,12 +776,7 @@ raiseEvent(&quot;mmapper updated pdb&quot;)</script>
                 </Trigger>
                 <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="yes" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
                     <name>Scry search</name>
-                    <script>local room = multimatches[2][3]:trim()
-if string.endswith(room, &quot;.&quot;) then
-  room = string.cut(room, #room-1)
-end
-
-mmp.locateAndEcho(room, multimatches[2][2])</script>
+                    <script>mmp.locateAndEcho(multimatches[2][3], multimatches[2][2])</script>
                     <triggerType>0</triggerType>
                     <conditonLineDelta>1</conditonLineDelta>
                     <mStayOpen>0</mStayOpen>
@@ -794,7 +789,7 @@ mmp.locateAndEcho(room, multimatches[2][2])</script>
                     <colorTriggerBgColor>#000000</colorTriggerBgColor>
                     <regexCodeList>
                         <string>^You rub .* and it begins to glow with a pulsating light\.$</string>
-                        <string>^Within the enchanted item, an image forms of (\w+) at ([^(]+)</string>
+                        <string>Within the enchanted item, an image forms of (\w+) at (.+?)(?: \(.*\))?\.</string>
                     </regexCodeList>
                     <regexCodePropertyList>
                         <integer>1</integer>
@@ -802,7 +797,7 @@ mmp.locateAndEcho(room, multimatches[2][2])</script>
                     </regexCodePropertyList>
                 </Trigger>
                 <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="yes" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
-                    <name>w</name>
+                    <name>Map artefact</name>
                     <script>mmp.gotoRoom(multimatches[4][2])</script>
                     <triggerType>0</triggerType>
                     <conditonLineDelta>3</conditonLineDelta>
@@ -1920,7 +1915,7 @@ mmp = mmp or {
   currentroom = false,
   currentroomname = false,
   firstRun = true,
-  version = &quot;11.10.8&quot;
+  version = &quot;11.10.9&quot;
 }
 
 function mmp.startup()
@@ -2317,7 +2312,7 @@ function mmp.echonums(roomname, exact)
         if not exact then
             dt[#dt+1] = {name = room, id = roomid}
         else
-            if room == roomname then
+            if room:lower() == roomname:lower() then
                 dt[#dt+1] = {name = room, id = roomid}
             end
         end
@@ -2327,7 +2322,7 @@ function mmp.echonums(roomname, exact)
         if not exact then
             dt[#dt+1] = {name = room, id = roomid}
         else
-            if room == roomname then
+            if room:lower() == roomname:lower() then
                 dt[#dt+1] = {name = room, id = roomid}
             end
         end
