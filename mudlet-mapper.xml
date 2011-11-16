@@ -34,11 +34,13 @@
                     <string>There's water ahead of you. You'll have to swim in that direction to make it through.</string>
                     <string>There's water ahead of you. You'll have to swim in that direction to make it </string>
                     <string>There's water ahead of you. You'll have to SWIM </string>
+                    <string>You'll have to swim to make it through the water in that direction.</string>
                 </regexCodeList>
                 <regexCodePropertyList>
                     <integer>3</integer>
                     <integer>3</integer>
                     <integer>2</integer>
+                    <integer>3</integer>
                 </regexCodePropertyList>
             </Trigger>
             <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
@@ -766,11 +768,9 @@ raiseEvent(&quot;mmapper updated pdb&quot;)</script>
                     <colorTriggerFgColor>#000000</colorTriggerFgColor>
                     <colorTriggerBgColor>#000000</colorTriggerBgColor>
                     <regexCodeList>
-                        <string>^You open up a window in the cosmic fabric and search out (\w+). Through the cosmic window, you see (\w+) at (.*)\.$</string>
-                        <string>^You open up a window in the cosmic fabric and search out (\w+). Through the cosmic window, you see (\w+) at (.*) \((.*)\)\.$</string>
+                        <string>^You open up a window in the cosmic fabric and search out (\w+). Through the cosmic window, you see (\w+) at (.+?)(?: \(.*\))?\.</string>
                     </regexCodeList>
                     <regexCodePropertyList>
-                        <integer>1</integer>
                         <integer>1</integer>
                     </regexCodePropertyList>
                 </Trigger>
@@ -1121,6 +1121,158 @@ mmp.game = &quot;imperian&quot;</script>
                     <colorTriggerBgColor>#000000</colorTriggerBgColor>
                     <regexCodeList>
                         <string>Password correct. Welcome to Imperian.</string>
+                    </regexCodeList>
+                    <regexCodePropertyList>
+                        <integer>3</integer>
+                    </regexCodePropertyList>
+                </Trigger>
+                <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="yes" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+                    <name>Wormholes</name>
+                    <script>local room1 = mmp.roomEcho(multimatches[2][2])
+local room2 = mmp.roomEcho(multimatches[2][3])
+selectCurrentLine()
+replace(&quot;&quot;)
+mmp.echon(&quot;Stable wormhole between &quot; .. room1)
+mmp.roomEcho(room1)
+echo(&quot; and &quot; .. room2)
+mmp.roomEcho(room2)
+echo(&quot;.\n&quot;)</script>
+                    <triggerType>0</triggerType>
+                    <conditonLineDelta>0</conditonLineDelta>
+                    <mStayOpen>0</mStayOpen>
+                    <mCommand></mCommand>
+                    <packageName></packageName>
+                    <mFgColor>#ff0000</mFgColor>
+                    <mBgColor>#ffff00</mBgColor>
+                    <mSoundFile></mSoundFile>
+                    <colorTriggerFgColor>#000000</colorTriggerFgColor>
+                    <colorTriggerBgColor>#000000</colorTriggerBgColor>
+                    <regexCodeList>
+                        <string>You sense a stable wormhole between</string>
+                        <string>^You sense a stable wormhole between (.+?) and (.+)\.$</string>
+                    </regexCodeList>
+                    <regexCodePropertyList>
+                        <integer>2</integer>
+                        <integer>1</integer>
+                    </regexCodePropertyList>
+                </Trigger>
+                <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="yes" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+                    <name>Personal wormholes</name>
+                    <script>selectCurrentLine()
+replace(&quot;&quot;)
+mmp.echon(&quot;Personal wormhole at &quot; .. multimatches[2][2])
+mmp.roomEcho(multimatches[2][2])
+echo(&quot;. It is attached to &quot; .. multimatches[2][3] .. &quot;.\n&quot;)</script>
+                    <triggerType>0</triggerType>
+                    <conditonLineDelta>0</conditonLineDelta>
+                    <mStayOpen>0</mStayOpen>
+                    <mCommand></mCommand>
+                    <packageName></packageName>
+                    <mFgColor>#ff0000</mFgColor>
+                    <mBgColor>#ffff00</mBgColor>
+                    <mSoundFile></mSoundFile>
+                    <colorTriggerFgColor>#000000</colorTriggerFgColor>
+                    <colorTriggerBgColor>#000000</colorTriggerBgColor>
+                    <regexCodeList>
+                        <string>You sense a personal wormhole at</string>
+                        <string>^You sense a personal wormhole at (.+). It is attached to (.+)\.$</string>
+                    </regexCodeList>
+                    <regexCodePropertyList>
+                        <integer>2</integer>
+                        <integer>1</integer>
+                    </regexCodePropertyList>
+                </Trigger>
+                <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+                    <name>Parse wholist</name>
+                    <script>selectCaptureGroup(2)
+replace(&quot;&quot;)
+mmp.roomEcho(matches[3])
+ </script>
+                    <triggerType>0</triggerType>
+                    <conditonLineDelta>0</conditonLineDelta>
+                    <mStayOpen>0</mStayOpen>
+                    <mCommand></mCommand>
+                    <packageName></packageName>
+                    <mFgColor>#ff0000</mFgColor>
+                    <mBgColor>#ffff00</mBgColor>
+                    <mSoundFile></mSoundFile>
+                    <colorTriggerFgColor>#000000</colorTriggerFgColor>
+                    <colorTriggerBgColor>#000000</colorTriggerBgColor>
+                    <regexCodeList>
+                        <string>.+ - (.+?) - (.+)</string>
+                    </regexCodeList>
+                    <regexCodePropertyList>
+                        <integer>1</integer>
+                    </regexCodePropertyList>
+                </Trigger>
+                <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="yes" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+                    <name>Trap went off</name>
+                    <script>selectCurrentLine()
+replace(&quot;&quot;)
+mmp.echon(&quot;Your trap at &quot; .. multimatches[2][2])
+mmp.roomEcho(multimatches[2][2])
+echo(&quot; was set off by &quot; .. multimatches[2][3] .. &quot;!!!\n&quot;)</script>
+                    <triggerType>0</triggerType>
+                    <conditonLineDelta>0</conditonLineDelta>
+                    <mStayOpen>0</mStayOpen>
+                    <mCommand></mCommand>
+                    <packageName></packageName>
+                    <mFgColor>#ff0000</mFgColor>
+                    <mBgColor>#ffff00</mBgColor>
+                    <mSoundFile></mSoundFile>
+                    <colorTriggerFgColor>#000000</colorTriggerFgColor>
+                    <colorTriggerBgColor>#000000</colorTriggerBgColor>
+                    <regexCodeList>
+                        <string>Your alarm at</string>
+                        <string>^Your alarm at \'(.+)\' has been set off by (\w+)\!$</string>
+                    </regexCodeList>
+                    <regexCodePropertyList>
+                        <integer>2</integer>
+                        <integer>1</integer>
+                    </regexCodePropertyList>
+                </Trigger>
+                <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="yes" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+                    <name>Trap List</name>
+                    <script>-- the first pattern is not blank, there are spaces there
+
+selectCurrentLine()
+replace(&quot;&quot;)
+echo(&quot;[&quot; .. multimatches[2][2] .. &quot;] (&quot; .. multimatches[2][3] .. &quot;) at &quot; .. multimatches[2][4])
+mmp.roomEcho(multimatches[2][4]) </script>
+                    <triggerType>0</triggerType>
+                    <conditonLineDelta>0</conditonLineDelta>
+                    <mStayOpen>0</mStayOpen>
+                    <mCommand></mCommand>
+                    <packageName></packageName>
+                    <mFgColor>#ff0000</mFgColor>
+                    <mBgColor>#ffff00</mBgColor>
+                    <mSoundFile></mSoundFile>
+                    <colorTriggerFgColor>#000000</colorTriggerFgColor>
+                    <colorTriggerBgColor>#000000</colorTriggerBgColor>
+                    <regexCodeList>
+                        <string>   </string>
+                        <string>^   (\w+) \((\w+)\) at (.+)$</string>
+                    </regexCodeList>
+                    <regexCodePropertyList>
+                        <integer>2</integer>
+                        <integer>1</integer>
+                    </regexCodePropertyList>
+                </Trigger>
+                <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+                    <name>Sewer grate</name>
+                    <script>mmp.enterGrate()</script>
+                    <triggerType>0</triggerType>
+                    <conditonLineDelta>0</conditonLineDelta>
+                    <mStayOpen>0</mStayOpen>
+                    <mCommand></mCommand>
+                    <packageName></packageName>
+                    <mFgColor>#ff0000</mFgColor>
+                    <mBgColor>#ffff00</mBgColor>
+                    <mSoundFile></mSoundFile>
+                    <colorTriggerFgColor>#000000</colorTriggerFgColor>
+                    <colorTriggerBgColor>#000000</colorTriggerBgColor>
+                    <regexCodeList>
+                        <string>A sewer grate prevents you from moving down into the sewers.</string>
                     </regexCodeList>
                     <regexCodePropertyList>
                         <integer>3</integer>
@@ -1915,7 +2067,7 @@ mmp = mmp or {
   currentroom = false,
   currentroomname = false,
   firstRun = true,
-  version = &quot;11.10.9&quot;
+  version = &quot;11.11.1&quot;
 }
 
 function mmp.startup()
@@ -1975,6 +2127,21 @@ function mmp.swim()
     mmp.move()
   end)
 end
+
+function mmp.enterGrate()
+  -- not going anywhere? don't do anything
+  if not speedWalkDir[speedWalkCounter] then return end
+
+  send(&quot;enter grate &quot; .. speedWalkDir[speedWalkCounter], false)
+  cecho(string.format(&quot;&lt;red&gt;(&lt;maroon&gt;%d - &lt;dark_slate_grey&gt;enter grate %s&lt;red&gt;)&quot;, #speedWalkDir - speedWalkCounter + 1, speedWalkDir[speedWalkCounter]))
+
+  if mmp.movetimer then killTimer(mmp.movetimer) end
+  mmp.movetimer = tempTimer(getNetworkLatency()+2.5, function ()
+    mmp.movetimer = false
+    mmp.move()
+  end)
+end
+ 
 
 function mmp.customwalkdelay(delay)
   if mmp.movetimer then killTimer(mmp.movetimer) end
@@ -3010,11 +3177,11 @@ function mmp.doLockArea(search)
 		if not mmp.locked[id] then
 			setFgColor(0, 200, 0)
 			setUnderline(true)
-			echoLink(&quot;Lock!&quot;, [[mmp.lockArea( ']] .. name .. [[', true )]], &quot;Click to lock area '&quot; .. name .. &quot;'&quot;, true)
+			echoLink(&quot;Lock!&quot;, [[mmp.lockArea( ']] .. name:gsub(&quot;'&quot;, [[\']]) .. [[', true )]], &quot;Click to lock area '&quot; .. name .. &quot;'&quot;, true)
 		else
 			setFgColor(200, 0, 0)
 			setUnderline(true)
-			echoLink(&quot;Unlock!&quot;, [[mmp.lockArea( ']] .. name .. [[', false )]], &quot;Click to unlock area '&quot; .. name .. &quot;'&quot;, true)
+			echoLink(&quot;Unlock!&quot;, [[mmp.lockArea( ']] .. name:gsub(&quot;'&quot;, [[\']]) .. [[', false )]], &quot;Click to unlock area '&quot; .. name .. &quot;'&quot;, true)
 		end
 	end
 
