@@ -499,7 +499,10 @@ raiseEvent(&quot;mmapper updated pdb&quot;)</script>
                     <name>Parse wholist</name>
                     <script>-- this trigger should be off by default. It's inefficient and gets auto-enabled
 -- when you check 'who'
-mmp.locateAndEcho(matches[2], getColorWildcard(14)[1])</script>
+local t = getColorWildcard(14)
+if type(t) == &quot;table&quot; then
+  mmp.locateAndEcho(matches[2], t[1])
+end</script>
                     <triggerType>0</triggerType>
                     <conditonLineDelta>99</conditonLineDelta>
                     <mStayOpen>0</mStayOpen>
@@ -1182,7 +1185,7 @@ echo(&quot;. It is attached to &quot; .. multimatches[2][3] .. &quot;.\n&quot;)<
                         <integer>1</integer>
                     </regexCodePropertyList>
                 </Trigger>
-                <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+                <Trigger isActive="no" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
                     <name>Parse wholist</name>
                     <script>selectCaptureGroup(2)
 replace(&quot;&quot;)
@@ -2067,7 +2070,7 @@ mmp = mmp or {
   currentroom = false,
   currentroomname = false,
   firstRun = true,
-  version = &quot;11.11.1&quot;
+  version = &quot;11.11.2&quot;
 }
 
 function mmp.startup()
@@ -2559,6 +2562,50 @@ end
 
 local getpathcache = {}
 setmetatable(getpathcache, {__mode = &quot;kv&quot;}) -- weak keys/values = it'll periodically get cleaned up by gc
+
+function mmp.searchRoomExact(what)
+  local roomTable = mmp.searchRoom(what)
+  local realResult = {}
+  for key, value in pairs (roomTable) do
+    if (key == what or value == what) then
+      if (type(key) == &quot;string&quot;) then
+        realResult[key:ends(&quot; (road)&quot;) and key:sub(1, -8) or key] = value
+      else
+        realResult[key] = value:ends(&quot; (road)&quot;) and value:sub(1, -8) or value
+      end
+    end
+  end
+  if (table.is_empty(realResult)) then
+    return roomTable
+  else
+    return realResult
+  end
+end
+
+function mmp.roomWhoFind(query)
+  if query:ends('.') then query = query:sub(1,-2) end
+  local result = mmp.searchRoomExact(query)
+
+  if type(result) == &quot;string&quot; or not next(result) then
+    cecho(&quot;&lt;CadetBlue&gt;  You have no recollection of any room with that name.&quot;) return end
+
+  if not tonumber(select(2, next(result))) then -- old style
+    for roomid, roomname in pairs(result) do roomid = tonumber(roomid)
+      cecho(string.format(&quot;  &lt;LightSlateGray&gt;%s&lt;DarkSlateGrey&gt; (&lt;blue&gt;&quot;,
+        tostring(roomname)))
+      echoLink(roomid, 'mmp.gotoRoom('..roomid..')', string.format(&quot;Go to %s (%s)&quot;, roomid, tostring(roomname)))
+      cecho(string.format(&quot;&lt;DarkSlateGrey&gt;) &lt;white&gt;%s&lt;DarkSlateGrey&gt;.\n&quot;, tostring(mmp.areatabler[getRoomArea(roomid)])))
+    end
+
+  else -- new style
+    for roomname, roomid in pairs(result) do roomid = tonumber(roomid)
+      cecho(string.format(&quot;  &lt;LightSlateGray&gt;%s&lt;DarkSlateGrey&gt; (&lt;blue&gt;&quot;,
+        tostring(roomname)))
+      echoLink(roomid, 'mmp.gotoRoom('..roomid..')', string.format(&quot;Go to %s (%s)&quot;, roomid, tostring(roomname)))
+      cecho(string.format(&quot;&lt;DarkSlateGrey&gt;) &lt;white&gt;%s&lt;DarkSlateGrey&gt;.\n&quot;, tostring(mmp.areatabler[getRoomArea(roomid)])))
+    end
+  end
+end
 
 -- DOES NOT ACCOUNT FOR CHANGING THE MAP YET (within a profile load), because we don't know when it happens
 function mmp.getPath(from, to)
@@ -3530,7 +3577,8 @@ end</script>
             <Script isActive="yes" isFolder="no">
                 <name>mmp_parse_wholist</name>
                 <packageName></packageName>
-                <script>function mmp_parse_wholist(_, cmd)
+                <script>disableTrigger(&quot;Parse wholist&quot;)
+function mmp_parse_wholist(_, cmd)
   if cmd ~= &quot;who&quot; then return end
   
   enableTrigger(&quot;Parse wholist&quot;)
