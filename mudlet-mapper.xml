@@ -2070,7 +2070,7 @@ mmp = mmp or {
   currentroom = false,
   currentroomname = false,
   firstRun = true,
-  version = &quot;11.11.2&quot;
+  version = &quot;11.12.1&quot;
 }
 
 function mmp.startup()
@@ -3197,7 +3197,7 @@ mmp.pdb_lastupdate = mmp.pdb_lastupdate or {}</script>
                 <script>-- Lock Area
 
 mmp.locked = mmp.locked or {}
-mmp.lastLockSearch = nil
+mmp.lastLockSearch = mmp.lastLockSearch or nil
 
 function mmp.doLockArea(search)
 	local areaList
@@ -3552,6 +3552,16 @@ end</script>
                     <name>mmp_load_options</name>
                     <packageName></packageName>
                     <script>function mmp_load_options()
+	local loadTable = mmp_load_locks()
+
+	if loadTable.options then
+		for k, v in pairs(loadTable.options) do
+			mmp.settings:setOption(k, v, true)
+		end
+	end
+end
+
+function mmp_load_locks()
 	local loadTable = {}
 
 	if string.char(getMudletHomeDir():byte()) == &quot;/&quot; then _sep = &quot;/&quot; else  _sep = &quot;\\&quot; end
@@ -3563,11 +3573,14 @@ end</script>
 		mmp.locked = loadTable.locked_areas
 	end
 
-	if loadTable.options then
-		for k, v in pairs(loadTable.options) do
-			mmp.settings:setOption(k, v, true)
-		end
+	for area in pairs(mmp.locked) do
+		local rooms = getAreaRooms(area)
+		for _, roomid in pairs(rooms) do
+			lockRoom(roomid, true)
+		end			
 	end
+
+	return loadTable
 end</script>
                     <eventHandlerList>
                         <string>sysLoadEvent</string>
@@ -3603,6 +3616,23 @@ end</script>
 end</script>
                 <eventHandlerList>
                     <string>mmp areas changed</string>
+                    <string>sys2DMapLoad</string>
+                    <string>sys3DMapLoad</string>
+                </eventHandlerList>
+            </Script>
+            <Script isActive="yes" isFolder="no">
+                <name>mmp_relock_areas</name>
+                <packageName></packageName>
+                <script>function mmp_relock_areas()
+	for area in pairs(mmp.locked) do
+		local rooms = getAreaRooms(area)
+		for _, roomid in pairs(rooms) do
+			lockRoom(roomid, true)
+		end			
+	end
+end</script>
+                <eventHandlerList>
+                    <string>sysMapLoad</string>
                 </eventHandlerList>
             </Script>
             <ScriptGroup isActive="yes" isFolder="yes">
