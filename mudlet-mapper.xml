@@ -58,6 +58,7 @@
                 <colorTriggerBgColor>#000000</colorTriggerBgColor>
                 <regexCodeList>
                     <string>You begin to slowly clamber over the rubble that blocks your way.</string>
+                    <string>You begin to slowly clamber over a pile of rubble that blocks your way.</string>
                 </regexCodeList>
                 <regexCodePropertyList>
                     <integer>3</integer>
@@ -1202,7 +1203,7 @@ mmp.roomEcho(matches[3])
                     <colorTriggerFgColor>#000000</colorTriggerFgColor>
                     <colorTriggerBgColor>#000000</colorTriggerBgColor>
                     <regexCodeList>
-                        <string>.+ - (.+?) - (.+)</string>
+                        <string>.+( \- [A-Z].+?\s*?) \- (.+)</string>
                     </regexCodeList>
                     <regexCodePropertyList>
                         <integer>1</integer>
@@ -1280,6 +1281,69 @@ mmp.roomEcho(multimatches[2][4]) </script>
                     <regexCodePropertyList>
                         <integer>3</integer>
                     </regexCodePropertyList>
+                                        <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+                        <name>Scout</name>
+                        <script>mmp.roomEcho(matches[3]) </script>
+                        <triggerType>0</triggerType>
+                        <conditonLineDelta>0</conditonLineDelta>
+                        <mStayOpen>0</mStayOpen>
+                        <mCommand></mCommand>
+                        <packageName></packageName>
+                        <mFgColor>#ff0000</mFgColor>
+                        <mBgColor>#ffff00</mBgColor>
+                        <mSoundFile></mSoundFile>
+                        <colorTriggerFgColor>#000000</colorTriggerFgColor>
+                        <colorTriggerBgColor>#000000</colorTriggerBgColor>
+                        <regexCodeList>
+                            <string>^   (.+) at (.+)$</string>
+                        </regexCodeList>
+                        <regexCodePropertyList>
+                            <integer>1</integer>
+                        </regexCodePropertyList>
+                    </Trigger>
+                    <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+                        <name>Scent</name>
+                        <script>mmp.roomEcho(matches[2]) </script>
+                        <triggerType>0</triggerType>
+                        <conditonLineDelta>0</conditonLineDelta>
+                        <mStayOpen>0</mStayOpen>
+                        <mCommand></mCommand>
+                        <packageName></packageName>
+                        <mFgColor>#ff0000</mFgColor>
+                        <mBgColor>#ffff00</mBgColor>
+                        <mSoundFile></mSoundFile>
+                        <colorTriggerFgColor>#000000</colorTriggerFgColor>
+                        <colorTriggerBgColor>#000000</colorTriggerBgColor>
+                        <regexCodeList>
+                            <string>^You detect traces of scent from (.+)\.$</string>
+                        </regexCodeList>
+                        <regexCodePropertyList>
+                            <integer>1</integer>
+                        </regexCodePropertyList>
+                    </Trigger>
+                    <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+                        <name>Hunt</name>
+                        <script>selectCurrentLine()
+replace(&quot;&quot;)
+cecho(&quot;&lt;chocolate&gt;&quot; .. matches[2] .. &quot;&lt;grey&gt; moved to &lt;sienna&gt;&quot; .. matches[3] .. &quot;, &lt;white&gt;&quot; ..matches[4])
+mmp.roomEcho(matches[3]) </script>
+                        <triggerType>0</triggerType>
+                        <conditonLineDelta>0</conditonLineDelta>
+                        <mStayOpen>0</mStayOpen>
+                        <mCommand></mCommand>
+                        <packageName></packageName>
+                        <mFgColor>#ff0000</mFgColor>
+                        <mBgColor>#ffff00</mBgColor>
+                        <mSoundFile></mSoundFile>
+                        <colorTriggerFgColor>#000000</colorTriggerFgColor>
+                        <colorTriggerBgColor>#000000</colorTriggerBgColor>
+                        <regexCodeList>
+                            <string>^You sense that (\w+) has entered (.+)\, (.+)\.$</string>
+                        </regexCodeList>
+                        <regexCodePropertyList>
+                            <integer>1</integer>
+                        </regexCodePropertyList>
+                    </Trigger>
                 </Trigger>
             </TriggerGroup>
             <TriggerGroup isActive="yes" isFolder="yes" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
@@ -3591,8 +3655,10 @@ end</script>
                 <name>mmp_parse_wholist</name>
                 <packageName></packageName>
                 <script>disableTrigger(&quot;Parse wholist&quot;)
+
 function mmp_parse_wholist(_, cmd)
-  if cmd ~= &quot;who&quot; then return end
+
+  if string.cut(cmd,3):lower() ~= &quot;who&quot; then return end
   
   enableTrigger(&quot;Parse wholist&quot;)
   tempTimer(10, [[disableTrigger'Parse wholist']])
