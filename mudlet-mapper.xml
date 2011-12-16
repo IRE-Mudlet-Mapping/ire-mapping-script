@@ -62,6 +62,7 @@
                 </regexCodeList>
                 <regexCodePropertyList>
                     <integer>3</integer>
+                    <integer>3</integer>
                 </regexCodePropertyList>
             </Trigger>
             <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
@@ -1281,7 +1282,7 @@ mmp.roomEcho(multimatches[2][4]) </script>
                     <regexCodePropertyList>
                         <integer>3</integer>
                     </regexCodePropertyList>
-                                        <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+                    <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
                         <name>Scout</name>
                         <script>mmp.roomEcho(matches[3]) </script>
                         <triggerType>0</triggerType>
@@ -2134,7 +2135,7 @@ mmp = mmp or {
   currentroom = false,
   currentroomname = false,
   firstRun = true,
-  version = &quot;11.12.1&quot;
+  version = &quot;11.12.2&quot;
 }
 
 function mmp.startup()
