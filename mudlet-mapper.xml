@@ -1094,6 +1094,90 @@ end</script>
                         <integer>1</integer>
                     </regexCodePropertyList>
                 </Trigger>
+                <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+                    <name>Quicksand</name>
+                    <script>mmp.customwalkdelay(4)</script>
+                    <triggerType>0</triggerType>
+                    <conditonLineDelta>0</conditonLineDelta>
+                    <mStayOpen>0</mStayOpen>
+                    <mCommand></mCommand>
+                    <packageName></packageName>
+                    <mFgColor>#ff0000</mFgColor>
+                    <mBgColor>#ffff00</mBgColor>
+                    <mSoundFile></mSoundFile>
+                    <colorTriggerFgColor>#000000</colorTriggerFgColor>
+                    <colorTriggerBgColor>#000000</colorTriggerBgColor>
+                    <regexCodeList>
+                        <string>You struggle slowly through the quicksand as you move</string>
+                    </regexCodeList>
+                    <regexCodePropertyList>
+                        <integer>2</integer>
+                    </regexCodePropertyList>
+                </Trigger>
+                <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+                    <name>Gravity</name>
+                    <script>mmp.customwalkdelay(4)</script>
+                    <triggerType>0</triggerType>
+                    <conditonLineDelta>0</conditonLineDelta>
+                    <mStayOpen>0</mStayOpen>
+                    <mCommand></mCommand>
+                    <packageName></packageName>
+                    <mFgColor>#ff0000</mFgColor>
+                    <mBgColor>#ffff00</mBgColor>
+                    <mSoundFile></mSoundFile>
+                    <colorTriggerFgColor>#000000</colorTriggerFgColor>
+                    <colorTriggerBgColor>#000000</colorTriggerBgColor>
+                    <regexCodeList>
+                        <string>The dragging force of a war shrine of</string>
+                    </regexCodeList>
+                    <regexCodePropertyList>
+                        <integer>2</integer>
+                    </regexCodePropertyList>
+                </Trigger>
+                <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="yes" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+                    <name>Crow spy</name>
+                    <script>mmp.locateAndEcho(multimatches[2][2])</script>
+                    <triggerType>0</triggerType>
+                    <conditonLineDelta>0</conditonLineDelta>
+                    <mStayOpen>0</mStayOpen>
+                    <mCommand></mCommand>
+                    <packageName></packageName>
+                    <mFgColor>#ff0000</mFgColor>
+                    <mBgColor>#ffff00</mBgColor>
+                    <mSoundFile></mSoundFile>
+                    <colorTriggerFgColor>#000000</colorTriggerFgColor>
+                    <colorTriggerBgColor>#000000</colorTriggerBgColor>
+                    <regexCodeList>
+                        <string>An image of</string>
+                        <string>^An image of \w+ (?:entering|leaving) (.+?) appears in the centre of the nest\.$</string>
+                    </regexCodeList>
+                    <regexCodePropertyList>
+                        <integer>2</integer>
+                        <integer>1</integer>
+                    </regexCodePropertyList>
+                </Trigger>
+                <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="yes" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+                    <name>Crow spy remote</name>
+                    <script>mmp.locateAndEcho(multimatches[2][2])</script>
+                    <triggerType>0</triggerType>
+                    <conditonLineDelta>0</conditonLineDelta>
+                    <mStayOpen>0</mStayOpen>
+                    <mCommand></mCommand>
+                    <packageName></packageName>
+                    <mFgColor>#ff0000</mFgColor>
+                    <mBgColor>#ffff00</mBgColor>
+                    <mSoundFile></mSoundFile>
+                    <colorTriggerFgColor>#000000</colorTriggerFgColor>
+                    <colorTriggerBgColor>#000000</colorTriggerBgColor>
+                    <regexCodeList>
+                        <string>Your nest projects into your head an image</string>
+                        <string>^Your nest projects into your head an image of \w+ (?:entering|exiting) (.+)\.$</string>
+                    </regexCodeList>
+                    <regexCodePropertyList>
+                        <integer>2</integer>
+                        <integer>1</integer>
+                    </regexCodePropertyList>
+                </Trigger>
             </TriggerGroup>
             <TriggerGroup isActive="yes" isFolder="yes" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
                 <name>Imperian</name>
@@ -2135,7 +2219,7 @@ mmp = mmp or {
   currentroom = false,
   currentroomname = false,
   firstRun = true,
-  version = &quot;11.12.2&quot;
+  version = &quot;12.1.1&quot;
 }
 
 function mmp.startup()
@@ -2244,9 +2328,9 @@ function mmp.canmove(fromtimer)
     (not gmcp.Char.Vitals.left_arm or gmcp.Char.Vitals.left_arm == &quot;1&quot;) and
     (not gmcp.Char.Vitals.right_leg or gmcp.Char.Vitals.right_leg == &quot;1&quot;) and
     (not gmcp.Char.Vitals.left_leg or gmcp.Char.Vitals.left_leg == &quot;1&quot;) and
-    (not gmcp.Char.Vitals.psisuper or gmcp.Char.Vitals.psisuper == &quot;1&quot;) and
-    (not gmcp.Char.Vitals.psisub or gmcp.Char.Vitals.psisub == &quot;1&quot;) and
-    (not gmcp.Char.Vitals.psiid or gmcp.Char.Vitals.psiid == &quot;1&quot;) and
+    (not gmcp.Char.Vitals.psisuper or gmcp.Char.Vitals.psisuper ~= &quot;0&quot;) and
+    (not gmcp.Char.Vitals.psisub or gmcp.Char.Vitals.psisub ~= &quot;0&quot;) and
+    (not gmcp.Char.Vitals.psiid or gmcp.Char.Vitals.psiid ~= &quot;0&quot;) and
     (not gmcp.Char.Vitals.prone or gmcp.Char.Vitals.prone == &quot;0&quot;)
   ) then 
 	if fromtimer then
@@ -2512,8 +2596,8 @@ function mmp.pause(what)
   if not mmp.paused then mmp.move() end
 end
 
-function mmp.getnums(roomname)
-  local t = mmp.searchRoom(roomname)
+function mmp.getnums(roomname, exact)
+  local t = (not exact and mmp.searchRoom or mmp.searchRoomExact)(roomname)
 
   if not next(t) then
     return nil end
@@ -2612,7 +2696,7 @@ function mmp.searchRoom(what)
   if not result then
     result = searchRoom(what)
     local realResult = {}
-    for key, value in pairs(result) do
+    for key, value in pairs(result or {}) do
         -- both ways, because searchRoom can return either id-room name or the reverse
         if type(key) == &quot;string&quot; then
           realResult[key:ends(&quot; (road)&quot;) and key:sub(1, -8) or key] = value
@@ -2632,8 +2716,9 @@ setmetatable(getpathcache, {__mode = &quot;kv&quot;}) -- weak keys/values = it'l
 function mmp.searchRoomExact(what)
   local roomTable = mmp.searchRoom(what)
   local realResult = {}
+  what = what:lower()
   for key, value in pairs (roomTable) do
-    if (key == what or value == what) then
+    if ((type(key) == &quot;string&quot; and key:lower() == what) or (type(value) == &quot;string&quot; and value:lower() == what)) then
       if (type(key) == &quot;string&quot;) then
         realResult[key:ends(&quot; (road)&quot;) and key:sub(1, -8) or key] = value
       else
@@ -3088,7 +3173,10 @@ function mmp.locateAndEcho(room, person)
     mmp.echonums(room, true)
     echo &quot;)&quot;
 
-    if not (t[room] or table.contains(t, room)) then return end
+	-- lowercase results
+	for k,v in pairs(t) do if tonumber(k) then t[k] = v:lower() else t[k:lower()] = v end end
+
+    if not (t[room:lower()] or table.contains(t, room:lower())) then return end
 
     echo&quot;\n&quot;
     if table.size(t) == 1 then
