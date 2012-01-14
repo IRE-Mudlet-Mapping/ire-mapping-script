@@ -1699,7 +1699,8 @@ local otherroom = tonumber(matches[2]) or mmp.relativeroom(mmp.currentroom, matc
 if not otherroom or not mmp.roomexists(otherroom) then mmp.echo(matches[2]..&quot; doesn't exist.&quot;) return end
 
 addSpecialExit(mmp.currentroom, tonumber(otherroom), matches[3])
-mmp.echo(string.format(&quot;Added special exit command %s to %s (%d).&quot;, matches[3], getRoomName(otherroom), otherroom))
+addSpecialExit(mmp.currentroom, tonumber(otherroom), matches[3])
+mmp.echo(string.format(&quot;Added special exit with command '%s' to %s (%d).&quot;, matches[3], getRoomName(otherroom), otherroom))
 centerview(mmp.currentroom)</script>
                     <command></command>
                     <packageName></packageName>
@@ -2219,7 +2220,7 @@ mmp = mmp or {
   currentroom = false,
   currentroomname = false,
   firstRun = true,
-  version = &quot;12.1.1&quot;
+  version = &quot;12.1.2&quot;
 }
 
 function mmp.startup()
@@ -2372,7 +2373,7 @@ function speedwalking( event, num )
     local destination = speedWalkPath[#speedWalkPath]
     if not getPath(num, destination) then
       mmp.echo(string.format(&quot;Don't know how to get to %d (%s) anymore :(&quot;,
-        destination, mmp.searchRoom(destination)))
+        destination, getRoomName(destination)))
     else
 		mmp.gotoRoom (destination)
     end
@@ -2696,7 +2697,7 @@ function mmp.searchRoom(what)
   if not result then
     result = searchRoom(what)
     local realResult = {}
-    for key, value in pairs(result or {}) do
+    for key, value in pairs(type(result) == &quot;table&quot; and result or {}) do
         -- both ways, because searchRoom can return either id-room name or the reverse
         if type(key) == &quot;string&quot; then
           realResult[key:ends(&quot; (road)&quot;) and key:sub(1, -8) or key] = value
@@ -2924,8 +2925,19 @@ function mmp.roomLook(input)
     -- display special exits if we got any
     if next(specexits) then
       mmp.echo(string.format(&quot;Special exits (%d):&quot;,table.size(specexits)))
+
       for leadsto, command in pairs(specexits) do
-        echo(string.format(&quot;  %s -&gt; %s (%d)\n&quot;, command, getRoomName(leadsto), leadsto))
+        if type(command) == &quot;string&quot; then
+          echo(string.format(&quot;  %s -&gt; %s (%d)\n&quot;, command, getRoomName(leadsto), leadsto))
+        else -- new format - exit name, command
+          for cmd, locked in pairs(command) do
+            if locked == '1' then
+              cecho(string.format(&quot;&lt;DarkSlateGrey&gt;  %s -&gt; %s (%d) (locked)\n&quot;, cmd, getRoomName(leadsto), leadsto))
+            else
+              echo(string.format(&quot;  %s -&gt; %s (%d)\n&quot;, cmd, getRoomName(leadsto), leadsto))
+            end
+          end
+        end
       end
     end
 
