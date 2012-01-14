@@ -2220,7 +2220,7 @@ mmp = mmp or {
   currentroom = false,
   currentroomname = false,
   firstRun = true,
-  version = &quot;12.1.2&quot;
+  version = &quot;12.1.3&quot;
 }
 
 function mmp.startup()
@@ -2460,6 +2460,8 @@ function doSpeedWalk(dashtype)
       (mmp.settings[&quot;gallop&quot;] and &quot;gallop&quot;) or (mmp.settings[&quot;dash&quot;] and &quot;dash&quot;) or (mmp.settings.sprint and &quot;sprint&quot;) or (mmp.settings.runaway and &quot;runaway&quot;) or dashtype)
   end
 
+  mmp.fixSpecialExits(speedWalkDir)
+
   if #speedWalkPath == 0 then
     mmp.echo(&quot;Couldn't find a path to the destination :(&quot;)
     raiseEvent(&quot;mmapper failed path&quot;)
@@ -2553,7 +2555,14 @@ function mmp.fixPath(rFrom,rTo,dashtype)
   speedWalkPath = currentIds
   return true
 end
-</script>
+
+-- a certain version of the mapper gave us special exits prepended with 0 or 1 in the command
+-- depending on if it was locked. Need to remove these before we can use them
+function mmp.fixSpecialExits(directions)
+  for i = 1, #directions do
+    if directions[i]:match(&quot;^%d&quot;) then directions[i] = directions[i]:sub(2) end
+  end
+end</script>
                 <eventHandlerList>
                     <string>RoomNum</string>
                     <string>gmcp.Room</string>
