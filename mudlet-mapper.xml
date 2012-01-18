@@ -134,6 +134,46 @@ speedwalking(&quot;Room&quot;, speedWalkPath[speedWalkCounter])
                 </regexCodePropertyList>
             </Trigger>
             <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+                <name>Hobbling</name>
+                <script>mmp.customwalkdelay(2)</script>
+                <triggerType>0</triggerType>
+                <conditonLineDelta>0</conditonLineDelta>
+                <mStayOpen>0</mStayOpen>
+                <mCommand></mCommand>
+                <packageName></packageName>
+                <mFgColor>#ff0000</mFgColor>
+                <mBgColor>#ffff00</mBgColor>
+                <mSoundFile></mSoundFile>
+                <colorTriggerFgColor>#000000</colorTriggerFgColor>
+                <colorTriggerBgColor>#000000</colorTriggerBgColor>
+                <regexCodeList>
+                    <string>You slowly hobble</string>
+                </regexCodeList>
+                <regexCodePropertyList>
+                    <integer>2</integer>
+                </regexCodePropertyList>
+            </Trigger>
+            <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+                <name>Frozen</name>
+                <script>mmp.customwalkdelay(2)</script>
+                <triggerType>0</triggerType>
+                <conditonLineDelta>0</conditonLineDelta>
+                <mStayOpen>0</mStayOpen>
+                <mCommand></mCommand>
+                <packageName></packageName>
+                <mFgColor>#ff0000</mFgColor>
+                <mBgColor>#ffff00</mBgColor>
+                <mSoundFile></mSoundFile>
+                <colorTriggerFgColor>#000000</colorTriggerFgColor>
+                <colorTriggerBgColor>#000000</colorTriggerBgColor>
+                <regexCodeList>
+                    <string>You begin moving your frozen body slowly</string>
+                </regexCodeList>
+                <regexCodePropertyList>
+                    <integer>2</integer>
+                </regexCodePropertyList>
+            </Trigger>
+            <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
                 <name>Retardation/aeon walk delay</name>
                 <script>mmp.customwalkdelay(2)</script>
                 <triggerType>0</triggerType>
@@ -983,7 +1023,7 @@ if #t == 1 then
 	cecho(&quot;&lt;red&gt;Porting to &lt;orange_red&gt;&quot;..mmp.areatabler[getRoomArea(t[1])]..&quot;&lt;red&gt;.&quot;)
 else
 	cecho(&quot;&lt;red&gt;Might be porting to &lt;orange_red&gt;&quot;..mmp.areatabler[getRoomArea(t[1])]..&quot;&lt;red&gt;.&quot;)
-end</script>
+end	</script>
                     <triggerType>0</triggerType>
                     <conditonLineDelta>0</conditonLineDelta>
                     <mStayOpen>0</mStayOpen>
@@ -2065,6 +2105,19 @@ end</script>
                 <packageName></packageName>
                 <regex>^map load(?: (.+))?$</regex>
             </Alias>
+            <Alias isActive="yes" isFolder="no">
+                <name>Get dirs</name>
+                <script>if not matches[2] and not matches[3] then
+  mmp.echo(&quot;Where do you want to showpath to?&quot;)
+elseif matches[2] and not matches[3] then
+  mmp.echoPath(mmp.currentroom, matches[2])
+else
+  mmp.echoPath(matches[2], matches[3])
+end</script>
+                <command></command>
+                <packageName></packageName>
+                <regex>^showpath(?: (\d+))?(?: (\d+))?$</regex>
+            </Alias>
         </AliasGroup>
     </AliasPackage>
     <ActionPackage/>
@@ -2220,7 +2273,7 @@ mmp = mmp or {
   currentroom = false,
   currentroomname = false,
   firstRun = true,
-  version = &quot;12.1.3&quot;
+  version = &quot;12.1.4&quot;
 }
 
 function mmp.startup()
@@ -3348,6 +3401,21 @@ function mmp.areaLabels (where, exact)
     mmp.echo(string.format(&quot;Don't know of any area named '%s'.&quot;, where))
     return
   end
+end
+
+function mmp.echoPath(from, to)
+	assert(tonumber(from) and tonumber(to), &quot;mmp.getPath: both from and to have to be room IDs&quot;)
+	local getpathcache = {}
+	setmetatable(getpathcache, {__mode = &quot;kv&quot;})
+	local key = string.format(&quot;%s_%s&quot;, from, to)
+	local resulttbl = getpathcache[key]
+	if not resulttbl then
+		local boolean = getPath(from, to)
+		getpathcache[key] = {boolean, speedWalkDir, speedWalkPath}
+		mmp.echo(&quot;&lt;white&gt;Directions from &lt;yellow&gt;&quot; .. string.upper(searchRoom(from)) .. &quot; &lt;white&gt;to &lt;yellow&gt;&quot; .. string.upper(searchRoom(to)) .. &quot;&lt;white&gt;:&quot;)
+		mmp.echo(table.concat(speedWalkDir, &quot;, &quot;))
+		return speedWalkDir
+	end
 end</script>
                 <eventHandlerList/>
             </Script>
