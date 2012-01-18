@@ -2273,7 +2273,7 @@ mmp = mmp or {
   currentroom = false,
   currentroomname = false,
   firstRun = true,
-  version = &quot;12.1.4&quot;
+  version = &quot;12.1.5&quot;
 }
 
 function mmp.startup()
@@ -2857,7 +2857,8 @@ function mmp.roomFind(query)
       cecho(string.format(&quot;  &lt;LightSlateGray&gt;%s&lt;DarkSlateGrey&gt; (&lt;blue&gt;&quot;,
         tostring(roomname)))
       echoLink(roomid, 'mmp.gotoRoom('..roomid..')', string.format(&quot;Go to %s (%s)&quot;, roomid, tostring(roomname)))
-      cecho(string.format(&quot;&lt;DarkSlateGrey&gt;) in the &lt;LightSlateGray&gt;%s&lt;DarkSlateGrey&gt;.\n&quot;, tostring(mmp.areatabler[getRoomArea(roomid)])))
+      cecho(string.format(&quot;&lt;DarkSlateGrey&gt;) in the &lt;LightSlateGray&gt;%s&lt;DarkSlateGrey&gt;.&quot;, tostring(mmp.areatabler[getRoomArea(roomid)])))
+            fg(&quot;DarkSlateGrey&quot;) echoLink(&quot; &gt; Show path\n&quot;, [[mmp.echoPath(mmp.currentroom, ]]..roomid..[[)]], &quot;Display directions&quot;, true) resetFormat()
     end
 
   else -- new style
@@ -2865,7 +2866,8 @@ function mmp.roomFind(query)
       cecho(string.format(&quot;  &lt;LightSlateGray&gt;%s&lt;DarkSlateGrey&gt; (&lt;blue&gt;&quot;,
         tostring(roomname)))
       echoLink(roomid, 'mmp.gotoRoom('..roomid..')', string.format(&quot;Go to %s (%s)&quot;, roomid, tostring(roomname)))
-      cecho(string.format(&quot;&lt;DarkSlateGrey&gt;) in the &lt;LightSlateGray&gt;%s&lt;DarkSlateGrey&gt;.\n&quot;, tostring(mmp.areatabler[getRoomArea(roomid)])))
+      cecho(string.format(&quot;&lt;DarkSlateGrey&gt;) in the &lt;LightSlateGray&gt;%s&lt;DarkSlateGrey&gt;.&quot;, tostring(mmp.areatabler[getRoomArea(roomid)])))
+      fg(&quot;DarkSlateGrey&quot;) echoLink(&quot; &gt; Show path\n&quot;, [[mmp.echoPath(mmp.currentroom, ]]..roomid..[[)]], &quot;Display directions&quot;, true) resetFormat()
     end
   end
 
