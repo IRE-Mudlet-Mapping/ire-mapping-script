@@ -2273,7 +2273,7 @@ mmp = mmp or {
   currentroom = false,
   currentroomname = false,
   firstRun = true,
-  version = &quot;12.1.5&quot;
+  version = &quot;12.1.6&quot;
 }
 
 function mmp.startup()
@@ -2287,6 +2287,8 @@ function mmp.startup()
   private_settings[&quot;sprint&quot;] = createOption(false, mmp.changeBoolFunc, { &quot;boolean&quot; }, &quot;Use Sprint?&quot;)
   private_settings[&quot;runaway&quot;] = createOption(false, mmp.changeBoolFunc, { &quot;boolean&quot; }, &quot;Use Jester Runaway?&quot;)
   private_settings[&quot;updatemap&quot;] = createOption(true, mmp.changeUpdateMap, { &quot;boolean&quot; }, &quot;Check for new maps?&quot;)
+  private_settings[&quot;lockpathways&quot;] = createOption(false, mmp.lockPathways, { &quot;boolean&quot; }, &quot;Lock pathway exits?&quot;)
+  private_settings[&quot;lockspecials&quot;] = createOption(false, mmp.lockSpecials, { &quot;boolean&quot; }, &quot;Lock all special exits?&quot;)
 
 
   mmp.settings = createOptionsTable(private_settings)
@@ -3418,6 +3420,39 @@ function mmp.echoPath(from, to)
 		mmp.echo(table.concat(speedWalkDir, &quot;, &quot;))
 		return speedWalkDir
 	end
+end
+
+local function doLock (what, lock, filter)
+  mmp.echo(string.format(&quot;%s all %s...&quot;, (lock and &quot;Locking&quot; or &quot;Unlocking&quot;), what))
+  local c = 0
+
+  for area in pairs(mmp.areatabler) do
+    local rooms = getAreaRooms(area) or {}
+    for i = 0, #rooms do
+      local exits = getSpecialExits(rooms[i] or 0)
+
+       if next(exits or {}) then
+         for exit, cmd in pairs(exits) do
+           if not filter or cmd:lower():find(filter, 1, true) then
+             lockSpecialExit(rooms[i], exit, cmd, lock)
+             c = c + 1
+           end
+         end
+       end
+    end
+  end
+
+  mmp.echo(string.format(&quot;%s %s known %s.&quot;, (lock and &quot;Locked&quot; or &quot;Unlocked&quot;), c, what))
+end
+
+function mmp.lockPathways()
+  local lock = mmp.settings.lockpathways and true or false
+  doLock(&quot;pathways&quot;, lock, &quot;pathfind&quot;)
+end
+
+function mmp.lockSpecials()
+  local lock = mmp.settings.lockspecials and true or false
+  doLock(&quot;special exits&quot;, lock)
 end</script>
                 <eventHandlerList/>
             </Script>
