@@ -2401,6 +2401,7 @@ end
 local oldnum
 function speedwalking( event, num )
   local num = tonumber(num) or tonumber(gmcp.Room.Info.num)
+  mmp.previousroom = mmp.currentroom
   mmp.currentroom = num
   mmp.currentroomname = next(gmcp) and gmcp.Room.Info.name or atcp.RoomName
 
