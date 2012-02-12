@@ -2273,7 +2273,7 @@ mmp = mmp or {
   currentroom = false,
   currentroomname = false,
   firstRun = true,
-  version = &quot;12.2.1&quot;
+  version = &quot;12.2.2&quot;
 }
 
 function mmp.startup()
@@ -3012,6 +3012,7 @@ function mmp.roomLook(input)
     -- actions we can do. This will be a short menu of sorts for actions
     mmp.echo(&quot;Stuff you can do:&quot;)
     echo&quot;  &quot; echoLink(&quot;Clear all labels in this area&quot;, 'mmp.clearLabels('..areanum..')', '') echo&quot;\n&quot;
+    echo&quot;  &quot; echoLink(&quot;Check for all updates&quot;, 'mmp.checkforupdate()', '') echo&quot;\n&quot;
   end
 
   -- see if we can do anything with the name
@@ -4372,6 +4373,34 @@ end</script>
     mmp.echon(&quot;&quot;)
     echoLink(&quot;The mapper script was updated! Would you like to download the update? Click here if so.&quot;, &quot;mmp.downloadmapperscript()&quot;, &quot;Changelog for the latest (&quot;..tostring(mmp.version)..&quot; -&gt; &quot;..tostring(mmp.newversion)..&quot;) update:\n&quot;..changelog, true)
 
+  elseif filename == mmp.crowdchangelogfile then
+    io.input(filename)
+    local s = io.read(&quot;*a&quot;)
+
+    -- make environment
+    local env = {} -- add functions you know are safe here
+
+    -- run code under environment [Lua 5.1]
+    local function run(untrusted_code)
+      if untrusted_code:byte(1) == 27 then return nil, &quot;binary bytecode prohibited&quot; end
+      local untrusted_function, message = loadstring(untrusted_code)
+      if not untrusted_function then return nil, message end
+      setfenv(untrusted_function, env)
+      return pcall(untrusted_function)
+    end
+
+    run(s)
+    
+	mmp.crowdchangelog = env.changelog
+
+    mmp.echon(&quot;The public map was &quot;)
+    echoLink(&quot;updated&quot;, '', &quot;New version: &quot;..tostring(mmp.newversion)..&quot;, previous version: &quot;..(mmp.oldversion or &quot;(none)&quot;), true)
+    echo(&quot; - &quot;)
+    echoLink(&quot;click here&quot;, &quot;mmp.downloadcrowdmap('&quot;..mmp.newversion..&quot;')&quot;, &quot;Download the public map&quot;)
+    echo(&quot; to update yours (&quot;)
+    echoLink(&quot;changelog&quot;, &quot;mmp.showcrowdchangelog()&quot;, 'View the full changelog for mappers')
+    echo(&quot;)!\n&quot;)
+
   elseif filename == mmp.crowdmapfile then
     mmp.echo(&quot;Map downloaded, loading it in...&quot;)
     local ok = loadMap(filename)
@@ -4398,11 +4427,8 @@ end</script>
         echoLink(&quot;click here&quot;, &quot;mmp.updatedmap('&quot;..currentmd5..&quot;')&quot;, &quot;Click here to quiet the update reminder&quot;)
         echo(&quot; to remove the reminder.&quot;)
       else
-        mmp.echon(&quot;The public map was &quot;)
-        echoLink(&quot;updated&quot;, '', &quot;New version: &quot;..tostring(currentmd5)..&quot;, previous version: &quot;..(oldmd5 or &quot;(none)&quot;), true)
-        echo(&quot; - &quot;)
-        echoLink(&quot;click here&quot;, &quot;mmp.downloadcrowdmap('&quot;..currentmd5..&quot;')&quot;, &quot;Download the public map&quot;)
-        echo(&quot; to update yours!&quot;)
+        mmp.newversion, mmp.oldversion = currentmd5, oldmd5
+        mmp.retrievecrowdchangelog()
       end
     end
 
@@ -4433,6 +4459,7 @@ end</script>
                     <name>Check for updates</name>
                     <packageName></packageName>
                     <script>local downloadfolder = getMudletHomeDir()..&quot;/map downloads/&quot;
+local whereisit
 
 -- this should get called at start and every hour after that
 function mmp.checkforupdate()
@@ -4486,6 +4513,12 @@ function mmp.retrievechangelog()
   downloadFile(mmp.changelogfile, &quot;http://bazaar.launchpad.net/~mudlet-makers/mudlet/mapper-lua/files&quot;)
 end
 
+function mmp.retrievecrowdchangelog()
+  mmp.crowdchangelogfile = downloadfolder..&quot;crowdchangelogfile&quot;
+
+  downloadFile(mmp.crowdchangelogfile, &quot;https://dl.dropbox.com/s/jto1gex69rqx7b4/changelog.txt&quot;)
+end
+
 -- downloads the public crowdsources map!
 function mmp.downloadmapperscript()
   local downloadlocationfile = downloadfolder..&quot;savepath&quot;
@@ -4531,7 +4564,17 @@ function mmp.downloadcrowdmap(newversion)
   mmp.echo(&quot;Okay, downloading the public map...&quot;)
 end
 
-function whereisit()
+function mmp.showcrowdchangelog()
+  mmp.echo(&quot;Public map changelog:&quot;)
+
+  if not mmp.crowdchangelog then mmp.echo(&quot;(none yet&quot;) return end
+
+  for k,v in ipairs(mmp.crowdchangelog) do
+    cecho(string.format(&quot;  %s) %s\n&quot;, k,v:gsub(&quot;\t&quot;, &quot;     &quot;)))
+  end
+end
+
+whereisit = function()
   local path = invokeFileDialog(false, &quot;Where should we save the file? Select a folder and click Open&quot;)
 
   if path == &quot;&quot; then return nil else return path end
