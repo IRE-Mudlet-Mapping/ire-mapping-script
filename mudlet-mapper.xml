@@ -2273,7 +2273,7 @@ mmp = mmp or {
   currentroom = false,
   currentroomname = false,
   firstRun = true,
-  version = &quot;12.2.5&quot;
+  version = &quot;12.2.6&quot;
 }
 
 function mmp.startup()
@@ -3459,7 +3459,7 @@ function mmp.lockWormholes()
   local lock = mmp.settings.lockwormholes and true or false
   doLock(&quot;wormholes&quot;, lock, &quot;worm warp&quot;)
 end
-mmp.lockWormholes()
+tempTimer(0, function() if mmp.firstRun then mmp.lockWormholes() end end)
 
 function mmp.lockSpecials()
   local lock = mmp.settings.lockspecials and true or false
