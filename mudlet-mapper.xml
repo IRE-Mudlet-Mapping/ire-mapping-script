@@ -2273,7 +2273,7 @@ mmp = mmp or {
   currentroom = false,
   currentroomname = false,
   firstRun = true,
-  version = &quot;12.2.2&quot;
+  version = &quot;12.2.3&quot;
 }
 
 function mmp.startup()
@@ -3012,7 +3012,7 @@ function mmp.roomLook(input)
     -- actions we can do. This will be a short menu of sorts for actions
     mmp.echo(&quot;Stuff you can do:&quot;)
     echo&quot;  &quot; echoLink(&quot;Clear all labels in this area&quot;, 'mmp.clearLabels('..areanum..')', '') echo&quot;\n&quot;
-    echo&quot;  &quot; echoLink(&quot;Check for all updates&quot;, 'mmp.checkforupdate()', '') echo&quot;\n&quot;
+    echo&quot;  &quot; echoLink(&quot;Check for all updates&quot;, 'mmp.echo(&quot;Checking...&quot;) mmp.checkforupdate()', '') echo&quot;\n&quot;
   end
 
   -- see if we can do anything with the name
@@ -3463,6 +3463,9 @@ function mmp.chageMapSource()
   if use and not mmp.game or mmp.game ~= &quot;achaea&quot; then
     mmp.echo(&quot;Sorry - the crowdsourced map is only available for use in Achaea. If you'd like to help start one for your game, please post at http://forums.mudlet.org/viewtopic.php?f=13&amp;t=1696&quot;)
     mmp.settings.crowdmap = false
+  elseif use and not loadMap then
+   mmp.echo(&quot;Sorry - your Mudlet is too old and can't load maps. Please update: http://forums.mudlet.org/viewtopic.php?f=5&amp;t=1874&quot;)
+   mmp.settings.crowdmap = false   
   elseif use then
     mmp.echo(&quot;Will use the crowdsourced map for updates instead!&quot;)
   else
