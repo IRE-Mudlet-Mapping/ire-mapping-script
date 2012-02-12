@@ -2273,7 +2273,7 @@ mmp = mmp or {
   currentroom = false,
   currentroomname = false,
   firstRun = true,
-  version = &quot;12.2.3&quot;
+  version = &quot;12.2.4&quot;
 }
 
 function mmp.startup()
@@ -2287,7 +2287,8 @@ function mmp.startup()
   private_settings[&quot;sprint&quot;] = createOption(false, mmp.changeBoolFunc, { &quot;boolean&quot; }, &quot;Use Sprint?&quot;)
   private_settings[&quot;runaway&quot;] = createOption(false, mmp.changeBoolFunc, { &quot;boolean&quot; }, &quot;Use Jester Runaway?&quot;)
   private_settings[&quot;updatemap&quot;] = createOption(true, mmp.changeUpdateMap, { &quot;boolean&quot; }, &quot;Check for new maps?&quot;)
-  private_settings[&quot;lockpathways&quot;] = createOption(false, mmp.lockPathways, { &quot;boolean&quot; }, &quot;Lock pathway exits?&quot;)
+  private_settings[&quot;lockpathways&quot;] = createOption(true, mmp.lockPathways, { &quot;boolean&quot; }, &quot;Lock pathway exits?&quot;)
+  private_settings[&quot;lockwormholes&quot;] = createOption(true, mmp.lockWormholes, { &quot;boolean&quot; }, &quot;Lock all wormholes?&quot;)
   private_settings[&quot;lockspecials&quot;] = createOption(false, mmp.lockSpecials, { &quot;boolean&quot; }, &quot;Lock all special exits?&quot;)
   private_settings[&quot;crowdmap&quot;] = createOption(false, mmp.chageMapSource, { &quot;boolean&quot; }, &quot;Use a crowd-sourced map instead of IREs default?&quot;)
 
@@ -3436,6 +3437,7 @@ local function doLock (what, lock, filter)
 
        if next(exits or {}) then
          for exit, cmd in pairs(exits) do
+
            if not filter or cmd:lower():find(filter, 1, true) then
              lockSpecialExit(rooms[i], exit, cmd, lock)
              c = c + 1
@@ -3451,6 +3453,11 @@ end
 function mmp.lockPathways()
   local lock = mmp.settings.lockpathways and true or false
   doLock(&quot;pathways&quot;, lock, &quot;pathfind&quot;)
+end
+
+function mmp.lockWormholes()
+  local lock = mmp.settings.lockspecials and true or false
+  doLock(&quot;wormholes&quot;, lock, &quot;worm warp&quot;)
 end
 
 function mmp.lockSpecials()
