@@ -2293,7 +2293,7 @@ mmp = mmp or {
   currentroom = false,
   currentroomname = false,
   firstRun = true,
-  version = &quot;12.2.7&quot;
+  version = &quot;12.2.8&quot;
 }
 
 function mmp.startup()
@@ -3076,6 +3076,9 @@ function mmp.roomLook(input)
   if not input then
     if not mmp.roomexists(mmp.currentroom) then
       mmp.echo(mmp.currentroom.. &quot; doesn't seem to be mapped yet.&quot;)
+      mmp.echo(&quot;Stuff you can do:&quot;)
+      echo&quot;  &quot; echoLink(&quot;Clear all labels in this area&quot;, 'mmp.clearLabels('..areanum..')', '') echo&quot;\n&quot;
+      echo&quot;  &quot; echoLink(&quot;Check for all updates&quot;, 'mmp.echo(&quot;Checking...&quot;) mmp.checkforupdate()', '') echo&quot;\n&quot;
     else input = mmp.currentroom end
   end
 
@@ -3462,6 +3465,7 @@ local function doLock (what, lock, filter)
            if not filter or cmd:lower():find(filter, 1, true) then
              lockSpecialExit(rooms[i], exit, cmd, lock)
              c = c + 1
+			else display(&quot;not locking &quot;..cmd)
            end
          end
        end
@@ -4516,7 +4520,7 @@ function mmp.checkforupdate()
     end
 
     if mmp.settings.crowdmap and mmp.game and mmp.game == &quot;achaea&quot; then
-      downloadFile(mmp.mapfile, &quot;https://dl.dropbox.com/s/iqk5bf905iox0k9/version.txt&quot;)
+      downloadFile(mmp.mapfile, &quot;http://dl.dropbox.com/s/iqk5bf905iox0k9/version.txt&quot;)
     else
       downloadFile(mmp.mapfile, &quot;http://www.&quot;..game..&quot;.com/maps/MD5SUM&quot;)
     end
@@ -4549,7 +4553,7 @@ end
 function mmp.retrievecrowdchangelog()
   mmp.crowdchangelogfile = downloadfolder..&quot;crowdchangelogfile&quot;
 
-  downloadFile(mmp.crowdchangelogfile, &quot;https://dl.dropbox.com/s/jto1gex69rqx7b4/changelog.txt&quot;)
+  downloadFile(mmp.crowdchangelogfile, &quot;http://dl.dropbox.com/s/jto1gex69rqx7b4/changelog.txt&quot;)
 end
 
 -- downloads the public crowdsources map!
@@ -4592,7 +4596,7 @@ function mmp.downloadcrowdmap(newversion)
   f:close()
 
 
-  downloadFile(mmp.crowdmapfile, &quot;https://dl.dropbox.com/s/sbj9f1s1l4h7otg/map&quot;)
+  downloadFile(mmp.crowdmapfile, &quot;http://dl.dropbox.com/s/sbj9f1s1l4h7otg/map&quot;)
 
   mmp.echo(&quot;Okay, downloading the public map...&quot;)
 end
