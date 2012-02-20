@@ -1767,6 +1767,13 @@ centerview(mmp.currentroom)</script>
                     <regex>^(?:spe|exit special) (\w+) (.+)$</regex>
                 </Alias>
                 <Alias isActive="yes" isFolder="no">
+                    <name>List special exits</name>
+                    <script>mmp.listSpecialExits(matches[2])</script>
+                    <command></command>
+                    <packageName></packageName>
+                    <regex>^spe list(?: (.+))?$</regex>
+                </Alias>
+                <Alias isActive="yes" isFolder="no">
                     <name>Clear all special exits</name>
                     <script>-- want the current room, but we're lost
 if not matches[2] and (not mmp.currentroom or not mmp.roomexists(mmp.currentroom)) then mmp.echo(&quot;Don't know where we are at the moment.&quot;) return end
@@ -2293,7 +2300,7 @@ mmp = mmp or {
   currentroom = false,
   currentroomname = false,
   firstRun = true,
-  version = &quot;12.2.8&quot;
+  version = &quot;12.2.9&quot;
 }
 
 function mmp.startup()
@@ -3449,6 +3456,37 @@ function mmp.echoPath(from, to)
 	end
 end
 
+function mmp.listSpecialExits(filter)
+  local c = 0
+
+  mmp.echo(&quot;Listing special exits...&quot;)
+  for area, areaname in pairs(mmp.areatabler) do
+    local rooms = getAreaRooms(area) or {}
+    for i = 0, #rooms do
+      local exits = getSpecialExits(rooms[i] or 0)
+
+       if exits and next(exits) then
+         for exit, cmd in pairs(exits) do
+           if type(cmd) == &quot;table&quot; then cmd = next(cmd) end
+           if cmd:match(&quot;^%d&quot;) then cmd = cmd:sub(2) end
+
+           if not filter or cmd:lower():find(filter, 1, true) then
+            if getRoomArea(exit) ~= area then
+              cecho(string.format(&quot;&lt;dark_slate_grey&gt;%s &lt;LightSlateGray&gt;(%d, in %s)&lt;dark_slate_grey&gt; &lt;MediumSlateBlue&gt;-&gt; &lt;coral&gt;%s -&lt;MediumSlateBlue&gt;&gt;&lt;dark_slate_grey&gt; %s &lt;LightSlateGray&gt;(%d, in %s)\n&quot;, getRoomName(rooms[i]), rooms[i], areaname, 
+                cmd, getRoomName(exit), exit, mmp.areatabler[getRoomArea(exit)] or '?'))
+            else
+              cecho(string.format(&quot;&lt;dark_slate_grey&gt;%s &lt;LightSlateGray&gt;(%d)&lt;dark_slate_grey&gt; &lt;MediumSlateBlue&gt;-&gt; &lt;coral&gt;%s &lt;MediumSlateBlue&gt;-&gt;&lt;dark_slate_grey&gt; %s &lt;LightSlateGray&gt;(%d)&lt;dark_slate_grey&gt; in %s\n&quot;, getRoomName(rooms[i]), rooms[i], cmd, getRoomName(exit), exit, areaname))
+              c = c + 1
+            end
+           end
+         end
+       end
+    end
+  end
+
+  mmp.echo(string.format(&quot;%d exists listed%s.&quot;, c, (not filter and '' or &quot;, with for the filter '&quot;..filter..&quot;'&quot;)))
+end
+
 local function doLock (what, lock, filter)
   mmp.echo(string.format(&quot;%s all %s...&quot;, (lock and &quot;Locking&quot; or &quot;Unlocking&quot;), what))
   local c = 0
@@ -3458,14 +3496,13 @@ local function doLock (what, lock, filter)
     for i = 0, #rooms do
       local exits = getSpecialExits(rooms[i] or 0)
 
-       if next(exits or {}) then
+       if exits and next(exits) then
          for exit, cmd in pairs(exits) do
            if type(cmd) == &quot;table&quot; then cmd = next(cmd) end
 
            if not filter or cmd:lower():find(filter, 1, true) then
              lockSpecialExit(rooms[i], exit, cmd, lock)
              c = c + 1
-			else display(&quot;not locking &quot;..cmd)
            end
          end
        end
