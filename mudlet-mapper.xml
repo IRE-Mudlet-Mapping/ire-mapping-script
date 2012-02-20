@@ -2300,7 +2300,7 @@ mmp = mmp or {
   currentroom = false,
   currentroomname = false,
   firstRun = true,
-  version = &quot;12.2.9&quot;
+  version = &quot;12.2.10&quot;
 }
 
 function mmp.startup()
@@ -3476,15 +3476,15 @@ function mmp.listSpecialExits(filter)
                 cmd, getRoomName(exit), exit, mmp.areatabler[getRoomArea(exit)] or '?'))
             else
               cecho(string.format(&quot;&lt;dark_slate_grey&gt;%s &lt;LightSlateGray&gt;(%d)&lt;dark_slate_grey&gt; &lt;MediumSlateBlue&gt;-&gt; &lt;coral&gt;%s &lt;MediumSlateBlue&gt;-&gt;&lt;dark_slate_grey&gt; %s &lt;LightSlateGray&gt;(%d)&lt;dark_slate_grey&gt; in %s\n&quot;, getRoomName(rooms[i]), rooms[i], cmd, getRoomName(exit), exit, areaname))
-              c = c + 1
             end
+            c = c + 1
            end
          end
        end
     end
   end
 
-  mmp.echo(string.format(&quot;%d exists listed%s.&quot;, c, (not filter and '' or &quot;, with for the filter '&quot;..filter..&quot;'&quot;)))
+  mmp.echo(string.format(&quot;%d exits listed%s.&quot;, c, (not filter and '' or &quot;, with for the filter '&quot;..filter..&quot;'&quot;)))
 end
 
 local function doLock (what, lock, filter)
