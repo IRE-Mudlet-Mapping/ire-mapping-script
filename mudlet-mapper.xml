@@ -1747,8 +1747,8 @@ mmp.echo([[Where do you want to move the room to?
                 </Alias>
                 <Alias isActive="yes" isFolder="no">
                     <name>Add a special exit</name>
-                    <script>-- spe clear matches on this
-if matches[2] == &quot;clear&quot; then return end
+                    <script>-- spe clear and spe list match on this
+if matches[2] == &quot;clear&quot; or matches[2] == &quot;list&quot; then return end
 
 -- need the current room, but we're lost
 if not mmp.currentroom or not mmp.roomexists(mmp.currentroom) then mmp.echo(&quot;Don't know where we are at the moment.&quot;) return end
@@ -3009,7 +3009,7 @@ function mmp.roomLook(input)
 
     mmp.echo(string.format(&quot;Coordinates: x:%d, y:%d, z:%d, locked: %s, weight: %s&quot;, coords[1], coords[2], coords[3], (islocked and &quot;yep&quot; or &quot;nope&quot;), tostring(weight)))
 
-    mmp.echo(string.format(&quot;Environment: %s (%d)&quot;, tostring(envname), env))
+    mmp.echo(string.format(&quot;Environment: %s (%d)%s&quot;, tostring(envname), env, (getRoomUserData(num, &quot;indoors&quot;) ~= '' and &quot;, indoors&quot; or '')))
 
     mmp.echo(string.format(&quot;Exits (%d):&quot;, table.size(exits)))
     for exit, leadsto in pairs(exits) do
@@ -3084,7 +3084,6 @@ function mmp.roomLook(input)
     if not mmp.roomexists(mmp.currentroom) then
       mmp.echo(mmp.currentroom.. &quot; doesn't seem to be mapped yet.&quot;)
       mmp.echo(&quot;Stuff you can do:&quot;)
-      echo&quot;  &quot; echoLink(&quot;Clear all labels in this area&quot;, 'mmp.clearLabels('..areanum..')', '') echo&quot;\n&quot;
       echo&quot;  &quot; echoLink(&quot;Check for all updates&quot;, 'mmp.echo(&quot;Checking...&quot;) mmp.checkforupdate()', '') echo&quot;\n&quot;
     else input = mmp.currentroom end
   end
@@ -3279,7 +3278,7 @@ function mmp.getAreaBorders(areaid)
 end
 
 function mmp.locateAndEcho(room, person)
-    local t = mmp.searchRoom(room)
+    local t = mmp.searchRoomExact(room)
 
     echo &quot;  (&quot;
     mmp.echonums(room, true)
@@ -3869,6 +3868,16 @@ local s,m = xpcall(function ()
     if mmp.envids[gmcp.Room.Info.environment] and mmp.envids[gmcp.Room.Info.environment] ~= getRoomEnv(num) then
       setRoomEnv(num, mmp.envids[gmcp.Room.Info.environment])
       s = s .. (#s &gt; 0 and &quot; &quot; or &quot;&quot;) .. &quot;Updated environment name to &quot;..gmcp.Room.Info.environment..&quot;.&quot;
+    end
+
+    -- check indoors status
+    local indoors = table.contains(gmcp.Room.Info.details, &quot;indoors&quot;) 
+    if indoors and getRoomUserData(num, &quot;indoors&quot;) == '' then
+      setRoomUserData(num, &quot;indoors&quot;, &quot;y&quot;)
+      s = s .. (#s &gt; 0 and &quot; &quot; or &quot;&quot;) .. &quot;Updated room to be indoors.&quot;
+    elseif not indoors and getRoomUserData(num, &quot;indoors&quot;) ~= '' then	 
+      setRoomUserData(num, &quot;indoors&quot;, &quot;&quot;)
+      s = s .. (#s &gt; 0 and &quot; &quot; or &quot;&quot;) .. &quot;Updated room to be outdoors.&quot;
     end
   end
 
