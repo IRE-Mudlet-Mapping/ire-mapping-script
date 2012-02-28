@@ -582,6 +582,87 @@ end</script>
                         <integer>3</integer>
                     </regexCodePropertyList>
                 </Trigger>
+                <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+                    <name>Angel presences</name>
+                    <script>disableTrigger(&quot;Angel sense&quot;)</script>
+                    <triggerType>0</triggerType>
+                    <conditonLineDelta>0</conditonLineDelta>
+                    <mStayOpen>100</mStayOpen>
+                    <mCommand></mCommand>
+                    <packageName></packageName>
+                    <mFgColor>#ff0000</mFgColor>
+                    <mBgColor>#ffff00</mBgColor>
+                    <mSoundFile></mSoundFile>
+                    <colorTriggerFgColor>#000000</colorTriggerFgColor>
+                    <colorTriggerBgColor>#000000</colorTriggerBgColor>
+                    <regexCodeList>
+                        <string>You bid your guardian angel to seek out life presences nearby.</string>
+                    </regexCodeList>
+                    <regexCodePropertyList>
+                        <integer>3</integer>
+                    </regexCodePropertyList>
+                    <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+                        <name>Each person</name>
+                        <script>mmp.locateAndEcho(matches[3], matches[2])</script>
+                        <triggerType>0</triggerType>
+                        <conditonLineDelta>0</conditonLineDelta>
+                        <mStayOpen>0</mStayOpen>
+                        <mCommand></mCommand>
+                        <packageName></packageName>
+                        <mFgColor>#ff0000</mFgColor>
+                        <mBgColor>#ffff00</mBgColor>
+                        <mSoundFile></mSoundFile>
+                        <colorTriggerFgColor>#000000</colorTriggerFgColor>
+                        <colorTriggerBgColor>#000000</colorTriggerBgColor>
+                        <regexCodeList>
+                            <string>^Your guardian angel senses (\w+) at (.+?),</string>
+                        </regexCodeList>
+                        <regexCodePropertyList>
+                            <integer>1</integer>
+                        </regexCodePropertyList>
+                    </Trigger>
+                    <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+                        <name>Stop (angel presences</name>
+                        <script>setTriggerStayOpen(&quot;Angel presences&quot;, 0)
+enableTrigger(&quot;Angel sense&quot;)</script>
+                        <triggerType>0</triggerType>
+                        <conditonLineDelta>0</conditonLineDelta>
+                        <mStayOpen>0</mStayOpen>
+                        <mCommand></mCommand>
+                        <packageName></packageName>
+                        <mFgColor>#ff0000</mFgColor>
+                        <mBgColor>#ffff00</mBgColor>
+                        <mSoundFile></mSoundFile>
+                        <colorTriggerFgColor>#000000</colorTriggerFgColor>
+                        <colorTriggerBgColor>#000000</colorTriggerBgColor>
+                        <regexCodeList>
+                            <string>return isPrompt()</string>
+                        </regexCodeList>
+                        <regexCodePropertyList>
+                            <integer>4</integer>
+                        </regexCodePropertyList>
+                    </Trigger>
+                </Trigger>
+                <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+                    <name>Annwyn circle</name>
+                    <script>mmp.customwalkdelay(12)</script>
+                    <triggerType>0</triggerType>
+                    <conditonLineDelta>0</conditonLineDelta>
+                    <mStayOpen>0</mStayOpen>
+                    <mCommand></mCommand>
+                    <packageName></packageName>
+                    <mFgColor>#ff0000</mFgColor>
+                    <mBgColor>#ffff00</mBgColor>
+                    <mSoundFile></mSoundFile>
+                    <colorTriggerFgColor>#000000</colorTriggerFgColor>
+                    <colorTriggerBgColor>#000000</colorTriggerBgColor>
+                    <regexCodeList>
+                        <string>The melody of a strange song rises unbidden to your lips as you skip around the circle of mushrooms.</string>
+                    </regexCodeList>
+                    <regexCodePropertyList>
+                        <integer>2</integer>
+                    </regexCodePropertyList>
+                </Trigger>
             </TriggerGroup>
             <TriggerGroup isActive="yes" isFolder="yes" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
                 <name>Aetolia</name>
@@ -2006,8 +2087,31 @@ centerview(mmp.currentroom)</script>
                     <packageName></packageName>
                     <regex>^room area (?:v(\d+) )?(.+)$</regex>
                 </Alias>
+                <Alias isActive="yes" isFolder="no">
+                    <name>Set a room character</name>
+                    <script>local room = matches[3] or mmp.currentroom
+room = tonumber(room) or mmp.relativeroom(mmp.currentroom, room)
+if not room or not mmp.roomexists(room) then
+  mmp.echo(&quot;Sorry - which room do you want to put this character in? I don't know where you are at the moment, if you want to do the current room.&quot;)
+  return
+end
+
+local char = matches[2]
+
+if char == &quot;clear&quot; then
+  setRoomChar(room, ' ')
+  mmp.echo(&quot;Cleared the character from &quot;..room..&quot; (&quot;..getRoomName(room)..&quot;)&quot;)
+else
+  setRoomChar(room, char)
+  mmp.echo(&quot;Set the character on &quot;..room..&quot; (&quot;..getRoomName(room)..&quot;)&quot;)
+end
+centerview(mmp.currentroom)</script>
+                    <command></command>
+                    <packageName></packageName>
+                    <regex>^rcc (\w+)(?: (\w+))?$</regex>
+                </Alias>
                 <Alias isActive="no" isFolder="no">
-                    <name>--</name>
+                    <name>-- (area functions)</name>
                     <script></script>
                     <command></command>
                     <packageName></packageName>
@@ -2041,7 +2145,7 @@ raiseEvent(&quot;mmp areas changed&quot;)</script>
                     <regex>^area rename (.+)$</regex>
                 </Alias>
                 <Alias isActive="no" isFolder="no">
-                    <name>--</name>
+                    <name>-- (dangerous functions)</name>
                     <script></script>
                     <command></command>
                     <packageName></packageName>
@@ -2057,7 +2161,7 @@ end
 
 mmp.echo(&quot;Okay, deleting...&quot;)
 
-tempTimer(0.01, function()
+tempTimer(0, function()
   for name, id in pairs(getAreaTable()) do
     deleteArea(tonumber(id))
   end
@@ -2300,7 +2404,7 @@ mmp = mmp or {
   currentroom = false,
   currentroomname = false,
   firstRun = true,
-  version = &quot;12.2.11&quot;
+  version = &quot;12.2.12&quot;
 }
 
 function mmp.startup()
