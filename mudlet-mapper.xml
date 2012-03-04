@@ -2430,7 +2430,7 @@ mmp = mmp or {
   currentroom = false,
   currentroomname = false,
   firstRun = true,
-  version = &quot;12.3.1&quot;
+  version = &quot;12.3.2&quot;
 }
 
 function mmp.startup()
@@ -2843,8 +2843,8 @@ function mmp.getnums(roomname, exact)
 end
 
 -- for a given room name, we'll echo all the vnums
-function mmp.echonums(roomname, exact)
-  local t = mmp.searchRoom(roomname)
+function mmp.echonums(roomname)
+  local t = mmp.searchRoomExact(roomname)
 
   if not next(t) then
     echo &quot;?&quot; return nil end
@@ -2852,30 +2852,12 @@ function mmp.echonums(roomname, exact)
   -- transform the kv table into a table of tables for cleaner code.
     -- + perhaps Mudlet in future will give this us anyway, sorted by relevancy
   local dt = {}
-  if not tonumber(select(2, next(t))) then
-    for roomid,room in pairs(t) do
-        if not exact then
-            dt[#dt+1] = {name = room, id = roomid}
-        else
-            if room:lower() == roomname:lower() then
-                dt[#dt+1] = {name = room, id = roomid}
-            end
-        end
-    end
-  else
-    for room,roomid in pairs(t) do
-        if not exact then
-            dt[#dt+1] = {name = room, id = roomid}
-        else
-            if room:lower() == roomname:lower() then
-                dt[#dt+1] = {name = room, id = roomid}
-            end
-        end
-    end
+  for roomid,room in pairs(t) do
+    dt[#dt+1] = {name = room, id = roomid}
   end
 
   -- we can have nothing if we asked for exact match
-  if not dt[1] then echo &quot;?&quot; return end
+  if not dt[1] then echo &quot;?---&quot; return end
 
   -- display first three ids. Can't really nicely table.concat them.
   echoLink(dt[1].id, 'mmp.gotoRoom('..dt[1].id..')', string.format(&quot;Go to %s (%s)&quot;, dt[1].id, dt[1].name))
@@ -2943,12 +2925,10 @@ function mmp.searchRoomExact(what)
   local realResult = {}
   what = what:lower()
   for key, value in pairs (roomTable) do
-    if ((type(key) == &quot;string&quot; and key:lower() == what) or (type(value) == &quot;string&quot; and value:lower() == what)) then
-      if (type(key) == &quot;string&quot;) then
+    if type(key) == &quot;string&quot; and (key:lower() == what or (key:endswith'.' and key:sub(1, -2) == what)) then
         realResult[key:ends(&quot; (road)&quot;) and key:sub(1, -8) or key] = value
-      else
+    elseif type(value) == &quot;string&quot; and (value:lower() == what or (value:endswith'.' and value:sub(1, -2) == what)) then
         realResult[key] = value:ends(&quot; (road)&quot;) and value:sub(1, -8) or value
-      end
     end
   end
   if (table.is_empty(realResult)) then
