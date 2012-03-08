@@ -2430,7 +2430,7 @@ mmp = mmp or {
   currentroom = false,
   currentroomname = false,
   firstRun = true,
-  version = &quot;12.3.2&quot;
+  version = &quot;12.3.3&quot;
 }
 
 function mmp.startup()
@@ -2920,14 +2920,18 @@ end
 local getpathcache = {}
 setmetatable(getpathcache, {__mode = &quot;kv&quot;}) -- weak keys/values = it'll periodically get cleaned up by gc
 
+local function endswith(s, suffix)
+    return s:sub(#s - #suffix + 1) == suffix
+end
+
 function mmp.searchRoomExact(what)
   local roomTable = mmp.searchRoom(what)
   local realResult = {}
   what = what:lower()
   for key, value in pairs (roomTable) do
-    if type(key) == &quot;string&quot; and (key:lower() == what or (key:endswith'.' and key:sub(1, -2) == what)) then
+    if type(key) == &quot;string&quot; and (key:lower() == what or (endswith(key, '.') and key:sub(1, -2) == what)) then
         realResult[key:ends(&quot; (road)&quot;) and key:sub(1, -8) or key] = value
-    elseif type(value) == &quot;string&quot; and (value:lower() == what or (value:endswith'.' and value:sub(1, -2) == what)) then
+    elseif type(value) == &quot;string&quot; and (value:lower() == what or (endswith(value, '.') and value:sub(1, -2) == what)) then
         realResult[key] = value:ends(&quot; (road)&quot;) and value:sub(1, -8) or value
     end
   end
