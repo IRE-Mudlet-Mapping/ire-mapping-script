@@ -2430,7 +2430,7 @@ mmp = mmp or {
   currentroom = false,
   currentroomname = false,
   firstRun = true,
-  version = &quot;12.3.3&quot;
+  version = &quot;12.3.4&quot;
 }
 
 function mmp.startup()
@@ -2446,6 +2446,7 @@ function mmp.startup()
   private_settings[&quot;updatemap&quot;] = createOption(true, mmp.changeUpdateMap, { &quot;boolean&quot; }, &quot;Check for new maps?&quot;)
   private_settings[&quot;lockpathways&quot;] = createOption(true, mmp.lockPathways, { &quot;boolean&quot; }, &quot;Lock pathway exits?&quot;)
   private_settings[&quot;lockwormholes&quot;] = createOption(true, mmp.lockWormholes, { &quot;boolean&quot; }, &quot;Lock all wormholes?&quot;)
+  private_settings[&quot;locksewers&quot;] = createOption(false, mmp.lockSewers, { &quot;boolean&quot; }, &quot;Lock all sewers?&quot;)
   private_settings[&quot;lockspecials&quot;] = createOption(false, mmp.lockSpecials, { &quot;boolean&quot; }, &quot;Lock all special exits?&quot;)
   private_settings[&quot;crowdmap&quot;] = createOption(false, mmp.chageMapSource, { &quot;boolean&quot; }, &quot;Use a crowd-sourced map instead of IREs default?&quot;)
 
@@ -3630,9 +3631,14 @@ function mmp.lockPathways()
   doLock(&quot;pathways&quot;, lock, &quot;pathfind&quot;)
 end
 
+function mmp.lockSewers()
+  local lock = mmp.settings.locksewers and true or false
+  doLock(&quot;sewer grates&quot;, lock, &quot;worm warp&quot;)
+end
+
 function mmp.lockWormholes()
   local lock = mmp.settings.lockwormholes and true or false
-  doLock(&quot;wormholes&quot;, lock, &quot;worm warp&quot;)
+  doLock(&quot;wormholes&quot;, lock, &quot;enter grate&quot;)
 end
 tempTimer(0, function() if mmp.firstRun then mmp.lockWormholes() end end)
 
