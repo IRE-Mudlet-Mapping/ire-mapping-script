@@ -2430,7 +2430,7 @@ mmp = mmp or {
   currentroom = false,
   currentroomname = false,
   firstRun = true,
-  version = &quot;12.3.4&quot;
+  version = &quot;12.3.5&quot;
 }
 
 function mmp.startup()
@@ -3601,7 +3601,7 @@ function mmp.listSpecialExits(filter)
   mmp.echo(string.format(&quot;%d exits listed%s.&quot;, c, (not filter and '' or &quot;, with for the filter '&quot;..filter..&quot;'&quot;)))
 end
 
-local function doLock (what, lock, filter)
+function mmp.doLock (what, lock, filter)
   mmp.echo(string.format(&quot;%s all %s...&quot;, (lock and &quot;Locking&quot; or &quot;Unlocking&quot;), what))
   local c = 0
 
@@ -3614,7 +3614,7 @@ local function doLock (what, lock, filter)
          for exit, cmd in pairs(exits) do
            if type(cmd) == &quot;table&quot; then cmd = next(cmd) end
 
-           if not filter or cmd:lower():find(filter, 1, true) then
+           if (not filter and not (cmd:lower():find(&quot;pathfind&quot;, 1, true) or cmd:lower():find(&quot;worm warp&quot;, 1, true) or cmd:lower():find(&quot;enter grate&quot;, 1, true))) or (filter and cmd:lower():find(filter, 1, true)) then
              lockSpecialExit(rooms[i], exit, cmd, lock)
              c = c + 1
            end
@@ -3628,23 +3628,23 @@ end
 
 function mmp.lockPathways()
   local lock = mmp.settings.lockpathways and true or false
-  doLock(&quot;pathways&quot;, lock, &quot;pathfind&quot;)
+  mmp.doLock(&quot;pathways&quot;, lock, &quot;pathfind&quot;)
 end
 
 function mmp.lockSewers()
   local lock = mmp.settings.locksewers and true or false
-  doLock(&quot;sewer grates&quot;, lock, &quot;worm warp&quot;)
+  mmp.doLock(&quot;sewer grates&quot;, lock, &quot;enter grate&quot;)
 end
 
 function mmp.lockWormholes()
   local lock = mmp.settings.lockwormholes and true or false
-  doLock(&quot;wormholes&quot;, lock, &quot;enter grate&quot;)
+  mmp.doLock(&quot;wormholes&quot;, lock, &quot;worm warp&quot;)
 end
 tempTimer(0, function() if mmp.firstRun then mmp.lockWormholes() end end)
 
 function mmp.lockSpecials()
   local lock = mmp.settings.lockspecials and true or false
-  doLock(&quot;special exits&quot;, lock)
+  mmp.doLock(&quot;special exits&quot;, lock)
 end
 
 function mmp.chageMapSource()
