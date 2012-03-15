@@ -561,10 +561,7 @@ raiseEvent(&quot;mmapper updated pdb&quot;)</script>
                     <name>Parse wholist</name>
                     <script>-- this trigger should be off by default. It's inefficient and gets auto-enabled
 -- when you check 'who'
-local t = getColorWildcard(14)
-if type(t) == &quot;table&quot; then
-  mmp.locateAndEcho(matches[2], t[1])
-end</script>
+mmp.locateAndEcho(matches[3], matches[2])</script>
                     <triggerType>0</triggerType>
                     <conditonLineDelta>99</conditonLineDelta>
                     <mStayOpen>0</mStayOpen>
@@ -576,7 +573,7 @@ end</script>
                     <colorTriggerFgColor>#000000</colorTriggerFgColor>
                     <colorTriggerBgColor>#000000</colorTriggerBgColor>
                     <regexCodeList>
-                        <string>.+?\((.+)\)$</string>
+                        <string>^(\w+) +\((.+)\)$</string>
                     </regexCodeList>
                     <regexCodePropertyList>
                         <integer>1</integer>
@@ -699,7 +696,7 @@ enableTrigger(&quot;Angel sense&quot;)</script>
                     <regexCodeList>
                         <string>You dip your fingers into the cool water of the bowl, willing it to reveal the location of</string>
                         <string>^You dip your fingers into the cool water of the bowl, willing it to reveal the location of (\w+)\.$</string>
-                        <string>^An image of Hashan appears reflected within the bowl, shifting with the rippling water to display (.+)\.$</string>
+                        <string>^An image of .+? appears reflected within the bowl, shifting with the rippling water to display (.+)\.$</string>
                     </regexCodeList>
                     <regexCodePropertyList>
                         <integer>2</integer>
@@ -1532,9 +1529,10 @@ mmp.roomEcho(multimatches[2][4]) </script>
                         <integer>1</integer>
                     </regexCodePropertyList>
                 </Trigger>
-                <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="yes" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+                <Trigger isActive="no" isFolder="no" isTempTrigger="no" isMultiline="yes" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
                     <name>Scout</name>
-                    <script>mmp.roomEcho(multimatches[2][2]) </script>
+                    <script>-- bad, overzealous trigger - the pattern needs to be improved
+mmp.roomEcho(multimatches[2][2]) </script>
                     <triggerType>0</triggerType>
                     <conditonLineDelta>0</conditonLineDelta>
                     <mStayOpen>0</mStayOpen>
@@ -2275,6 +2273,15 @@ end</script>
                 <packageName></packageName>
                 <regex>^showpath(?: (\d+))?(?: (\d+))?$</regex>
             </Alias>
+            <Alias isActive="yes" isFolder="no">
+                <name>Check wholist</name>
+                <script>enableTrigger(&quot;Parse wholist&quot;)
+send(&quot;who b&quot;)
+tempTimer(10, [[disableTrigger'Parse wholist']])</script>
+                <command></command>
+                <packageName></packageName>
+                <regex>^who b$</regex>
+            </Alias>
         </AliasGroup>
     </AliasPackage>
     <ActionPackage/>
@@ -2430,7 +2437,7 @@ mmp = mmp or {
   currentroom = false,
   currentroomname = false,
   firstRun = true,
-  version = &quot;12.3.5&quot;
+  version = &quot;12.3.6&quot;
 }
 
 function mmp.startup()
@@ -3092,11 +3099,23 @@ function mmp.echoAreaList()
 end
 
 function mmp.clearLabels(areaid)
-  assert(type(areaid) == &quot;number&quot;, &quot;mmp.clearLabels: areaid must be a number&quot;)
-  local t = getMapLabels(areaid)
-  if type(t) ~= &quot;table&quot; then return end
+  local function clearlabels(areaid)
+    local t = getMapLabels(areaid)
+    if type(t) ~= &quot;table&quot; then return end
 
-  for labelid, _ in pairs(t) do deleteMapLabel(areaid, labelid) end
+    for labelid, _ in pairs(t) do deleteMapLabel(areaid, labelid) end
+  end
+
+  if areaid == &quot;map&quot; then
+    for areaid in pairs(mmp.areatabler) do
+      clearlabels(areaid)
+    end
+
+    mmp.echo(&quot;Cleared labels in all of the map.&quot;)
+    return
+  end
+
+  clearlabels(areaid)
   mmp.echo(string.format(&quot;Cleared all labels in '%s'.&quot;, mmp.areatabler[areaid]))
 end
 
@@ -3154,7 +3173,7 @@ function mmp.roomLook(input)
 
     -- actions we can do. This will be a short menu of sorts for actions
     mmp.echo(&quot;Stuff you can do:&quot;)
-    echo&quot;  &quot; echoLink(&quot;Clear all labels in this area&quot;, 'mmp.clearLabels('..areanum..')', '') echo&quot;\n&quot;
+    echo&quot;  &quot; echo(&quot;Clear all labels &quot;) echoLink(&quot;(in area)&quot;, 'mmp.clearLabels('..areanum..')', '') echo&quot; &quot; echoLink(&quot;(whole map)&quot;, 'mmp.clearLabels(&quot;map&quot;)', '') echo&quot;\n&quot;
     echo&quot;  &quot; echoLink(&quot;Check for all updates&quot;, 'mmp.echo(&quot;Checking...&quot;) mmp.checkforupdate()', '') echo&quot;\n&quot;
   end
 
@@ -4086,22 +4105,6 @@ end</script>
                 </Script>
             </ScriptGroup>
             <Script isActive="yes" isFolder="no">
-                <name>mmp_parse_wholist</name>
-                <packageName></packageName>
-                <script>disableTrigger(&quot;Parse wholist&quot;)
-
-function mmp_parse_wholist(_, cmd)
-
-  if string.cut(cmd,3):lower() ~= &quot;who&quot; then return end
-  
-  enableTrigger(&quot;Parse wholist&quot;)
-  tempTimer(10, [[disableTrigger'Parse wholist']])
-end</script>
-                <eventHandlerList>
-                    <string>sysDataSendRequest</string>
-                </eventHandlerList>
-            </Script>
-            <Script isActive="yes" isFolder="no">
                 <name>mmp_regenerate_areas</name>
                 <packageName></packageName>
                 <script>function mmp_regenerate_areas()
@@ -4821,4 +4824,8 @@ end</script>
         </ScriptGroup>
     </ScriptPackage>
     <KeyPackage/>
+    <HelpPackage>
+        <helpURL></helpURL>
+        <helpHTML></helpHTML>
+    </HelpPackage>
 </MudletPackage>
