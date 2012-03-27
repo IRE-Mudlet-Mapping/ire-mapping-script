@@ -2480,7 +2480,7 @@ mmp = mmp or {
   currentroom = false,
   currentroomname = false,
   firstRun = true,
-  version = &quot;12.3.7&quot;
+  version = &quot;12.3.8&quot;
 }
 
 function mmp.startup()
@@ -2807,7 +2807,7 @@ function mmp.fixPath(rFrom,rTo,dashtype)
         -- Final room in this direction continues onwards, don't dash
         for i = 1,repCount do
           table.insert(currentPath,speedWalkDir[index])
-          currentIds[#currentIds+1] = speedWalkPath[index]
+          currentIds[#currentIds+1] = speedWalkPath[index+i-1]
         end
       end
       index = index + repCount
