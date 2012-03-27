@@ -1635,7 +1635,22 @@ mmp.game = &quot;mko&quot;</script>
             </TriggerGroup>
         </TriggerGroup>
     </TriggerPackage>
-    <TimerPackage/>
+    <TimerPackage>
+        <TimerGroup isActive="yes" isFolder="yes" isTempTimer="no">
+            <name>Mudlet Mapper</name>
+            <script></script>
+            <command></command>
+            <packageName></packageName>
+            <time>00:00:00.000</time>
+            <Timer isActive="yes" isFolder="no" isTempTimer="no">
+                <name>Check for updates periodically</name>
+                <script>mmp.checkforupdate()</script>
+                <command></command>
+                <packageName></packageName>
+                <time>01:00:00.000</time>
+            </Timer>
+        </TimerGroup>
+    </TimerPackage>
     <AliasPackage>
         <AliasGroup isActive="yes" isFolder="yes">
             <name>Mudlet Mapper</name>
