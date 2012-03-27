@@ -4598,19 +4598,19 @@ end</script>
                     <name>mmp_downloaded_file</name>
                     <packageName></packageName>
                     <script>function mmp_downloaded_file(_, filename)
-  -- is the file that downloaded our map?
-  if filename == tostring(mmp.mapperfile) then
+
+  if filename == tostring(mmp.mapperfile) then   -- mapper script version
 	mmp.checkingupdates = false
 
     io.input(filename)
     local s = io.read(&quot;*l&quot;):trim()
 
     if s ~= tostring(mmp.version) then
-      mmp.newversion = s
+      mmp.newmapperversion = s
       mmp.retrievechangelog()
     end
 
-  elseif filename == tostring(mmp.changelogfile) then
+  elseif filename == tostring(mmp.changelogfile) then   -- changelog for the mapper script
 	mmp.checkingupdates = false
 
     io.input(filename)
@@ -4620,9 +4620,9 @@ end</script>
     changelog = string.gsub(changelog, &quot;&lt;br/&gt;&quot;, '\n')
     changelog = string.gsub(changelog, &quot;&amp;#39;&quot;, &quot;'&quot;)
     mmp.echon(&quot;&quot;)
-    echoLink(&quot;The mapper script was updated! Would you like to download the update? Click here if so.&quot;, &quot;mmp.downloadmapperscript()&quot;, &quot;Changelog for the latest (&quot;..tostring(mmp.version)..&quot; -&gt; &quot;..tostring(mmp.newversion)..&quot;) update:\n&quot;..changelog, true)
+    echoLink(&quot;The mapper script was updated! Would you like to download the update? Click here if so.&quot;, &quot;mmp.downloadmapperscript()&quot;, &quot;Changelog for the latest (&quot;..tostring(mmp.version)..&quot; -&gt; &quot;..tostring(mmp.newmapperversion)..&quot;) update:\n&quot;..changelog, true)
 
-  elseif filename == mmp.crowdchangelogfile then
+  elseif filename == mmp.crowdchangelogfile then   -- changelog for the crowdmap
     io.input(filename)
     local s = io.read(&quot;*a&quot;)
 
@@ -4650,7 +4650,7 @@ end</script>
 
     mmp.downloadcrowdmap(mmp.newversion)
 
-  elseif filename == mmp.crowdmapfile then
+  elseif filename == mmp.crowdmapfile then    -- crowdmap map
     mmp.echo(&quot;Map downloaded, loading it in...&quot;)
     local ok = loadMap(filename)
 
@@ -4660,12 +4660,12 @@ end</script>
       mmp.echo(&quot;Map failed to load.&quot;)
     end
 
-  elseif filename == tostring(mmp.downloadedscript) then
+  elseif filename == tostring(mmp.downloadedscript) then   -- new mapper script xml downloaded
 	mmp.checkingupdates = false
 
     mmp.echo(&quot;Your mapper script was downloaded to '&quot;..filename..&quot;' - uninstall the current copy and install the new one now!&quot;)
 
-  elseif filename == tostring(mmp.mapfile) then
+  elseif filename == tostring(mmp.mapfile) then   -- map version #, either IRE's or crowd
 	mmp.checkingupdates = false
 
     local function needupdate(currentmd5, oldmd5)
@@ -4712,6 +4712,7 @@ local whereisit
 
 -- this should get called at start and every hour after that
 function mmp.checkforupdate()
+
   if not mmp.game or mmp.checkingupdates then return end
 
   local game = (mmp.game == &quot;mko&quot;) and &quot;midkemiaonline&quot; or mmp.game
@@ -4867,8 +4868,4 @@ end</script>
         </ScriptGroup>
     </ScriptPackage>
     <KeyPackage/>
-    <HelpPackage>
-        <helpURL>http://wiki.mudlet.org/w/IRE_mapping_script</helpURL>
-        <helpHTML></helpHTML>
-    </HelpPackage>
 </MudletPackage>
