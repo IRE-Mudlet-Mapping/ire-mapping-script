@@ -213,6 +213,77 @@ speedwalking(&quot;Room&quot;, speedWalkPath[speedWalkCounter])
                     <integer>1</integer>
                 </regexCodePropertyList>
             </Trigger>
+            <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+                <name>Alertness (Achaea+Imperian)</name>
+                <script>mmp.alertness = mmp.alertness or {}
+
+for k, v in pairs (gmcp.Room.Info.exits) do
+        if mmp.roomexists(v) and matches[3]:lower() == getRoomName(v):lower() then
+                mmp.alertness[mmp.anytolong(k)] = mmp.alertness[mmp.anytolong(k)] or {}
+				mmp.alertness[mmp.anytolong(k)][#mmp.alertness[mmp.anytolong(k)]+1] = matches[2]
+        end
+end
+
+if matches[3] == gmcp.Room.Info.name then
+  mmp.alertness.here = mmp.alertness.here or {}
+  mmp.alertness.here[#mmp.alertness.here+1] = matches[2]
+end
+
+enableTrigger&quot;Mudlet Mapper prompt trigger&quot;
+deleteLine()</script>
+                <triggerType>0</triggerType>
+                <conditonLineDelta>0</conditonLineDelta>
+                <mStayOpen>0</mStayOpen>
+                <mCommand></mCommand>
+                <packageName></packageName>
+                <mFgColor>#ff0000</mFgColor>
+                <mBgColor>#ffff00</mBgColor>
+                <mSoundFile></mSoundFile>
+                <colorTriggerFgColor>#000000</colorTriggerFgColor>
+                <colorTriggerBgColor>#000000</colorTriggerBgColor>
+                <regexCodeList>
+                    <string>^Your enhanced senses inform you that (\w+) has entered (.+?)(?: nearby)?\.$</string>
+                </regexCodeList>
+                <regexCodePropertyList>
+                    <integer>1</integer>
+                </regexCodePropertyList>
+            </Trigger>
+            <Trigger isActive="no" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+                <name>Mudlet Mapper prompt trigger</name>
+                <script>-- to be enabled by functions that need it and disabled after it's done. Sort of like a cheap prompttrigger from Svo.
+
+-- handle alertness
+if mmp.alertness then
+  echo'\n'
+  for direction, people in pairs(mmp.alertness) do
+    cecho(&quot;&lt;red&gt;[&lt;cyan&gt;&quot; .. direction .. &quot; &lt;red&gt;- &lt;white&gt;&quot; .. ((svo and svo.concatand) and svo.concatand(people) or table.concat(people, ', ')) .. &quot; (&quot;..#people..&quot;)&lt;red&gt;]\n&quot;)
+  end
+
+  if svo and svo.showprompt() then svo.showprompt()
+  elseif mm and mm.showprompt() then mm.showprompt()
+  end
+
+  mmp.alertness = nil
+end
+
+disableTrigger&quot;Mudlet Mapper prompt trigger&quot;</script>
+                <triggerType>0</triggerType>
+                <conditonLineDelta>0</conditonLineDelta>
+                <mStayOpen>0</mStayOpen>
+                <mCommand></mCommand>
+                <packageName></packageName>
+                <mFgColor>#ff0000</mFgColor>
+                <mBgColor>#ffff00</mBgColor>
+                <mSoundFile></mSoundFile>
+                <colorTriggerFgColor>#000000</colorTriggerFgColor>
+                <colorTriggerBgColor>#000000</colorTriggerBgColor>
+                <regexCodeList>
+                    <string>return isPrompt()</string>
+                </regexCodeList>
+                <regexCodePropertyList>
+                    <integer>4</integer>
+                </regexCodePropertyList>
+            </Trigger>
             <TriggerGroup isActive="yes" isFolder="yes" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
                 <name>Achaea</name>
                 <script></script>
@@ -2480,7 +2551,7 @@ mmp = mmp or {
   currentroom = false,
   currentroomname = false,
   firstRun = true,
-  version = &quot;12.3.8&quot;
+  version = &quot;12.3.9&quot;
 }
 
 function mmp.startup()
