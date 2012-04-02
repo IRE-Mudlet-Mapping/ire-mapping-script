@@ -1741,7 +1741,7 @@ elseif command:ends(&quot;sprint&quot;) then
   where = where:sub(1, -8)
 elseif command:ends(&quot;dash&quot;) then
   gallop = &quot;dash&quot;
-  where = where:sub(1, -7)
+  where = where:sub(1, -6)
 elseif command:ends(&quot;runaway&quot;) then
   gallop = &quot;runaway&quot;
   where = where:sub(1, -9)
@@ -2551,7 +2551,7 @@ mmp = mmp or {
   currentroom = false,
   currentroomname = false,
   firstRun = true,
-  version = &quot;12.3.9&quot;
+  version = &quot;12.4.1&quot;
 }
 
 function mmp.startup()
