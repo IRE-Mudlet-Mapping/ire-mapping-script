@@ -218,16 +218,19 @@ speedwalking(&quot;Room&quot;, speedWalkPath[speedWalkCounter])
                 <script>mmp.alertness = mmp.alertness or {}
 
 for k, v in pairs (gmcp.Room.Info.exits) do
-        if mmp.roomexists(v) and matches[3]:lower() == getRoomName(v):lower() then
-                mmp.alertness[mmp.anytolong(k)] = mmp.alertness[mmp.anytolong(k)] or {}
-				mmp.alertness[mmp.anytolong(k)][#mmp.alertness[mmp.anytolong(k)]+1] = matches[2]
-        end
+  if mmp.roomexists(v) and matches[3]:lower() == getRoomName(v):lower() then
+    mmp.alertness[mmp.anytolong(k)] = mmp.alertness[mmp.anytolong(k)] or {}
+    mmp.alertness[mmp.anytolong(k)][#mmp.alertness[mmp.anytolong(k)]+1] = matches[2]
+  end
 end
 
 if matches[3] == gmcp.Room.Info.name then
   mmp.alertness.here = mmp.alertness.here or {}
   mmp.alertness.here[#mmp.alertness.here+1] = matches[2]
 end
+
+mmp.pdb[matches[2]] = matches[3]
+mmp.pdb_lastupdate[matches[2]] = true
 
 enableTrigger&quot;Mudlet Mapper prompt trigger&quot;
 deleteLine()</script>
@@ -264,6 +267,7 @@ if mmp.alertness then
   end
 
   mmp.alertness = nil
+  raiseEvent(&quot;mmapper updated pdb&quot;)
 end
 
 disableTrigger&quot;Mudlet Mapper prompt trigger&quot;</script>
@@ -2551,7 +2555,7 @@ mmp = mmp or {
   currentroom = false,
   currentroomname = false,
   firstRun = true,
-  version = &quot;12.4.1&quot;
+  version = &quot;12.4.2&quot;
 }
 
 function mmp.startup()
