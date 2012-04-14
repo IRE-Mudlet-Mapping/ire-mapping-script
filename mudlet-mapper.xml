@@ -433,6 +433,26 @@ mmp.game = &quot;achaea&quot;</script>
                         <integer>3</integer>
                     </regexCodePropertyList>
                 </Trigger>
+                <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+                    <name>Underworld entry</name>
+                    <script>mmp.customwalkdelay(3)</script>
+                    <triggerType>0</triggerType>
+                    <conditonLineDelta>0</conditonLineDelta>
+                    <mStayOpen>0</mStayOpen>
+                    <mCommand></mCommand>
+                    <packageName></packageName>
+                    <mFgColor>#ff0000</mFgColor>
+                    <mBgColor>#ffff00</mBgColor>
+                    <mSoundFile></mSoundFile>
+                    <colorTriggerFgColor>#000000</colorTriggerFgColor>
+                    <colorTriggerBgColor>#000000</colorTriggerBgColor>
+                    <regexCodeList>
+                        <string>A huge grey root numbs your fingertips as you reach out to touch it.</string>
+                    </regexCodeList>
+                    <regexCodePropertyList>
+                        <integer>3</integer>
+                    </regexCodePropertyList>
+                </Trigger>
                 <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="yes" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
                     <name>Angel sense</name>
                     <script>local t = mmp.getnums(multimatches[2][2])
@@ -1655,6 +1675,26 @@ mmp.roomEcho(matches[3]) </script>
                         <integer>3</integer>
                     </regexCodePropertyList>
                 </Trigger>
+                <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+                    <name>Caravan</name>
+                    <script>mmp.customwalkdelay(15)</script>
+                    <triggerType>0</triggerType>
+                    <conditonLineDelta>0</conditonLineDelta>
+                    <mStayOpen>0</mStayOpen>
+                    <mCommand></mCommand>
+                    <packageName></packageName>
+                    <mFgColor>#ff0000</mFgColor>
+                    <mBgColor>#ffff00</mBgColor>
+                    <mSoundFile></mSoundFile>
+                    <colorTriggerFgColor>#000000</colorTriggerFgColor>
+                    <colorTriggerBgColor>#000000</colorTriggerBgColor>
+                    <regexCodeList>
+                        <string>You begin leading a caravan</string>
+                    </regexCodeList>
+                    <regexCodePropertyList>
+                        <integer>2</integer>
+                    </regexCodePropertyList>
+                </Trigger>
             </TriggerGroup>
             <TriggerGroup isActive="yes" isFolder="yes" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
                 <name>Midkemia Online</name>
@@ -2824,7 +2864,7 @@ mmp = mmp or {
   currentroom = false,
   currentroomname = false,
   firstRun = true,
-  version = &quot;12.4.3&quot;
+  version = &quot;12.4.4&quot;
 }
 
 function mmp.startup()
@@ -2843,6 +2883,7 @@ function mmp.startup()
   private_settings[&quot;locksewers&quot;] = createOption(false, mmp.lockSewers, { &quot;boolean&quot; }, &quot;Lock all sewers?&quot;)
   private_settings[&quot;lockspecials&quot;] = createOption(false, mmp.lockSpecials, { &quot;boolean&quot; }, &quot;Lock all special exits?&quot;)
   private_settings[&quot;crowdmap&quot;] = createOption(false, mmp.chageMapSource, { &quot;boolean&quot; }, &quot;Use a crowd-sourced map instead of IREs default?&quot;)
+  private_settings[&quot;caravan&quot;] = createOption(false, mmp.changeBoolFunc,{ &quot;boolean&quot; }, &quot;Walk caravans?&quot;)
 
 
   mmp.settings = createOptionsTable(private_settings)
@@ -2868,8 +2909,15 @@ end
 -- moves to the next room we need to.
 function mmp.move()
   if mmp.paused or not mmp.autowalking or mmp.movetimer or not mmp.canmove() then return end
-  send(speedWalkDir[speedWalkCounter], false)
-  cecho(string.format(&quot;&lt;red&gt;(&lt;maroon&gt;%d - &lt;dark_slate_grey&gt;%s&lt;red&gt;)&quot;, #speedWalkDir - speedWalkCounter + 1, speedWalkDir[speedWalkCounter]))
+
+  local cmd
+  if mmp.settings[&quot;caravan&quot;] then cmd = &quot;lead caravan &quot;..speedWalkDir[speedWalkCounter]
+  else
+    cmd = speedWalkDir[speedWalkCounter]
+  end
+
+  send(cmd, false)
+  cecho(string.format(&quot;&lt;red&gt;(&lt;maroon&gt;%d - &lt;dark_slate_grey&gt;%s&lt;red&gt;)&quot;, #speedWalkDir - speedWalkCounter + 1, cmd))
 
   -- timeout
   if mmp.movetimer then killTimer(mmp.movetimer) end
