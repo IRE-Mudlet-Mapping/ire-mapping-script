@@ -205,7 +205,12 @@ for k, v in pairs (gmcp.Room.Info.exits) do
   end
 end
 
-if matches[3] == mmp.currentroomname then
+local currentroomname = mmp.currentroomname
+if string.ends(currentroomname, &quot; (road)&quot;) then
+	currentroomname = string.sub(currentroomname, 1, (#currentroomname-7))
+end
+
+if matches[3] == currentroomname then
   mmp.alertness.here = mmp.alertness.here or {}
   mmp.alertness.here[#mmp.alertness.here+1] = matches[2]
   deleteLine()
@@ -2020,13 +2025,13 @@ mmp.game = &quot;mko&quot;</script>
         </TriggerGroup>
     </TriggerPackage>
     <TimerPackage>
-        <TimerGroup isActive="yes" isFolder="yes" isTempTimer="no">
+        <TimerGroup isActive="yes" isFolder="yes" isTempTimer="no" isOffsetTimer="no">
             <name>Mudlet Mapper</name>
             <script></script>
             <command></command>
             <packageName></packageName>
             <time>00:00:00.000</time>
-            <Timer isActive="yes" isFolder="no" isTempTimer="no">
+            <Timer isActive="yes" isFolder="no" isTempTimer="no" isOffsetTimer="no">
                 <name>Check for updates periodically</name>
                 <script>mmp.checkforupdate()</script>
                 <command></command>
@@ -2434,17 +2439,18 @@ else
   end
 end
 
-if setExit(mmp.currentroom, otherroom, matches[3]) and setExit(otherroom, mmp.currentroom, mmp.ranytolong(matches[3])) then
+if setExit(mmp.currentroom, otherroom, matches[3]) then
+  if not matches[4] then setExit(otherroom, mmp.currentroom, mmp.ranytolong(matches[3])) end
 
-  mmp.echo(string.format(&quot;Linked %s (%d) to %s (%d) via a %s exit.&quot;,
-    (getRoomName(mmp.currentroom) ~= &quot;&quot; and getRoomName(mmp.currentroom) or &quot;''&quot;), mmp.currentroom, (getRoomName(otherroom) ~= &quot;&quot; and getRoomName(otherroom) or &quot;''&quot;), otherroom, matches[3]))
+  mmp.echo(string.format(&quot;Linked %s (%d) to %s (%d) via a %s%s exit.&quot;,
+    (getRoomName(mmp.currentroom) ~= &quot;&quot; and getRoomName(mmp.currentroom) or &quot;''&quot;), mmp.currentroom, (getRoomName(otherroom) ~= &quot;&quot; and getRoomName(otherroom) or &quot;''&quot;), otherroom, (matches[4] and &quot;one-way &quot; or ''), matches[3]))
 else
   mmp.echo(&quot;Couldn't create an exit.&quot;)
 end
 centerview(mmp.currentroom)</script>
                     <command></command>
                     <packageName></packageName>
-                    <regex>^(?:rlk|room link) ?(\d+)? (\w+)$</regex>
+                    <regex>^(?:rlk|room link) ?(\d+)? (\w+)( one)?$</regex>
                 </Alias>
                 <Alias isActive="yes" isFolder="no">
                     <name>Delete a room</name>
@@ -2864,7 +2870,7 @@ mmp = mmp or {
   currentroom = false,
   currentroomname = false,
   firstRun = true,
-  version = &quot;12.4.4&quot;
+  version = &quot;12.4.5&quot;
 }
 
 function mmp.startup()
@@ -4483,8 +4489,8 @@ local s,m = xpcall(function ()
   end
 
   if #s &gt; 0 then mmp.echo(s); centerview(mmp.currentroom) end
-end, function ()
-  mmp.echo(&quot;Oops! Has a small problem.&quot;)
+end, function (error)
+  mmp.echo(&quot;Oops! Has a small problem (&quot;..error..&quot;).&quot;)
   echo&quot;  &quot; echoLink(&quot;view steps&quot;, 'echo[['..debug.traceback()..']]', &quot;View steps of code that led up to it&quot;)
 end)
 if not s then mmp.echo(m) end
