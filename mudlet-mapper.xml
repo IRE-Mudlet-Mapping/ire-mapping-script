@@ -686,7 +686,9 @@ mmp.locateAndEcho(matches[3], matches[2])</script>
                 </Trigger>
                 <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
                     <name>Angel presences</name>
-                    <script>disableTrigger(&quot;Angel sense&quot;)</script>
+                    <script>disableTrigger(&quot;Angel sense&quot;)
+
+mmp.pdb_lastupdate = {}</script>
                     <triggerType>0</triggerType>
                     <conditonLineDelta>0</conditonLineDelta>
                     <mStayOpen>100</mStayOpen>
@@ -1973,8 +1975,10 @@ mmp.game = &quot;mko&quot;</script>
                     <regexCodeList>
                         <string>You are not carrying a key for this door.</string>
                         <string>This door has been magically locked shut.</string>
+                        <string>Not recognising you as cast or crew, stagehands firmly close the door on you.</string>
                     </regexCodeList>
                     <regexCodePropertyList>
+                        <integer>3</integer>
                         <integer>3</integer>
                         <integer>3</integer>
                     </regexCodePropertyList>
@@ -2870,7 +2874,7 @@ mmp = mmp or {
   currentroom = false,
   currentroomname = false,
   firstRun = true,
-  version = &quot;12.4.5&quot;
+  version = &quot;12.5.1&quot;
 }
 
 function mmp.startup()
