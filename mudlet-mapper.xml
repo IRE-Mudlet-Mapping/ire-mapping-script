@@ -1739,6 +1739,26 @@ mmp.game = &quot;mko&quot;</script>
                         <integer>3</integer>
                     </regexCodePropertyList>
                 </Trigger>
+                <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+                    <name>Fording</name>
+                    <script>mmp.customwalkdelay(3)</script>
+                    <triggerType>0</triggerType>
+                    <conditonLineDelta>0</conditonLineDelta>
+                    <mStayOpen>0</mStayOpen>
+                    <mCommand></mCommand>
+                    <packageName></packageName>
+                    <mFgColor>#ff0000</mFgColor>
+                    <mBgColor>#ffff00</mBgColor>
+                    <mSoundFile></mSoundFile>
+                    <colorTriggerFgColor>#000000</colorTriggerFgColor>
+                    <colorTriggerBgColor>#000000</colorTriggerBgColor>
+                    <regexCodeList>
+                        <string>You ford the water towards the </string>
+                    </regexCodeList>
+                    <regexCodePropertyList>
+                        <integer>2</integer>
+                    </regexCodePropertyList>
+                </Trigger>
             </TriggerGroup>
             <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
                 <name>Wall</name>
@@ -2089,7 +2109,7 @@ end</script>
                 <regex>^goto (.+)$</regex>
             </Alias>
             <Alias isActive="yes" isFolder="no">
-                <name>View roomID o area</name>
+                <name>View roomID or area</name>
                 <script>local where = matches[2]
 
 if not where then
@@ -2874,7 +2894,7 @@ mmp = mmp or {
   currentroom = false,
   currentroomname = false,
   firstRun = true,
-  version = &quot;12.5.1&quot;
+  version = &quot;12.5.2&quot;
 }
 
 function mmp.startup()
@@ -3935,7 +3955,9 @@ function mmp.viewArea (where, exact)
   local areaid, msg, multiples = mmp.findAreaID(where, exact)
   if areaid then
     -- center on the first room ID, which typically is the start of an area
-    centerview(getAreaRooms(areaid)[1])
+    local rooms = getAreaRooms(areaid)
+    if not rooms[1] then mmp.echo(&quot;The area has no rooms in it.&quot;) else
+    centerview(rooms[1]) end
 
   elseif not areaid and #multiples &gt; 0 then
     mmp.echo(&quot;Which area would you like to view exactly?&quot;)
