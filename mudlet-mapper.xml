@@ -3065,7 +3065,7 @@ mmp = mmp or {
   currentroom = false,
   currentroomname = false,
   firstRun = true,
-  version = &quot;12.5.4&quot;
+  version = &quot;12.5.5&quot;
 }
 
 function mmp.startup()
@@ -3238,7 +3238,9 @@ function speedwalking( event, num )
   mmp.currentroomname = next(gmcp) and gmcp.Room.Info.name or atcp.RoomName
 
   -- workaround for Aetolia spamming us with multiple nums per room
-  if oldnum == num or not mmp.autowalking then return else oldnum = num end
+  if mmp.game == 'aetolia' then
+    if oldnum == num or not mmp.autowalking then return else oldnum = num end
+  end
 
   if mmp.movetimer then killTimer(mmp.movetimer); mmp.movetimer = false end
 
