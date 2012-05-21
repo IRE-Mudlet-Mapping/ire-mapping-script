@@ -5242,6 +5242,7 @@ end</script>
 
     io.input(filename)
     local s = io.read(&quot;*l&quot;):trim()
+    io.close(filename)
 
     if s ~= tostring(mmp.version) then
       mmp.newmapperversion = s
@@ -5253,6 +5254,7 @@ end</script>
 
     io.input(filename)
     local s = io.read(&quot;*a&quot;)
+    io.close(filename)
     local changelog = string.match(s, [[&lt;div class=&quot;information&quot;&gt;(.-)&lt;/div]])
     changelog = string.gsub(changelog, &quot;Â&quot;, '')
     changelog = string.gsub(changelog, &quot;&lt;br/&gt;&quot;, '\n')
@@ -5263,6 +5265,7 @@ end</script>
   elseif filename == mmp.crowdchangelogfile then   -- changelog for the crowdmap
     io.input(filename)
     local s = io.read(&quot;*a&quot;)
+    io.close(filename)
 
     -- make environment
     local env = {} -- add functions you know are safe here
@@ -5320,6 +5323,7 @@ end</script>
     end
 
     local s = io.input(filename):read(&quot;*a&quot;)
+    io.close(filename)
     local currentmd5 = string.match(s, &quot;([a-z0-9]+)  map%.xml&quot;)
 
     -- using crowdsourced map
@@ -5335,6 +5339,7 @@ end</script>
     -- otherwise read old file and check
     io.input(getMudletHomeDir()..&quot;/map downloads/current&quot;)
     local s = io.read(&quot;*a&quot;)
+    io.close(filename)
     if s ~= currentmd5 then needupdate(currentmd5, s) end
   end
 end</script>
