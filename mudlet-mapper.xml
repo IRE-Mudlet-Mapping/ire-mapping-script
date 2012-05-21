@@ -3841,8 +3841,10 @@ function mmp.roomLook(input)
     echo&quot;  &quot; echo(&quot;Clear all labels &quot;) echoLink(&quot;(in area)&quot;, 'mmp.clearLabels('..areanum..')', '') echo&quot; &quot; echoLink(&quot;(whole map)&quot;, 'mmp.clearLabels(&quot;map&quot;)', '') echo&quot;\n&quot;
     echo&quot;  &quot; echoLink(&quot;Check for all updates&quot;, 'mmp.echo(&quot;Checking...&quot;) mmp.checkforupdate()', '')
     echo&quot; &quot; echoLink(&quot;(force map)&quot;, [[
-      local s,m = os.remove(getMudletHomeDir()..&quot;/map downloads/current&quot;)
-      if not s and m ~= 'No such file or directory' then mmp.echo(&quot;Couldn't delete version file: &quot;..tostring(m)) end
+      if io.exists(getMudletHomeDir()..&quot;/map downloads/current&quot;) then
+        local s,m = os.remove(getMudletHomeDir()..&quot;/map downloads/current&quot;)
+        if not s then mmp.echo(&quot;Couldn't delete version file: &quot;..tostring(m)..&quot;.&quot;) end
+      end
       mmp.echo(&quot;Re-downloading the latest map...&quot;)
       mmp.checkforupdate()
     ]], &quot;Re-download the map regardless if you have latest&quot;)
@@ -3893,7 +3895,10 @@ function mmp.roomLook(input)
       echo&quot;  &quot; echoLink(&quot;Check for all updates&quot;, 'mmp.echo(&quot;Checking...&quot;) mmp.checkforupdate()', '') 
       echo&quot; &quot; echoLink(&quot;(force map)&quot;, [[
       local s,m = os.remove(getMudletHomeDir()..&quot;/map downloads/current&quot;)
-        if not s and m ~= 'No such file or directory' then mmp.echo(&quot;Couldn't delete version file: &quot;..tostring(m)) end
+        if io.exists(getMudletHomeDir()..&quot;/map downloads/current&quot;) then
+          local s,m = os.remove(getMudletHomeDir()..&quot;/map downloads/current&quot;)
+          if not s then mmp.echo(&quot;Couldn't delete version file: &quot;..tostring(m)..&quot;.&quot;) end
+        end
         mmp.echo(&quot;Re-downloading the latest map...&quot;)
         mmp.checkforupdate()
       ]], &quot;Re-download the map regardless if you have latest&quot;)
@@ -5235,14 +5240,12 @@ end</script>
                 <Script isActive="yes" isFolder="no">
                     <name>mmp_downloaded_file</name>
                     <packageName></packageName>
-                    <script>function mmp_downloaded_file(_, filename)
-
+                    <script> function mmp_downloaded_file(_, filename)
+local s,m = pcall(function()
   if filename == tostring(mmp.mapperfile) then   -- mapper script version
 	mmp.checkingupdates = false
 
-    io.input(filename)
-    local s = io.read(&quot;*l&quot;):trim()
-    io.close(filename)
+    local s = io.open(filename):read(&quot;*l&quot;):trim()
 
     if s ~= tostring(mmp.version) then
       mmp.newmapperversion = s
@@ -5252,9 +5255,7 @@ end</script>
   elseif filename == tostring(mmp.changelogfile) then   -- changelog for the mapper script
 	mmp.checkingupdates = false
 
-    io.input(filename)
-    local s = io.read(&quot;*a&quot;)
-    io.close(filename)
+    local s = io.open(filename):read(&quot;*a&quot;)
     local changelog = string.match(s, [[&lt;div class=&quot;information&quot;&gt;(.-)&lt;/div]])
     changelog = string.gsub(changelog, &quot;Â&quot;, '')
     changelog = string.gsub(changelog, &quot;&lt;br/&gt;&quot;, '\n')
@@ -5263,9 +5264,7 @@ end</script>
     echoLink(&quot;The mapper script was updated! Would you like to download the update? Click here if so.&quot;, &quot;mmp.downloadmapperscript()&quot;, &quot;Changelog for the latest (&quot;..tostring(mmp.version)..&quot; -&gt; &quot;..tostring(mmp.newmapperversion)..&quot;) update:\n&quot;..changelog, true)
 
   elseif filename == mmp.crowdchangelogfile then   -- changelog for the crowdmap
-    io.input(filename)
-    local s = io.read(&quot;*a&quot;)
-    io.close(filename)
+    local s = io.open(filename):read(&quot;*a&quot;)
 
     -- make environment
     local env = {} -- add functions you know are safe here
@@ -5322,8 +5321,7 @@ end</script>
       end
     end
 
-    local s = io.input(filename):read(&quot;*a&quot;)
-    io.close(filename)
+    local s = io.open(filename):read(&quot;*a&quot;)
     local currentmd5 = string.match(s, &quot;([a-z0-9]+)  map%.xml&quot;)
 
     -- using crowdsourced map
@@ -5337,11 +5335,11 @@ end</script>
     if not io.exists(getMudletHomeDir()..&quot;/map downloads/current&quot;) then needupdate(currentmd5) return end
 
     -- otherwise read old file and check
-    io.input(getMudletHomeDir()..&quot;/map downloads/current&quot;)
-    local s = io.read(&quot;*a&quot;)
-    io.close(filename)
+    local s = io.open(getMudletHomeDir()..&quot;/map downloads/current&quot;):read(&quot;*a&quot;)
     if s ~= currentmd5 then needupdate(currentmd5, s) end
   end
+end)
+if not s then display(m) end
 end</script>
                     <eventHandlerList>
                         <string>sysDownloadDone</string>
@@ -5425,7 +5423,7 @@ function mmp.downloadmapperscript()
   end
 
   if not downloadlocation then
-    io.input(downloadlocationfile); downloadlocation = io.read(&quot;*a&quot;)
+    downloadlocation = io.open(downloadlocationfile):read(&quot;*a&quot;)
     if not exists(downloadlocation) then
       downloadlocation = whereisit()
       if not downloadlocation or not exists(downloadlocation) then return end
