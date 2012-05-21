@@ -885,8 +885,10 @@ enableTrigger(&quot;Angel sense&quot;)</script>
                         <colorTriggerBgColor>#000000</colorTriggerBgColor>
                         <regexCodeList>
                             <string>^\(Party\): \w+ says, &quot;(\w+) moved to (.+)\.&quot;$</string>
+                            <string>^\(Party\): \w+ says, &quot;(\w+) is at (.+), in .+\.&quot;</string>
                         </regexCodeList>
                         <regexCodePropertyList>
+                            <integer>1</integer>
                             <integer>1</integer>
                         </regexCodePropertyList>
                     </Trigger>
@@ -3063,7 +3065,7 @@ mmp = mmp or {
   currentroom = false,
   currentroomname = false,
   firstRun = true,
-  version = &quot;12.5.3&quot;
+  version = &quot;12.5.4&quot;
 }
 
 function mmp.startup()
@@ -3835,7 +3837,14 @@ function mmp.roomLook(input)
     -- actions we can do. This will be a short menu of sorts for actions
     mmp.echo(&quot;Stuff you can do:&quot;)
     echo&quot;  &quot; echo(&quot;Clear all labels &quot;) echoLink(&quot;(in area)&quot;, 'mmp.clearLabels('..areanum..')', '') echo&quot; &quot; echoLink(&quot;(whole map)&quot;, 'mmp.clearLabels(&quot;map&quot;)', '') echo&quot;\n&quot;
-    echo&quot;  &quot; echoLink(&quot;Check for all updates&quot;, 'mmp.echo(&quot;Checking...&quot;) mmp.checkforupdate()', '') echo&quot;\n&quot;
+    echo&quot;  &quot; echoLink(&quot;Check for all updates&quot;, 'mmp.echo(&quot;Checking...&quot;) mmp.checkforupdate()', '')
+    echo&quot; &quot; echoLink(&quot;(force map)&quot;, [[
+      local s,m = os.remove(getMudletHomeDir()..&quot;/map downloads/current&quot;)
+      if not s and m ~= 'No such file or directory' then mmp.echo(&quot;Couldn't delete version file: &quot;..tostring(m)) end
+      mmp.echo(&quot;Re-downloading the latest map...&quot;)
+      mmp.checkforupdate()
+    ]], &quot;Re-download the map regardless if you have latest&quot;)
+    echo&quot;\n&quot;	
   end
 
   -- see if we can do anything with the name
@@ -3879,7 +3888,14 @@ function mmp.roomLook(input)
     if not mmp.roomexists(mmp.currentroom) then
       mmp.echo(mmp.currentroom.. &quot; doesn't seem to be mapped yet.&quot;)
       mmp.echo(&quot;Stuff you can do:&quot;)
-      echo&quot;  &quot; echoLink(&quot;Check for all updates&quot;, 'mmp.echo(&quot;Checking...&quot;) mmp.checkforupdate()', '') echo&quot;\n&quot;
+      echo&quot;  &quot; echoLink(&quot;Check for all updates&quot;, 'mmp.echo(&quot;Checking...&quot;) mmp.checkforupdate()', '') 
+      echo&quot; &quot; echoLink(&quot;(force map)&quot;, [[
+      local s,m = os.remove(getMudletHomeDir()..&quot;/map downloads/current&quot;)
+        if not s and m ~= 'No such file or directory' then mmp.echo(&quot;Couldn't delete version file: &quot;..tostring(m)) end
+        mmp.echo(&quot;Re-downloading the latest map...&quot;)
+        mmp.checkforupdate()
+      ]], &quot;Re-download the map regardless if you have latest&quot;)
+      echo&quot;\n&quot;
     else input = mmp.currentroom end
   end
 
@@ -5353,7 +5369,7 @@ function mmp.checkforupdate()
     end
 
     if mmp.settings.crowdmap and mmp.game and mmp.game == &quot;achaea&quot; then
-      downloadFile(mmp.mapfile, &quot;http://dl.dropbox.com/s/iqk5bf905iox0k9/version.txt&quot;)
+      downloadFile(mmp.mapfile, &quot;http://dl.dropbox.com/s/iqk5bf905iox0k9/version.txt?dl=1&quot;)
     else
       downloadFile(mmp.mapfile, &quot;http://www.&quot;..game..&quot;.com/maps/MD5SUM&quot;)
     end
@@ -5386,7 +5402,7 @@ end
 function mmp.retrievecrowdchangelog()
   mmp.crowdchangelogfile = downloadfolder..&quot;crowdchangelogfile&quot;
 
-  downloadFile(mmp.crowdchangelogfile, &quot;http://dl.dropbox.com/s/jto1gex69rqx7b4/changelog.txt&quot;)
+  downloadFile(mmp.crowdchangelogfile, &quot;http://dl.dropbox.com/s/pu51s482csta8zj/changelog.txt?dl=1&quot;)
 end
 
 -- downloads the public crowdsources map!
@@ -5429,7 +5445,7 @@ function mmp.downloadcrowdmap(newversion)
   f:close()
 
 
-  downloadFile(mmp.crowdmapfile, &quot;http://dl.dropbox.com/s/sbj9f1s1l4h7otg/map&quot;)
+  downloadFile(mmp.crowdmapfile, &quot;http://dl.dropbox.com/s/sbj9f1s1l4h7otg/map?dl=1&quot;)
 
   mmp.echo(&quot;Downloading the latest public map...&quot;)
 end
@@ -5437,7 +5453,7 @@ end
 function mmp.showcrowdchangelog()
   mmp.echo(&quot;Public map changelog:&quot;)
 
-  if not mmp.crowdchangelog then mmp.echo(&quot;(none yet&quot;) return end
+  if not mmp.crowdchangelog then mmp.echo(&quot;(none yet)&quot;) return end
 
   for k,v in ipairs(mmp.crowdchangelog) do
     cecho(string.format(&quot;  %s) %s\n&quot;, k,v:gsub(&quot;\t&quot;, &quot;     &quot;)))
@@ -5477,6 +5493,17 @@ end</script>
                             <string>mmp logged in Midkemia Online</string>
                         </eventHandlerList>
                     </Script>
+                </Script>
+                <Script isActive="no" isFolder="no">
+                    <name>mmp_see_dl_errors</name>
+                    <packageName></packageName>
+                    <script>-- this should be off by default
+function mmp_see_dl_errors(...)
+  display{...}
+end</script>
+                    <eventHandlerList>
+                        <string>sysDownloadError</string>
+                    </eventHandlerList>
                 </Script>
             </ScriptGroup>
             <Script isActive="yes" isFolder="no">
