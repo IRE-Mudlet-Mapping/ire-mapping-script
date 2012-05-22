@@ -3065,7 +3065,7 @@ mmp = mmp or {
   currentroom = false,
   currentroomname = false,
   firstRun = true,
-  version = &quot;12.5.5&quot;
+  version = &quot;12.5.6&quot;
 }
 
 function mmp.startup()
