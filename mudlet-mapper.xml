@@ -3065,7 +3065,7 @@ mmp = mmp or {
   currentroom = false,
   currentroomname = false,
   firstRun = true,
-  version = &quot;12.5.6&quot;
+  version = &quot;12.5.7&quot;
 }
 
 function mmp.startup()
@@ -3110,6 +3110,8 @@ end
 -- moves to the next room we need to.
 function mmp.move()
   if mmp.paused or not mmp.autowalking or mmp.movetimer or not mmp.canmove() then return end
+  -- sometimes it's 0 - default to 1
+  if speedWalkCounter == 0 then speedWalkCounter = 1 end
 
   local cmd
   if mmp.settings[&quot;caravan&quot;] then cmd = &quot;lead caravan &quot;..speedWalkDir[speedWalkCounter]
@@ -3117,7 +3119,7 @@ function mmp.move()
     cmd = speedWalkDir[speedWalkCounter]
   end
 
-  send(cmd, false)
+  send(cmd or '', false)
   cecho(string.format(&quot;&lt;red&gt;(&lt;maroon&gt;%d - &lt;dark_slate_grey&gt;%s&lt;red&gt;)&quot;, #speedWalkDir - speedWalkCounter + 1, cmd))
 
   -- timeout
@@ -3455,7 +3457,7 @@ function mmp.fixSpecialExits(directions)
 end</script>
                 <eventHandlerList>
                     <string>RoomNum</string>
-                    <string>gmcp.Room</string>
+                    <string>gmcp.Room.Info</string>
                 </eventHandlerList>
             </Script>
             <Script isActive="yes" isFolder="no">
@@ -3668,7 +3670,7 @@ function mmp.roomFind(query)
   if type(result) == &quot;string&quot; or not next(result) then
     cecho(&quot;&lt;grey&gt;You have no recollection of any room with that name.&quot;) return end
 
-  cecho(&quot;&lt;DarkSlateGrey&gt;You know the following relevant rooms::\n&quot;)
+  cecho(&quot;&lt;DarkSlateGrey&gt;You know the following relevant rooms:\n&quot;)
 
 
   if not tonumber(select(2, next(result))) then -- old style
