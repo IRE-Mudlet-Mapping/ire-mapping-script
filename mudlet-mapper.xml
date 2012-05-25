@@ -296,7 +296,8 @@ disableTrigger&quot;Mudlet Mapper prompt trigger&quot;</script>
                 <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
                     <name>Login</name>
                     <script>raiseEvent(&quot;mmp logged in Achaea&quot;)
-mmp.game = &quot;achaea&quot;</script>
+mmp.game = &quot;achaea&quot;
+mmp.echo(&quot;We're connected to Achaea.&quot;)</script>
                     <triggerType>0</triggerType>
                     <conditonLineDelta>0</conditonLineDelta>
                     <mStayOpen>0</mStayOpen>
@@ -460,7 +461,7 @@ mmp.game = &quot;achaea&quot;</script>
                 </Trigger>
                 <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="yes" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
                     <name>Angel sense</name>
-                    <script>local t = mmp.getnums(multimatches[2][2])
+                    <script>local t = mmp.getnums(multimatches[2][2], true)
 if not t then return end
 if #t == 1 then
 	cecho(&quot; &lt;orange_red&gt;(&quot;..mmp.areatabler[getRoomArea(t[1])]..&quot;)&quot;)
@@ -890,6 +891,79 @@ enableTrigger(&quot;Angel sense&quot;)</script>
                         <regexCodePropertyList>
                             <integer>1</integer>
                             <integer>1</integer>
+                        </regexCodePropertyList>
+                    </Trigger>
+                </Trigger>
+                <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="yes" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+                    <name>Arena event (Achaea)</name>
+                    <script>
+</script>
+                    <triggerType>0</triggerType>
+                    <conditonLineDelta>3</conditonLineDelta>
+                    <mStayOpen>1000</mStayOpen>
+                    <mCommand></mCommand>
+                    <packageName></packageName>
+                    <mFgColor>#ff0000</mFgColor>
+                    <mBgColor>#ffff00</mBgColor>
+                    <mSoundFile></mSoundFile>
+                    <colorTriggerFgColor>#000000</colorTriggerFgColor>
+                    <colorTriggerBgColor>#000000</colorTriggerBgColor>
+                    <regexCodeList>
+                        <string>Current event</string>
+                        <string>Player               Location</string>
+                        <string>----------------------------------------------------------------------</string>
+                    </regexCodeList>
+                    <regexCodePropertyList>
+                        <integer>2</integer>
+                        <integer>3</integer>
+                        <integer>3</integer>
+                    </regexCodePropertyList>
+                    <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+                        <name>Each person</name>
+                        <script>--mmp.locateAndEcho(matches[3], matches[2])
+
+echo((&quot; &quot;):rep(60-#line))
+echo&quot;(&quot; mmp.echonums(matches[3]) echo&quot;)&quot;
+
+mmp.pdb[matches[2]] = matches[3]
+mmp.pdb_lastupdate[matches[2]] = true</script>
+                        <triggerType>0</triggerType>
+                        <conditonLineDelta>0</conditonLineDelta>
+                        <mStayOpen>0</mStayOpen>
+                        <mCommand></mCommand>
+                        <packageName></packageName>
+                        <mFgColor>#ff0000</mFgColor>
+                        <mBgColor>#ffff00</mBgColor>
+                        <mSoundFile></mSoundFile>
+                        <colorTriggerFgColor>#000000</colorTriggerFgColor>
+                        <colorTriggerBgColor>#000000</colorTriggerBgColor>
+                        <regexCodeList>
+                            <string>^(\w+) +(.+)$</string>
+                        </regexCodeList>
+                        <regexCodePropertyList>
+                            <integer>1</integer>
+                        </regexCodePropertyList>
+                    </Trigger>
+                    <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+                        <name>Stop (arena event)</name>
+                        <script>setTriggerStayOpen(&quot;Arena event (Achaea)&quot;, 0)
+
+raiseEvent(&quot;mmapper updated pdb&quot;)</script>
+                        <triggerType>0</triggerType>
+                        <conditonLineDelta>0</conditonLineDelta>
+                        <mStayOpen>0</mStayOpen>
+                        <mCommand></mCommand>
+                        <packageName></packageName>
+                        <mFgColor>#ff0000</mFgColor>
+                        <mBgColor>#ffff00</mBgColor>
+                        <mSoundFile></mSoundFile>
+                        <colorTriggerFgColor>#000000</colorTriggerFgColor>
+                        <colorTriggerBgColor>#000000</colorTriggerBgColor>
+                        <regexCodeList>
+                            <string>return isPrompt()</string>
+                        </regexCodeList>
+                        <regexCodePropertyList>
+                            <integer>4</integer>
                         </regexCodePropertyList>
                     </Trigger>
                 </Trigger>
@@ -3065,7 +3139,7 @@ mmp = mmp or {
   currentroom = false,
   currentroomname = false,
   firstRun = true,
-  version = &quot;12.5.7&quot;
+  version = &quot;12.5.8&quot;
 }
 
 function mmp.startup()
