@@ -3139,7 +3139,8 @@ mmp = mmp or {
   currentroom = false,
   currentroomname = false,
   firstRun = true,
-  version = &quot;12.5.9&quot;
+  version = &quot;12.5.10&quot;,
+  specials = {}
 }
 
 function mmp.startup()
@@ -3196,17 +3197,20 @@ function mmp.move()
   
   cmd = cmd or ''
 
-  if string.starts(cmd, &quot;script:&quot;) then cmd = string.gsub( cmd, &quot;script:&quot;, &quot;&quot; ) loadstring( cmd )()
-  else send(cmd, false) end
-
-  if mmp.settings.showcmds then cecho(string.format(&quot;&lt;red&gt;(&lt;maroon&gt;%d - &lt;dark_slate_grey&gt;%s&lt;red&gt;)&quot;, #speedWalkDir - speedWalkCounter + 1, cmd)) end
-
-  -- timeout
+  -- timeout before loadstring, so it can set it's own if it would like to.
   if mmp.movetimer then killTimer(mmp.movetimer) end
   mmp.movetimer = tempTimer(getNetworkLatency()+0.5, function ()
     mmp.movetimer = false
     mmp.move()
   end)
+
+  if string.starts(cmd, &quot;script:&quot;) then 
+    cmd = string.gsub( cmd, &quot;script:&quot;, &quot;&quot; ) loadstring( cmd )()
+    if mmp.settings.showcmds then cecho(string.format(&quot;&lt;red&gt;(&lt;maroon&gt;%d - &lt;dark_slate_grey&gt;%s&lt;red&gt;)&quot;, #speedWalkDir - speedWalkCounter + 1, &quot;&lt;script&gt;&quot;)) end
+  else 
+    send(cmd, false)
+    if mmp.settings.showcmds then cecho(string.format(&quot;&lt;red&gt;(&lt;maroon&gt;%d - &lt;dark_slate_grey&gt;%s&lt;red&gt;)&quot;, #speedWalkDir - speedWalkCounter + 1, cmd)) end
+  end
 end
 
 function mmp.swim()
@@ -3280,6 +3284,12 @@ function mmp.stop()
   stopStopWatch(speedWalkWatch)
   if speedWalkTimerID then killTimer( speedWalkTimerID ) end
   mmp.autowalking = false
+
+  -- clear all the temps we've got
+  for trigger, ID in pairs(mmp.specials) do
+    killTrigger(ID)
+  end
+  mmp.specials = {}
 
   mmp.echo(&quot;Stopped walking.&quot;)
   raiseEvent(&quot;mmapper stopped&quot;)
