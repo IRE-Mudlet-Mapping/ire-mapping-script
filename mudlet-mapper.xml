@@ -3139,7 +3139,7 @@ mmp = mmp or {
   currentroom = false,
   currentroomname = false,
   firstRun = true,
-  version = &quot;12.5.8&quot;
+  version = &quot;12.5.9&quot;
 }
 
 function mmp.startup()
@@ -3159,6 +3159,7 @@ function mmp.startup()
   private_settings[&quot;lockspecials&quot;] = createOption(false, mmp.lockSpecials, { &quot;boolean&quot; }, &quot;Lock all special exits?&quot;)
   private_settings[&quot;crowdmap&quot;] = createOption(false, mmp.chageMapSource, { &quot;boolean&quot; }, &quot;Use a crowd-sourced map instead of IREs default?&quot;)
   private_settings[&quot;caravan&quot;] = createOption(false, mmp.changeBoolFunc,{ &quot;boolean&quot; }, &quot;Walk caravans?&quot;)
+  private_settings[&quot;showcmds&quot;] = createOption(true, mmp.changeBoolFunc, { &quot;boolean&quot; }, &quot;Show walking commands?&quot;)
 
 
   mmp.settings = createOptionsTable(private_settings)
@@ -3192,9 +3193,13 @@ function mmp.move()
   else
     cmd = speedWalkDir[speedWalkCounter]
   end
+  
+  cmd = cmd or ''
 
-  send(cmd or '', false)
-  cecho(string.format(&quot;&lt;red&gt;(&lt;maroon&gt;%d - &lt;dark_slate_grey&gt;%s&lt;red&gt;)&quot;, #speedWalkDir - speedWalkCounter + 1, cmd))
+  if string.starts(cmd, &quot;script:&quot;) then cmd = string.gsub( cmd, &quot;script:&quot;, &quot;&quot; ) loadstring( cmd )()
+  else send(cmd, false) end
+
+  if mmp.settings.showcmds then cecho(string.format(&quot;&lt;red&gt;(&lt;maroon&gt;%d - &lt;dark_slate_grey&gt;%s&lt;red&gt;)&quot;, #speedWalkDir - speedWalkCounter + 1, cmd)) end
 
   -- timeout
   if mmp.movetimer then killTimer(mmp.movetimer) end
@@ -3209,7 +3214,7 @@ function mmp.swim()
   if not speedWalkDir[speedWalkCounter] then return end
 
   send(&quot;swim &quot; .. speedWalkDir[speedWalkCounter], false)
-  cecho(string.format(&quot;&lt;red&gt;(&lt;maroon&gt;%d - &lt;dark_slate_grey&gt;swim %s&lt;red&gt;)&quot;, #speedWalkDir - speedWalkCounter + 1, speedWalkDir[speedWalkCounter]))
+  if mmp.settings.showcmds then cecho(string.format(&quot;&lt;red&gt;(&lt;maroon&gt;%d - &lt;dark_slate_grey&gt;swim %s&lt;red&gt;)&quot;, #speedWalkDir - speedWalkCounter + 1, speedWalkDir[speedWalkCounter])) end
 
   if mmp.movetimer then killTimer(mmp.movetimer) end
   mmp.movetimer = tempTimer(getNetworkLatency()+2.5, function ()
@@ -3223,7 +3228,7 @@ function mmp.enterGrate()
   if not speedWalkDir[speedWalkCounter] then return end
 
   send(&quot;enter grate &quot; .. speedWalkDir[speedWalkCounter], false)
-  cecho(string.format(&quot;&lt;red&gt;(&lt;maroon&gt;%d - &lt;dark_slate_grey&gt;enter grate %s&lt;red&gt;)&quot;, #speedWalkDir - speedWalkCounter + 1, speedWalkDir[speedWalkCounter]))
+  if mmp.settings.showcmds then cecho(string.format(&quot;&lt;red&gt;(&lt;maroon&gt;%d - &lt;dark_slate_grey&gt;enter grate %s&lt;red&gt;)&quot;, #speedWalkDir - speedWalkCounter + 1, speedWalkDir[speedWalkCounter])) end
 
   if mmp.movetimer then killTimer(mmp.movetimer) end
   mmp.movetimer = tempTimer(getNetworkLatency()+2.5, function ()
@@ -3237,7 +3242,7 @@ function mmp.openDoor()
       if not speedWalkDir[speedWalkCounter] then return end
     
       send(&quot;open door &quot; .. speedWalkDir[speedWalkCounter], false)
-      cecho(string.format(&quot;&lt;red&gt;(&lt;maroon&gt;%d - &lt;dark_slate_grey&gt;open door %s&lt;red&gt;)&quot;, #speedWalkDir - speedWalkCounter + 1, speedWalkDir[speedWalkCounter]))
+      if mmp.settings.showcmds then cecho(string.format(&quot;&lt;red&gt;(&lt;maroon&gt;%d - &lt;dark_slate_grey&gt;open door %s&lt;red&gt;)&quot;, #speedWalkDir - speedWalkCounter + 1, speedWalkDir[speedWalkCounter])) end
     
       if mmp.movetimer then killTimer(mmp.movetimer) end
       mmp.movetimer = tempTimer(getNetworkLatency(), function ()
@@ -3251,7 +3256,7 @@ function mmp.openDoor()
       if not speedWalkDir[speedWalkCounter] then return end
     
       send(&quot;unlock door &quot; .. speedWalkDir[speedWalkCounter], false)
-      cecho(string.format(&quot;&lt;red&gt;(&lt;maroon&gt;%d - &lt;dark_slate_grey&gt;unlock door %s&lt;red&gt;)&quot;, #speedWalkDir - speedWalkCounter, speedWalkDir[speedWalkCounter]))
+      if mmp.settings.showcmds then cecho(string.format(&quot;&lt;red&gt;(&lt;maroon&gt;%d - &lt;dark_slate_grey&gt;unlock door %s&lt;red&gt;)&quot;, #speedWalkDir - speedWalkCounter, speedWalkDir[speedWalkCounter])) end
     
       if mmp.movetimer then killTimer(mmp.movetimer) end
       mmp.movetimer = tempTimer(getNetworkLatency(), function ()
@@ -5372,8 +5377,9 @@ local s,m = pcall(function()
 
     if ok then
       mmp.echo(&quot;Map loaded fine - enjoy!&quot;)
+      mmp.lockWormholes()
     else
-      mmp.echo(&quot;Map failed to load.&quot;)
+      mmp.echo(&quot;Map failed to load. You need to have the mapper open.&quot;)
     end
 
   elseif filename == tostring(mmp.downloadedscript) then   -- new mapper script xml downloaded
