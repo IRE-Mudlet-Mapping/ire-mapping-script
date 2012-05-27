@@ -2984,6 +2984,71 @@ tempTimer(10, [[disableTrigger'Parse wholist']])</script>
                 <packageName></packageName>
                 <regex>^who b$</regex>
             </Alias>
+            <Alias isActive="yes" isFolder="no">
+                <name>Add Room Mark</name>
+                <script>local tmp = getRoomUserData(1, &quot;gotoMapping&quot;)
+local maptable = {}
+
+if tmp ~= &quot;&quot; then
+  maptable = yajl.to_value(tmp)
+end
+
+local location, markname
+if tonumber(matches[2]) then
+  location = matches[2]; markname = matches[3]
+else
+  location = matches[3]; markname = matches[2]
+end
+
+-- can't allow mark name to ne a number - yajl then generates a giant table of null's
+if tonumber(markname) then
+  mmp.echo(&quot;The mark name can't be a number.&quot;) return
+end
+
+maptable[markname] = location
+local tmp2 = yajl.to_string(maptable)
+setRoomUserData(1, &quot;gotoMapping&quot;, tmp2)
+mmp.echo(string.format(&quot;Room mark for '%s' set to room %s.&quot;, markname, location))</script>
+                <command></command>
+                <packageName></packageName>
+                <regex>^room mark (\w+) (\w+)$</regex>
+            </Alias>
+            <Alias isActive="yes" isFolder="no">
+                <name>Remove Room Mark</name>
+                <script>local tmp= getRoomUserData(1, &quot;gotoMapping&quot;)
+if tmp~=&quot;&quot; then
+  local maptable=yajl.to_value(tmp)
+  if not maptable[matches[2]] then mmp.echo(&quot;Don't have such a mark in the db.&quot;) return end
+
+  maptable[matches[2]]=nil
+  local tmp2=yajl.to_string(maptable)
+  setRoomUserData(1, &quot;gotoMapping&quot;, tmp2)
+  mmp.echo(&quot;Removed the &quot;..matches[2]..&quot; mark.&quot;)
+else
+  mmp.echo(&quot;We don't have any marks stored anyway.&quot;)
+end</script>
+                <command></command>
+                <packageName></packageName>
+                <regex>^room unmark (\w+)$</regex>
+            </Alias>
+            <Alias isActive="yes" isFolder="no">
+                <name>Display Room Marks</name>
+                <script>local tmp= getRoomUserData(1, &quot;gotoMapping&quot;)
+if tmp~=&quot;&quot; then
+	local maptable=yajl.to_value(tmp)
+    mmp.echo(&quot;Known marks in this map:&quot;)
+    if next(maptable) then
+      for k,v in pairs(maptable) do echo(string.format(&quot;  %-21s  %s\n&quot;, tostring(k), tostring(v))) end
+    else
+      echo(&quot;  (none)\n&quot;)
+    end
+else
+	mmp.echo(&quot;No marks are recoded in this map.&quot;)
+end</script>
+                <command></command>
+                <packageName></packageName>
+                <regex>^room marks$</regex>
+            </Alias>
         </AliasGroup>
     </AliasPackage>
     <ActionPackage/>
@@ -3139,7 +3204,7 @@ mmp = mmp or {
   currentroom = false,
   currentroomname = false,
   firstRun = true,
-  version = &quot;12.5.10&quot;,
+  version = &quot;12.5.11&quot;,
   specials = {}
 }
 
@@ -3372,7 +3437,7 @@ function mmp.gotoRoom (where, dashtype)
   end
 
   if not mmp.getPath(mmp.currentroom, tonumber(where)) then
-    mmp.echo(&quot;Don't know how to get there from here :(&quot;)
+    mmp.echo(&quot;Don't know how to get there (&quot;..tostring(where)..&quot;) from here :(&quot;)
     speedWalkPath = {}
     speedWalkDir = {}
     speedWalkCounter = 0
@@ -3386,7 +3451,18 @@ end
 function mmp.gotoArea (where, number, dashtype, exact)
   if not where or not type(where)==&quot;string&quot; then
     mmp.echo(&quot;Where do you want to go to?&quot;) return end
+
   number = tonumber(number)
+  local tmp = getRoomUserData(1, &quot;gotoMapping&quot;)
+  if not tmp or tmp == '' then tmp = &quot;[]&quot; end
+
+  local maptable = yajl.to_value(tmp)
+
+  local goto = maptable[where]
+  if goto then
+  	mmp.gotoRoom(goto, dashtype)
+  	return
+  end
 
   local possibleRooms, shortestPath, shortestBorder = {}, {}, 0
 
@@ -4179,11 +4255,16 @@ function mmp.getAreaBorders(areaid)
           endresult[id] = getRoomName(id)
         end
       end
+      local specialexits = getSpecialExitsSwap(id)
+      for _, to in pairs(specialexits) do
+        if not table.contains(roomlist, to) then
+          endresult[id] = getRoomName(id)
+        end
+      end
     end
 
 
     return endresult
-
 end
 
 function mmp.locateAndEcho(room, person)
@@ -5383,11 +5464,30 @@ local s,m = pcall(function()
 
   elseif filename == mmp.crowdmapfile then    -- crowdmap map
     mmp.echo(&quot;Map downloaded, loading it in...&quot;)
+
+    local tmp = getRoomUserData(1, &quot;gotoMapping&quot;)
+    local oldmaptable = {}
+
+    if tmp ~= &quot;&quot; then
+      oldmaptable = yajl.to_value(tmp)
+    end
+
     local ok = loadMap(filename)
 
     if ok then
       mmp.echo(&quot;Map loaded fine - enjoy!&quot;)
       mmp.lockWormholes()
+
+      tmp = getRoomUserData(1, &quot;gotoMapping&quot;)
+      local newmaptable = {}
+      
+      if tmp ~= &quot;&quot; then
+        newmaptable = yajl.to_value(tmp)
+      end
+
+      for k,v in pairs(oldmaptable) do newmaptable[k] = v end
+      setRoomUserData(1, &quot;gotoMapping&quot;, yajl.to_string(newmaptable))
+      mmp.echo(&quot;Marks from the old map migrated successfully.&quot;)
     else
       mmp.echo(&quot;Map failed to load. You need to have the mapper open.&quot;)
     end
@@ -5591,7 +5691,7 @@ end</script>
                         </eventHandlerList>
                     </Script>
                 </Script>
-                <Script isActive="no" isFolder="no">
+                <Script isActive="yes" isFolder="no">
                     <name>mmp_see_dl_errors</name>
                     <packageName></packageName>
                     <script>-- this should be off by default
