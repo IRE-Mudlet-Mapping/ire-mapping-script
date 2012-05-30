@@ -278,6 +278,26 @@ disableTrigger&quot;Mudlet Mapper prompt trigger&quot;</script>
                     <integer>4</integer>
                 </regexCodePropertyList>
             </Trigger>
+            <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+                <name>Wormhole</name>
+                <script>mmp.customwalkdelay(4)</script>
+                <triggerType>0</triggerType>
+                <conditonLineDelta>0</conditonLineDelta>
+                <mStayOpen>0</mStayOpen>
+                <mCommand></mCommand>
+                <packageName></packageName>
+                <mFgColor>#ff0000</mFgColor>
+                <mBgColor>#ffff00</mBgColor>
+                <mSoundFile></mSoundFile>
+                <colorTriggerFgColor>#000000</colorTriggerFgColor>
+                <colorTriggerBgColor>#000000</colorTriggerBgColor>
+                <regexCodeList>
+                    <string>You hurl yourself forwards through the air, and sure enough a swirling vortex of colours springs into existence to swallow you.</string>
+                </regexCodeList>
+                <regexCodePropertyList>
+                    <integer>3</integer>
+                </regexCodePropertyList>
+            </Trigger>
             <TriggerGroup isActive="yes" isFolder="yes" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
                 <name>Achaea</name>
                 <script></script>
@@ -966,6 +986,28 @@ raiseEvent(&quot;mmapper updated pdb&quot;)</script>
                             <integer>4</integer>
                         </regexCodePropertyList>
                     </Trigger>
+                </Trigger>
+                <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="yes" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+                    <name>Angel trace</name>
+                    <script>mmp.locateAndEcho(multimatches[2][3], multimatches[2][2])</script>
+                    <triggerType>0</triggerType>
+                    <conditonLineDelta>0</conditonLineDelta>
+                    <mStayOpen>0</mStayOpen>
+                    <mCommand></mCommand>
+                    <packageName></packageName>
+                    <mFgColor>#ff0000</mFgColor>
+                    <mBgColor>#ffff00</mBgColor>
+                    <mSoundFile></mSoundFile>
+                    <colorTriggerFgColor>#000000</colorTriggerFgColor>
+                    <colorTriggerBgColor>#000000</colorTriggerBgColor>
+                    <regexCodeList>
+                        <string>Your guardian angel reports that</string>
+                        <string>^Your guardian angel reports that (\w+) has moved to (.+)\.$</string>
+                    </regexCodeList>
+                    <regexCodePropertyList>
+                        <integer>2</integer>
+                        <integer>1</integer>
+                    </regexCodePropertyList>
                 </Trigger>
             </TriggerGroup>
             <TriggerGroup isActive="yes" isFolder="yes" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
@@ -3204,7 +3246,7 @@ mmp = mmp or {
   currentroom = false,
   currentroomname = false,
   firstRun = true,
-  version = &quot;12.5.11&quot;,
+  version = &quot;12.5.12&quot;,
   specials = {}
 }
 
@@ -3362,7 +3404,17 @@ end
 
 -- Aetolia and Lusternia support showing balances in GMCP. This is easy to support, so we do!
 -- if we can't move, setup a polling timer to prompt walking when we can again.
+-- popular systems that expose balance &amp; equilibrium values can be added here as well, perhaps though a similarly-named function.
 function mmp.canmove(fromtimer)
+  if mapper_can_move and mapper_can_move() then
+	if fromtimer then
+      mmp.move()
+    else return true end
+  else
+    tempTimer(0.2, [[mmp.canmove(true)]])
+    return false
+  end
+
   if not gmcp.Char then return true end
 
   if (gmcp.Char and
