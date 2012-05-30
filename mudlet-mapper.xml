@@ -3246,7 +3246,7 @@ mmp = mmp or {
   currentroom = false,
   currentroomname = false,
   firstRun = true,
-  version = &quot;12.5.12&quot;,
+  version = &quot;12.5.13&quot;,
   specials = {}
 }
 
@@ -3410,7 +3410,7 @@ function mmp.canmove(fromtimer)
 	if fromtimer then
       mmp.move()
     else return true end
-  else
+  elseif mapper_can_move then
     tempTimer(0.2, [[mmp.canmove(true)]])
     return false
   end
@@ -4605,7 +4605,11 @@ Both databases work with the person's name as key and the location name as value
 
 ]]
 mmp.pdb = mmp.pdb or {}
-mmp.pdb_lastupdate = mmp.pdb_lastupdate or {}</script>
+mmp.pdb_lastupdate = mmp.pdb_lastupdate or {}
+
+function mmp.is_here(who)
+  return (mmp.pdb[who] and mmp.pdb[who] == mmp.currentroomname) and true or false
+end</script>
                 <eventHandlerList/>
             </Script>
             <Script isActive="yes" isFolder="no">
