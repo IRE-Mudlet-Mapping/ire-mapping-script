@@ -3246,7 +3246,7 @@ mmp = mmp or {
   currentroom = false,
   currentroomname = false,
   firstRun = true,
-  version = &quot;12.5.13&quot;,
+  version = &quot;12.5.14&quot;,
   specials = {}
 }
 
@@ -3441,14 +3441,14 @@ end
 local oldnum
 function speedwalking( event, num )
   local num = tonumber(num) or tonumber(gmcp.Room.Info.num)
+
   mmp.previousroom = mmp.currentroom
   mmp.currentroom = num
   mmp.currentroomname = next(gmcp) and gmcp.Room.Info.name or atcp.RoomName
 
-  -- workaround for Aetolia spamming us with multiple nums per room
-  if mmp.game == 'aetolia' then
-    if oldnum == num or not mmp.autowalking then return else oldnum = num end
-  end
+  if oldnum == num then return else oldnum = num end
+
+  if not mmp.autowalking then return end
 
   if mmp.movetimer then killTimer(mmp.movetimer); mmp.movetimer = false end
 
@@ -3586,7 +3586,7 @@ function doSpeedWalk(dashtype)
 
   if not mmp.paused then
     mmp.echon(&quot;Starting speedwalk from &quot;..(atcp.RoomNum or gmcp.Room.Info.num)..&quot; to &quot;) echoLink(speedWalkPath[#speedWalkPath], 'gotoRoom &quot;' .. speedWalkPath[#speedWalkPath].. '&quot;', 'Go to ' .. speedWalkPath[#speedWalkPath]) echo(&quot;: &quot;)
-    speedWalkCounter = 1
+    --speedWalkCounter = 1
     if mmp.canmove() then mmp.move() else echo(&quot;(when we get balance back / aren't hindered)&quot;) end
   else
     mmp.echo(&quot;Will go to &quot;..speedWalkPath[#speedWalkPath]..&quot; as soon as the mapper is unpaused.&quot;)
