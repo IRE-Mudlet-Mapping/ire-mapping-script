@@ -337,7 +337,7 @@ mmp.echo(&quot;We're connected to Achaea.&quot;)</script>
                 </Trigger>
                 <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="yes" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
                     <name>Local area farsee</name>
-                    <script>mmp.locateAndEcho(multimatches[2][3], multimatches[2][2])</script>
+                    <script>mmp.locateAndEchoSide(multimatches[2][3], multimatches[2][2])</script>
                     <triggerType>0</triggerType>
                     <conditonLineDelta>0</conditonLineDelta>
                     <mStayOpen>0</mStayOpen>
@@ -555,7 +555,7 @@ raiseEvent(&quot;mmapper updated pdb&quot;)</script>
                 </Trigger>
                 <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="yes" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
                     <name>Dragonsense</name>
-                    <script>mmp.locateAndEcho(multimatches[2][3], multimatches[2][2])</script>
+                    <script>mmp.locateAndEchoSide(multimatches[2][3], multimatches[2][2])</script>
                     <triggerType>0</triggerType>
                     <conditonLineDelta>1</conditonLineDelta>
                     <mStayOpen>0</mStayOpen>
@@ -577,7 +577,7 @@ raiseEvent(&quot;mmapper updated pdb&quot;)</script>
                 </Trigger>
                 <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="yes" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
                     <name>Defilement</name>
-                    <script>mmp.locateAndEcho(multimatches[2][2])</script>
+                    <script>mmp.locateAndEchoSide(multimatches[2][2])</script>
                     <triggerType>0</triggerType>
                     <conditonLineDelta>0</conditonLineDelta>
                     <mStayOpen>0</mStayOpen>
@@ -728,7 +728,7 @@ mmp.pdb_lastupdate = {}</script>
                     </regexCodePropertyList>
                     <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
                         <name>Each person</name>
-                        <script>mmp.locateAndEcho(matches[3], matches[2])</script>
+                        <script>mmp.locateAndEchoSide(matches[3], matches[2])</script>
                         <triggerType>0</triggerType>
                         <conditonLineDelta>0</conditonLineDelta>
                         <mStayOpen>0</mStayOpen>
@@ -989,7 +989,9 @@ raiseEvent(&quot;mmapper updated pdb&quot;)</script>
                 </Trigger>
                 <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="yes" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
                     <name>Angel trace</name>
-                    <script>mmp.locateAndEcho(multimatches[2][3], multimatches[2][2])</script>
+                    <script>selectCurrentLine() replace(&quot;&quot;)
+cecho(&quot;&lt;grey&gt;Angel trace: &lt;a_darkcyan&gt;&quot;..multimatches[2][2]..&quot;&lt;grey&gt; moved to &lt;a_darkcyan&gt;&quot; .. multimatches[2][3])
+mmp.locateAndEchoInternal(multimatches[2][3], multimatches[2][2])</script>
                     <triggerType>0</triggerType>
                     <conditonLineDelta>0</conditonLineDelta>
                     <mStayOpen>0</mStayOpen>
@@ -3246,7 +3248,7 @@ mmp = mmp or {
   currentroom = false,
   currentroomname = false,
   firstRun = true,
-  version = &quot;12.5.14&quot;,
+  version = &quot;12.6.1&quot;,
   specials = {}
 }
 
@@ -3268,6 +3270,7 @@ function mmp.startup()
   private_settings[&quot;crowdmap&quot;] = createOption(false, mmp.chageMapSource, { &quot;boolean&quot; }, &quot;Use a crowd-sourced map instead of IREs default?&quot;)
   private_settings[&quot;caravan&quot;] = createOption(false, mmp.changeBoolFunc,{ &quot;boolean&quot; }, &quot;Walk caravans?&quot;)
   private_settings[&quot;showcmds&quot;] = createOption(true, mmp.changeBoolFunc, { &quot;boolean&quot; }, &quot;Show walking commands?&quot;)
+  private_settings[&quot;shackle&quot;] = createOption(false, mmp.changeBoolFunc, { &quot;boolean&quot; }, &quot;Take off shackle?&quot;)
 
 
   mmp.settings = createOptionsTable(private_settings)
@@ -3400,6 +3403,7 @@ function mmp.stop()
 
   mmp.echo(&quot;Stopped walking.&quot;)
   raiseEvent(&quot;mmapper stopped&quot;)
+  if mmp.settings.shackle then send(&quot;wear shackle&quot;) end
 end
 
 -- Aetolia and Lusternia support showing balances in GMCP. This is easy to support, so we do!
@@ -3441,7 +3445,6 @@ end
 local oldnum
 function speedwalking( event, num )
   local num = tonumber(num) or tonumber(gmcp.Room.Info.num)
-
   mmp.previousroom = mmp.currentroom
   mmp.currentroom = num
   mmp.currentroomname = next(gmcp) and gmcp.Room.Info.name or atcp.RoomName
@@ -3456,6 +3459,7 @@ function speedwalking( event, num )
     local walktime = stopStopWatch(speedWalkWatch)
     mmp.echo(string.format(&quot;We've arrived! Took us %.1fs.\n&quot;, walktime))
     raiseEvent(&quot;mmapper arrived&quot;)
+    if mmp.settings.shackle then send(&quot;wear shackle&quot;) end
     speedWalkPath = {}
     speedWalkDir = {}
     speedWalkCounter = 0
@@ -3494,6 +3498,7 @@ function mmp.gotoRoom (where, dashtype)
     speedWalkDir = {}
     speedWalkCounter = 0
     raiseEvent(&quot;mmapper failed path&quot;)
+    if mmp.settings.shackle then send(&quot;wear shackle&quot;) end
     return
   end
 
@@ -3574,6 +3579,7 @@ function doSpeedWalk(dashtype)
   if #speedWalkPath == 0 then
     mmp.echo(&quot;Couldn't find a path to the destination :(&quot;)
     raiseEvent(&quot;mmapper failed path&quot;)
+    if mmp.settings.shackle then send(&quot;wear shackle&quot;) end
     return
   end
 
@@ -3584,9 +3590,10 @@ function doSpeedWalk(dashtype)
     speedWalkPath[i] = tonumber(speedWalkPath[i])
   end
 
+  if mmp.settings.shackle then send(&quot;remove shackle&quot;) end
   if not mmp.paused then
     mmp.echon(&quot;Starting speedwalk from &quot;..(atcp.RoomNum or gmcp.Room.Info.num)..&quot; to &quot;) echoLink(speedWalkPath[#speedWalkPath], 'gotoRoom &quot;' .. speedWalkPath[#speedWalkPath].. '&quot;', 'Go to ' .. speedWalkPath[#speedWalkPath]) echo(&quot;: &quot;)
-    --speedWalkCounter = 1
+    speedWalkCounter = 1
     if mmp.canmove() then mmp.move() else echo(&quot;(when we get balance back / aren't hindered)&quot;) end
   else
     mmp.echo(&quot;Will go to &quot;..speedWalkPath[#speedWalkPath]..&quot; as soon as the mapper is unpaused.&quot;)
@@ -3599,7 +3606,8 @@ function mmp.failpath()
     mmp.echo(string.format(&quot;Can't continue further! Took us %.1fs to get here.\n&quot;, walktime))
   end
 
-  raiseEvent(&quot;mmapper failedpath&quot;)
+  raiseEvent(&quot;mmapper failed path&quot;)
+  if mmp.settings.shackle then send(&quot;wear shackle&quot;) end
   speedWalkPath = {}
   speedWalkDir = {}
   speedWalkCounter = 0
@@ -4355,6 +4363,96 @@ function mmp.locateAndEcho(room, person)
 
       cecho(&quot;&lt;red&gt;From your knowledge, that room might be in &lt;orange_red&gt;&quot;..table.concat(flattened_areas, &quot;, or &quot;)..&quot;&lt;red&gt;.&quot;)
     end
+
+   if person then
+      mmp.pdb[person] = room
+      mmp.pdb_lastupdate[person] = true
+      raiseEvent(&quot;mmapper updated pdb&quot;)
+   end
+end
+
+function mmp.locateAndEchoSide(room, person)
+    local t = mmp.searchRoomExact(room)
+
+    echo &quot;  (&quot;
+    mmp.echonums(room, true)
+    echo &quot;)&quot;
+
+	-- lowercase results
+	for k,v in pairs(t) do if tonumber(k) then t[k] = v:lower() else t[k:lower()] = v end end
+
+    if not (t[room:lower()] or table.contains(t, room:lower())) then return end
+
+    --echo&quot;\n&quot;
+    if table.size(t) == 1 then
+      local k,v = next(t)
+      cecho(&quot;&lt;red&gt;  (&quot;..(mmp.areatabler[getRoomArea(type(k) == &quot;number&quot; and k or v)] or &quot;?&quot;)..&quot;)&quot;)
+    else
+      local k,v = next(t)
+    local areas = {}
+      if type(k) == &quot;number&quot; then
+        for k, _ in pairs(t) do
+          areas[mmp.areatabler[getRoomArea(k)] or &quot;?&quot;] = true
+        end
+      else
+        for _, k in pairs(t) do
+          areas[mmp.areatabler[getRoomArea(k)] or &quot;?&quot;] = true
+        end
+      end
+
+      local flattened_areas = {}
+      for k, _ in pairs(areas) do
+        if k ~= &quot;&quot; then flattened_areas[#flattened_areas+1] = k end
+      end
+
+      cecho(&quot;&lt;red&gt; (&quot;..table.concat(flattened_areas, &quot;, &quot;)..&quot;)&quot;)
+    end
+
+   if person then
+      mmp.pdb[person] = room
+      mmp.pdb_lastupdate[person] = true
+      raiseEvent(&quot;mmapper updated pdb&quot;)
+   end
+end
+
+function mmp.locateAndEchoInternal(room, person)
+    local t = mmp.searchRoomExact(room)
+
+
+
+	-- lowercase results
+	for k,v in pairs(t) do if tonumber(k) then t[k] = v:lower() else t[k:lower()] = v end end
+
+    if not (t[room:lower()] or table.contains(t, room:lower())) then return end
+
+    --echo&quot;\n&quot;
+    if table.size(t) == 1 then
+      local k,v = next(t)
+      cecho(&quot;&lt;red&gt; in &quot;..(mmp.areatabler[getRoomArea(type(k) == &quot;number&quot; and k or v)] or &quot;?&quot;)..&quot;.&quot;)
+    else
+      local k,v = next(t)
+    local areas = {}
+      if type(k) == &quot;number&quot; then
+        for k, _ in pairs(t) do
+          areas[mmp.areatabler[getRoomArea(k)] or &quot;?&quot;] = true
+        end
+      else
+        for _, k in pairs(t) do
+          areas[mmp.areatabler[getRoomArea(k)] or &quot;?&quot;] = true
+        end
+      end
+
+      local flattened_areas = {}
+      for k, _ in pairs(areas) do
+        if k ~= &quot;&quot; then flattened_areas[#flattened_areas+1] = k end
+      end
+
+      cecho(&quot;&lt;red&gt; in &quot;..table.concat(flattened_areas, &quot;, &quot;)..&quot;.&quot;)
+    end
+
+	echo &quot;  (&quot;
+    mmp.echonums(room, true)
+    echo &quot;)&quot;
 
    if person then
       mmp.pdb[person] = room
@@ -5533,6 +5631,7 @@ local s,m = pcall(function()
     if ok then
       mmp.echo(&quot;Map loaded fine - enjoy!&quot;)
       mmp.lockWormholes()
+	  mmp.lockSewers()
 
       tmp = getRoomUserData(1, &quot;gotoMapping&quot;)
       local newmaptable = {}
