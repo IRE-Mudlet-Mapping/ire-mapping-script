@@ -1595,6 +1595,37 @@ end</script>
                     </regexCodePropertyList>
                 </Trigger>
                 <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="yes" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+                    <name>Pentagon probe #</name>
+                    <script>local t = mmp.getnums(multimatches[2][2])
+if not t then return end
+
+echo&quot;\n&quot;
+
+if #t == 1 then
+	cecho(&quot;&lt;red&gt;From your knowledge, that room is in &lt;orange_red&gt;&quot;..mmp.areatabler[getRoomArea(t[1])]..&quot;&lt;red&gt;.&quot;)
+else
+	cecho(&quot;&lt;red&gt;From your knowledge, that room might be in &lt;orange_red&gt;&quot;..mmp.areatabler[getRoomArea(t[1])]..&quot;&lt;red&gt;.&quot;)
+end</script>
+                    <triggerType>0</triggerType>
+                    <conditonLineDelta>0</conditonLineDelta>
+                    <mStayOpen>0</mStayOpen>
+                    <mCommand></mCommand>
+                    <packageName></packageName>
+                    <mFgColor>#ff0000</mFgColor>
+                    <mBgColor>#ffff00</mBgColor>
+                    <mSoundFile></mSoundFile>
+                    <colorTriggerFgColor>#000000</colorTriggerFgColor>
+                    <colorTriggerBgColor>#000000</colorTriggerBgColor>
+                    <regexCodeList>
+                        <string>You lightly caress a button on a paradox puzzle pentagon and suddenly a hazy image of</string>
+                        <string>^You lightly caress a button on a paradox puzzle pentagon and suddenly a hazy image of (.+) \(room \#\d+\) flashes momentarily in front of you\.$</string>
+                    </regexCodeList>
+                    <regexCodePropertyList>
+                        <integer>2</integer>
+                        <integer>1</integer>
+                    </regexCodePropertyList>
+                </Trigger>
+                <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="yes" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
                     <name>Pyramid port</name>
                     <script>local t = mmp.getnums(multimatches[2][2])
 if not t then return end
@@ -3184,6 +3215,11 @@ end
 
 maptable[markname] = location
 local tmp2 = yajl.to_string(maptable)
+
+if not mmp.roomexists(1) then
+  addRoom(1)
+end
+
 setRoomUserData(1, &quot;gotoMapping&quot;, tmp2)
 mmp.echo(string.format(&quot;Room mark for '%s' set to room %s.&quot;, markname, location))</script>
                 <command></command>
@@ -3384,7 +3420,7 @@ mmp = mmp or {
   specials = {}
 }
 
-mmp.version = &quot;12.6.2&quot;
+mmp.version = &quot;12.6.3&quot;
 
 function mmp.startup()
   if not mmp.firstRun then
@@ -3526,7 +3562,7 @@ function mmp.stop()
   speedWalkDir = {}
   speedWalkCounter = 0
   stopStopWatch(speedWalkWatch)
-  if speedWalkTimerID then killTimer( speedWalkTimerID ) end
+  if mmp.movetimer then killTimer( mmp.movetimer ) end
   mmp.autowalking = false
 
   -- clear all the temps we've got
@@ -3735,7 +3771,7 @@ function doSpeedWalk(dashtype)
 end
 
 function mmp.failpath()
-  if speedWalkTimerID then
+  if mmp.movetimer then
     local walktime = stopStopWatch(speedWalkWatch)
     mmp.echo(string.format(&quot;Can't continue further! Took us %.1fs to get here.\n&quot;, walktime))
   end
@@ -3745,7 +3781,7 @@ function mmp.failpath()
   speedWalkPath = {}
   speedWalkDir = {}
   speedWalkCounter = 0
-  if speedWalkTimerID then killTimer( speedWalkTimerID ); speedWalkTimerID = nil end
+  if mmp.movetimer then killTimer( mmp.movetimer ); mmp.movetimer = nil end
 end
 
 function mmp.changeBoolFunc(name, option)
