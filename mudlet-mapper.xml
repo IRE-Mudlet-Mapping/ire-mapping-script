@@ -363,7 +363,7 @@ disableTrigger&quot;Mudlet Mapper prompt trigger&quot;</script>
                 <regexCodePropertyList/>
                 <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
                     <name>Login</name>
-                    <script>raiseEvent(&quot;mmp logged in Achaea&quot;)
+                    <script>raiseEvent(&quot;mmp logged in&quot;, &quot;Achaea&quot;)
 mmp.game = &quot;achaea&quot;
 mmp.echo(&quot;We're connected to Achaea.&quot;)</script>
                     <triggerType>0</triggerType>
@@ -1210,7 +1210,7 @@ raiseEvent(&quot;mmapper updated pdb&quot;)</script>
                 <regexCodePropertyList/>
                 <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
                     <name>Login</name>
-                    <script>raiseEvent(&quot;mmp logged in Aetolia&quot;)
+                    <script>raiseEvent(&quot;mmp logged in&quot;, &quot;Aetolia&quot;)
 mmp.game = &quot;aetolia&quot;</script>
                     <triggerType>0</triggerType>
                     <conditonLineDelta>99</conditonLineDelta>
@@ -1247,7 +1247,7 @@ mmp.game = &quot;aetolia&quot;</script>
                 <regexCodePropertyList/>
                 <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="yes" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
                     <name>Login</name>
-                    <script>raiseEvent(&quot;mmp logged in Lusternia&quot;)
+                    <script>raiseEvent(&quot;mmp logged in&quot;, &quot;Lusternia&quot;)
 mmp.game = &quot;lusternia&quot;</script>
                     <triggerType>0</triggerType>
                     <conditonLineDelta>5</conditonLineDelta>
@@ -1897,7 +1897,7 @@ end</script>
                 <regexCodePropertyList/>
                 <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
                     <name>Login</name>
-                    <script>raiseEvent(&quot;mmp logged in Imperian&quot;)
+                    <script>raiseEvent(&quot;mmp logged in&quot;, &quot;Imperian&quot;)
 mmp.game = &quot;imperian&quot;</script>
                     <triggerType>0</triggerType>
                     <conditonLineDelta>0</conditonLineDelta>
@@ -2152,7 +2152,7 @@ mmp.roomEcho(matches[3]) </script>
                 <regexCodePropertyList/>
                 <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
                     <name>Login</name>
-                    <script>raiseEvent(&quot;mmp logged in Midkemia Online&quot;)
+                    <script>raiseEvent(&quot;mmp logged in&quot;, &quot;Midkemia Online&quot;)
 mmp.game = &quot;mko&quot;</script>
                     <triggerType>0</triggerType>
                     <conditonLineDelta>0</conditonLineDelta>
@@ -3468,7 +3468,7 @@ mmp = mmp or {
   specials = {}
 }
 
-mmp.version = &quot;12.7.1&quot;
+mmp.version = &quot;12.7.2&quot;
 
 function mmp.startup()
   if not mmp.firstRun then
@@ -5786,6 +5786,8 @@ end</script>
                     <packageName></packageName>
                     <script> function mmp_downloaded_file(_, filename)
 local s,m = pcall(function()
+  if not io.exists(filename) then return end
+
   if filename == tostring(mmp.mapperfile) then   -- mapper script version
 	mmp.checkingupdates = false
 
@@ -5924,7 +5926,6 @@ local whereisit
 
 -- this should get called at start and every hour after that
 function mmp.checkforupdate()
-
   if not mmp.game or mmp.checkingupdates then return end
 
   local game = (mmp.game == &quot;mko&quot;) and &quot;midkemiaonline&quot; or mmp.game
@@ -6045,7 +6046,7 @@ end</script>
                     <Script isActive="yes" isFolder="no">
                         <name>mmp_checkupdatestart</name>
                         <packageName></packageName>
-                        <script>function mmp_checkupdatestart()
+                        <script>function mmp_checkupdatestart(...)
   if mmp.settings.updatemap then
     tempTimer(math.random(3, 10), mmp.checkforupdate)
   end
@@ -6062,15 +6063,11 @@ function mmp.changeUpdateMap()
   end
 end</script>
                         <eventHandlerList>
-                            <string>mmp logged in Achaea</string>
-                            <string>mmp logged in Aetolia</string>
-                            <string>mmp logged in Lusternia</string>
-                            <string>mmp logged in Imperian</string>
-                            <string>mmp logged in Midkemia Online</string>
+                            <string>mmp logged in</string>
                         </eventHandlerList>
                     </Script>
                 </Script>
-                <Script isActive="yes" isFolder="no">
+                <Script isActive="no" isFolder="no">
                     <name>mmp_see_dl_errors</name>
                     <packageName></packageName>
                     <script>-- this should be off by default
