@@ -4382,7 +4382,8 @@ function mmp.anytolong(exit)
     u = &quot;up&quot;,
     d = &quot;down&quot;,
     i = &quot;in&quot;,
-    o = &quot;out&quot;
+    o = &quot;out&quot;,
+    [&quot;in&quot;] = &quot;in&quot;
   }
 
   for s, l in pairs(t) do t[l] = l end
