@@ -5386,7 +5386,9 @@ end</script>
                     <Script isActive="yes" isFolder="no">
                         <name>register_achaeas_envdata</name>
                         <packageName></packageName>
-                        <script>function register_achaeas_envdata()
+                        <script>function register_achaeas_envdata(_, game)
+  if game ~= &quot;Achaea&quot; then return end
+
   mmp.envids =
   {
     Path = 11,
@@ -5428,7 +5430,7 @@ end</script>
   for name, id in pairs(mmp.envids) do mmp.envidsr[id] = name end
 end</script>
                         <eventHandlerList>
-                            <string>mmp logged in Achaea</string>
+                            <string>mmp logged in</string>
                         </eventHandlerList>
                     </Script>
                 </Script>
@@ -5446,6 +5448,8 @@ end</script>
                         <name>register_aetolias_envdata</name>
                         <packageName></packageName>
                         <script>function register_aetolias_envdata()
+  if game ~= &quot;Aetolia&quot; then return end
+
   mmp.envids =
   {
     Chaos = 1,
@@ -5500,7 +5504,7 @@ end</script>
   for name, id in pairs(mmp.envids) do mmp.envidsr[id] = name end
 end</script>
                         <eventHandlerList>
-                            <string>mmp logged in Aetolia</string>
+                            <string>mmp logged in</string>
                         </eventHandlerList>
                     </Script>
                 </Script>
@@ -5518,6 +5522,8 @@ end</script>
                         <name>register_lusternias_envdata</name>
                         <packageName></packageName>
                         <script>function register_lusternias_envdata()
+  if game ~= &quot;Lusternia&quot; then return end
+
   mmp.envids =
   {
     darkness = 1,
@@ -5563,7 +5569,7 @@ end</script>
   for name, id in pairs(mmp.envids) do mmp.envidsr[id] = name end
 end</script>
                         <eventHandlerList>
-                            <string>mmp logged in Lusternia</string>
+                            <string>mmp logged in</string>
                         </eventHandlerList>
                     </Script>
                 </Script>
@@ -5581,6 +5587,7 @@ end</script>
                         <name>register_imperians_envdata</name>
                         <packageName></packageName>
                         <script>function register_imperians_envdata()
+  if game ~= &quot;Imperian&quot; then return end
   mmp.envids =
   {
     [&quot;Dark Forest&quot;] = 1,
@@ -5659,7 +5666,7 @@ end</script>
   for name, id in pairs(mmp.envids) do mmp.envidsr[id] = name end
 end</script>
                         <eventHandlerList>
-                            <string>mmp logged in Imperian</string>
+                            <string>mmp logged in</string>
                         </eventHandlerList>
                     </Script>
                 </Script>
@@ -5677,6 +5684,7 @@ end</script>
                         <name>register_midkemias_envdata</name>
                         <packageName></packageName>
                         <script>function register_midkemias_envdata()
+  if game ~= &quot;Midkemia Online&quot; then return end
   mmp.envids =
   {
     [&quot;constructed underground&quot;] = 2,
@@ -5714,7 +5722,7 @@ end</script>
   for name, id in pairs(mmp.envids) do mmp.envidsr[id] = name end
 end</script>
                         <eventHandlerList>
-                            <string>mmp logged in Midkemia Online</string>
+                            <string>mmp logged in</string>
                         </eventHandlerList>
                     </Script>
                 </Script>
