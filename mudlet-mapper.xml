@@ -3468,7 +3468,12 @@ mmp = mmp or {
   specials = {}
 }
 
-mmp.version = &quot;12.7.2&quot;
+local newversion = &quot;12.7.3&quot;
+if mmp.version ~= newversion then 
+  mmp.echo(&quot;Mapper script updated!&quot;)
+  if not mmp.game then mmp.echo(&quot;I don't know what game are you connected to, though - so please reconnect. Thanks!&quot;) end
+end
+mmp.version = newversion
 
 function mmp.startup()
   if not mmp.firstRun then
@@ -5448,7 +5453,7 @@ end</script>
                     <Script isActive="yes" isFolder="no">
                         <name>register_aetolias_envdata</name>
                         <packageName></packageName>
-                        <script>function register_aetolias_envdata()
+                        <script>function register_aetolias_envdata(_, game)
   if game ~= &quot;Aetolia&quot; then return end
 
   mmp.envids =
@@ -5522,7 +5527,7 @@ end</script>
                     <Script isActive="yes" isFolder="no">
                         <name>register_lusternias_envdata</name>
                         <packageName></packageName>
-                        <script>function register_lusternias_envdata()
+                        <script>function register_lusternias_envdata(_, game)
   if game ~= &quot;Lusternia&quot; then return end
 
   mmp.envids =
@@ -5587,7 +5592,7 @@ end</script>
                     <Script isActive="yes" isFolder="no">
                         <name>register_imperians_envdata</name>
                         <packageName></packageName>
-                        <script>function register_imperians_envdata()
+                        <script>function register_imperians_envdata(_, game)
   if game ~= &quot;Imperian&quot; then return end
   mmp.envids =
   {
@@ -5684,7 +5689,7 @@ end</script>
                     <Script isActive="yes" isFolder="no">
                         <name>register_midkemias_envdata</name>
                         <packageName></packageName>
-                        <script>function register_midkemias_envdata()
+                        <script>function register_midkemias_envdata(_, game)
   if game ~= &quot;Midkemia Online&quot; then return end
   mmp.envids =
   {
