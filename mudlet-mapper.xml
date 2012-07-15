@@ -3468,10 +3468,10 @@ mmp = mmp or {
   specials = {}
 }
 
-local newversion = &quot;12.7.3&quot;
+local newversion = &quot;12.7.4&quot;
 if mmp.version ~= newversion then 
-  mmp.echo(&quot;Mapper script updated!&quot;)
-  if not mmp.game then mmp.echo(&quot;I don't know what game are you connected to, though - so please reconnect. Thanks!&quot;) end
+  if not mmp.game then mmp.echo(&quot;Mapper script updated - Thanks! I don't know what game are you connected to, though - so please reconnect. Thanks!&quot;)
+  else mmp.echo(&quot;Mapper script updated - thanks! You don't need to restart.&quot;) end
 end
 mmp.version = newversion
 
