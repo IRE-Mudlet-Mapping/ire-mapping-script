@@ -3815,8 +3815,12 @@ function speedwalking( event, num )
       mmp.inside = true
       raiseEvent(&quot;mmapper went inside&quot;)
     end
+    -- the event could cancel speedwalking - in this case quit
+    if mmp.ignore_speedwalking then
+      mmp.ignore_speedwalking = nil
+      return
+    end
   end
-
   if oldnum == num then return else oldnum = num end
 
   if not mmp.autowalking then return end
@@ -3837,7 +3841,6 @@ function speedwalking( event, num )
     mmp.move()
   elseif #speedWalkPath&gt; 0 then -- ended up somewhere we didn't want to be?
     speedWalkMoved = false
-
     -- re-calculate path then
     mmp.echo(&quot;Ended up off the path, recalculating a new path...&quot;)
     local destination = speedWalkPath[#speedWalkPath]
@@ -5664,9 +5667,11 @@ end</script>
                         <packageName></packageName>
                         <script>-- track whenever we need to use wings when we get outside!
 function mmapper_achaea_went_outside()
-  if not mmp.autowalking or not (mmp.settings.duanathar or mmp.settings.duanatharan) or mp.game ~= &quot;achaea&quot; or not mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Prime&quot;) then return end
+local s,m = pcall(function()
+  if not mmp.autowalking or not (mmp.settings.duanathar or mmp.settings.duanatharan) or mmp.game ~= &quot;achaea&quot; or 
+    (mmp.currentroom == speedWalkPath[#speedWalkPath]) or
+    not mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Prime&quot;) then return end
 
-  mmp.echo(&quot;ooh! check this out!&quot;)
   -- repath, maybe that'll allow us to use wings now.
   local madeduanatharan, madeduanathar
 
@@ -5681,8 +5686,22 @@ function mmapper_achaea_went_outside()
       madeduanathar = true
     end
 
+  local oldpath, olddirs = speedWalkPath, speedWalkDir
   mmp.getPath(mmp.currentroom, speedWalkPath[#speedWalkPath]) -- don't need to check return value since that fact shouldnt've changed
+  
+  -- if our path didn't change, re-instate it as it was (since the new path starts from this room that we checked at)
+  if not speedWalkDir[1]:find(&quot;duanathar&quot;, 1, true) then
+    speedWalkPath, speedWalkDir = oldpath, olddirs
+  else
+    speedWalkCounter = 0
+    mmp.echo(&quot;We got outside - going to shortcut with wings.&quot;)
+    mmp.gotoRoom(speedWalkPath[#speedWalkPath])
+    mmp.ignore_speedwalking = true
+  end
+
   if madeduanatharan then mmp.clearspecials{4882, 3885} elseif madeduanathar then mmp.clearspecials{3885} end
+end)
+if not s then display(m) end
 end</script>
                         <eventHandlerList>
                             <string>mmapper went outside</string>
