@@ -94,7 +94,7 @@ speedwalking(&quot;Room&quot;, speedWalkPath[speedWalkCounter])
             <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
                 <name>Too quick</name>
                 <script>if mmp.autowalking then
-	mmp.deleteLineP()
+  mmp.deleteLineP()
 end</script>
                 <triggerType>0</triggerType>
                 <conditonLineDelta>99</conditonLineDelta>
@@ -3064,6 +3064,37 @@ centerview(mmp.currentroom)</script>
                     <packageName></packageName>
                     <regex>^rcc ([\w\$\+\-\@\#]+)(?: (\w+))?$</regex>
                 </Alias>
+                <Alias isActive="yes" isFolder="no">
+                    <name>Set room weight</name>
+                    <script>local weight = tonumber(matches[3]), room
+if matches[2] == '' then room = mmp.currentroom
+else
+  room = tonumber(matches[2]) or mmp.relativeroom(mmp.currentroom, matches[2])
+end
+
+if not room or not mmp.roomexists(room) then
+  mmp.echo(&quot;Sorry - which room do you want to set the weight on? I don't know where you are at the moment, if you want to do the current room.&quot;)
+  return
+end
+
+if not weight then
+  mmp.echo(&quot;What weight do you want to set on #&quot;..room..&quot;?&quot;)
+end
+
+local oldweight = getRoomWeight(room)
+setRoomWeight(room, weight)
+
+if weight &gt; oldweight then
+  mmp.echo(&quot;Increased the room weight on #&quot;..room..&quot; (&quot;..getRoomName(room)..&quot;) by &quot;..(weight-oldweight)..&quot; to &quot;..weight..&quot; - making it less desirable to travel through.&quot;)
+elseif weight &lt; oldweight then
+  mmp.echo(&quot;Decreased the room weight on #&quot;..room..&quot; (&quot;..getRoomName(room)..&quot;) by &quot;..(oldweight-weight)..&quot; to &quot;..weight..&quot; - making it more desirable to travel through.&quot;)
+else
+  mmp.echo(&quot;The room weight on #&quot;..room..&quot; (&quot;..getRoomName(room)..&quot;) is already &quot;..weight..&quot;.&quot;)
+end</script>
+                    <command></command>
+                    <packageName></packageName>
+                    <regex>^rw(?: (\w+))? (\d+)$</regex>
+                </Alias>
                 <Alias isActive="no" isFolder="no">
                     <name>-- (area functions)</name>
                     <script></script>
@@ -3097,6 +3128,91 @@ raiseEvent(&quot;mmp areas changed&quot;)</script>
                     <command></command>
                     <packageName></packageName>
                     <regex>^area rename (.+)$</regex>
+                </Alias>
+                <Alias isActive="yes" isFolder="no">
+                    <name>List continents</name>
+                    <script>local tmp = getRoomUserData(1, &quot;areaContinents&quot;)
+local continents = {}
+
+if tmp ~= &quot;&quot; then
+  continents = yajl.to_value(tmp)
+end
+
+if not next(continents) then mmp.echo(&quot;No continents known.&quot;)
+else
+  for continent, areadata in pairs(continents) do
+    mmp.echo(continent..&quot; continent:&quot;)
+    
+    for _, areaid in ipairs(areadata) do
+      cecho(&quot;  &quot;..getRoomAreaName(areaid)..&quot;\n&quot;)
+    end
+  end
+end</script>
+                    <command></command>
+                    <packageName></packageName>
+                    <regex>^(?:acl|area continents)$</regex>
+                </Alias>
+                <Alias isActive="yes" isFolder="no">
+                    <name>Add area to continent</name>
+                    <script>-- ac continent [optional area]
+
+local continent = matches[2]:title()
+local area
+if not matches[3] then area = getRoomArea(mmp.currentroom)
+elseif tonumber(matches[3]) then
+  area = tonumber(matches[3])
+  if getRoomAreaName(area) == -1 then area = nil end
+else
+  local areas = getAreaTable()
+
+  for karea, id in pairs(areas) do if karea:lower():find(matches[3]:lower(), 1, true) then area = id break end end
+end
+
+if not area then mmp.echo(matches[3]..&quot; isn't a known area. Which one do you want to set?&quot;) return end
+
+local tmp = getRoomUserData(1, &quot;areaContinents&quot;)
+local continents = {}
+
+if tmp ~= &quot;&quot; then
+  continents = yajl.to_value(tmp)
+end
+
+
+if not continents[continent] and mmp.addingcontinent ~= continent then
+  mmp.addingcontinent = continent
+  mmp.echo(&quot;Continent &quot;..continent..&quot; isn't known so far - would you like to make a new one? Do this command again if so.&quot;)
+  return
+end
+
+mmp.addingcontinent = nil
+
+continents[continent] = continents[continent] or {}
+
+if table.contains(continents[continent], area) then
+  mmp.echo(getRoomAreaName(area)..&quot; is already known as being on the &quot;..continent..&quot; continent.&quot;)
+  return
+else
+  continents[continent][#continents[continent]+1] = area -- not a key, because yajl will put a ton of null's.
+  mmp.echo(&quot;Recorded that &quot;..getRoomAreaName(area)..&quot; is on the &quot;..continent..&quot; continent.&quot;)
+
+  -- remove from other areas if moving
+  for kcontinent, data in pairs(continents) do
+    if kcontinent ~= continent then
+      local i = table.index_of(continents[kcontinent], area)
+      if i ~= -1 then
+        table.remove(continents[kcontinent], i)
+        if not next(continents[kcontinent]) then continents[kcontinent] = nil end
+        mmp.echo(&quot;De-listed &quot;..getRoomAreaName(area)..&quot; from the &quot;..kcontinent..&quot; continent.&quot;)
+      end
+    end
+  end
+end
+
+local toserialize = yajl.to_string(continents)
+setRoomUserData(1, &quot;areaContinents&quot;, toserialize)</script>
+                    <command></command>
+                    <packageName></packageName>
+                    <regex>^ac ([\w']+)(?: (.+))?$</regex>
                 </Alias>
                 <Alias isActive="no" isFolder="no">
                     <name>-- (dangerous functions)</name>
@@ -3155,6 +3271,22 @@ centerview(mmp.currentroom)</script>
                     <command></command>
                     <packageName></packageName>
                     <regex>^delete known stockrooms$</regex>
+                </Alias>
+                <Alias isActive="yes" isFolder="no">
+                    <name>Clear continent data</name>
+                    <script>if not mmp.wipingcontinents then
+  mmp.wipingcontinents = true
+  mmp.echo(&quot;Are you sure you want to wipe all continent data? If yes, do this again.&quot;)
+  return
+end
+mmp.wipingcontinents = nil
+
+local toserialize = yajl.to_string{}
+setRoomUserData(1, &quot;areaContinents&quot;, toserialize)
+mmp.echo(&quot;Wiped all continents data.&quot;)</script>
+                    <command></command>
+                    <packageName></packageName>
+                    <regex>^clear continent data$</regex>
                 </Alias>
             </AliasGroup>
             <Alias isActive="yes" isFolder="no">
@@ -3494,6 +3626,8 @@ function mmp.startup()
   private_settings[&quot;caravan&quot;] = createOption(false, mmp.changeBoolFunc,{ &quot;boolean&quot; }, &quot;Walk caravans?&quot;)
   private_settings[&quot;showcmds&quot;] = createOption(true, mmp.changeBoolFunc, { &quot;boolean&quot; }, &quot;Show walking commands?&quot;)
   private_settings[&quot;shackle&quot;] = createOption(false, mmp.changeBoolFunc, { &quot;boolean&quot; }, &quot;Take off shackle?&quot;)
+  private_settings[&quot;duanathar&quot;] = createOption(false, mmp.setDuanathar, { &quot;boolean&quot; }, &quot;Use Eagle Wings in Achaea?&quot;)
+  private_settings[&quot;duanatharan&quot;] = createOption(false, mmp.setDuanatharan, { &quot;boolean&quot; }, &quot;Use Atavian Wings in Achaea?&quot;)
 
 
   mmp.settings = createOptionsTable(private_settings)
@@ -3538,7 +3672,7 @@ function mmp.move()
   end)
 
   if string.starts(cmd, &quot;script:&quot;) then 
-    cmd = string.gsub( cmd, &quot;script:&quot;, &quot;&quot; ) loadstring( cmd )()
+    cmd = string.gsub( cmd, &quot;script:&quot;, &quot;&quot; ) loadstring(cmd)()
     if mmp.settings.showcmds then cecho(string.format(&quot;&lt;red&gt;(&lt;maroon&gt;%d - &lt;dark_slate_grey&gt;%s&lt;red&gt;)&quot;, #speedWalkDir - speedWalkCounter + 1, &quot;&lt;script&gt;&quot;)) end
   else 
     send(cmd, false)
@@ -3575,32 +3709,32 @@ function mmp.enterGrate()
 end
 
 function mmp.openDoor()
-      -- not going anywhere? don't do anything
-      if not speedWalkDir[speedWalkCounter] then return end
-    
-      send(&quot;open door &quot; .. speedWalkDir[speedWalkCounter], false)
-      if mmp.settings.showcmds then cecho(string.format(&quot;&lt;red&gt;(&lt;maroon&gt;%d - &lt;dark_slate_grey&gt;open door %s&lt;red&gt;)&quot;, #speedWalkDir - speedWalkCounter + 1, speedWalkDir[speedWalkCounter])) end
-    
-      if mmp.movetimer then killTimer(mmp.movetimer) end
-      mmp.movetimer = tempTimer(getNetworkLatency(), function ()
-        mmp.movetimer = false
-        mmp.move()
-      end)
-    end
-    
-    function mmp.unlockDoor()
-      -- not going anywhere? don't do anything
-      if not speedWalkDir[speedWalkCounter] then return end
-    
-      send(&quot;unlock door &quot; .. speedWalkDir[speedWalkCounter], false)
-      if mmp.settings.showcmds then cecho(string.format(&quot;&lt;red&gt;(&lt;maroon&gt;%d - &lt;dark_slate_grey&gt;unlock door %s&lt;red&gt;)&quot;, #speedWalkDir - speedWalkCounter, speedWalkDir[speedWalkCounter])) end
-    
-      if mmp.movetimer then killTimer(mmp.movetimer) end
-      mmp.movetimer = tempTimer(getNetworkLatency(), function ()
-        mmp.movetimer = false
-        mmp.move()
-      end)
-    end
+  -- not going anywhere? don't do anything
+  if not speedWalkDir[speedWalkCounter] then return end
+
+  send(&quot;open door &quot; .. speedWalkDir[speedWalkCounter], false)
+  if mmp.settings.showcmds then cecho(string.format(&quot;&lt;red&gt;(&lt;maroon&gt;%d - &lt;dark_slate_grey&gt;open door %s&lt;red&gt;)&quot;, #speedWalkDir - speedWalkCounter + 1, speedWalkDir[speedWalkCounter])) end
+
+  if mmp.movetimer then killTimer(mmp.movetimer) end
+  mmp.movetimer = tempTimer(getNetworkLatency(), function ()
+    mmp.movetimer = false
+    mmp.move()
+  end)
+end
+
+function mmp.unlockDoor()
+  -- not going anywhere? don't do anything
+  if not speedWalkDir[speedWalkCounter] then return end
+
+  send(&quot;unlock door &quot; .. speedWalkDir[speedWalkCounter], false)
+  if mmp.settings.showcmds then cecho(string.format(&quot;&lt;red&gt;(&lt;maroon&gt;%d - &lt;dark_slate_grey&gt;unlock door %s&lt;red&gt;)&quot;, #speedWalkDir - speedWalkCounter, speedWalkDir[speedWalkCounter])) end
+
+  if mmp.movetimer then killTimer(mmp.movetimer) end
+  mmp.movetimer = tempTimer(getNetworkLatency(), function ()
+    mmp.movetimer = false
+    mmp.move()
+  end)
+end
 
 function mmp.customwalkdelay(delay)
   if mmp.movetimer then killTimer(mmp.movetimer) end
@@ -3672,6 +3806,17 @@ function speedwalking( event, num )
   mmp.currentroom = num
   mmp.currentroomname = getRoomName(num)
 
+  -- track if we're inside or outside, if possible
+  if gmcp.Room then
+    if mmp.inside and not table.contains(gmcp.Room.Info.details, &quot;indoors&quot;) then
+      mmp.inside = false
+      raiseEvent(&quot;mmapper went outside&quot;)
+    elseif not mmp.inside and table.contains(gmcp.Room.Info.details, &quot;indoors&quot;) then
+      mmp.inside = true
+      raiseEvent(&quot;mmapper went inside&quot;)
+    end
+  end
+
   if oldnum == num then return else oldnum = num end
 
   if not mmp.autowalking then return end
@@ -3696,7 +3841,7 @@ function speedwalking( event, num )
     -- re-calculate path then
     mmp.echo(&quot;Ended up off the path, recalculating a new path...&quot;)
     local destination = speedWalkPath[#speedWalkPath]
-    if not getPath(num, destination) then
+    if not mmp.getPath(num, destination) then
       mmp.echo(string.format(&quot;Don't know how to get to %d (%s) anymore :(&quot;,
         destination, getRoomName(destination)))
     else
@@ -3715,6 +3860,22 @@ function mmp.gotoRoom (where, dashtype)
    return
   end
 
+  local madeduanathar, madeduanatharan
+
+  if mmp.game == &quot;achaea&quot; and (mmp.settings.duanathar or mmp.settings.duanatharan) and gmcp.Room and not table.contains(gmcp.Room.Info.details, &quot;indoors&quot;) and mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Prime&quot;) then
+    if mmp.settings.duanatharan then
+      addSpecialExit(mmp.currentroom, 4882, [[script:sendAll(&quot;wear wings&quot;, &quot;say duanatharan&quot;, &quot;remove wings&quot;)]])
+      addSpecialExit(mmp.currentroom, 3885, [[script:sendAll(&quot;wear wings&quot;, &quot;say duanathar&quot;, &quot;remove wings&quot;)]])
+      mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
+      madeduanatharan = true
+    else
+      addSpecialExit(mmp.currentroom, 3885, [[script:sendAll(&quot;wear wings&quot;, &quot;say duanathar&quot;, &quot;remove wings&quot;)]])
+      mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
+      madeduanathar = true
+    end
+  end
+
+  -- if getPath worked, then the dirs and room #'s tables were populated for us
   if not mmp.getPath(mmp.currentroom, tonumber(where)) then
     mmp.echo(&quot;Don't know how to get there (&quot;..tostring(where)..&quot;) from here :(&quot;)
     speedWalkPath = {}
@@ -3722,10 +3883,12 @@ function mmp.gotoRoom (where, dashtype)
     speedWalkCounter = 0
     raiseEvent(&quot;mmapper failed path&quot;)
     if mmp.settings.shackle then send(&quot;wear shackle&quot;) end
+    if madeduanatharan then mmp.clearspecials{4882, 3885} elseif madeduanathar then mmp.clearspecials{3885} end
     return
   end
 
   doSpeedWalk(dashtype)
+  if madeduanatharan then mmp.clearspecials{4882, 3885} elseif madeduanathar then mmp.clearspecials{3885} end
 end
 
 function mmp.gotoArea (where, number, dashtype, exact)
@@ -3902,6 +4065,22 @@ function mmp.fixSpecialExits(directions)
   for i = 1, #directions do
     if directions[i]:match(&quot;^%d&quot;) then directions[i] = directions[i]:sub(2) end
   end
+end
+
+-- cleanup function to remove the temp special exit we made - only way to remove specials in Mudlet atm is by clearing them all
+function mmp.clearspecials(ignorerooms)
+  local t = getSpecialExits(mmp.currentroom)
+  clearSpecialExits(mmp.currentroom)
+
+  for connectingroom, exits in pairs(t) do
+    if not table.contains(ignorerooms,connectingroom) then -- don't re-add this one back as it's our temp
+      for command, locked in pairs(exits) do
+        --debug echo: mmp.echo(&quot;need to re-link this room to &quot;..connectingroom..&quot; with &quot;..command..&quot; that is &quot;..(locked == &quot;1&quot; and &quot;locked&quot; or &quot;unlocked&quot;)..&quot;.&quot;)
+        addSpecialExit(mmp.currentroom, connectingroom, command)
+        if locked == &quot;1&quot; then lockSpecialExit(mmp.currentroom, connectingroom, command, true) end
+      end
+    end
+  end
 end</script>
                 <eventHandlerList>
                     <string>RoomNum</string>
@@ -4040,9 +4219,6 @@ function mmp.searchRoom(what)
   return result
 end
 
-local getpathcache = {}
-setmetatable(getpathcache, {__mode = &quot;kv&quot;}) -- weak keys/values = it'll periodically get cleaned up by gc
-
 local function endswith(s, suffix)
     return s:sub(#s - #suffix + 1) == suffix
 end
@@ -4091,6 +4267,9 @@ function mmp.roomWhoFind(query)
 end
 
 -- DOES NOT ACCOUNT FOR CHANGING THE MAP YET (within a profile load), because we don't know when it happens
+local getpathcache = {}
+setmetatable(getpathcache, {__mode = &quot;kv&quot;}) -- weak keys/values = it'll periodically get cleaned up by gc
+
 function mmp.getPath(from, to)
   assert(tonumber(from) and tonumber(to), &quot;mmp.getPath: both from and to have to be room IDs&quot;)
 
@@ -4110,6 +4289,8 @@ function mmp.getPath(from, to)
   speedWalkPath = getpathcache[key][3]
   return getpathcache[key][1]
 end
+
+function mmp.clearpathcache() getpathcache = {} end
 
 function mmp.roomFind(query)
   if query:ends('.') then query = query:sub(1,-2) end
@@ -4898,6 +5079,20 @@ function mmp.lockSpecials()
   mmp.doLock(&quot;special exits&quot;, lock)
 end
 
+function mmp.setDuanathar()
+  mmp.clearpathcache() -- clear the cache so it'll use wings or will stop using wings
+
+  if mmp.settings.duanathar then mmp.echo(&quot;Okay, will see about using Eagle wings when you goto somewhere while outside!&quot;)
+  else mmp.echo(&quot;Won't use Eagle wings anymore.&quot;) end
+end
+
+function mmp.setDuanatharan()
+  mmp.clearpathcache() -- clear the cache so it'll use wings or will stop using wings
+
+  if mmp.settings.duanatharan then mmp.echo(&quot;Okay, will see about using Atavian wings (both duanathar and duanatharan) when you goto somewhere while outside!&quot;)
+  else mmp.echo(&quot;Won't use Atavian wings anymore.&quot;) end
+end
+
 function mmp.chageMapSource()
   local use = mmp.settings.crowdmap and true or false
   if use and not mmp.game or mmp.game ~= &quot;achaea&quot; then
@@ -4912,6 +5107,31 @@ function mmp.chageMapSource()
   else
     mmp.echo(&quot;Will use the default Achaea map for updates.&quot;)
   end
+end
+
+-- patches welcome to finish this function.
+function mmp.removecontinent(area, continent)
+  local tmp = getRoomUserData(1, &quot;areaContinents&quot;)
+  local continents = {}
+
+  if tmp ~= &quot;&quot; then
+    continents = yajl.to_value(tmp)
+  end
+
+  if not next(continents) then return nil, &quot;no continents are known&quot; end
+  if not continents[continent] then return nil, &quot;no such continent is recorded&quot; end
+ 
+end
+
+-- checks if given area ID is on the given continent. Returns true only if certainly knows
+function mmp.oncontinent(areaid, continent)
+  local tmp = getRoomUserData(1, &quot;areaContinents&quot;)
+  if tmp == &quot;&quot; then return end
+
+  local continents = yajl.to_value(tmp)
+  if not continents[continent] then return end
+  
+  return table.contains(continents[continent], areaid)
 end</script>
                 <eventHandlerList/>
             </Script>
@@ -5437,6 +5657,35 @@ end</script>
 end</script>
                         <eventHandlerList>
                             <string>mmp logged in</string>
+                        </eventHandlerList>
+                    </Script>
+                    <Script isActive="yes" isFolder="no">
+                        <name>mmapper_achaea_went_outside</name>
+                        <packageName></packageName>
+                        <script>-- track whenever we need to use wings when we get outside!
+function mmapper_achaea_went_outside()
+  if not mmp.autowalking or not (mmp.settings.duanathar or mmp.settings.duanatharan) or mp.game ~= &quot;achaea&quot; or not mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Prime&quot;) then return end
+
+  mmp.echo(&quot;ooh! check this out!&quot;)
+  -- repath, maybe that'll allow us to use wings now.
+  local madeduanatharan, madeduanathar
+
+    if mmp.settings.duanatharan then
+      addSpecialExit(mmp.currentroom, 4882, [[script:sendAll(&quot;wear wings&quot;, &quot;say duanatharan&quot;, &quot;remove wings&quot;)]])
+      addSpecialExit(mmp.currentroom, 3885, [[script:sendAll(&quot;wear wings&quot;, &quot;say duanathar&quot;, &quot;remove wings&quot;)]])
+      mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
+      madeduanatharan = true
+    else
+      addSpecialExit(mmp.currentroom, 3885, [[script:sendAll(&quot;wear wings&quot;, &quot;say duanathar&quot;, &quot;remove wings&quot;)]])
+      mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
+      madeduanathar = true
+    end
+
+  mmp.getPath(mmp.currentroom, speedWalkPath[#speedWalkPath]) -- don't need to check return value since that fact shouldnt've changed
+  if madeduanatharan then mmp.clearspecials{4882, 3885} elseif madeduanathar then mmp.clearspecials{3885} end
+end</script>
+                        <eventHandlerList>
+                            <string>mmapper went outside</string>
                         </eventHandlerList>
                     </Script>
                 </Script>
