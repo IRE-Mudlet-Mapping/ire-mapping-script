@@ -3188,7 +3188,16 @@ mmp.addingcontinent = nil
 
 continents[continent] = continents[continent] or {}
 
-if table.contains(continents[continent], area) then
+-- have to use this instead of contains and index_of, because those count keys as well - and we don't want that
+local function index_of(data, areaID)
+  for i = 1, #data do
+    if data[i] == areaID then return i end
+  end
+
+  return -1
+end
+
+if index_of(continents[continent], area) ~= -1 then
   mmp.echo(getRoomAreaName(area)..&quot; is already known as being on the &quot;..continent..&quot; continent.&quot;)
   return
 else
@@ -3198,7 +3207,7 @@ else
   -- remove from other areas if moving
   for kcontinent, data in pairs(continents) do
     if kcontinent ~= continent then
-      local i = table.index_of(continents[kcontinent], area)
+      local i = index_of(continents[kcontinent], area)
       if i ~= -1 then
         table.remove(continents[kcontinent], i)
         if not next(continents[kcontinent]) then continents[kcontinent] = nil end
@@ -3628,6 +3637,7 @@ function mmp.startup()
   private_settings[&quot;shackle&quot;] = createOption(false, mmp.changeBoolFunc, { &quot;boolean&quot; }, &quot;Take off shackle?&quot;)
   private_settings[&quot;duanathar&quot;] = createOption(false, mmp.setDuanathar, { &quot;boolean&quot; }, &quot;Use Eagle Wings in Achaea?&quot;)
   private_settings[&quot;duanatharan&quot;] = createOption(false, mmp.setDuanatharan, { &quot;boolean&quot; }, &quot;Use Atavian Wings in Achaea?&quot;)
+  private_settings[&quot;winglanguage&quot;] = createOption(&quot;&quot;, mmp.setWingsLanguage, { &quot;string&quot; }, &quot;Speak non-default language for wings:&quot;)
 
 
   mmp.settings = createOptionsTable(private_settings)
@@ -3867,12 +3877,12 @@ function mmp.gotoRoom (where, dashtype)
 
   if mmp.game == &quot;achaea&quot; and (mmp.settings.duanathar or mmp.settings.duanatharan) and gmcp.Room and not table.contains(gmcp.Room.Info.details, &quot;indoors&quot;) and mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Prime&quot;) then
     if mmp.settings.duanatharan then
-      addSpecialExit(mmp.currentroom, 4882, [[script:sendAll(&quot;wear wings&quot;, &quot;say duanatharan&quot;, &quot;remove wings&quot;)]])
-      addSpecialExit(mmp.currentroom, 3885, [[script:sendAll(&quot;wear wings&quot;, &quot;say duanathar&quot;, &quot;remove wings&quot;)]])
+      addSpecialExit(mmp.currentroom, 4882, [[script:sendAll(&quot;wear wings&quot;, &quot;say *]]..(mmp.settings.winglanguage)..[[ duanatharan&quot;, &quot;remove wings&quot;)]])
+      addSpecialExit(mmp.currentroom, 3885, [[script:sendAll(&quot;wear wings&quot;, &quot;say *]]..(mmp.settings.winglanguage)..[[ duanathar&quot;, &quot;remove wings&quot;)]])
       mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
       madeduanatharan = true
     else
-      addSpecialExit(mmp.currentroom, 3885, [[script:sendAll(&quot;wear wings&quot;, &quot;say duanathar&quot;, &quot;remove wings&quot;)]])
+      addSpecialExit(mmp.currentroom, 3885, [[script:sendAll(&quot;wear wings&quot;, &quot;say *]]..(mmp.settings.winglanguage)..[[ duanathar&quot;, &quot;remove wings&quot;)]])
       mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
       madeduanathar = true
     end
@@ -5112,6 +5122,10 @@ function mmp.chageMapSource()
   end
 end
 
+function mmp.setWingsLanguage()
+  mmp.echo(&quot;Alright, will say Duanathar and Duanathar in &quot;..mmp.settings.winglanguage:title()..&quot;.&quot;)
+end
+
 -- patches welcome to finish this function.
 function mmp.removecontinent(area, continent)
   local tmp = getRoomUserData(1, &quot;areaContinents&quot;)
@@ -5676,12 +5690,12 @@ local s,m = pcall(function()
   local madeduanatharan, madeduanathar
 
     if mmp.settings.duanatharan then
-      addSpecialExit(mmp.currentroom, 4882, [[script:sendAll(&quot;wear wings&quot;, &quot;say duanatharan&quot;, &quot;remove wings&quot;)]])
-      addSpecialExit(mmp.currentroom, 3885, [[script:sendAll(&quot;wear wings&quot;, &quot;say duanathar&quot;, &quot;remove wings&quot;)]])
+      addSpecialExit(mmp.currentroom, 4882, [[script:sendAll(&quot;wear wings&quot;, &quot;say *]]..(mmp.settings.winglanguage)..[[ duanatharan&quot;, &quot;remove wings&quot;)]])
+      addSpecialExit(mmp.currentroom, 3885, [[script:sendAll(&quot;wear wings&quot;, &quot;say *]]..(mmp.settings.winglanguage)..[[ duanathar&quot;, &quot;remove wings&quot;)]])
       mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
       madeduanatharan = true
     else
-      addSpecialExit(mmp.currentroom, 3885, [[script:sendAll(&quot;wear wings&quot;, &quot;say duanathar&quot;, &quot;remove wings&quot;)]])
+      addSpecialExit(mmp.currentroom, 3885, [[script:sendAll(&quot;wear wings&quot;, &quot;say *]]..(mmp.settings.winglanguage)..[[ duanathar&quot;, &quot;remove wings&quot;)]])
       mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
       madeduanathar = true
     end
@@ -6148,8 +6162,25 @@ local s,m = pcall(function()
     else
       mmp.echon(&quot;Map failed to load - you need to have the mapper open. Please open it, and then &quot;)
       echoLink(&quot;click here&quot;, [[
+        local tmp = getRoomUserData(1, &quot;gotoMapping&quot;)
+        local oldmaptable = {}
+        if tmp ~= &quot;&quot; then
+          oldmaptable = yajl.to_value(tmp)
+        end
+
         local ok = loadMap(']]..filename..[[')
-        if ok then mmp.echo(&quot;Map loaded successfully!&quot;) else mmp.echo(&quot;Nope, didn't work. Open the map and try again?&quot;) end
+        if ok then mmp.echo(&quot;Map loaded successfully!&quot;)
+          mmp.lockWormholes()
+	      mmp.lockSewers()
+          tmp = getRoomUserData(1, &quot;gotoMapping&quot;)
+          local newmaptable = {}      
+          if tmp ~= &quot;&quot; then
+            newmaptable = yajl.to_value(tmp)
+          end
+          for k,v in pairs(oldmaptable) do newmaptable[k] = v end
+          setRoomUserData(1, &quot;gotoMapping&quot;, yajl.to_string(newmaptable))
+          mmp.echo(&quot;Marks from the old map migrated successfully.&quot;)
+        else mmp.echo(&quot;Nope, didn't work. Open the map and try again?&quot;) end
       ]], 
       &quot;Click here to try loading the map again&quot;)
       echo(&quot; to try loading it in again.\n&quot;)
