@@ -5140,6 +5140,14 @@ function mmp.removecontinent(area, continent)
  
 end
 
+function mmp.indexof_valueonly(data, value)
+  for i = 1, #data do
+    if data[i] == value then return i end
+  end
+
+  return false
+end
+
 -- checks if given area ID is on the given continent. Returns true only if certainly knows
 function mmp.oncontinent(areaid, continent)
   local tmp = getRoomUserData(1, &quot;areaContinents&quot;)
@@ -5148,7 +5156,7 @@ function mmp.oncontinent(areaid, continent)
   local continents = yajl.to_value(tmp)
   if not continents[continent] then return end
   
-  return table.contains(continents[continent], areaid)
+  return mmp.indexof_valueonly(continents[continent], areaid)
 end</script>
                 <eventHandlerList/>
             </Script>
