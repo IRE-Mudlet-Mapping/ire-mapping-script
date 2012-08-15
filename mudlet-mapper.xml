@@ -3638,6 +3638,7 @@ function mmp.startup()
   private_settings[&quot;duanathar&quot;] = createOption(false, mmp.setDuanathar, { &quot;boolean&quot; }, &quot;Use Eagle Wings in Achaea?&quot;)
   private_settings[&quot;duanatharan&quot;] = createOption(false, mmp.setDuanatharan, { &quot;boolean&quot; }, &quot;Use Atavian Wings in Achaea?&quot;)
   private_settings[&quot;winglanguage&quot;] = createOption(&quot;&quot;, mmp.setWingsLanguage, { &quot;string&quot; }, &quot;Speak non-default language for wings:&quot;)
+  private_settings[&quot;removewings&quot;] = createOption(true, mmp.setWingsRemoval, { &quot;boolean&quot; }, &quot;Remove Wings after using them?&quot;)
 
 
   mmp.settings = createOptionsTable(private_settings)
@@ -3645,8 +3646,8 @@ function mmp.startup()
 
   mmp.game = false
 
-  mmp.settings.dispOption = function(opt, val)
-    cecho(&quot;&lt;white&gt;Use &lt;green&gt;&quot; .. opt .. &quot;&lt;white&gt;?&quot; .. string.rep(&quot; &quot;, 15 - opt:len()) .. tostring(val.value) .. &quot;\n&quot;)
+  mmp.settings.dispOption = function(opt, val) 
+    cecho(&quot;&lt;green&gt;&quot; .. val.use .. &quot;&lt;white&gt; (&quot; ..opt..&quot;) &quot; .. string.rep(&quot; &quot;, 50 - val.use:len() - opt:len()) .. tostring(val.value) .. &quot;\n&quot;) 
   end
 
   mmp.settings.dispDefaultWriteError = function()
@@ -3875,14 +3876,21 @@ function mmp.gotoRoom (where, dashtype)
 
   local madeduanathar, madeduanatharan
 
+  local function getcmd(word)
+    return mmp.settings.removewings and 
+      [[script:sendAll(&quot;wear wings&quot;, &quot;say *]]..(mmp.settings.winglanguage)..[[ ]]..word..[[&quot;, &quot;remove wings&quot;, false)]]
+      or
+      [[script:send(&quot;say *]]..(mmp.settings.winglanguage)..[[ ]]..word..[[&quot;, false)]]
+  end
+
   if mmp.game == &quot;achaea&quot; and (mmp.settings.duanathar or mmp.settings.duanatharan) and gmcp.Room and not table.contains(gmcp.Room.Info.details, &quot;indoors&quot;) and mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Prime&quot;) then
     if mmp.settings.duanatharan then
-      addSpecialExit(mmp.currentroom, 4882, [[script:sendAll(&quot;wear wings&quot;, &quot;say *]]..(mmp.settings.winglanguage)..[[ duanatharan&quot;, &quot;remove wings&quot;)]])
-      addSpecialExit(mmp.currentroom, 3885, [[script:sendAll(&quot;wear wings&quot;, &quot;say *]]..(mmp.settings.winglanguage)..[[ duanathar&quot;, &quot;remove wings&quot;)]])
+      addSpecialExit(mmp.currentroom, 4882, getcmd(&quot;duanatharan&quot;))
+      addSpecialExit(mmp.currentroom, 3885, getcmd(&quot;duanathar&quot;))
       mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
       madeduanatharan = true
     else
-      addSpecialExit(mmp.currentroom, 3885, [[script:sendAll(&quot;wear wings&quot;, &quot;say *]]..(mmp.settings.winglanguage)..[[ duanathar&quot;, &quot;remove wings&quot;)]])
+      addSpecialExit(mmp.currentroom, 3885, getcmd(&quot;duanathar&quot;))
       mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
       madeduanathar = true
     end
@@ -5126,6 +5134,10 @@ function mmp.setWingsLanguage()
   mmp.echo(&quot;Alright, will say Duanathar and Duanathar in &quot;..mmp.settings.winglanguage:title()..&quot;.&quot;)
 end
 
+function mmp.setWingsRemoval()
+  mmp.echo(&quot;Okay - &quot;..(mmp.settings.removewings and &quot;will&quot; or &quot;won't&quot;)..&quot; remove wings after using them.&quot;)
+end
+
 -- patches welcome to finish this function.
 function mmp.removecontinent(area, continent)
   local tmp = getRoomUserData(1, &quot;areaContinents&quot;)
@@ -5697,13 +5709,20 @@ local s,m = pcall(function()
   -- repath, maybe that'll allow us to use wings now.
   local madeduanatharan, madeduanathar
 
+  local function getcmd(word)
+    return mmp.settings.removewings and 
+      [[script:sendAll(&quot;wear wings&quot;, &quot;say *]]..(mmp.settings.winglanguage)..[[ ]]..word..[[&quot;, &quot;remove wings&quot;, false)]]
+      or
+      [[script:send(&quot;say *]]..(mmp.settings.winglanguage)..[[ ]]..word..[[&quot;, false)]]
+  end
+
     if mmp.settings.duanatharan then
-      addSpecialExit(mmp.currentroom, 4882, [[script:sendAll(&quot;wear wings&quot;, &quot;say *]]..(mmp.settings.winglanguage)..[[ duanatharan&quot;, &quot;remove wings&quot;)]])
-      addSpecialExit(mmp.currentroom, 3885, [[script:sendAll(&quot;wear wings&quot;, &quot;say *]]..(mmp.settings.winglanguage)..[[ duanathar&quot;, &quot;remove wings&quot;)]])
+      addSpecialExit(mmp.currentroom, 4882, getcmd(&quot;duanatharan&quot;))
+      addSpecialExit(mmp.currentroom, 3885, getcmd(&quot;duanathar&quot;))
       mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
       madeduanatharan = true
     else
-      addSpecialExit(mmp.currentroom, 3885, [[script:sendAll(&quot;wear wings&quot;, &quot;say *]]..(mmp.settings.winglanguage)..[[ duanathar&quot;, &quot;remove wings&quot;)]])
+      addSpecialExit(mmp.currentroom, 3885, getcmd(&quot;duanathar&quot;))
       mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
       madeduanathar = true
     end
