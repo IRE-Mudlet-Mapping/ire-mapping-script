@@ -2550,13 +2550,13 @@ cecho(&quot;)&quot;)
         </TriggerGroup>
     </TriggerPackage>
     <TimerPackage>
-        <TimerGroup isActive="yes" isFolder="yes" isTempTimer="no" isOffsetTimer="no">
+        <TimerGroup isActive="yes" isFolder="yes" isTempTimer="no">
             <name>Mudlet Mapper</name>
             <script></script>
             <command></command>
             <packageName></packageName>
             <time>00:00:00.000</time>
-            <Timer isActive="yes" isFolder="no" isTempTimer="no" isOffsetTimer="no">
+            <Timer isActive="yes" isFolder="no" isTempTimer="no">
                 <name>Check for updates periodically</name>
                 <script>mmp.checkforupdate()</script>
                 <command></command>
@@ -3609,7 +3609,7 @@ mmp = mmp or {
   specials = {}
 }
 
-local newversion = &quot;12.7.5&quot;
+local newversion = &quot;12.8.1&quot;
 if mmp.version and mmp.version ~= newversion then 
   if not mmp.game then mmp.echo(&quot;Mapper script updated - Thanks! I don't know what game are you connected to, though - so please reconnect. Thanks!&quot;)
   else mmp.echo(&quot;Mapper script updated - thanks! You don't need to restart.&quot;) end
