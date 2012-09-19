@@ -3609,7 +3609,7 @@ mmp = mmp or {
   specials = {}
 }
 
-local newversion = &quot;12.8.1&quot;
+local newversion = &quot;12.9.1&quot;
 if mmp.version and mmp.version ~= newversion then 
   if not mmp.game then mmp.echo(&quot;Mapper script updated - Thanks! I don't know what game are you connected to, though - so please reconnect. Thanks!&quot;)
   else mmp.echo(&quot;Mapper script updated - thanks! You don't need to restart.&quot;) end
@@ -3771,7 +3771,7 @@ function mmp.stop()
 
   mmp.echo(&quot;Stopped walking.&quot;)
   raiseEvent(&quot;mmapper stopped&quot;)
-  if mmp.settings.shackle then send(&quot;wear shackle&quot;) end
+  if mmp.settings.shackle then expandAlias(&quot;wear shackle&quot;) end
 end
 
 -- Aetolia and Lusternia support showing balances in GMCP. This is easy to support, so we do!
@@ -3842,7 +3842,7 @@ function speedwalking( event, num )
     local walktime = stopStopWatch(speedWalkWatch)
     mmp.echo(string.format(&quot;We've arrived! Took us %.1fs.\n&quot;, walktime))
     raiseEvent(&quot;mmapper arrived&quot;)
-    if mmp.settings.shackle then send(&quot;wear shackle&quot;) end
+    if mmp.settings.shackle then expandAlias(&quot;wear shackle&quot;) end
     speedWalkPath = {}
     speedWalkDir = {}
     speedWalkCounter = 0
@@ -3903,7 +3903,7 @@ function mmp.gotoRoom (where, dashtype)
     speedWalkDir = {}
     speedWalkCounter = 0
     raiseEvent(&quot;mmapper failed path&quot;)
-    if mmp.settings.shackle then send(&quot;wear shackle&quot;) end
+    if mmp.settings.shackle then expandAlias(&quot;wear shackle&quot;) end
     if madeduanatharan then mmp.clearspecials{4882, 3885} elseif madeduanathar then mmp.clearspecials{3885} end
     return
   end
@@ -3986,7 +3986,7 @@ function doSpeedWalk(dashtype)
   if #speedWalkPath == 0 then
     mmp.echo(&quot;Couldn't find a path to the destination :(&quot;)
     raiseEvent(&quot;mmapper failed path&quot;)
-    if mmp.settings.shackle then send(&quot;wear shackle&quot;) end
+    if mmp.settings.shackle then expandAlias(&quot;wear shackle&quot;) end
     return
   end
 
@@ -3997,7 +3997,7 @@ function doSpeedWalk(dashtype)
     speedWalkPath[i] = tonumber(speedWalkPath[i])
   end
 
-  if mmp.settings.shackle then send(&quot;remove shackle&quot;) end
+  if mmp.settings.shackle then expandAlias(&quot;remove shackle&quot;) end
   if not mmp.paused then
     mmp.echon(&quot;Starting speedwalk from &quot;..(atcp.RoomNum or gmcp.Room.Info.num)..&quot; to &quot;) echoLink(speedWalkPath[#speedWalkPath], 'gotoRoom &quot;' .. speedWalkPath[#speedWalkPath].. '&quot;', 'Go to ' .. speedWalkPath[#speedWalkPath]) echo(&quot;: &quot;)
     speedWalkCounter = 1
@@ -4014,7 +4014,7 @@ function mmp.failpath()
   end
 
   raiseEvent(&quot;mmapper failed path&quot;)
-  if mmp.settings.shackle then send(&quot;wear shackle&quot;) end
+  if mmp.settings.shackle then expandAlias(&quot;wear shackle&quot;) end
   speedWalkPath = {}
   speedWalkDir = {}
   speedWalkCounter = 0
