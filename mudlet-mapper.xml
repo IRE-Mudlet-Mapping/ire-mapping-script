@@ -3609,7 +3609,7 @@ mmp = mmp or {
   specials = {}
 }
 
-local newversion = &quot;12.9.2&quot;
+local newversion = &quot;12.9.3&quot;
 if mmp.version and mmp.version ~= newversion then 
   if not mmp.game then mmp.echo(&quot;Mapper script updated - Thanks! I don't know what game are you connected to, though - so please reconnect. Thanks!&quot;)
   else mmp.echo(&quot;Mapper script updated - thanks! You don't need to restart.&quot;) end
@@ -6115,7 +6115,7 @@ local s,m = pcall(function()
 	mmp.checkingupdates = false
 
     local s = io.open(filename):read(&quot;*l&quot;):trim()
-    io.close(filename)
+    io.close()
 
     if s ~= tostring(mmp.version) then
       mmp.newmapperversion = s
@@ -6126,7 +6126,7 @@ local s,m = pcall(function()
 	mmp.checkingupdates = false
 
     local s = io.open(filename):read(&quot;*a&quot;)
-    io.close(filename)
+    io.close()
     local changelog = string.match(s, [[&lt;div class=&quot;information&quot;&gt;(.-)&lt;/div]])
     changelog = string.gsub(changelog, &quot;Â&quot;, '')
     changelog = string.gsub(changelog, &quot;&lt;br/&gt;&quot;, '\n')
@@ -6136,7 +6136,7 @@ local s,m = pcall(function()
 
   elseif filename == mmp.crowdchangelogfile then   -- changelog for the crowdmap
     local s = io.open(filename):read(&quot;*a&quot;)
-    io.close(filename)
+    io.close()
 
     -- make environment
     local env = {} -- add functions you know are safe here
@@ -6238,7 +6238,7 @@ local s,m = pcall(function()
     end
 
     local s = io.open(filename):read(&quot;*a&quot;)
-    io.close(filename)
+    io.close()
     local currentmd5 = string.match(s, &quot;([a-z0-9]+)  map%.xml&quot;)
 
     -- using crowdsourced map
@@ -6253,7 +6253,7 @@ local s,m = pcall(function()
 
     -- otherwise read old file and check
     local s = io.open(getMudletHomeDir()..&quot;/map downloads/current&quot;):read(&quot;*a&quot;)
-    io.close(getMudletHomeDir()..&quot;/map downloads/current&quot;)
+    io.close()
     if s ~= currentmd5 then needupdate(currentmd5, s) end
   end
 end)
@@ -6341,7 +6341,7 @@ function mmp.downloadmapperscript()
 
   if not downloadlocation then
     downloadlocation = io.open(downloadlocationfile):read(&quot;*a&quot;)
-    io.close(downloadlocationfile)
+    io.close()
     if not exists(downloadlocation) then
       downloadlocation = whereisit()
       if not downloadlocation or not exists(downloadlocation) then return end
