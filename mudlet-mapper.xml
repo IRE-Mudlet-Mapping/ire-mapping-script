@@ -3609,7 +3609,7 @@ mmp = mmp or {
   specials = {}
 }
 
-local newversion = &quot;12.9.3&quot;
+local newversion = &quot;12.9.4&quot;
 if mmp.version and mmp.version ~= newversion then 
   if not mmp.game then mmp.echo(&quot;Mapper script updated - Thanks! I don't know what game are you connected to, though - so please reconnect. Thanks!&quot;)
   else mmp.echo(&quot;Mapper script updated - thanks! You don't need to restart.&quot;) end
@@ -5077,6 +5077,7 @@ function mmp.doLock (what, lock, filter)
   end
 
   mmp.echo(string.format(&quot;%s %s known %s.&quot;, (lock and &quot;Locked&quot; or &quot;Unlocked&quot;), c, what))
+  return c
 end
 
 function mmp.lockPathways()
@@ -5086,12 +5087,12 @@ end
 
 function mmp.lockSewers()
   local lock = mmp.settings.locksewers and true or false
-  mmp.doLock(&quot;sewer grates&quot;, lock, &quot;enter grate&quot;)
+  return mmp.doLock(&quot;sewer grates&quot;, lock, &quot;enter grate&quot;)
 end
 
 function mmp.lockWormholes()
   local lock = mmp.settings.lockwormholes and true or false
-  mmp.doLock(&quot;wormholes&quot;, lock, &quot;worm warp&quot;)
+  return mmp.doLock(&quot;wormholes&quot;, lock, &quot;worm warp&quot;)
 end
 tempTimer(0, function() if mmp.firstRun then mmp.lockWormholes() end end)
 
@@ -6114,9 +6115,9 @@ local s,m = pcall(function()
   if filename == tostring(mmp.mapperfile) then   -- mapper script version
 	mmp.checkingupdates = false
 
-    local s = io.open(filename):read(&quot;*l&quot;):trim()
-    io.close()
-
+    local f, s = io.open(filename)
+    if f then s = f:read(&quot;*l&quot;):trim(); io.close(f) end
+    
     if s ~= tostring(mmp.version) then
       mmp.newmapperversion = s
       mmp.retrievechangelog()
@@ -6125,8 +6126,9 @@ local s,m = pcall(function()
   elseif filename == tostring(mmp.changelogfile) then   -- changelog for the mapper script
 	mmp.checkingupdates = false
 
-    local s = io.open(filename):read(&quot;*a&quot;)
-    io.close()
+    local f, s = io.open(filename)
+    if f then s = f:read(&quot;*a&quot;); io.close(f) end
+
     local changelog = string.match(s, [[&lt;div class=&quot;information&quot;&gt;(.-)&lt;/div]])
     changelog = string.gsub(changelog, &quot;Â&quot;, '')
     changelog = string.gsub(changelog, &quot;&lt;br/&gt;&quot;, '\n')
@@ -6135,8 +6137,8 @@ local s,m = pcall(function()
     echoLink(&quot;The mapper script was updated! Would you like to download the update? Click here if so.&quot;, &quot;mmp.downloadmapperscript()&quot;, &quot;Changelog for the latest (&quot;..tostring(mmp.version)..&quot; -&gt; &quot;..tostring(mmp.newmapperversion)..&quot;) update:\n&quot;..changelog, true)
 
   elseif filename == mmp.crowdchangelogfile then   -- changelog for the crowdmap
-    local s = io.open(filename):read(&quot;*a&quot;)
-    io.close()
+    local f, s = io.open(filename)
+    if f then s = f:read(&quot;*a&quot;); io.close(f) end
 
     -- make environment
     local env = {} -- add functions you know are safe here
@@ -6175,9 +6177,14 @@ local s,m = pcall(function()
     local ok = loadMap(filename)
 
     if ok then
+      local wc = mmp.lockWormholes()
+	  local ws = mmp.lockSewers()
+      if mmp.game == &quot;achaea&quot; and wc == 0 and ws == 0 then -- in achaea, using crowdmap, if we didn't get any special exits - it means Mudlet needs to be updated
+        mmp.echo(&quot;Sorry, it seems your Mudlet isn't compatible with the new crowdmap format - and the map cannot be loaded fully. Please update your Mudlet: http://svo.vadisystems.com/2012/08/crowdmap-fix-in-achaea/&quot;)
+        return
+      end
+      
       mmp.echo(&quot;Map loaded fine - enjoy!&quot;)
-      mmp.lockWormholes()
-	  mmp.lockSewers()
 
       tmp = getRoomUserData(1, &quot;gotoMapping&quot;)
       local newmaptable = {}
@@ -6199,9 +6206,16 @@ local s,m = pcall(function()
         end
 
         local ok = loadMap(']]..filename..[[')
-        if ok then mmp.echo(&quot;Map loaded successfully!&quot;)
-          mmp.lockWormholes()
-	      mmp.lockSewers()
+        if ok then
+        local wc = mmp.lockWormholes()
+	    local ws = mmp.lockSewers()
+        if mmp.game == &quot;achaea&quot; and wc == 0 and ws == 0 then -- in achaea, using crowdmap, if we didn't get any special exits - it means Mudlet needs to be updated
+          mmp.echo(&quot;Sorry, it seems your Mudlet isn't compatible with the new crowdmap format - and the map cannot be loaded fully. Please update your Mudlet: http://svo.vadisystems.com/2012/08/crowdmap-fix-in-achaea/&quot;)
+          return
+        end
+        
+        mmp.echo(&quot;Map loaded successfully!&quot;)
+
           tmp = getRoomUserData(1, &quot;gotoMapping&quot;)
           local newmaptable = {}      
           if tmp ~= &quot;&quot; then
@@ -6237,8 +6251,8 @@ local s,m = pcall(function()
       end
     end
 
-    local s = io.open(filename):read(&quot;*a&quot;)
-    io.close()
+    local f, s = io.open(filename)
+    if f then s = f:read(&quot;*a&quot;); io.close(f) end
     local currentmd5 = string.match(s, &quot;([a-z0-9]+)  map%.xml&quot;)
 
     -- using crowdsourced map
@@ -6252,8 +6266,9 @@ local s,m = pcall(function()
     if not io.exists(getMudletHomeDir()..&quot;/map downloads/current&quot;) then needupdate(currentmd5) return end
 
     -- otherwise read old file and check
-    local s = io.open(getMudletHomeDir()..&quot;/map downloads/current&quot;):read(&quot;*a&quot;)
-    io.close()
+    local f, s = io.open(getMudletHomeDir()..&quot;/map downloads/current&quot;)
+    if f then s = f:read(&quot;*a&quot;); io.close(f) end
+
     if s ~= currentmd5 then needupdate(currentmd5, s) end
   end
 end)
@@ -6340,8 +6355,10 @@ function mmp.downloadmapperscript()
   end
 
   if not downloadlocation then
-    downloadlocation = io.open(downloadlocationfile):read(&quot;*a&quot;)
-    io.close()
+    local f, s = io.open(downloadlocationfile)
+    if f then downloadlocation = f:read(&quot;*a&quot;); io.close(f) end
+
+
     if not exists(downloadlocation) then
       downloadlocation = whereisit()
       if not downloadlocation or not exists(downloadlocation) then return end
