@@ -4,7 +4,7 @@
     <TriggerPackage>
         <TriggerGroup isActive="yes" isFolder="yes" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
             <name>Mudlet Mapper</name>
-            <script>mudlet = mudlet or {}; mudlet.mapper_script = true</script>
+            <script></script>
             <triggerType>0</triggerType>
             <conditonLineDelta>0</conditonLineDelta>
             <mStayOpen>0</mStayOpen>
@@ -2192,6 +2192,44 @@ mmp.game = &quot;mko&quot;</script>
                     </regexCodePropertyList>
                 </Trigger>
             </TriggerGroup>
+            <TriggerGroup isActive="yes" isFolder="yes" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+                <name>Lithmeria</name>
+                <script></script>
+                <triggerType>0</triggerType>
+                <conditonLineDelta>0</conditonLineDelta>
+                <mStayOpen>0</mStayOpen>
+                <mCommand></mCommand>
+                <packageName></packageName>
+                <mFgColor>#ff0000</mFgColor>
+                <mBgColor>#ffff00</mBgColor>
+                <mSoundFile></mSoundFile>
+                <colorTriggerFgColor>#000000</colorTriggerFgColor>
+                <colorTriggerBgColor>#000000</colorTriggerBgColor>
+                <regexCodeList/>
+                <regexCodePropertyList/>
+                <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+                    <name>Login</name>
+                    <script>raiseEvent(&quot;mmp logged in&quot;, &quot;Lithmeria&quot;)
+mmp.game = &quot;lithmeria&quot;
+mmp.echo(&quot;We're connected to Lithmeria.&quot;)</script>
+                    <triggerType>0</triggerType>
+                    <conditonLineDelta>0</conditonLineDelta>
+                    <mStayOpen>0</mStayOpen>
+                    <mCommand></mCommand>
+                    <packageName></packageName>
+                    <mFgColor>#ff0000</mFgColor>
+                    <mBgColor>#ffff00</mBgColor>
+                    <mSoundFile></mSoundFile>
+                    <colorTriggerFgColor>#000000</colorTriggerFgColor>
+                    <colorTriggerBgColor>#000000</colorTriggerBgColor>
+                    <regexCodeList>
+                        <string>Welcome to your account!</string>
+                    </regexCodeList>
+                    <regexCodePropertyList>
+                        <integer>3</integer>
+                    </regexCodePropertyList>
+                </Trigger>
+            </TriggerGroup>
             <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
                 <name>Wall</name>
                 <script>mmp.failpath()</script>
@@ -2550,13 +2588,13 @@ cecho(&quot;)&quot;)
         </TriggerGroup>
     </TriggerPackage>
     <TimerPackage>
-        <TimerGroup isActive="yes" isFolder="yes" isTempTimer="no">
+        <TimerGroup isActive="yes" isFolder="yes" isTempTimer="no" isOffsetTimer="no">
             <name>Mudlet Mapper</name>
             <script></script>
             <command></command>
             <packageName></packageName>
             <time>00:00:00.000</time>
-            <Timer isActive="yes" isFolder="no" isTempTimer="no">
+            <Timer isActive="yes" isFolder="no" isTempTimer="no" isOffsetTimer="no">
                 <name>Check for updates periodically</name>
                 <script>mmp.checkforupdate()</script>
                 <command></command>
@@ -2703,7 +2741,7 @@ mmp.settings:setOption(matches[3], val)</script>
                 <packageName></packageName>
                 <regex>^area list$</regex>
             </Alias>
-            <AliasGroup isActive="no" isFolder="yes">
+            <AliasGroup isActive="yes" isFolder="yes">
                 <name>mm Mapping</name>
                 <script></script>
                 <command></command>
@@ -3458,8 +3496,7 @@ end</script>
         <ScriptGroup isActive="yes" isFolder="yes">
             <name>Mudlet Mapper</name>
             <packageName></packageName>
-            <script>mudlet = mudlet or {}; mudlet.mapper_script = true
-</script>
+            <script>mudlet = mudlet or {}; mudlet.mapper_script = true</script>
             <eventHandlerList/>
             <Script isActive="yes" isFolder="no">
                 <name>Create Option Table</name>
@@ -3609,7 +3646,7 @@ mmp = mmp or {
   specials = {}
 }
 
-local newversion = &quot;12.9.4&quot;
+local newversion = &quot;12.9.5&quot;
 if mmp.version and mmp.version ~= newversion then 
   if not mmp.game then mmp.echo(&quot;Mapper script updated - Thanks! I don't know what game are you connected to, though - so please reconnect. Thanks!&quot;)
   else mmp.echo(&quot;Mapper script updated - thanks! You don't need to restart.&quot;) end
@@ -3799,7 +3836,7 @@ function mmp.canmove(fromtimer)
     (not gmcp.Char.Vitals.psisuper or gmcp.Char.Vitals.psisuper ~= &quot;0&quot;) and
     (not gmcp.Char.Vitals.psisub or gmcp.Char.Vitals.psisub ~= &quot;0&quot;) and
     (not gmcp.Char.Vitals.psiid or gmcp.Char.Vitals.psiid ~= &quot;0&quot;) and
-    (not gmcp.Char.Vitals.prone or gmcp.Char.Vitals.prone == &quot;0&quot;)
+    (not gmcp.Char.Vitals.prone or (gmcp.Char.Vitals.prone == &quot;0&quot; or gmcp.Char.Vitals.prone == 0))
   ) then
 	if fromtimer then
       mmp.move()
@@ -5437,6 +5474,7 @@ local s,m = xpcall(function ()
   local num = tonumber(num) or tonumber(gmcp.Room.Info.num)
   local currentexits = gmcp.Room.Info.exits
   local s = &quot;&quot;
+
   if not mmp.roomexists(num) then
     -- two-step method: if we can't determine a link via GMCP, we'll do it via last dir
     -- see if we can create and link this room with an existing one
@@ -6032,6 +6070,53 @@ end</script>
     farmlands = 31,
     volcanic = 32,
     [&quot;shores of Lake Moraelin&quot;] = 33,
+  }
+
+  mmp.envidsr = {};
+  for name, id in pairs(mmp.envids) do mmp.envidsr[id] = name end
+end</script>
+                        <eventHandlerList>
+                            <string>mmp logged in</string>
+                        </eventHandlerList>
+                    </Script>
+                </Script>
+                <Script isActive="yes" isFolder="no">
+                    <name>Lithmeria</name>
+                    <packageName></packageName>
+                    <script>-------------------------------------------------
+--         Put your Lua functions here.        --
+--                                             --
+-- Note that you can also use external Scripts --
+-------------------------------------------------
+</script>
+                    <eventHandlerList/>
+                    <Script isActive="yes" isFolder="no">
+                        <name>register_lithmerias_envdata</name>
+                        <packageName></packageName>
+                        <script>function register_lithmerias_envdata(_, game)
+  if game ~= &quot;Lithmeria&quot; then return end
+
+  mmp.envids =
+  {
+		beach = 11,
+		shallowwater = 4,
+		river = 4,
+		water = 4,
+		[&quot;deep water&quot;] = 4,
+		bridge = 6,
+		ocean = 4,
+		underground = 8,
+		cliffs = 1,
+		mountain = 1,
+		plains = 3,
+		forest = 2,
+		road = 6,
+		urban = 13,
+		building = 13,
+		tundra = 7,
+		swamp = 2,
+		jungle = 10,
+		desert = 11
   }
 
   mmp.envidsr = {};
