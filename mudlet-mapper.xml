@@ -6118,6 +6118,9 @@ end</script>
 		jungle = 10,
 		desert = 11
   }
+  for name, number in pairs(mmp.envids) do
+    mmp.envids[name] = number+256 -- adjust for in-built colors
+  end
 
   mmp.envidsr = {};
   for name, id in pairs(mmp.envids) do mmp.envidsr[id] = name end
