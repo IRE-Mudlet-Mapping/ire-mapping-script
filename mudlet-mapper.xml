@@ -3364,7 +3364,9 @@ end
 if not saveMap then
   mmp.echo(&quot;Your Mudlet can't save maps. Please upgrade it!&quot;)
 else
-  if matches[2] then
+  if matches[2] and matches[2] == &quot;custom&quot; then
+    s(invokeFileDialog(false, &quot;Please select the folder to save the map in and hit Open&quot;)..&quot;/Mudlet map from &quot;..os.date(&quot;%A %d, %b '%y&quot;)..&quot;.dat&quot;)
+  elseif matches[2] then
 	s(getMudletHomeDir()..&quot;/map/&quot;..matches[2])
   else
     s(&quot;&quot;)
@@ -3387,7 +3389,9 @@ end
 if not loadMap then
   mmp.echo(&quot;Your Mudlet can't load maps. Please upgrade it!&quot;)
 else
-  if matches[2] then
+  if matches[2] and matches[2] == &quot;custom&quot; then
+    s(invokeFileDialog(true, &quot;Please select the map file and click Open to load it&quot;))
+  elseif matches[2] then
 	s(getMudletHomeDir()..&quot;/map/&quot;..matches[2])
   else
     s(&quot;&quot;)
