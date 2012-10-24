@@ -3695,6 +3695,8 @@ function mmp.startup()
     mmp.echo(&quot;Please use the mconfig alias to set options!&quot;)
   end
 
+  mmp.highlight_unfinished_rooms()
+
   raiseEvent(&quot;mmp areas changed&quot;)
   mmp.firstRun = false
   mmp.echon(&quot;Mudlet Mapper script for IREs (&quot;..tostring(mmp.version)..&quot;) loaded! (&quot;)
@@ -4153,6 +4155,7 @@ end</script>
                 <name>Utilities</name>
                 <packageName></packageName>
                 <script>function mmp.echo(what)
+  what = what or &quot;&quot;
   moveCursorEnd(&quot;main&quot;) if getCurrentLine() ~= &quot;&quot; then echo&quot;\n&quot; end
   decho(&quot;&lt;112,229,0&gt;(&lt;73,149,0&gt;mapper&lt;112,229,0&gt;): &lt;255,255,255&gt;&quot;)
   cecho(what)
@@ -5211,6 +5214,19 @@ function mmp.oncontinent(areaid, continent)
   if not continents[continent] then return end
   
   return mmp.indexof_valueonly(continents[continent], areaid)
+end
+
+function mmp.highlight_unfinished_rooms()
+	for a,b in pairs (mmp.areatable) do
+		local roomList = getAreaRooms(b)
+		for c,d in pairs (roomList) do
+			if (getRoomName(d) == &quot;&quot;) then
+				local fgr,fgg,fgb = unpack(color_table.red)
+				local bgr,bgg,bgb = unpack(color_table.blue)
+				highlightRoom(d, fgr,fgg,fgb,bgr,bgg,bgb, 1, 100, 100)
+			end
+		end
+	end
 end</script>
                 <eventHandlerList/>
             </Script>
@@ -5421,6 +5437,10 @@ local function makeroom(oldid, newid, x,y,z)
   setRoomCoordinates(newid, x, y, z)
   setRoomArea(newid, getRoomArea(oldid))
 
+  local fgr,fgg,fgb = unpack(color_table.red)
+  local bgr,bgg,bgb = unpack(color_table.blue)
+  highlightRoom(newid, fgr,fgg,fgb,bgr,bgg,bgb, 1, 100, 100)
+
   if mmp.envids[gmcp.Room.Info.environment] then
     setRoomEnv(newid, mmp.envids[gmcp.Room.Info.environment])
   else setRoomEnv(newid, getRoomEnv(oldid)) end
@@ -5506,6 +5526,7 @@ local s,m = xpcall(function ()
 
     if getRoomName(num):lower() ~= string.lower(rootroomname) then
       setRoomName(num, rootroomname)
+      unHighlightRoom(num)
       s = s .. (#s &gt; 0 and &quot; &quot; or &quot;&quot;) .. &quot;Updated room name to &quot;..rootroomname..&quot;.&quot;
     end
 
