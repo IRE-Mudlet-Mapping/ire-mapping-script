@@ -6145,7 +6145,8 @@ end</script>
 		tundra = 7,
 		swamp = 2,
 		jungle = 10,
-		desert = 11
+		desert = 11,
+         highway = 6
   }
   for name, number in pairs(mmp.envids) do
     mmp.envids[name] = number+256 -- adjust for in-built colors
