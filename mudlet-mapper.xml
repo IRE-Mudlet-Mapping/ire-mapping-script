@@ -35,11 +35,13 @@
                     <string>There's water ahead of you. You'll have to swim in that direction to make it </string>
                     <string>There's water ahead of you. You'll have to SWIM </string>
                     <string>You'll have to swim to make it through the water in that direction.</string>
+                    <string>The water is too deep for you to walk that way, you must swim.</string>
                 </regexCodeList>
                 <regexCodePropertyList>
                     <integer>3</integer>
                     <integer>3</integer>
                     <integer>2</integer>
+                    <integer>3</integer>
                     <integer>3</integer>
                 </regexCodePropertyList>
             </Trigger>
@@ -3650,7 +3652,7 @@ mmp = mmp or {
   specials = {}
 }
 
-local newversion = &quot;12.9.5&quot;
+local newversion = &quot;12.9.6&quot;
 if mmp.version and mmp.version ~= newversion then 
   if not mmp.game then mmp.echo(&quot;Mapper script updated - Thanks! I don't know what game are you connected to, though - so please reconnect. Thanks!&quot;)
   else mmp.echo(&quot;Mapper script updated - thanks! You don't need to restart.&quot;) end
@@ -3695,6 +3697,7 @@ function mmp.startup()
     mmp.echo(&quot;Please use the mconfig alias to set options!&quot;)
   end
 
+  mmp_regenerate_areas()
   mmp.highlight_unfinished_rooms()
 
   raiseEvent(&quot;mmp areas changed&quot;)
@@ -5217,6 +5220,7 @@ function mmp.oncontinent(areaid, continent)
 end
 
 function mmp.highlight_unfinished_rooms()
+	if not mmp.areatable then return end
 	for a,b in pairs (mmp.areatable) do
 		local roomList = getAreaRooms(b)
 		for c,d in pairs (roomList) do
@@ -6136,7 +6140,7 @@ end</script>
 		plains = 3,
 		forest = 2,
 		road = 6,
-		urban = 13,
+		urban = 8,
 		building = 13,
 		tundra = 7,
 		swamp = 2,
