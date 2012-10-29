@@ -110,8 +110,10 @@ end</script>
                 <colorTriggerBgColor>#000000</colorTriggerBgColor>
                 <regexCodeList>
                     <string>Now now, don't be so hasty!</string>
+                    <string>You can not move that fast!</string>
                 </regexCodeList>
                 <regexCodePropertyList>
+                    <integer>3</integer>
                     <integer>3</integer>
                 </regexCodePropertyList>
             </Trigger>
@@ -3273,19 +3275,19 @@ setRoomUserData(1, &quot;areaContinents&quot;, toserialize)</script>
                 <Alias isActive="yes" isFolder="no">
                     <name>Clear the map completely</name>
                     <script>if not mmp.map_delete_warning then
-  mmp.echo(&quot;Are you really, really, really sure you want to delete all of the map to go to a blank state?&quot;)
+  mmp.echo(&quot;Are you really, really, really sure you want to delete all of the map to go to a blank state? Do the command again if you're certain.&quot;)
   mmp.map_delete_warning = true
   return
 end
 
 mmp.echo(&quot;Okay, deleting...&quot;)
 
-tempTimer(0, function()
+tempTimer(.1, function()
   for name, id in pairs(getAreaTable()) do
     deleteArea(tonumber(id))
   end
 
-  mmp.echo(&quot;Deleted... everything. Boom.&quot;)
+  mmp.echo(&quot;Deleted everything. It's all gone.&quot;)
   mmp.map_delete_warning = nil
   centerview(1)
 end)</script>
@@ -3337,12 +3339,39 @@ mmp.echo(&quot;Wiped all continents data.&quot;)</script>
                     <packageName></packageName>
                     <regex>^clear continent data$</regex>
                 </Alias>
+                <Alias isActive="yes" isFolder="no">
+                    <name>Delete suffixed periods</name>
+                    <script>mmp.echo(&quot;Deleting removing all periods at the end of room names...&quot;)
+local c = 0
+
+for area, areaname in pairs(mmp.areatabler) do
+  local rooms = getAreaRooms(area) or {}
+  for i = 0, #rooms do
+    local name = getRoomName(rooms[i] or 0)
+    if string.ends(name, &quot;.&quot;) then
+      name = string.sub(name, 1, (#name-1))
+      setRoomName(rooms[i], name)
+      mmp.echo(string.format(&quot;Patched up room #%s - '%s'&quot;, rooms[i], name))
+      c = c + 1
+    end
+  end
+end
+
+mmp.echo(string.format(&quot;Fixed up %s room%s.&quot;, c, (c ~= 1 and 's' or '')))</script>
+                    <command></command>
+                    <packageName></packageName>
+                    <regex>^delete suffixed periods$</regex>
+                </Alias>
             </AliasGroup>
             <Alias isActive="yes" isFolder="no">
                 <name>Toggle mapping mode</name>
                 <script>if (matches[2] and matches[2] == &quot;on&quot;) or (not matches[2] and not mmp.editing) then
   mmp.editing = true
   enableAlias(&quot;mm Mapping&quot;)
+
+  mmp_regenerate_areas()
+  mmp.highlight_unfinished_rooms()
+
   mmp.echo(&quot;Mapping mode enabled. Happy mapping!&quot;)
 elseif (matches[2] and matches[2] == &quot;off&quot;) or (not matches[2] and mmp.editing) then
   mmp.editing = false
@@ -3652,7 +3681,7 @@ mmp = mmp or {
   specials = {}
 }
 
-local newversion = &quot;12.9.6&quot;
+local newversion = &quot;12.9.7&quot;
 if mmp.version and mmp.version ~= newversion then 
   if not mmp.game then mmp.echo(&quot;Mapper script updated - Thanks! I don't know what game are you connected to, though - so please reconnect. Thanks!&quot;)
   else mmp.echo(&quot;Mapper script updated - thanks! You don't need to restart.&quot;) end
@@ -3682,6 +3711,7 @@ function mmp.startup()
   private_settings[&quot;duanatharan&quot;] = createOption(false, mmp.setDuanatharan, { &quot;boolean&quot; }, &quot;Use Atavian Wings in Achaea?&quot;)
   private_settings[&quot;winglanguage&quot;] = createOption(&quot;&quot;, mmp.setWingsLanguage, { &quot;string&quot; }, &quot;Speak non-default language for wings:&quot;)
   private_settings[&quot;removewings&quot;] = createOption(true, mmp.setWingsRemoval, { &quot;boolean&quot; }, &quot;Remove Wings after using them?&quot;)
+  private_settings[&quot;slowwalk&quot;] = createOption(true, mmp.setSlowWalk, { &quot;boolean&quot; }, &quot;Walk slowly instead of as quick as possible?&quot;)
 
 
   mmp.settings = createOptionsTable(private_settings)
@@ -3697,14 +3727,21 @@ function mmp.startup()
     mmp.echo(&quot;Please use the mconfig alias to set options!&quot;)
   end
 
-  mmp_regenerate_areas()
-  mmp.highlight_unfinished_rooms()
-
   raiseEvent(&quot;mmp areas changed&quot;)
   mmp.firstRun = false
   mmp.echon(&quot;Mudlet Mapper script for IREs (&quot;..tostring(mmp.version)..&quot;) loaded! (&quot;)
   echoLink(&quot;homepage&quot;,&quot;(openUrl or openURL)'http://wiki.mudlet.org/w/IRE_mapping_script'&quot;, &quot;Clicky clicky to read up on what's this about&quot;)
   echo(&quot;)\n&quot;)
+end
+
+function mmp.setmovetimer(time)
+  if mmp.movetimer then killTimer(mmp.movetimer) end
+  if mmp.settings.slowwalk then return end
+
+  mmp.movetimer = tempTimer(getNetworkLatency()+(time or 0.5), function ()
+    mmp.movetimer = false
+    mmp.move()
+  end)
 end
 
 -- moves to the next room we need to.
@@ -3721,12 +3758,8 @@ function mmp.move()
   
   cmd = cmd or ''
 
-  -- timeout before loadstring, so it can set it's own if it would like to.
-  if mmp.movetimer then killTimer(mmp.movetimer) end
-  mmp.movetimer = tempTimer(getNetworkLatency()+0.5, function ()
-    mmp.movetimer = false
-    mmp.move()
-  end)
+  -- timeout before loadstring, so it can set its own if it would like to.
+  mmp.setmovetimer()
 
   if string.starts(cmd, &quot;script:&quot;) then 
     cmd = string.gsub( cmd, &quot;script:&quot;, &quot;&quot; ) loadstring(cmd)()
@@ -3744,11 +3777,7 @@ function mmp.swim()
   send(&quot;swim &quot; .. speedWalkDir[speedWalkCounter], false)
   if mmp.settings.showcmds then cecho(string.format(&quot;&lt;red&gt;(&lt;maroon&gt;%d - &lt;dark_slate_grey&gt;swim %s&lt;red&gt;)&quot;, #speedWalkDir - speedWalkCounter + 1, speedWalkDir[speedWalkCounter])) end
 
-  if mmp.movetimer then killTimer(mmp.movetimer) end
-  mmp.movetimer = tempTimer(getNetworkLatency()+2.5, function ()
-    mmp.movetimer = false
-    mmp.move()
-  end)
+  mmp.setmovetimer(2.5)
 end
 
 function mmp.enterGrate()
@@ -3758,11 +3787,7 @@ function mmp.enterGrate()
   send(&quot;enter grate &quot; .. speedWalkDir[speedWalkCounter], false)
   if mmp.settings.showcmds then cecho(string.format(&quot;&lt;red&gt;(&lt;maroon&gt;%d - &lt;dark_slate_grey&gt;enter grate %s&lt;red&gt;)&quot;, #speedWalkDir - speedWalkCounter + 1, speedWalkDir[speedWalkCounter])) end
 
-  if mmp.movetimer then killTimer(mmp.movetimer) end
-  mmp.movetimer = tempTimer(getNetworkLatency()+2.5, function ()
-    mmp.movetimer = false
-    mmp.move()
-  end)
+  mmp.setmovetimer(2.5)
 end
 
 function mmp.openDoor()
@@ -3772,11 +3797,7 @@ function mmp.openDoor()
   send(&quot;open door &quot; .. speedWalkDir[speedWalkCounter], false)
   if mmp.settings.showcmds then cecho(string.format(&quot;&lt;red&gt;(&lt;maroon&gt;%d - &lt;dark_slate_grey&gt;open door %s&lt;red&gt;)&quot;, #speedWalkDir - speedWalkCounter + 1, speedWalkDir[speedWalkCounter])) end
 
-  if mmp.movetimer then killTimer(mmp.movetimer) end
-  mmp.movetimer = tempTimer(getNetworkLatency(), function ()
-    mmp.movetimer = false
-    mmp.move()
-  end)
+  mmp.setmovetimer(getNetworkLatency())
 end
 
 function mmp.unlockDoor()
@@ -3786,19 +3807,11 @@ function mmp.unlockDoor()
   send(&quot;unlock door &quot; .. speedWalkDir[speedWalkCounter], false)
   if mmp.settings.showcmds then cecho(string.format(&quot;&lt;red&gt;(&lt;maroon&gt;%d - &lt;dark_slate_grey&gt;unlock door %s&lt;red&gt;)&quot;, #speedWalkDir - speedWalkCounter, speedWalkDir[speedWalkCounter])) end
 
-  if mmp.movetimer then killTimer(mmp.movetimer) end
-  mmp.movetimer = tempTimer(getNetworkLatency(), function ()
-    mmp.movetimer = false
-    mmp.move()
-  end)
+  mmp.setmovetimer(getNetworkLatency())
 end
 
 function mmp.customwalkdelay(delay)
-  if mmp.movetimer then killTimer(mmp.movetimer) end
-  mmp.movetimer = tempTimer(getNetworkLatency()+delay, function ()
-    mmp.movetimer = false
-    mmp.move()
-  end)
+  mmp.setmovetimer(getNetworkLatency()+delay)
 end
 
 function mmp.stop()
@@ -5186,6 +5199,14 @@ function mmp.setWingsRemoval()
   mmp.echo(&quot;Okay - &quot;..(mmp.settings.removewings and &quot;will&quot; or &quot;won't&quot;)..&quot; remove wings after using them.&quot;)
 end
 
+function mmp.setSlowWalk()
+  if mmp.settings.slowwalk then
+    mmp.echo(&quot;Will walk 'slowly' - that is, only try to move in a direction once per room, and move again once we've arrived. This will make us better walkers when it's very laggy, as we won't spam directions unnecessarily and miss certain turns - but it does mean that if we fail to move for some reason, we won't retry again either at all.&quot;)
+  else
+    mmp.echo(&quot;Will walk as quick as we can!&quot;)
+  end
+end
+
 -- patches welcome to finish this function.
 function mmp.removecontinent(area, continent)
   local tmp = getRoomUserData(1, &quot;areaContinents&quot;)
@@ -5527,11 +5548,14 @@ local s,m = xpcall(function ()
     if string.ends(rootroomname, &quot; (road)&quot;) then
       rootroomname = string.sub(rootroomname, 1, (#rootroomname-7))
     end
+    if string.ends(rootroomname, &quot;.&quot;) then
+      rootroomname = string.sub(rootroomname, 1, (#rootroomname-1))
+    end
 
     if getRoomName(num):lower() ~= string.lower(rootroomname) then
       setRoomName(num, rootroomname)
       unHighlightRoom(num)
-      s = s .. (#s &gt; 0 and &quot; &quot; or &quot;&quot;) .. &quot;Updated room name to &quot;..rootroomname..&quot;.&quot;
+      s = s .. (#s &gt; 0 and &quot; &quot; or &quot;&quot;) .. &quot;Updated room name to '&quot;..rootroomname..&quot;'.&quot;
     end
 
     -- autolink exits
