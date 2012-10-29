@@ -3681,7 +3681,7 @@ mmp = mmp or {
   specials = {}
 }
 
-local newversion = &quot;12.9.7&quot;
+local newversion = &quot;12.10.1&quot;
 if mmp.version and mmp.version ~= newversion then 
   if not mmp.game then mmp.echo(&quot;Mapper script updated - Thanks! I don't know what game are you connected to, though - so please reconnect. Thanks!&quot;)
   else mmp.echo(&quot;Mapper script updated - thanks! You don't need to restart.&quot;) end
@@ -3711,7 +3711,7 @@ function mmp.startup()
   private_settings[&quot;duanatharan&quot;] = createOption(false, mmp.setDuanatharan, { &quot;boolean&quot; }, &quot;Use Atavian Wings in Achaea?&quot;)
   private_settings[&quot;winglanguage&quot;] = createOption(&quot;&quot;, mmp.setWingsLanguage, { &quot;string&quot; }, &quot;Speak non-default language for wings:&quot;)
   private_settings[&quot;removewings&quot;] = createOption(true, mmp.setWingsRemoval, { &quot;boolean&quot; }, &quot;Remove Wings after using them?&quot;)
-  private_settings[&quot;slowwalk&quot;] = createOption(true, mmp.setSlowWalk, { &quot;boolean&quot; }, &quot;Walk slowly instead of as quick as possible?&quot;)
+  private_settings[&quot;slowwalk&quot;] = createOption(false, mmp.setSlowWalk, { &quot;boolean&quot; }, &quot;Walk slowly instead of as quick as possible?&quot;)
 
 
   mmp.settings = createOptionsTable(private_settings)
@@ -6170,7 +6170,8 @@ end</script>
 		swamp = 2,
 		jungle = 10,
 		desert = 11,
-         highway = 6
+        highway = 6,
+        path = 6,
   }
   for name, number in pairs(mmp.envids) do
     mmp.envids[name] = number+256 -- adjust for in-built colors
