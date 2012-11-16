@@ -2745,7 +2745,7 @@ mmp.settings:setOption(matches[3], val)</script>
                 <packageName></packageName>
                 <regex>^area list$</regex>
             </Alias>
-            <AliasGroup isActive="yes" isFolder="yes">
+            <AliasGroup isActive="no" isFolder="yes">
                 <name>mm Mapping</name>
                 <script></script>
                 <command></command>
@@ -3681,9 +3681,9 @@ mmp = mmp or {
   specials = {}
 }
 
-local newversion = &quot;12.10.1&quot;
+local newversion = &quot;12.11.1&quot;
 if mmp.version and mmp.version ~= newversion then 
-  if not mmp.game then mmp.echo(&quot;Mapper script updated - Thanks! I don't know what game are you connected to, though - so please reconnect. Thanks!&quot;)
+  if not mmp.game then mmp.echo(&quot;Mapper script updated - Thanks! I don't know what game are you connected to, though - so please reconnect, if you could.&quot;)
   else mmp.echo(&quot;Mapper script updated - thanks! You don't need to restart.&quot;) end
 end
 mmp.version = newversion
@@ -3858,6 +3858,11 @@ function mmp.canmove(fromtimer)
     (not gmcp.Char.Vitals.psisuper or gmcp.Char.Vitals.psisuper ~= &quot;0&quot;) and
     (not gmcp.Char.Vitals.psisub or gmcp.Char.Vitals.psisub ~= &quot;0&quot;) and
     (not gmcp.Char.Vitals.psiid or gmcp.Char.Vitals.psiid ~= &quot;0&quot;) and
+    (not gmcp.Char.Balance or gmcp.Char.Balance.List.balance == &quot;1&quot;) and
+    (not gmcp.Char.Balance or gmcp.Char.Balance.List.equilibrium == &quot;1&quot;) and
+    (not gmcp.Char.Balance or gmcp.Char.Balance.List.rarm == &quot;1&quot;) and
+    (not gmcp.Char.Balance or gmcp.Char.Balance.List.larm == &quot;1&quot;) and
+    (not gmcp.Char.Balance or gmcp.Char.Balance.List.legs == &quot;1&quot;) and
     (not gmcp.Char.Vitals.prone or (gmcp.Char.Vitals.prone == &quot;0&quot; or gmcp.Char.Vitals.prone == 0))
   ) then
 	if fromtimer then
@@ -5049,7 +5054,7 @@ function mmp.areaLabels (where, exact)
     for labelid, labeltext in pairs(t) do
       fg(&quot;DimGrey&quot;)
       echo(string.format(&quot;  %d) %s (&quot;, labelid, labeltext))
-      fg&quot;orange_red&quot; setUnderline(true) echoLink('-', string.format('deleteMapLabel(%d, %d)', areaid, labelid), &quot;Delete label #&quot;..labelid..&quot; from &quot;..getRoomAreaName(areaid))
+      fg&quot;orange_red&quot; setUnderline(true) echoLink('-', string.format('deleteMapLabel(%d, %d); mmp.echo(&quot;Deleted label #'..labelid..'&quot;)', areaid, labelid), &quot;Delete label #&quot;..labelid..&quot; from &quot;..getRoomAreaName(areaid))
       setUnderline(false) echo&quot;)\n&quot;
     end
     resetFormat()
@@ -5178,7 +5183,7 @@ end
 function mmp.chageMapSource()
   local use = mmp.settings.crowdmap and true or false
   if use and not mmp.game or mmp.game ~= &quot;achaea&quot; then
-    mmp.echo(&quot;Sorry - the crowdsourced map is only available for use in Achaea. If you'd like to help start one for your game, please post at http://forums.mudlet.org/viewtopic.php?f=13&amp;t=1696&quot;)
+    mmp.echo(&quot;Sorry - the crowdsourced map is only available for use in Achaea. If you'd like to help start one for your game, please post at http://forums.mudlet.org/viewtopic.php?f=13&amp;t=1696. If you are playing Achaea, then it is likely that you just downloaded the script - and it doens't know what you are playing. Reconnect and it'll know.&quot;)
     mmp.settings.crowdmap = false
   elseif use and not loadMap then
    mmp.echo(&quot;Sorry - your Mudlet is too old and can't load maps. Please update: http://forums.mudlet.org/viewtopic.php?f=5&amp;t=1874&quot;)
@@ -5243,7 +5248,7 @@ end
 function mmp.highlight_unfinished_rooms()
 	if not mmp.areatable then return end
 	for a,b in pairs (mmp.areatable) do
-		local roomList = getAreaRooms(b)
+		local roomList = getAreaRooms(b) or {}
 		for c,d in pairs (roomList) do
 			if (getRoomName(d) == &quot;&quot;) then
 				local fgr,fgg,fgb = unpack(color_table.red)
