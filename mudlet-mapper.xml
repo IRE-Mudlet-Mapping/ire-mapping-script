@@ -3099,12 +3099,12 @@ if char == &quot;clear&quot; then
   mmp.echo(&quot;Cleared the character from &quot;..room..&quot; (&quot;..getRoomName(room)..&quot;)&quot;)
 else
   setRoomChar(room, char)
-  mmp.echo(&quot;Set the character on &quot;..room..&quot; (&quot;..getRoomName(room)..&quot;)&quot;)
+  mmp.echo(&quot;Set the &quot;..char:sub(1,1)..&quot; character on &quot;..room..&quot; (&quot;..getRoomName(room)..&quot;)&quot;)
 end
 centerview(mmp.currentroom)</script>
                     <command></command>
                     <packageName></packageName>
-                    <regex>^rcc ([\w\$\+\-\@\#]+)(?: (\w+))?$</regex>
+                    <regex>^rcc ([^ ]+)(?: (\w+))?$</regex>
                 </Alias>
                 <Alias isActive="yes" isFolder="no">
                     <name>Set room weight</name>
@@ -3681,7 +3681,7 @@ mmp = mmp or {
   specials = {}
 }
 
-local newversion = &quot;12.11.1&quot;
+local newversion = &quot;12.11.2&quot;
 if mmp.version and mmp.version ~= newversion then 
   if not mmp.game then mmp.echo(&quot;Mapper script updated - Thanks! I don't know what game are you connected to, though - so please reconnect, if you could.&quot;)
   else mmp.echo(&quot;Mapper script updated - thanks! You don't need to restart.&quot;) end
@@ -4434,7 +4434,7 @@ end
 function mmp.echoRoomList(areaname, exact)
   local id, msg, multiples = mmp.findAreaID(areaname, exact)
   if id then
-    local roomlist, endresult = getAreaRooms(id), {}
+    local roomlist, endresult = getAreaRooms(id) or {}, {}
 
     -- obtain a room list for each of the room IDs we got
     for _, id in pairs(roomlist) do
@@ -4960,7 +4960,7 @@ function mmp.viewArea (where, exact)
   local areaid, msg, multiples = mmp.findAreaID(where, exact)
   if areaid then
     -- center on the first room ID, which typically is the start of an area
-    local rooms = getAreaRooms(areaid)
+    local rooms = getAreaRooms(areaid) or {}
     if not rooms[1] then mmp.echo(&quot;The area has no rooms in it.&quot;) else
     centerview(rooms[1]) end
 
@@ -5718,7 +5718,7 @@ end</script>
                 <packageName></packageName>
                 <script>function mmp_relock_areas()
 	for area in pairs(mmp.locked) do
-		local rooms = getAreaRooms(area)
+		local rooms = getAreaRooms(area) or {}
 		for _, roomid in pairs(rooms) do
 			lockRoom(roomid, true)
 		end
@@ -6216,7 +6216,7 @@ function mmp.getMaxID()
   for area, _ in pairs(mmp.areatabler) do
     local ok, t = pcall(getAreaRooms, area)
     if ok then
-      for _, id in pairs(t) do
+      for _, id in pairs(t or {}) do
         roomIDs[id] = true
       end
     end
