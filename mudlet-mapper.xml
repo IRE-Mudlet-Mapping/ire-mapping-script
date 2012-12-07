@@ -67,32 +67,6 @@
                     <integer>3</integer>
                 </regexCodePropertyList>
             </Trigger>
-            <Trigger isActive="no" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
-                <name>Gallop</name>
-                <script>--[[ this breaks galloping in Achaea because it misaligns where the mapper is in the path
-when combined with the GMCP event. What was this necessary for?
-speedWalkCounter = speedWalkCounter - 1
-speedwalking(&quot;Room&quot;, speedWalkPath[speedWalkCounter])
-]]</script>
-                <triggerType>0</triggerType>
-                <conditonLineDelta>99</conditonLineDelta>
-                <mStayOpen>0</mStayOpen>
-                <mCommand></mCommand>
-                <packageName></packageName>
-                <mFgColor>#ff0000</mFgColor>
-                <mBgColor>#ffff00</mBgColor>
-                <mSoundFile></mSoundFile>
-                <colorTriggerFgColor>#000000</colorTriggerFgColor>
-                <colorTriggerBgColor>#000000</colorTriggerBgColor>
-                <regexCodeList>
-                    <string>You kick your mount in the haunches.</string>
-                    <string>You kick your mount in the haunches towards the</string>
-                </regexCodeList>
-                <regexCodePropertyList>
-                    <integer>3</integer>
-                    <integer>2</integer>
-                </regexCodePropertyList>
-            </Trigger>
             <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
                 <name>Too quick</name>
                 <script>if mmp.autowalking then
@@ -1757,7 +1731,7 @@ end</script>
                 </Trigger>
                 <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="yes" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
                     <name>Astrology scry</name>
-                    <script>mmp.locateAndEcho(multimatches[2][2])</script>
+                    <script>mmp.locateAndEcho(multimatches[2][3], multimatches[2][2])</script>
                     <triggerType>0</triggerType>
                     <conditonLineDelta>0</conditonLineDelta>
                     <mStayOpen>0</mStayOpen>
@@ -3666,12 +3640,7 @@ end</script>
             <Script isActive="yes" isFolder="no">
                 <name>speedwalking</name>
                 <packageName></packageName>
-                <script>speedWalkWatch = createStopWatch()
-speedWalkPath = speedWalkPath or {}
-speedWalkDir = speedWalkDir or {}
-speedWalkCounter = 0
-
--- mmp = mudlet mapper
+                <script>-- mmp = mudlet mapper namespace
 mmp = mmp or {
   paused = false,
   autowalking = false,
@@ -3681,7 +3650,19 @@ mmp = mmp or {
   specials = {}
 }
 
-local newversion = &quot;12.11.2&quot;
+speedWalkWatch = createStopWatch()
+
+-- populated by Mudlet from getPath() and gotoRoom()
+speedWalkPath = speedWalkPath or {}
+speedWalkDir = speedWalkDir or {}
+speedWalkCounter = 0
+
+-- actually used by the mapper for walking
+mmp.speedWalkPath = mmp.speedWalkPath or {}
+mmp.speedWalkDir = mmp.speedWalkDir or {}
+
+
+local newversion = &quot;12.12.1&quot;
 if mmp.version and mmp.version ~= newversion then 
   if not mmp.game then mmp.echo(&quot;Mapper script updated - Thanks! I don't know what game are you connected to, though - so please reconnect, if you could.&quot;)
   else mmp.echo(&quot;Mapper script updated - thanks! You don't need to restart.&quot;) end
@@ -3751,9 +3732,9 @@ function mmp.move()
   if speedWalkCounter == 0 then speedWalkCounter = 1 end
 
   local cmd
-  if mmp.settings[&quot;caravan&quot;] then cmd = &quot;lead caravan &quot;..speedWalkDir[speedWalkCounter]
+  if mmp.settings[&quot;caravan&quot;] then cmd = &quot;lead caravan &quot;..mmp.speedWalkDir[speedWalkCounter]
   else
-    cmd = speedWalkDir[speedWalkCounter]
+    cmd = mmp.speedWalkDir[speedWalkCounter]
   end
   
   cmd = cmd or ''
@@ -3763,49 +3744,49 @@ function mmp.move()
 
   if string.starts(cmd, &quot;script:&quot;) then 
     cmd = string.gsub( cmd, &quot;script:&quot;, &quot;&quot; ) loadstring(cmd)()
-    if mmp.settings.showcmds then cecho(string.format(&quot;&lt;red&gt;(&lt;maroon&gt;%d - &lt;dark_slate_grey&gt;%s&lt;red&gt;)&quot;, #speedWalkDir - speedWalkCounter + 1, &quot;&lt;script&gt;&quot;)) end
+    if mmp.settings.showcmds then cecho(string.format(&quot;&lt;red&gt;(&lt;maroon&gt;%d - &lt;dark_slate_grey&gt;%s&lt;red&gt;)&quot;, #mmp.speedWalkDir - speedWalkCounter + 1, &quot;&lt;script&gt;&quot;)) end
   else 
     send(cmd, false)
-    if mmp.settings.showcmds then cecho(string.format(&quot;&lt;red&gt;(&lt;maroon&gt;%d - &lt;dark_slate_grey&gt;%s&lt;red&gt;)&quot;, #speedWalkDir - speedWalkCounter + 1, cmd)) end
+    if mmp.settings.showcmds then cecho(string.format(&quot;&lt;red&gt;(&lt;maroon&gt;%d - &lt;dark_slate_grey&gt;%s&lt;red&gt;)&quot;, #mmp.speedWalkDir - speedWalkCounter + 1, cmd)) end
   end
 end
 
 function mmp.swim()
   -- not going anywhere? don't do anything
-  if not speedWalkDir[speedWalkCounter] then return end
+  if not mmp.speedWalkDir[speedWalkCounter] then return end
 
-  send(&quot;swim &quot; .. speedWalkDir[speedWalkCounter], false)
-  if mmp.settings.showcmds then cecho(string.format(&quot;&lt;red&gt;(&lt;maroon&gt;%d - &lt;dark_slate_grey&gt;swim %s&lt;red&gt;)&quot;, #speedWalkDir - speedWalkCounter + 1, speedWalkDir[speedWalkCounter])) end
+  send(&quot;swim &quot; .. mmp.speedWalkDir[speedWalkCounter], false)
+  if mmp.settings.showcmds then cecho(string.format(&quot;&lt;red&gt;(&lt;maroon&gt;%d - &lt;dark_slate_grey&gt;swim %s&lt;red&gt;)&quot;, #mmp.speedWalkDir - speedWalkCounter + 1, mmp.speedWalkDir[speedWalkCounter])) end
 
   mmp.setmovetimer(2.5)
 end
 
 function mmp.enterGrate()
   -- not going anywhere? don't do anything
-  if not speedWalkDir[speedWalkCounter] then return end
+  if not mmp.speedWalkDir[speedWalkCounter] then return end
 
-  send(&quot;enter grate &quot; .. speedWalkDir[speedWalkCounter], false)
-  if mmp.settings.showcmds then cecho(string.format(&quot;&lt;red&gt;(&lt;maroon&gt;%d - &lt;dark_slate_grey&gt;enter grate %s&lt;red&gt;)&quot;, #speedWalkDir - speedWalkCounter + 1, speedWalkDir[speedWalkCounter])) end
+  send(&quot;enter grate &quot; .. mmp.speedWalkDir[speedWalkCounter], false)
+  if mmp.settings.showcmds then cecho(string.format(&quot;&lt;red&gt;(&lt;maroon&gt;%d - &lt;dark_slate_grey&gt;enter grate %s&lt;red&gt;)&quot;, #mmp.speedWalkDir - speedWalkCounter + 1, mmp.speedWalkDir[speedWalkCounter])) end
 
   mmp.setmovetimer(2.5)
 end
 
 function mmp.openDoor()
   -- not going anywhere? don't do anything
-  if not speedWalkDir[speedWalkCounter] then return end
+  if not mmp.speedWalkDir[speedWalkCounter] then return end
 
-  send(&quot;open door &quot; .. speedWalkDir[speedWalkCounter], false)
-  if mmp.settings.showcmds then cecho(string.format(&quot;&lt;red&gt;(&lt;maroon&gt;%d - &lt;dark_slate_grey&gt;open door %s&lt;red&gt;)&quot;, #speedWalkDir - speedWalkCounter + 1, speedWalkDir[speedWalkCounter])) end
+  send(&quot;open door &quot; .. mmp.speedWalkDir[speedWalkCounter], false)
+  if mmp.settings.showcmds then cecho(string.format(&quot;&lt;red&gt;(&lt;maroon&gt;%d - &lt;dark_slate_grey&gt;open door %s&lt;red&gt;)&quot;, #mmp.speedWalkDir - speedWalkCounter + 1, mmp.speedWalkDir[speedWalkCounter])) end
 
   mmp.setmovetimer(getNetworkLatency())
 end
 
 function mmp.unlockDoor()
   -- not going anywhere? don't do anything
-  if not speedWalkDir[speedWalkCounter] then return end
+  if not mmp.speedWalkDir[speedWalkCounter] then return end
 
-  send(&quot;unlock door &quot; .. speedWalkDir[speedWalkCounter], false)
-  if mmp.settings.showcmds then cecho(string.format(&quot;&lt;red&gt;(&lt;maroon&gt;%d - &lt;dark_slate_grey&gt;unlock door %s&lt;red&gt;)&quot;, #speedWalkDir - speedWalkCounter, speedWalkDir[speedWalkCounter])) end
+  send(&quot;unlock door &quot; .. mmp.speedWalkDir[speedWalkCounter], false)
+  if mmp.settings.showcmds then cecho(string.format(&quot;&lt;red&gt;(&lt;maroon&gt;%d - &lt;dark_slate_grey&gt;unlock door %s&lt;red&gt;)&quot;, #mmp.speedWalkDir - speedWalkCounter, mmp.speedWalkDir[speedWalkCounter])) end
 
   mmp.setmovetimer(getNetworkLatency())
 end
@@ -3815,8 +3796,8 @@ function mmp.customwalkdelay(delay)
 end
 
 function mmp.stop()
-  speedWalkPath = {}
-  speedWalkDir = {}
+  mmp.speedWalkPath = {}
+  mmp.speedWalkDir = {}
   speedWalkCounter = 0
   stopStopWatch(speedWalkWatch)
   --if mmp.movetimer then killTimer( mmp.movetimer ) end
@@ -3902,23 +3883,23 @@ function speedwalking( event, num )
 
   if mmp.movetimer then killTimer(mmp.movetimer); mmp.movetimer = false end
 
-  if num == speedWalkPath[#speedWalkPath] then
+  if num == mmp.speedWalkPath[#mmp.speedWalkPath] then
     local walktime = stopStopWatch(speedWalkWatch)
     mmp.echo(string.format(&quot;We've arrived! Took us %.1fs.\n&quot;, walktime))
     raiseEvent(&quot;mmapper arrived&quot;)
     if mmp.settings.shackle then expandAlias(&quot;wear shackle&quot;) end
-    speedWalkPath = {}
-    speedWalkDir = {}
+    mmp.speedWalkPath = {}
+    mmp.speedWalkDir = {}
     speedWalkCounter = 0
     mmp.autowalking = false
-  elseif speedWalkPath[speedWalkCounter] == num then
+  elseif mmp.speedWalkPath[speedWalkCounter] == num then
     speedWalkCounter = speedWalkCounter + 1
     mmp.move()
-  elseif #speedWalkPath&gt; 0 then -- ended up somewhere we didn't want to be?
+  elseif #mmp.speedWalkPath&gt; 0 then -- ended up somewhere we didn't want to be?
     speedWalkMoved = false
     -- re-calculate path then
     mmp.echo(&quot;Ended up off the path, recalculating a new path...&quot;)
-    local destination = speedWalkPath[#speedWalkPath]
+    local destination = mmp.speedWalkPath[#mmp.speedWalkPath]
     if not mmp.getPath(num, destination) then
       mmp.echo(string.format(&quot;Don't know how to get to %d (%s) anymore :(&quot;,
         destination, getRoomName(destination)))
@@ -3963,8 +3944,8 @@ function mmp.gotoRoom (where, dashtype)
   -- if getPath worked, then the dirs and room #'s tables were populated for us
   if not mmp.getPath(mmp.currentroom, tonumber(where)) then
     mmp.echo(&quot;Don't know how to get there (&quot;..tostring(where)..&quot;) from here :(&quot;)
-    speedWalkPath = {}
-    speedWalkDir = {}
+    mmp.speedWalkPath = {}
+    mmp.speedWalkDir = {}
     speedWalkCounter = 0
     raiseEvent(&quot;mmapper failed path&quot;)
     if mmp.settings.shackle then expandAlias(&quot;wear shackle&quot;) end
@@ -4018,8 +3999,8 @@ function mmp.gotoArea (where, number, dashtype, exact)
 
   for id, _ in pairs(possibleRooms) do
     if mmp.getPath(mmp.currentroom, tonumber(id)) then
-      if shortestBorder==0 or #shortestPath &gt; #speedWalkPath then
-        shortestPath = speedWalkPath
+      if shortestBorder==0 or #shortestPath &gt; #mmp.speedWalkPath then
+        shortestPath = mmp.speedWalkPath
         shortestBorder = tonumber(id)
       end
     end
@@ -4027,8 +4008,8 @@ function mmp.gotoArea (where, number, dashtype, exact)
 
   if shortestBorder == 0 then
     mmp.echo(&quot;Don't know how to get there from here :(&quot;)
-    speedWalkPath = {}
-    speedWalkDir = {}
+    mmp.speedWalkPath = {}
+    mmp.speedWalkDir = {}
     speedWalkCounter = 0
     raiseEvent(&quot;mmapper failed path&quot;)
     return
@@ -4038,16 +4019,19 @@ function mmp.gotoArea (where, number, dashtype, exact)
 end
 
 function doSpeedWalk(dashtype)
+  mmp.speedWalkDir = speedWalkDir
+  mmp.speedWalkPath = speedWalkPath
+
   resetStopWatch(speedWalkWatch)
   startStopWatch(speedWalkWatch)
   if mmp.settings[&quot;gallop&quot;] or mmp.settings[&quot;dash&quot;] or mmp.settings.sprint or dashtype then
-    mmp.fixPath(mmp.currentroom, speedWalkPath[#speedWalkPath],
+    mmp.fixPath(mmp.currentroom, mmp.speedWalkPath[#mmp.speedWalkPath],
       (mmp.settings[&quot;gallop&quot;] and &quot;gallop&quot;) or (mmp.settings[&quot;dash&quot;] and &quot;dash&quot;) or (mmp.settings.sprint and &quot;sprint&quot;) or (mmp.settings.runaway and &quot;runaway&quot;) or dashtype)
   end
 
-  mmp.fixSpecialExits(speedWalkDir)
+  mmp.fixSpecialExits(mmp.speedWalkDir)
 
-  if #speedWalkPath == 0 then
+  if #mmp.speedWalkPath == 0 then
     mmp.echo(&quot;Couldn't find a path to the destination :(&quot;)
     raiseEvent(&quot;mmapper failed path&quot;)
     if mmp.settings.shackle then expandAlias(&quot;wear shackle&quot;) end
@@ -4057,17 +4041,17 @@ function doSpeedWalk(dashtype)
   mmp.autowalking = true
 
   -- this is a fix: convert nums to actual numbers
-  for i = 1, #speedWalkPath do
-    speedWalkPath[i] = tonumber(speedWalkPath[i])
+  for i = 1, #mmp.speedWalkPath do
+    mmp.speedWalkPath[i] = tonumber(mmp.speedWalkPath[i])
   end
 
   if mmp.settings.shackle then expandAlias(&quot;remove shackle&quot;) end
   if not mmp.paused then
-    mmp.echon(&quot;Starting speedwalk from &quot;..(atcp.RoomNum or gmcp.Room.Info.num)..&quot; to &quot;) echoLink(speedWalkPath[#speedWalkPath], 'gotoRoom &quot;' .. speedWalkPath[#speedWalkPath].. '&quot;', 'Go to ' .. speedWalkPath[#speedWalkPath]) echo(&quot;: &quot;)
+    mmp.echon(&quot;Starting speedwalk from &quot;..(atcp.RoomNum or gmcp.Room.Info.num)..&quot; to &quot;) echoLink(mmp.speedWalkPath[#mmp.speedWalkPath], 'gotoRoom &quot;' .. mmp.speedWalkPath[#mmp.speedWalkPath].. '&quot;', 'Go to ' .. mmp.speedWalkPath[#mmp.speedWalkPath]) echo(&quot;: &quot;)
     speedWalkCounter = 1
     if mmp.canmove() then mmp.move() else echo(&quot;(when we get balance back / aren't hindered)&quot;) end
   else
-    mmp.echo(&quot;Will go to &quot;..speedWalkPath[#speedWalkPath]..&quot; as soon as the mapper is unpaused.&quot;)
+    mmp.echo(&quot;Will go to &quot;..mmp.speedWalkPath[#mmp.speedWalkPath]..&quot; as soon as the mapper is unpaused.&quot;)
   end
 end
 
@@ -4079,8 +4063,8 @@ function mmp.failpath()
 
   raiseEvent(&quot;mmapper failed path&quot;)
   if mmp.settings.shackle then expandAlias(&quot;wear shackle&quot;) end
-  speedWalkPath = {}
-  speedWalkDir = {}
+  mmp.speedWalkPath = {}
+  mmp.speedWalkDir = {}
   speedWalkCounter = 0
   if mmp.movetimer then killTimer( mmp.movetimer ); mmp.movetimer = nil end
 end
@@ -4104,10 +4088,10 @@ function mmp.fixPath(rFrom,rTo,dashtype)
   local repCount = 1
   local index = 1
   local dashExaust = false
-  while speedWalkDir[index] do
+  while mmp.speedWalkDir[index] do
     dashExaust = false
     repCount = 1
-    while speedWalkDir[index+repCount] == speedWalkDir[index] do
+    while mmp.speedWalkDir[index+repCount] == mmp.speedWalkDir[index] do
       repCount = repCount + 1
       if repCount == 11 then
         dashExaust = true
@@ -4116,31 +4100,31 @@ function mmp.fixPath(rFrom,rTo,dashtype)
     end
     if repCount &gt; 1 then
       -- Found direction repitition. Calculate dash path.
-      local exits = getRoomExits(speedWalkPath[index+(repCount-1)])
+      local exits = getRoomExits(mmp.speedWalkPath[index+(repCount-1)])
       local pname = &quot;&quot;
-      for word in speedWalkDir[index]:gmatch(&quot;%w&quot;) do pname = pname .. (dRef[word] or word) end
+      for word in mmp.speedWalkDir[index]:gmatch(&quot;%w&quot;) do pname = pname .. (dRef[word] or word) end
       if not exits[pname] or dashExaust then
         -- Final room in this direction does not continue, dash!
-        table.insert(currentPath,string.format(&quot;%s %s&quot;,dashtype,speedWalkDir[index]))
-        currentIds[#currentIds+1] = speedWalkPath[index+repCount-1]
+        table.insert(currentPath,string.format(&quot;%s %s&quot;,dashtype,mmp.speedWalkDir[index]))
+        currentIds[#currentIds+1] = mmp.speedWalkPath[index+repCount-1]
       else
         -- Final room in this direction continues onwards, don't dash
         for i = 1,repCount do
-          table.insert(currentPath,speedWalkDir[index])
-          currentIds[#currentIds+1] = speedWalkPath[index+i-1]
+          table.insert(currentPath,mmp.speedWalkDir[index])
+          currentIds[#currentIds+1] = mmp.speedWalkPath[index+i-1]
         end
       end
       index = index + repCount
     else
       -- No repetition, just add the direction.
-      table.insert(currentPath,speedWalkDir[index])
-      currentIds[#currentIds+1] = speedWalkPath[index]
+      table.insert(currentPath,mmp.speedWalkDir[index])
+      currentIds[#currentIds+1] = mmp.speedWalkPath[index]
       index = index + 1
     end
   end
 
-  speedWalkDir = currentPath
-  speedWalkPath = currentIds
+  mmp.speedWalkDir = currentPath
+  mmp.speedWalkPath = currentIds
   return true
 end
 
@@ -4366,13 +4350,13 @@ function mmp.getPath(from, to)
   if not resulttbl then
     local boolean = getPath(from, to)
     -- save it into the cache &amp; send away
-    getpathcache[key] = {boolean, speedWalkDir, speedWalkPath}
+    getpathcache[key] = {boolean, mmp.speedWalkDir, mmp.speedWalkPath}
     return boolean
   end
 
   -- or if it is, retrieve &amp; send away
-  speedWalkDir = getpathcache[key][2]
-  speedWalkPath = getpathcache[key][3]
+  mmp.speedWalkDir = getpathcache[key][2]
+  mmp.speedWalkPath = getpathcache[key][3]
   return getpathcache[key][1]
 end
 
@@ -5054,7 +5038,7 @@ function mmp.areaLabels (where, exact)
     for labelid, labeltext in pairs(t) do
       fg(&quot;DimGrey&quot;)
       echo(string.format(&quot;  %d) %s (&quot;, labelid, labeltext))
-      fg&quot;orange_red&quot; setUnderline(true) echoLink('-', string.format('deleteMapLabel(%d, %d); mmp.echo(&quot;Deleted label #'..labelid..'&quot;)', areaid, labelid), &quot;Delete label #&quot;..labelid..&quot; from &quot;..getRoomAreaName(areaid))
+      fg&quot;orange_red&quot; setUnderline(true) echoLink('delete', string.format('deleteMapLabel(%d, %d); mmp.echo(&quot;Deleted label #'..labelid..'&quot;)', areaid, labelid), &quot;Delete label #&quot;..labelid..&quot; from &quot;..getRoomAreaName(areaid))
       setUnderline(false) echo&quot;)\n&quot;
     end
     resetFormat()
@@ -5075,16 +5059,10 @@ end
 
 function mmp.echoPath(from, to)
 	assert(tonumber(from) and tonumber(to), &quot;mmp.getPath: both from and to have to be room IDs&quot;)
-	local getpathcache = {}
-	setmetatable(getpathcache, {__mode = &quot;kv&quot;})
-	local key = string.format(&quot;%s_%s&quot;, from, to)
-	local resulttbl = getpathcache[key]
-	if not resulttbl then
-		local boolean = getPath(from, to)
-		getpathcache[key] = {boolean, speedWalkDir, speedWalkPath}
+	if mmp.getPath(from, to) then
 		mmp.echo(&quot;&lt;white&gt;Directions from &lt;yellow&gt;&quot; .. string.upper(searchRoom(from)) .. &quot; &lt;white&gt;to &lt;yellow&gt;&quot; .. string.upper(searchRoom(to)) .. &quot;&lt;white&gt;:&quot;)
 		mmp.echo(table.concat(speedWalkDir, &quot;, &quot;))
-		return speedWalkDir
+		return mmp.speedWalkDir
 	end
 end
 
@@ -5800,7 +5778,7 @@ end</script>
 function mmapper_achaea_went_outside()
 local s,m = pcall(function()
   if not mmp.autowalking or not (mmp.settings.duanathar or mmp.settings.duanatharan) or mmp.game ~= &quot;achaea&quot; or 
-    (mmp.currentroom == speedWalkPath[#speedWalkPath]) or
+    (mmp.currentroom == mmp.speedWalkPath[#mmp.speedWalkPath]) or
     not mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Prime&quot;) then return end
 
   -- repath, maybe that'll allow us to use wings now.
@@ -5824,16 +5802,16 @@ local s,m = pcall(function()
       madeduanathar = true
     end
 
-  local oldpath, olddirs = speedWalkPath, speedWalkDir
-  mmp.getPath(mmp.currentroom, speedWalkPath[#speedWalkPath]) -- don't need to check return value since that fact shouldnt've changed
+  local oldpath, olddirs = mmp.speedWalkPath, mmp.speedWalkDir
+  mmp.getPath(mmp.currentroom, mmp.speedWalkPath[#mmp.speedWalkPath]) -- don't need to check return value since that fact shouldnt've changed
   
   -- if our path didn't change, re-instate it as it was (since the new path starts from this room that we checked at)
-  if not speedWalkDir[1]:find(&quot;duanathar&quot;, 1, true) then
-    speedWalkPath, speedWalkDir = oldpath, olddirs
+  if not mmp.speedWalkDir[1]:find(&quot;duanathar&quot;, 1, true) then
+    mmp.speedWalkPath, mmp.speedWalkDir = oldpath, olddirs
   else
     speedWalkCounter = 0
     mmp.echo(&quot;We got outside - going to shortcut with wings.&quot;)
-    mmp.gotoRoom(speedWalkPath[#speedWalkPath])
+    mmp.gotoRoom(mmp.speedWalkPath[#mmp.speedWalkPath])
     mmp.ignore_speedwalking = true
   end
 
