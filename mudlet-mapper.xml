@@ -3662,7 +3662,7 @@ mmp.speedWalkPath = mmp.speedWalkPath or {}
 mmp.speedWalkDir = mmp.speedWalkDir or {}
 
 
-local newversion = &quot;12.12.1&quot;
+local newversion = &quot;12.12.2&quot;
 if mmp.version and mmp.version ~= newversion then 
   if not mmp.game then mmp.echo(&quot;Mapper script updated - Thanks! I don't know what game are you connected to, though - so please reconnect, if you could.&quot;)
   else mmp.echo(&quot;Mapper script updated - thanks! You don't need to restart.&quot;) end
@@ -3999,8 +3999,8 @@ function mmp.gotoArea (where, number, dashtype, exact)
 
   for id, _ in pairs(possibleRooms) do
     if mmp.getPath(mmp.currentroom, tonumber(id)) then
-      if shortestBorder==0 or #shortestPath &gt; #mmp.speedWalkPath then
-        shortestPath = mmp.speedWalkPath
+      if shortestBorder==0 or #shortestPath &gt; #speedWalkPath then
+        shortestPath = speedWalkPath
         shortestBorder = tonumber(id)
       end
     end
@@ -5777,6 +5777,7 @@ end</script>
                         <script>-- track whenever we need to use wings when we get outside!
 function mmapper_achaea_went_outside()
 local s,m = pcall(function()
+
   if not mmp.autowalking or not (mmp.settings.duanathar or mmp.settings.duanatharan) or mmp.game ~= &quot;achaea&quot; or 
     (mmp.currentroom == mmp.speedWalkPath[#mmp.speedWalkPath]) or
     not mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Prime&quot;) then return end
@@ -5802,13 +5803,10 @@ local s,m = pcall(function()
       madeduanathar = true
     end
 
-  local oldpath, olddirs = mmp.speedWalkPath, mmp.speedWalkDir
   mmp.getPath(mmp.currentroom, mmp.speedWalkPath[#mmp.speedWalkPath]) -- don't need to check return value since that fact shouldnt've changed
   
   -- if our path didn't change, re-instate it as it was (since the new path starts from this room that we checked at)
-  if not mmp.speedWalkDir[1]:find(&quot;duanathar&quot;, 1, true) then
-    mmp.speedWalkPath, mmp.speedWalkDir = oldpath, olddirs
-  else
+  if speedWalkDir[1]:find(&quot;duanathar&quot;, 1, true) then
     speedWalkCounter = 0
     mmp.echo(&quot;We got outside - going to shortcut with wings.&quot;)
     mmp.gotoRoom(mmp.speedWalkPath[#mmp.speedWalkPath])
