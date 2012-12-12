@@ -2719,7 +2719,7 @@ mmp.settings:setOption(matches[3], val)</script>
                 <packageName></packageName>
                 <regex>^area list$</regex>
             </Alias>
-            <AliasGroup isActive="no" isFolder="yes">
+            <AliasGroup isActive="yes" isFolder="yes">
                 <name>mm Mapping</name>
                 <script></script>
                 <command></command>
@@ -3336,6 +3336,57 @@ mmp.echo(string.format(&quot;Fixed up %s room%s.&quot;, c, (c ~= 1 and 's' or ''
                     <packageName></packageName>
                     <regex>^delete suffixed periods$</regex>
                 </Alias>
+                <Alias isActive="yes" isFolder="no">
+                    <name>Find single exits</name>
+                    <script>local c = 0
+
+for area, id in pairs(getAreaTable()) do
+  for _, roomid in pairs(getAreaRooms(id)) do
+    local exits = getRoomExits(roomid)
+    for dir, otherroom in pairs(exits) do
+      local otherexits = getRoomExits(otherroom)
+      if not table.contains(otherexits, roomid) then
+        echoLink(string.format(&quot;%s -&gt; %s is oneway (%s-&gt;%s type)\n&quot;, roomid, otherroom, 
+          (mmp.envidsr and mmp.envidsr[getRoomEnv(roomid)] or &quot;?&quot;),
+          (mmp.envidsr and mmp.envidsr[getRoomEnv(otherroom)] or &quot;?&quot;)),
+        [[mmp.gotoRoom(]]..roomid..[[)]], &quot;Click to go to the start room &quot;..roomid, true)
+        c = c + 1
+     end
+    end
+  end
+end
+
+mmp.echo(string.format(&quot;Found %s oneways.%s&quot;, c, (c &gt; 10 and &quot; Have fun. Click on lines to go to the rooms.&quot; or &quot;&quot;)))</script>
+                    <command></command>
+                    <packageName></packageName>
+                    <regex>^find single exits$</regex>
+                </Alias>
+                <Alias isActive="yes" isFolder="no">
+                    <name>Show char marks</name>
+                    <script>local c = 0
+local m = {}
+
+for area, id in pairs(getAreaTable()) do
+  for _, roomid in pairs(getAreaRooms(id)) do
+    local c = getRoomChar(roomid)
+    if c ~= '' then
+      m[c] = m[c] or {}
+      m[c][#m[c]+1] = roomid
+    end
+  end
+end
+
+for letter, rooms in pairs(m) do
+  table.sort(rooms)
+  mmp.echo(&quot;Rooms with the &lt;blue&gt;&quot;..letter..&quot;&lt;reset&gt; character on them:&quot;)
+  for i = 1, #rooms do
+    echo(string.format(&quot;  %-5s %s\n&quot;, rooms[i], getRoomName(rooms[i])))
+  end
+end</script>
+                    <command></command>
+                    <packageName></packageName>
+                    <regex>^show char marks$</regex>
+                </Alias>
             </AliasGroup>
             <Alias isActive="yes" isFolder="no">
                 <name>Toggle mapping mode</name>
@@ -3662,7 +3713,7 @@ mmp.speedWalkPath = mmp.speedWalkPath or {}
 mmp.speedWalkDir = mmp.speedWalkDir or {}
 
 
-local newversion = &quot;12.12.2&quot;
+local newversion = &quot;12.12.3&quot;
 if mmp.version and mmp.version ~= newversion then 
   if not mmp.game then mmp.echo(&quot;Mapper script updated - Thanks! I don't know what game are you connected to, though - so please reconnect, if you could.&quot;)
   else mmp.echo(&quot;Mapper script updated - thanks! You don't need to restart.&quot;) end
