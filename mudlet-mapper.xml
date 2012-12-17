@@ -3340,15 +3340,18 @@ mmp.echo(string.format(&quot;Fixed up %s room%s.&quot;, c, (c ~= 1 and 's' or ''
                     <name>Find single exits</name>
                     <script>local c = 0
 
+local getAreaRooms, getRoomExits, contains, echoLink, getRoomEnv, envidsr = 
+  getAreaRooms, getRoomExits, table.contains, echoLink, getRoomEnv, mmp.envidsr
+
 for area, id in pairs(getAreaTable()) do
   for _, roomid in pairs(getAreaRooms(id)) do
     local exits = getRoomExits(roomid)
     for dir, otherroom in pairs(exits) do
-      local otherexits = getRoomExits(otherroom)
-      if not table.contains(otherexits, roomid) then
+      local otherexits = getRoomExits(otherroom) or {}
+      if not contains(otherexits, roomid) then
         echoLink(string.format(&quot;%s -&gt; %s is oneway (%s-&gt;%s type)\n&quot;, roomid, otherroom, 
-          (mmp.envidsr and mmp.envidsr[getRoomEnv(roomid)] or &quot;?&quot;),
-          (mmp.envidsr and mmp.envidsr[getRoomEnv(otherroom)] or &quot;?&quot;)),
+          (envidsr and envidsr[getRoomEnv(roomid)] or &quot;?&quot;),
+          (envidsr and envidsr[getRoomEnv(otherroom)] or &quot;?&quot;)),
         [[mmp.gotoRoom(]]..roomid..[[)]], &quot;Click to go to the start room &quot;..roomid, true)
         c = c + 1
      end
@@ -3365,22 +3368,30 @@ mmp.echo(string.format(&quot;Found %s oneways.%s&quot;, c, (c &gt; 10 and &quot;
                     <name>Show char marks</name>
                     <script>local c = 0
 local m = {}
+local areas = getAreaTable()
+local show_area = table.size(areas) &gt; 1 and true or false
 
-for area, id in pairs(getAreaTable()) do
+for area, id in pairs(areas) do
   for _, roomid in pairs(getAreaRooms(id)) do
     local c = getRoomChar(roomid)
-    if c ~= '' then
+    if c ~= '' and c ~= ' ' then
       m[c] = m[c] or {}
       m[c][#m[c]+1] = roomid
     end
   end
 end
 
+if not next(m) then mmp.echo(&quot;This map has no char marks on it. Do mc on and rcc &lt;mark&gt; in a room to add them!&quot;) return end
+
 for letter, rooms in pairs(m) do
   table.sort(rooms)
   mmp.echo(&quot;Rooms with the &lt;blue&gt;&quot;..letter..&quot;&lt;reset&gt; character on them:&quot;)
   for i = 1, #rooms do
-    echo(string.format(&quot;  %-5s %s\n&quot;, rooms[i], getRoomName(rooms[i])))
+    if not show_area then
+      cecho(string.format(&quot;  &lt;sea_green&gt;%-5s&lt;reset&gt; %s\n&quot;, rooms[i], getRoomName(rooms[i])))
+    else
+      cecho(string.format(&quot;  &lt;sea_green&gt;%-5s&lt;reset&gt; %-35s &lt;dim_grey&gt;(in&lt;reset&gt; %s&lt;dim_grey&gt;)\n&quot;, rooms[i], getRoomName(rooms[i]), mmp.areatabler[getRoomArea(rooms[i])]))
+    end
   end
 end</script>
                     <command></command>
@@ -3438,6 +3449,9 @@ end</script>
     if not loadMap(loc) then
       mmp.echo(&quot;Couldn't save the map :(&quot;)
     else
+      mmp.lockWormholes(); mmp.lockSewers()
+      if mmp.settings.waterwalk then mmp.enableWaterWalk() else mmp.disableWaterWalk() end
+
       if loc ~= &quot;&quot; then mmp.echo(&quot;Map loaded.&quot;) else mmp.echo(&quot;Loaded the default map.&quot;) end
     end
 end
@@ -3713,7 +3727,7 @@ mmp.speedWalkPath = mmp.speedWalkPath or {}
 mmp.speedWalkDir = mmp.speedWalkDir or {}
 
 
-local newversion = &quot;12.12.3&quot;
+local newversion = &quot;12.12.4&quot;
 if mmp.version and mmp.version ~= newversion then 
   if not mmp.game then mmp.echo(&quot;Mapper script updated - Thanks! I don't know what game are you connected to, though - so please reconnect, if you could.&quot;)
   else mmp.echo(&quot;Mapper script updated - thanks! You don't need to restart.&quot;) end
@@ -3744,6 +3758,7 @@ function mmp.startup()
   private_settings[&quot;winglanguage&quot;] = createOption(&quot;&quot;, mmp.setWingsLanguage, { &quot;string&quot; }, &quot;Speak non-default language for wings:&quot;)
   private_settings[&quot;removewings&quot;] = createOption(true, mmp.setWingsRemoval, { &quot;boolean&quot; }, &quot;Remove Wings after using them?&quot;)
   private_settings[&quot;slowwalk&quot;] = createOption(false, mmp.setSlowWalk, { &quot;boolean&quot; }, &quot;Walk slowly instead of as quick as possible?&quot;)
+  private_settings[&quot;waterwalk&quot;] = createOption(true, mmp.setWaterWalk, { &quot;boolean&quot; }, &quot;Have waterwalk (don't avoid water)?&quot;)
 
 
   mmp.settings = createOptionsTable(private_settings)
@@ -4214,14 +4229,14 @@ end</script>
   what = what or &quot;&quot;
   moveCursorEnd(&quot;main&quot;) if getCurrentLine() ~= &quot;&quot; then echo&quot;\n&quot; end
   decho(&quot;&lt;112,229,0&gt;(&lt;73,149,0&gt;mapper&lt;112,229,0&gt;): &lt;255,255,255&gt;&quot;)
-  cecho(what)
+  cecho(tostring(what))
   echo(&quot;\n&quot;)
 end
 
 function mmp.echon(what)
   moveCursorEnd(&quot;main&quot;) if getCurrentLine() ~= &quot;&quot; then echo&quot;\n&quot; end
   decho(&quot;&lt;112,229,0&gt;(&lt;73,149,0&gt;mapper&lt;112,229,0&gt;): &lt;255,255,255&gt;&quot;)
-  cecho(what)
+  cecho(tostring(what))
 end
 
 function mmp.deleteLineP()
@@ -4247,7 +4262,7 @@ end
 function mmp.getnums(roomname, exact)
   local t = (not exact and mmp.searchRoom or mmp.searchRoomExact)(roomname)
 
-  if not next(t) then
+  if not t or not next(t) then
     return nil end
 
   local result = {}
@@ -4345,6 +4360,8 @@ local function endswith(s, suffix)
 end
 
 function mmp.searchRoomExact(what)
+  if type(what) ~= 'string' then return end
+
   local roomTable = mmp.searchRoom(what)
   local realResult = {}
   what = what:lower()
@@ -5241,6 +5258,40 @@ function mmp.setSlowWalk()
   end
 end
 
+function mmp.disableWaterWalk()
+  local c = 0
+  local getRoomEnv, setRoomWeight = getRoomEnv, setRoomWeight
+  for roomid, roomname in pairs(getRooms()) do
+    if mmp.waterenvs[getRoomEnv(roomid)] then
+      setRoomWeight(roomid, 3)
+      c = c + 1
+    end
+  end
+
+  return c
+end
+
+function mmp.enableWaterWalk()
+  local c = 0
+  local getRoomEnv, setRoomWeight = getRoomEnv, setRoomWeight
+  for roomid, roomname in pairs(getRooms()) do
+    if mmp.waterenvs[getRoomEnv(roomid)] then
+      setRoomWeight(roomid, 1)
+      c = c + 1
+    end
+  end
+
+  return c
+end
+
+function mmp.setWaterWalk()
+  if mmp.settings.waterwalk then
+    mmp.echo(&quot;Enabled waterwalk for &quot;..mmp.enableWaterWalk()..&quot; rooms - so we'll be treating land and water rooms the same now in terms of traverse speed over them.&quot;)
+  else
+    mmp.echo(&quot;Disabled waterwalk for &quot;..mmp.disableWaterWalk()..&quot; rooms - so we'll be preferring land rooms over water ones wherever it's quicker.&quot;)
+  end
+end
+
 -- patches welcome to finish this function.
 function mmp.removecontinent(area, continent)
   local tmp = getRoomUserData(1, &quot;areaContinents&quot;)
@@ -5815,6 +5866,10 @@ end</script>
     [&quot;Ocean floor&quot;] = 34
   }
 
+  mmp.waterenvs = {}
+  local waterids = { &quot;Freshwater&quot;, &quot;Ocean&quot;, &quot;River&quot;, &quot;Deep Ocean&quot;, &quot;Water&quot;, &quot;Reef&quot;, &quot;Ocean floor&quot; }
+  for i = 1, #waterids do mmp.waterenvs[mmp.envids[waterids[i]]] = true end
+
   mmp.envidsr = {};
   for name, id in pairs(mmp.envids) do mmp.envidsr[id] = name end
 end</script>
@@ -5939,6 +5994,9 @@ end</script>
     grotto = 70,
   }
 
+  local waterids = { &quot;River&quot;, &quot;Freshwater&quot;, &quot;Deep ocean&quot;, &quot;Reef&quot;, &quot;Underwater city&quot; }
+  for i = 1, #waterids do mmp.waterenvs[mmp.envids[waterids[i]]] = true end
+
   mmp.envidsr = {};
   for name, id in pairs(mmp.envids) do mmp.envidsr[id] = name end
 end</script>
@@ -6003,6 +6061,10 @@ end</script>
     concordance = 38,
     chaos = 39,
   }
+
+  mmp.waterenvs = {}
+  local waterids = { &quot;river&quot;, &quot;ocean&quot;, &quot;freshwater&quot;, &quot;deep ocean&quot; }
+  for i = 1, #waterids do mmp.waterenvs[mmp.envids[waterids[i]]] = true end
 
   mmp.envidsr = {};
   for name, id in pairs(mmp.envids) do mmp.envidsr[id] = name end
@@ -6101,6 +6163,10 @@ end</script>
     Tower = 79,
   }
 
+  mmp.waterenvs = {}
+  local waterids = { &quot;River&quot;, &quot;Ocean&quot;, &quot;Deep Ocean&quot;, &quot;Vast Ocean&quot;, &quot;Underground Lake&quot;, &quot;Tainted Water&quot;, &quot;Lake of Fire&quot; }
+  for i = 1, #waterids do mmp.waterenvs[mmp.envids[waterids[i]]] = true end
+
   mmp.envidsr = {};
   for name, id in pairs(mmp.envids) do mmp.envidsr[id] = name end
 end</script>
@@ -6157,6 +6223,10 @@ end</script>
     [&quot;shores of Lake Moraelin&quot;] = 33,
   }
 
+  mmp.waterenvs = {}
+  local waterids = { &quot;river&quot;, &quot;ocean&quot;, &quot;fresh water&quot;, &quot;reef&quot; }
+  for i = 1, #waterids do mmp.waterenvs[mmp.envids[waterids[i]]] = true end
+
   mmp.envidsr = {};
   for name, id in pairs(mmp.envids) do mmp.envidsr[id] = name end
 end</script>
@@ -6205,9 +6275,14 @@ end</script>
         highway = 6,
         path = 6,
   }
+
   for name, number in pairs(mmp.envids) do
     mmp.envids[name] = number+256 -- adjust for in-built colors
   end
+
+  mmp.waterenvs = {}
+  local waterids = { &quot;shallowwater&quot;, &quot;river&quot;, &quot;water&quot;, &quot;deep water&quot;, &quot;ocean&quot; }
+  for i = 1, #waterids do mmp.waterenvs[mmp.envids[waterids[i]]] = true end
 
   mmp.envidsr = {};
   for name, id in pairs(mmp.envids) do mmp.envidsr[id] = name end
@@ -6355,9 +6430,11 @@ local s,m = pcall(function()
       local wc = mmp.lockWormholes()
 	  local ws = mmp.lockSewers()
       if mmp.game == &quot;achaea&quot; and wc == 0 and ws == 0 then -- in achaea, using crowdmap, if we didn't get any special exits - it means Mudlet needs to be updated
-        mmp.echo(&quot;Sorry, it seems your Mudlet isn't compatible with the new crowdmap format - and the map cannot be loaded fully. Please update your Mudlet: http://svo.vadisystems.com/2012/08/crowdmap-fix-in-achaea/&quot;)
+        mmp.echo(&quot;Sorry, it seems your Mudlet isn't compatible with the new crowdmap format - and the map cannot be loaded fully. Please update your Mudlet:\n  http://svo.vadisystems.com/2012/08/crowdmap-fix-in-achaea/&quot;)
         return
       end
+
+      if mmp.settings.waterwalk then mmp.enableWaterWalk() else mmp.disableWaterWalk() end
       
       mmp.echo(&quot;Map loaded fine - enjoy!&quot;)
 
@@ -6385,9 +6462,11 @@ local s,m = pcall(function()
         local wc = mmp.lockWormholes()
 	    local ws = mmp.lockSewers()
         if mmp.game == &quot;achaea&quot; and wc == 0 and ws == 0 then -- in achaea, using crowdmap, if we didn't get any special exits - it means Mudlet needs to be updated
-          mmp.echo(&quot;Sorry, it seems your Mudlet isn't compatible with the new crowdmap format - and the map cannot be loaded fully. Please update your Mudlet: http://svo.vadisystems.com/2012/08/crowdmap-fix-in-achaea/&quot;)
+          mmp.echo(&quot;Sorry, it seems your Mudlet isn't compatible with the new crowdmap format - and the map cannot be loaded fully. Please update your Mudlet:\n  http://svo.vadisystems.com/2012/08/crowdmap-fix-in-achaea/&quot;)
           return
         end
+
+        if mmp.settings.waterwalk then mmp.enableWaterWalk() else mmp.disableWaterWalk() end
         
         mmp.echo(&quot;Map loaded successfully!&quot;)
 
