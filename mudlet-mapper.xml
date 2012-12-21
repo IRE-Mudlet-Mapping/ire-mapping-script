@@ -934,8 +934,10 @@ enableTrigger(&quot;Angel sense&quot;)</script>
                             <string>^\(Party\): \w+ says, &quot;(\w+) moved to (.+)\.&quot;$</string>
                             <string>^\(Party\): \w+ says, &quot;(\w+) is at (.+), in .+\.&quot;</string>
                             <string>^\(Party\): \w+ says, &quot;Trace: (\w+) moved to (.+)\.&quot;</string>
+                            <string>^\(Party\): \w+ says, &quot;(\w+) - (.+), in .+\.&quot;$</string>
                         </regexCodeList>
                         <regexCodePropertyList>
+                            <integer>1</integer>
                             <integer>1</integer>
                             <integer>1</integer>
                             <integer>1</integer>
@@ -2590,7 +2592,7 @@ cecho(&quot;)&quot;)
             <regex></regex>
             <Alias isActive="yes" isFolder="no">
                 <name>Go to ID or area</name>
-                <script>local where = matches[2]
+                <script>local where = matches[2]:lower()
 local gallop
 if command:ends(&quot;gallop&quot;) then
   gallop = &quot;gallop&quot;
@@ -3549,10 +3551,14 @@ end</script>
                 <name>Display Room Marks</name>
                 <script>local tmp= getRoomUserData(1, &quot;gotoMapping&quot;)
 if tmp~=&quot;&quot; then
-	local maptable=yajl.to_value(tmp)
+	local maptable = yajl.to_value(tmp) or {}
+    local sortedkeys = {}
+    for k in pairs(maptable) do sortedkeys[#sortedkeys+1] = k end
+    table.sort(sortedkeys)
+
     mmp.echo(&quot;Known marks in this map:&quot;)
     if next(maptable) then
-      for k,v in pairs(maptable) do echo(string.format(&quot;  %-21s  %s\n&quot;, tostring(k), tostring(v))) end
+      for i = 1, #sortedkeys do echo(string.format(&quot;  %-21s  %s\n&quot;, tostring(sortedkeys[i]), tostring(maptable[sortedkeys[i]]))) end
     else
       echo(&quot;  (none)\n&quot;)
     end
@@ -3727,7 +3733,7 @@ mmp.speedWalkPath = mmp.speedWalkPath or {}
 mmp.speedWalkDir = mmp.speedWalkDir or {}
 
 
-local newversion = &quot;12.12.4&quot;
+local newversion = &quot;12.12.5&quot;
 if mmp.version and mmp.version ~= newversion then 
   if not mmp.game then mmp.echo(&quot;Mapper script updated - Thanks! I don't know what game are you connected to, though - so please reconnect, if you could.&quot;)
   else mmp.echo(&quot;Mapper script updated - thanks! You don't need to restart.&quot;) end
@@ -4024,14 +4030,17 @@ function mmp.gotoRoom (where, dashtype)
 end
 
 function mmp.gotoArea (where, number, dashtype, exact)
-  if not where or not type(where)==&quot;string&quot; then
+  if not where or type(where) ~= &quot;string&quot; then
     mmp.echo(&quot;Where do you want to go to?&quot;) return end
+
+  local where = where:lower()
 
   number = tonumber(number)
   local tmp = getRoomUserData(1, &quot;gotoMapping&quot;)
   if not tmp or tmp == '' then tmp = &quot;[]&quot; end
 
-  local maptable = yajl.to_value(tmp)
+  local temp, maptable = yajl.to_value(tmp), {}
+  for k,v in pairs(temp) do maptable[k:lower()] = v end
 
   local goto = maptable[where]
   if goto then
@@ -6358,9 +6367,12 @@ end</script>
                 <Script isActive="yes" isFolder="no">
                     <name>mmp_downloaded_file</name>
                     <packageName></packageName>
-                    <script> function mmp_downloaded_file(_, filename)
-local s,m = pcall(function()
+                    <script>function mmp_downloaded_file(_, filename)
   if not io.exists(filename) then return end
+
+  -- workaround for https://bugs.launchpad.net/mudlet/+bug/1092769
+  if mmp[&quot;downloaded_file_block_&quot;..filename] then return end
+  mmp[&quot;downloaded_file_block_&quot;..filename] = tempTimer(5, [[mmp[&quot;downloaded_file_block_]]..filename..[[&quot;] = nil]])
 
   if filename == tostring(mmp.mapperfile) then   -- mapper script version
 	mmp.checkingupdates = false
@@ -6525,8 +6537,6 @@ local s,m = pcall(function()
 
     if s ~= currentmd5 then needupdate(currentmd5, s) end
   end
-end)
-if not s then display(m) end
 end</script>
                     <eventHandlerList>
                         <string>sysDownloadDone</string>
@@ -6665,7 +6675,8 @@ end</script>
                         <packageName></packageName>
                         <script>function mmp_checkupdatestart(...)
   if mmp.settings.updatemap then
-    tempTimer(math.random(3, 10), mmp.checkforupdate)
+    if mmp.checkforupdatetimer then killTimer(mmp.checkforupdatetimer) end
+    mmp.checkforupdatetimer = tempTimer(math.random(3, 10), mmp.checkforupdate)
   end
 end
 
