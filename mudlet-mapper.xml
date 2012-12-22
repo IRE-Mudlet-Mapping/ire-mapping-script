@@ -3733,7 +3733,7 @@ mmp.speedWalkPath = mmp.speedWalkPath or {}
 mmp.speedWalkDir = mmp.speedWalkDir or {}
 
 
-local newversion = &quot;12.12.5&quot;
+local newversion = &quot;12.12.6&quot;
 if mmp.version and mmp.version ~= newversion then 
   if not mmp.game then mmp.echo(&quot;Mapper script updated - Thanks! I don't know what game are you connected to, though - so please reconnect, if you could.&quot;)
   else mmp.echo(&quot;Mapper script updated - thanks! You don't need to restart.&quot;) end
@@ -6003,6 +6003,7 @@ end</script>
     grotto = 70,
   }
 
+  mmp.waterenvs = {}
   local waterids = { &quot;River&quot;, &quot;Freshwater&quot;, &quot;Deep ocean&quot;, &quot;Reef&quot;, &quot;Underwater city&quot; }
   for i = 1, #waterids do mmp.waterenvs[mmp.envids[waterids[i]]] = true end
 
