@@ -3733,7 +3733,7 @@ mmp.speedWalkPath = mmp.speedWalkPath or {}
 mmp.speedWalkDir = mmp.speedWalkDir or {}
 
 
-local newversion = &quot;12.12.6&quot;
+local newversion = &quot;12.12.7&quot;
 if mmp.version and mmp.version ~= newversion then 
   if not mmp.game then mmp.echo(&quot;Mapper script updated - Thanks! I don't know what game are you connected to, though - so please reconnect, if you could.&quot;)
   else mmp.echo(&quot;Mapper script updated - thanks! You don't need to restart.&quot;) end
@@ -5636,6 +5636,9 @@ local s,m = xpcall(function ()
     if string.starts(rootroomname, &quot;Flying above &quot;) then
       rootroomname = string.sub(rootroomname, -(#rootroomname-13))
     end
+    if string.starts(rootroomname, &quot;In the trees above &quot;) then
+      rootroomname = string.sub(rootroomname, -(#rootroomname-13))
+    end
     if string.starts(rootroomname, &quot;The ruins of &quot;) then
       rootroomname = string.sub(rootroomname, -(#rootroomname-13))
     end
@@ -6372,8 +6375,8 @@ end</script>
   if not io.exists(filename) then return end
 
   -- workaround for https://bugs.launchpad.net/mudlet/+bug/1092769
-  if mmp[&quot;downloaded_file_block_&quot;..filename] then return end
-  mmp[&quot;downloaded_file_block_&quot;..filename] = tempTimer(5, [[mmp[&quot;downloaded_file_block_]]..filename..[[&quot;] = nil]])
+--  if mmp[&quot;downloaded_file_block_&quot;..filename] then return end
+--  mmp[&quot;downloaded_file_block_&quot;..filename] = tempTimer(5, [[mmp[&quot;downloaded_file_block_]]..filename..[[&quot;] = nil]])
 
   if filename == tostring(mmp.mapperfile) then   -- mapper script version
 	mmp.checkingupdates = false
