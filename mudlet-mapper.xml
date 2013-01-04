@@ -3733,7 +3733,7 @@ mmp.speedWalkPath = mmp.speedWalkPath or {}
 mmp.speedWalkDir = mmp.speedWalkDir or {}
 
 
-local newversion = &quot;12.12.7&quot;
+local newversion = &quot;12.12.8&quot;
 if mmp.version and mmp.version ~= newversion then 
   if not mmp.game then mmp.echo(&quot;Mapper script updated - Thanks! I don't know what game are you connected to, though - so please reconnect, if you could.&quot;)
   else mmp.echo(&quot;Mapper script updated - thanks! You don't need to restart.&quot;) end
@@ -3765,6 +3765,18 @@ function mmp.startup()
   private_settings[&quot;removewings&quot;] = createOption(true, mmp.setWingsRemoval, { &quot;boolean&quot; }, &quot;Remove Wings after using them?&quot;)
   private_settings[&quot;slowwalk&quot;] = createOption(false, mmp.setSlowWalk, { &quot;boolean&quot; }, &quot;Walk slowly instead of as quick as possible?&quot;)
   private_settings[&quot;waterwalk&quot;] = createOption(true, mmp.setWaterWalk, { &quot;boolean&quot; }, &quot;Have waterwalk (don't avoid water)?&quot;)
+  private_settings[&quot;medallion&quot;] = createOption(false, mmp.setMedallion, { &quot;boolean&quot; }, &quot;Make use of your Medallion in Lusternia&quot;)
+  private_settings[&quot;fingerblade&quot;] = createOption(false, mmp.setFingerblade, { &quot;boolean&quot; }, &quot;Make use of your Fingerblade in Lusternia&quot;)
+  private_settings[&quot;belt&quot;] = createOption(false, mmp.setBelt, { &quot;boolean&quot; }, &quot;Make use of your Belt in Lusternia?&quot;)
+  private_settings[&quot;cubix&quot;] = createOption(false, mmp.setCubix, { &quot;boolean&quot; }, &quot;Make use of your Cubix in Lusternia&quot;)
+  private_settings[&quot;screwdriver&quot;] = createOption(false, mmp.setScrewdriver, { &quot;boolean&quot; }, &quot;Make use of your Screwdriver in Lusternia&quot;)
+  private_settings[&quot;wheel&quot;] = createOption(false, mmp.setWheel, { &quot;boolean&quot; }, &quot;Make use of your Wheel in Lusternia&quot;)
+  private_settings[&quot;mud&quot;] = createOption(false, mmp.setMud, { &quot;boolean&quot; }, &quot;Make use of your Mud in Lusternia&quot;)
+  private_settings[&quot;snowglobe&quot;] = createOption(false, mmp.setSnowglobe, { &quot;boolean&quot; }, &quot;Make use of your Snowglobe in Lusternia&quot;)
+  private_settings[&quot;cookie&quot;] = createOption(false, mmp.setCookie, { &quot;boolean&quot; }, &quot;Make use of your Cookie in Lusternia&quot;)
+  private_settings[&quot;head&quot;] = createOption(false, mmp.setHead, { &quot;boolean&quot; }, &quot;Make use of your Doll's Head in Lusternia&quot;)
+  private_settings[&quot;icicle&quot;] = createOption(false, mmp.setIcicle, { &quot;boolean&quot; }, &quot;Make use of your Icicle in Lusternia&quot;)
+  private_settings[&quot;tibia&quot;] = createOption(false, mmp.setTibia, { &quot;boolean&quot; }, &quot;Make use of your Tibia in Lusternia&quot;)
 
 
   mmp.settings = createOptionsTable(private_settings)
@@ -3991,13 +4003,21 @@ function mmp.gotoRoom (where, dashtype)
    return
   end
 
-  local madeduanathar, madeduanatharan
+  local madeduanathar, madeduanatharan, mademedallion, madefingerblade, madebelt, madecubix, madescrewdriver, madewheel, mademud, madesnowglobe, madecookie, madehead, madeicicle, madetibia
 
   local function getcmd(word)
-    return mmp.settings.removewings and 
-      [[script:sendAll(&quot;wear wings&quot;, &quot;say *]]..(mmp.settings.winglanguage)..[[ ]]..word..[[&quot;, &quot;remove wings&quot;, false)]]
-      or
-      [[script:send(&quot;say *]]..(mmp.settings.winglanguage)..[[ ]]..word..[[&quot;, false)]]
+		if mmp.game == &quot;achaea&quot; then
+    		return mmp.settings.removewings and 
+      			[[script:sendAll(&quot;wear wings&quot;, &quot;say *]]..(mmp.settings.winglanguage)..[[ ]]..word..[[&quot;, &quot;remove wings&quot;, false)]]
+      		or
+      			[[script:send(&quot;say *]]..(mmp.settings.winglanguage)..[[ ]]..word..[[&quot;, false)]]
+		elseif mmp.game == &quot;lusternia&quot; then
+			if word == &quot;snowglobe&quot; then
+				return [[script:send(&quot;shake snowglobe&quot;,false)]]
+			else
+				return [[script:send(&quot;touch ]]..word..[[&quot;, false)]]
+			end
+		end
   end
 
   if mmp.game == &quot;achaea&quot; and (mmp.settings.duanathar or mmp.settings.duanatharan) and gmcp.Room and not table.contains(gmcp.Room.Info.details, &quot;indoors&quot;) and mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Prime&quot;) then
@@ -4011,6 +4031,99 @@ function mmp.gotoRoom (where, dashtype)
       mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
       madeduanathar = true
     end
+	elseif mmp.game == &quot;lusternia&quot; and (mmp.settings.medallion or mmp.settings.fingerblade or mmp.settings.belt or mmp.settings.cubix or mmp.settings.screwdriver or mmp.settings.wheel or mmp.settings.mud or mmp.settings.snowglobe or mmp.settings.cookie or mmp.settings.head or mmp.settings.icicle or mmp.settings.tibia) and gmcp.Room and (not table.contains(gmcp.Room.Info.details,&quot;indoors&quot;) or table.contains(gmcp.Room.Info.details, &quot;an Aetherbubble&quot;)) then
+	if mmp.settings.medallion and mmp.usebix() then
+      addSpecialExit(mmp.currentroom, 13367, getcmd(&quot;medallion&quot;))
+      mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
+      mademedallion = true
+	end
+	if mmp.settings.fingerblade and mmp.usebix() then
+      addSpecialExit(mmp.currentroom, 18777, getcmd(&quot;fingerblade&quot;))
+      mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
+      madefingerblade = true
+	end 
+	if mmp.settings.belt and mmp.usebix() then
+      addSpecialExit(mmp.currentroom, 19627, getcmd(&quot;belt&quot;))
+      mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
+      madebelt = true
+	end
+	if mmp.settings.cubix and mmp.usebix() then
+      addSpecialExit(mmp.currentroom, 6184, getcmd(&quot;cubix&quot;))
+      mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
+      madecubix = true
+	end
+	if mmp.settings.screwdriver and mmp.usebubblix() then
+		if gmcp.Room.Info.area == &quot;the Facility&quot; then
+      		addSpecialExit(mmp.currentroom, 6831, getcmd(&quot;screwdriver&quot;))
+		elseif not table.contains(gmcp.Room.Info.details, &quot;an Aetherbubble&quot;) then
+      		addSpecialExit(mmp.currentroom, 10185, getcmd(&quot;screwdriver&quot;))
+		end
+      mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
+      madescrewdriver = true
+	end
+	if mmp.settings.wheel and mmp.usebubblix() then
+		if gmcp.Room.Info.area == &quot;the Dramube Triangle&quot; then
+      		addSpecialExit(mmp.currentroom, 6831, getcmd(&quot;wheel&quot;))
+		elseif not table.contains(gmcp.Room.Info.details, &quot;an Aetherbubble&quot;) then
+      		addSpecialExit(mmp.currentroom, 10509, getcmd(&quot;wheel&quot;))
+		end
+      mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
+      madewheel = true
+	end
+	if mmp.settings.mud and mmp.usebubblix() then
+		if gmcp.Room.Info.area == &quot;Mucklemarsh&quot; then
+      		addSpecialExit(mmp.currentroom, 6831, getcmd(&quot;mud&quot;))
+		elseif not table.contains(gmcp.Room.Info.details, &quot;an Aetherbubble&quot;) then
+      		addSpecialExit(mmp.currentroom, 9985, getcmd(&quot;mud&quot;))
+		end
+      mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
+      mademud = true
+	end
+	if mmp.settings.snowglobe and mmp.usebubblix() then
+		if gmcp.Room.Info.area == &quot;the Great Spirit Tree&quot; then
+      		addSpecialExit(mmp.currentroom, 6831, getcmd(&quot;snowglobe&quot;))
+		elseif not table.contains(gmcp.Room.Info.details, &quot;an Aetherbubble&quot;) then
+      		addSpecialExit(mmp.currentroom, 10992, getcmd(&quot;snowglobe&quot;))
+		end
+      mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
+      madesnowglobe = true
+	end
+	if mmp.settings.cookie and mmp.usebubblix() then
+		if gmcp.Room.Info.area == &quot;Crumkindivia&quot; then
+      		addSpecialExit(mmp.currentroom, 6831, getcmd(&quot;cookie&quot;))
+		elseif not table.contains(gmcp.Room.Info.details, &quot;an Aetherbubble&quot;) then
+      		addSpecialExit(mmp.currentroom, 9888, getcmd(&quot;cookie&quot;))
+		end
+      mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
+      madecookie = true
+	end
+	if mmp.settings.head and mmp.usebubblix() then
+		if gmcp.Room.Info.area == &quot;the Bubble of Bottledowns&quot; then
+      		addSpecialExit(mmp.currentroom, 6831, getcmd(&quot;doll&quot;))
+		elseif not table.contains(gmcp.Room.Info.details, &quot;an Aetherbubble&quot;) then
+      		addSpecialExit(mmp.currentroom, 11811, getcmd(&quot;doll&quot;))
+		end
+      mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
+      madedoll = true
+	end
+	if mmp.settings.icicle and mmp.usebubblix() then
+		if gmcp.Room.Info.area == &quot;Frosticia&quot; then
+      		addSpecialExit(mmp.currentroom, 6831, getcmd(&quot;icicle&quot;))
+		elseif not table.contains(gmcp.Room.Info.details, &quot;an Aetherbubble&quot;) then
+      		addSpecialExit(mmp.currentroom, 10457, getcmd(&quot;icicle&quot;))
+		end
+      mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
+      madeicicle = true
+	end
+	if mmp.settings.tibia and mmp.usebubblix() then
+		if gmcp.Room.Info.area == &quot;the Cankermore Battlegrounds&quot; then
+      		addSpecialExit(mmp.currentroom, 6831, getcmd(&quot;tibia&quot;))
+		elseif not table.contains(gmcp.Room.Info.details, &quot;an Aetherbubble&quot;) then
+      		addSpecialExit(mmp.currentroom, 11600, getcmd(&quot;tibia&quot;))
+		end
+      mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
+      madetibia = true
+	end
   end
 
   -- if getPath worked, then the dirs and room #'s tables were populated for us
@@ -4022,11 +4135,35 @@ function mmp.gotoRoom (where, dashtype)
     raiseEvent(&quot;mmapper failed path&quot;)
     if mmp.settings.shackle then expandAlias(&quot;wear shackle&quot;) end
     if madeduanatharan then mmp.clearspecials{4882, 3885} elseif madeduanathar then mmp.clearspecials{3885} end
+  	 if mademedallion then mmp.clearspecials{13367} end
+  	 if madefingerblade then mmp.clearspecials{18777} end
+  	 if madebelt then mmp.clearspecials{19627} end
+ 	 if madecubix then mmp.clearspecials{6184} end
+  	 if madescrewdriver then mmp.clearspecials{6831, 10185} end
+ 	 if madewheel then mmp.clearspecials{6831, 10509} end
+ 	 if mademud then mmp.clearspecials{6831, 9985} end
+ 	 if madesnowglobe then mmp.clearspecials{6831, 10992} end
+     if madecookie then mmp.clearspecials{6831, 9888} end
+ 	 if madehead then mmp.clearspecials{6831, 11811} end
+ 	 if madeicicle then mmp.clearspecials{6831, 10457} end
+ 	 if madetibia then mmp.clearspecials{6831, 11600} end
     return
   end
 
   doSpeedWalk(dashtype)
   if madeduanatharan then mmp.clearspecials{4882, 3885} elseif madeduanathar then mmp.clearspecials{3885} end
+  if mademedallion then mmp.clearspecials{13367} end
+  if madefingerblade then mmp.clearspecials{18777} end
+  if madebelt then mmp.clearspecials{19627} end
+  if madecubix then mmp.clearspecials{6184} end
+  if madescrewdriver then mmp.clearspecials{6831, 10185} end
+  if madewheel then mmp.clearspecials{6831, 10509} end
+  if mademud then mmp.clearspecials{6831, 9985} end
+  if madesnowglobe then mmp.clearspecials{6831, 10992} end
+  if madecookie then mmp.clearspecials{6831, 9888} end
+  if madehead then mmp.clearspecials{6831, 11811} end
+  if madeicicle then mmp.clearspecials{6831, 10457} end
+  if madetibia then mmp.clearspecials{6831, 11600} end
 end
 
 function mmp.gotoArea (where, number, dashtype, exact)
@@ -4107,6 +4244,7 @@ function doSpeedWalk(dashtype)
   mmp.fixSpecialExits(mmp.speedWalkDir)
 
   if #mmp.speedWalkPath == 0 then
+    mmp.autowalking = false
     mmp.echo(&quot;Couldn't find a path to the destination :(&quot;)
     raiseEvent(&quot;mmapper failed path&quot;)
     if mmp.settings.shackle then expandAlias(&quot;wear shackle&quot;) end
@@ -4122,7 +4260,7 @@ function doSpeedWalk(dashtype)
 
   if mmp.settings.shackle then expandAlias(&quot;remove shackle&quot;) end
   if not mmp.paused then
-    mmp.echon(&quot;Starting speedwalk from &quot;..(atcp.RoomNum or gmcp.Room.Info.num)..&quot; to &quot;) echoLink(mmp.speedWalkPath[#mmp.speedWalkPath], 'gotoRoom &quot;' .. mmp.speedWalkPath[#mmp.speedWalkPath].. '&quot;', 'Go to ' .. mmp.speedWalkPath[#mmp.speedWalkPath]) echo(&quot;: &quot;)
+    mmp.echon(&quot;Starting speedwalk from &quot;..(atcp.RoomNum or gmcp.Room.Info.num)..&quot; to &quot;) echoLink(mmp.speedWalkPath[#mmp.speedWalkPath], 'mmp.gotoRoom &quot;' .. mmp.speedWalkPath[#mmp.speedWalkPath].. '&quot;', 'Go to ' .. mmp.speedWalkPath[#mmp.speedWalkPath]) echo(&quot;: &quot;)
     speedWalkCounter = 1
     if mmp.canmove() then mmp.move() else echo(&quot;(when we get balance back / aren't hindered)&quot;) end
   else
@@ -4413,28 +4551,11 @@ function mmp.roomWhoFind(query)
   end
 end
 
--- DOES NOT ACCOUNT FOR CHANGING THE MAP YET (within a profile load), because we don't know when it happens
-local getpathcache = {}
-setmetatable(getpathcache, {__mode = &quot;kv&quot;}) -- weak keys/values = it'll periodically get cleaned up by gc
-
+-- used to cache, but with pathfinding much quicker now, this is not necessary
 function mmp.getPath(from, to)
   assert(tonumber(from) and tonumber(to), &quot;mmp.getPath: both from and to have to be room IDs&quot;)
 
-  local key = string.format(&quot;%s_%s&quot;, from, to)
-  local resulttbl = getpathcache[key]
-
-  -- not in cache?
-  if not resulttbl then
-    local boolean = getPath(from, to)
-    -- save it into the cache &amp; send away
-    getpathcache[key] = {boolean, mmp.speedWalkDir, mmp.speedWalkPath}
-    return boolean
-  end
-
-  -- or if it is, retrieve &amp; send away
-  mmp.speedWalkDir = getpathcache[key][2]
-  mmp.speedWalkPath = getpathcache[key][3]
-  return getpathcache[key][1]
+  return getPath(from, to)
 end
 
 function mmp.clearpathcache() getpathcache = {} end
@@ -5346,6 +5467,124 @@ function mmp.highlight_unfinished_rooms()
 			end
 		end
 	end
+end
+
+function mmp.usebix()
+	if mmp.game ~= &quot;lusternia&quot; then return end
+	
+	if (table.contains(gmcp.Room.Info.details, &quot;the Prime Material Plane&quot;) or
+		table.contains(gmcp.Room.Info.details, &quot;the Ethereal Plane&quot;) or
+		table.contains(gmcp.Room.Info.details, &quot;the Water Elemental Plane&quot;) or
+		table.contains(gmcp.Room.Info.details, &quot;the Air Elemental Plane&quot;) or
+		table.contains(gmcp.Room.Info.details, &quot;the Fire Elemental Plane&quot;) or
+		table.contains(gmcp.Room.Info.details, &quot;the Earth Elemental Plane&quot;) or
+		table.contains(gmcp.Room.Info.details, &quot;Celestia, Plane of Light&quot;) or
+		table.contains(gmcp.Room.Info.details, &quot;the Tainted Plane of Nil&quot;) or
+		table.contains(gmcp.Room.Info.details, &quot;the Cosmic Plane of Continuum&quot;) or
+		table.contains(gmcp.Room.Info.details, &quot;the Cosmic Plane of Vortex&quot;) or
+		table.contains(gmcp.Room.Info.details, &quot;the Astral Plane&quot;)) and
+		table.contains(gmcp.Room.Info.details, &quot;outdoors&quot;) then
+		return true
+	end
+	return false
+end
+
+function mmp.usebubblix()
+	if mmp.game ~= &quot;lusternia&quot; then return end
+	
+	if ((table.contains(gmcp.Room.Info.details, &quot;the Prime Material Plane&quot;) or
+		table.contains(gmcp.Room.Info.details, &quot;the Ethereal Plane&quot;) or
+		table.contains(gmcp.Room.Info.details, &quot;the Water Elemental Plane&quot;) or
+		table.contains(gmcp.Room.Info.details, &quot;the Air Elemental Plane&quot;) or
+		table.contains(gmcp.Room.Info.details, &quot;the Fire Elemental Plane&quot;) or
+		table.contains(gmcp.Room.Info.details, &quot;the Earth Elemental Plane&quot;)) and
+		table.contains(gmcp.Room.Info.details, &quot;outdoors&quot;)) or
+		table.contains(gmcp.Room.Info.details, &quot;an Aetherbubble&quot;) then		
+		return true
+	end
+	return false
+end
+
+function mmp.setMedallion()
+  mmp.clearpathcache() -- clear the cache so it'll use wings or will stop using wings
+
+  if mmp.settings.medallion then mmp.echo(&quot;Okay, will see about using Medallion whenever it's quicker&quot;)
+  else mmp.echo(&quot;Won't use Medallion anymore.&quot;) end
+end
+
+function mmp.setFingerblade()
+  mmp.clearpathcache() -- clear the cache so it'll use wings or will stop using wings
+
+  if mmp.settings.fingerblade then mmp.echo(&quot;Okay, will see about using Fingerblade whenever it's quicker&quot;)
+  else mmp.echo(&quot;Won't use Fingerblade anymore.&quot;) end
+end
+
+function mmp.setBelt()
+  mmp.clearpathcache() -- clear the cache so it'll use wings or will stop using wings
+
+  if mmp.settings.belt then mmp.echo(&quot;Okay, will see about using Belt whenever it's quicker&quot;)
+  else mmp.echo(&quot;Won't use Belt anymore.&quot;) end
+end
+
+function mmp.setCubix()
+  mmp.clearpathcache() -- clear the cache so it'll use wings or will stop using wings
+
+  if mmp.settings.cubix then mmp.echo(&quot;Okay, will see about using Cubix whenever it's quicker&quot;)
+  else mmp.echo(&quot;Won't use Cubix anymore.&quot;) end
+end
+
+function mmp.setScrewdriver()
+  mmp.clearpathcache() -- clear the cache so it'll use wings or will stop using wings
+
+  if mmp.settings.screwdriver then mmp.echo(&quot;Okay, will see about using Screwdriver whenever it's quicker&quot;)
+  else mmp.echo(&quot;Won't use Screwdriver anymore.&quot;) end
+end
+
+function mmp.setWheel()
+  mmp.clearpathcache() -- clear the cache so it'll use wings or will stop using wings
+
+  if mmp.settings.wheel then mmp.echo(&quot;Okay, will see about using Wheel whenever it's quicker&quot;)
+  else mmp.echo(&quot;Won't use Wheel anymore.&quot;) end
+end
+
+function mmp.setMud()
+  mmp.clearpathcache() -- clear the cache so it'll use wings or will stop using wings
+
+  if mmp.settings.mud then mmp.echo(&quot;Okay, will see about using Mud whenever it's quicker&quot;)
+  else mmp.echo(&quot;Won't use Mud anymore.&quot;) end
+end
+function mmp.setSnowglobe()
+  mmp.clearpathcache() -- clear the cache so it'll use wings or will stop using wings
+
+  if mmp.settings.snowglobe then mmp.echo(&quot;Okay, will see about using Snowglobe whenever it's quicker&quot;)
+  else mmp.echo(&quot;Won't use Snowglobe anymore.&quot;) end
+end
+
+function mmp.setCookie()
+  mmp.clearpathcache() -- clear the cache so it'll use wings or will stop using wings
+
+  if mmp.settings.cookie then mmp.echo(&quot;Okay, will see about using Cookie whenever it's quicker&quot;)
+  else mmp.echo(&quot;Won't use Cookie anymore.&quot;) end
+end
+
+function mmp.setHead()
+  mmp.clearpathcache() -- clear the cache so it'll use wings or will stop using wings
+
+  if mmp.settings.head then mmp.echo(&quot;Okay, will see about using Doll's Head whenever it's quicker&quot;)
+  else mmp.echo(&quot;Won't use Doll's Head anymore.&quot;) end
+end
+
+function mmp.setIcicle()
+  mmp.clearpathcache() -- clear the cache so it'll use wings or will stop using wings
+
+  if mmp.settings.icicle then mmp.echo(&quot;Okay, will see about using Icicle whenever it's quicker&quot;)
+  else mmp.echo(&quot;Won't use Icicle anymore.&quot;) end
+end
+function mmp.setTibia()
+  mmp.clearpathcache() -- clear the cache so it'll use wings or will stop using wings
+
+  if mmp.settings.tibia then mmp.echo(&quot;Okay, will see about using Tibia whenever it's quicker&quot;)
+  else mmp.echo(&quot;Won't use Tibia anymore.&quot;) end
 end</script>
                 <eventHandlerList/>
             </Script>
@@ -5894,8 +6133,6 @@ end</script>
                         <packageName></packageName>
                         <script>-- track whenever we need to use wings when we get outside!
 function mmapper_achaea_went_outside()
-local s,m = pcall(function()
-
   if not mmp.autowalking or not (mmp.settings.duanathar or mmp.settings.duanatharan) or mmp.game ~= &quot;achaea&quot; or 
     (mmp.currentroom == mmp.speedWalkPath[#mmp.speedWalkPath]) or
     not mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Prime&quot;) then return end
@@ -5932,8 +6169,6 @@ local s,m = pcall(function()
   end
 
   if madeduanatharan then mmp.clearspecials{4882, 3885} elseif madeduanathar then mmp.clearspecials{3885} end
-end)
-if not s then display(m) end
 end</script>
                         <eventHandlerList>
                             <string>mmapper went outside</string>
@@ -6084,6 +6319,146 @@ end</script>
 end</script>
                         <eventHandlerList>
                             <string>mmp logged in</string>
+                        </eventHandlerList>
+                    </Script>
+                    <Script isActive="yes" isFolder="no">
+                        <name>mmapper_lusternia_went_outside</name>
+                        <packageName></packageName>
+                        <script>function mmapper_lusternia_went_outside()
+  -- track whenever we need to use items when we get outside!	
+  if not mmp.autowalking or not (mmp.settings.medallion or mmp.settings.fingerblade or mmp.settings.belt or mmp.settings.cubix or mmp.settings.screwdriver or mmp.settings.wheel or mmp.settings.mud or mmp.settings.snowglobe or mmp.settings.cookie or mmp.settings.head or mmp.settings.icicle or mmp.settings.tibia) or mmp.game ~= &quot;lusternia&quot; or 
+    (mmp.currentroom == mmp.speedWalkPath[#mmp.speedWalkPath]) then return end
+
+  -- repath, maybe that'll allow us to use wings now.
+  local mademedallion, madefingerblade, madebelt, madecubix, madescrewdriver, madewheel, mademud, madesnowglobe, madehead, madecookie, madeicicle, madetibia
+
+  local function getcmd(item)
+		if item == &quot;snowglobe&quot; then
+			return [[script:send(&quot;shake snowglobe&quot;,false)]]
+		else
+			return [[script:send(&quot;touch ]]..(item)..[[&quot;, false)]]
+		end
+  end
+
+    if mmp.settings.medallion and mmp.usebix() then
+      addSpecialExit(mmp.currentroom, 13367, getcmd(&quot;medallion&quot;))
+      mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
+      mademedallion = true
+	end
+	if mmp.settings.fingerblade and mmp.usebix() then
+      addSpecialExit(mmp.currentroom, 18777, getcmd(&quot;fingerblade&quot;))
+      mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
+      madefingerblade = true
+	end 
+	if mmp.settings.belt and mmp.usebix() then
+      addSpecialExit(mmp.currentroom, 19627, getcmd(&quot;belt&quot;))
+      mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
+      madebelt = true
+	end
+	if mmp.settings.cubix and mmp.usebix() then
+      addSpecialExit(mmp.currentroom, 6184, getcmd(&quot;cubix&quot;))
+      mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
+      madecubix = true
+	end
+	if mmp.settings.screwdriver and mmp.usebubblix() then
+		if gmcp.Room.Info.area == &quot;the Facility&quot; then
+      		addSpecialExit(mmp.currentroom, 6831, getcmd(&quot;screwdriver&quot;))
+		elseif not table.contains(gmcp.Room.Info.details, &quot;an Aetherbubble&quot;) then
+      		addSpecialExit(mmp.currentroom, 10185, getcmd(&quot;screwdriver&quot;))
+		end
+      mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
+      madescrewdriver = true
+	end
+	if mmp.settings.wheel and mmp.usebubblix() then
+		if gmcp.Room.Info.area == &quot;the Dramube Triangle&quot; then
+      		addSpecialExit(mmp.currentroom, 6831, getcmd(&quot;wheel&quot;))
+		elseif not table.contains(gmcp.Room.Info.details, &quot;an Aetherbubble&quot;) then
+      		addSpecialExit(mmp.currentroom, 10509, getcmd(&quot;wheel&quot;))
+		end
+      mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
+      madewheel = true
+	end
+	if mmp.settings.mud and mmp.usebubblix() then
+		if gmcp.Room.Info.area == &quot;Mucklemarsh&quot; then
+      		addSpecialExit(mmp.currentroom, 6831, getcmd(&quot;mud&quot;))
+		elseif not table.contains(gmcp.Room.Info.details, &quot;an Aetherbubble&quot;) then
+      		addSpecialExit(mmp.currentroom, 9985, getcmd(&quot;mud&quot;))
+		end
+      mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
+      mademud = true
+	end
+	if mmp.settings.snowglobe and mmp.usebubblix() then
+		if gmcp.Room.Info.area == &quot;the Great Spirit Tree&quot; then
+      		addSpecialExit(mmp.currentroom, 6831, getcmd(&quot;snowglobe&quot;))
+		elseif not table.contains(gmcp.Room.Info.details, &quot;an Aetherbubble&quot;) then
+      		addSpecialExit(mmp.currentroom, 10992, getcmd(&quot;snowglobe&quot;))
+		end
+      mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
+      madesnowglobe = true
+	end
+	if mmp.settings.cookie and mmp.usebubblix() then
+		if gmcp.Room.Info.area == &quot;Crumkindivia&quot; then
+      		addSpecialExit(mmp.currentroom, 6831, getcmd(&quot;cookie&quot;))
+		elseif not table.contains(gmcp.Room.Info.details, &quot;an Aetherbubble&quot;) then
+      		addSpecialExit(mmp.currentroom, 9888, getcmd(&quot;cookie&quot;))
+		end
+      mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
+      madecookie = true
+	end
+	if mmp.settings.head and mmp.usebubblix() then
+		if gmcp.Room.Info.area == &quot;the Bubble of Bottledowns&quot; then
+      		addSpecialExit(mmp.currentroom, 6831, getcmd(&quot;doll&quot;))
+		elseif not table.contains(gmcp.Room.Info.details, &quot;an Aetherbubble&quot;) then
+      		addSpecialExit(mmp.currentroom, 11811, getcmd(&quot;doll&quot;))
+		end
+      mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
+      madedoll = true
+	end
+	if mmp.settings.icicle and mmp.usebubblix() then
+		if gmcp.Room.Info.area == &quot;Frosticia&quot; then
+      		addSpecialExit(mmp.currentroom, 6831, getcmd(&quot;icicle&quot;))
+		elseif not table.contains(gmcp.Room.Info.details, &quot;an Aetherbubble&quot;) then
+      		addSpecialExit(mmp.currentroom, 10457, getcmd(&quot;icicle&quot;))
+		end
+      mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
+      madeicicle = true
+	end
+	if mmp.settings.tibia and mmp.usebubblix() then
+		if gmcp.Room.Info.area == &quot;the Cankermore Battlegrounds&quot; then
+      		addSpecialExit(mmp.currentroom, 6831, getcmd(&quot;tibia&quot;))
+		elseif not table.contains(gmcp.Room.Info.details, &quot;an Aetherbubble&quot;) then
+      		addSpecialExit(mmp.currentroom, 11600, getcmd(&quot;tibia&quot;))
+		end
+      mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
+      madetibia = true
+	end
+
+  mmp.getPath(mmp.currentroom, mmp.speedWalkPath[#mmp.speedWalkPath]) -- don't need to check return value since that fact shouldnt've changed
+  
+  -- if our path didn't change, re-instate it as it was (since the new path starts from this room that we checked at)
+  if speedWalkDir[1]:find(&quot;medallion&quot;,1,true) or speedWalkDir[1]:find(&quot;fingerblade&quot;,1,true) or speedWalkDir[1]:find(&quot;belt&quot;) or speedWalkDir[1]:find(&quot;cubix&quot;) then
+    speedWalkCounter = 0
+    mmp.echo(&quot;We got outside - going to shortcut with 'bix device.&quot;)
+    mmp.gotoRoom(mmp.speedWalkPath[#mmp.speedWalkPath])
+    mmp.ignore_speedwalking = true
+  end
+
+  if mademedallion then mmp.clearspecials{13367} end
+  if madefingerblade then mmp.clearspecials{18777} end
+  if madebelt then mmp.clearspecials{19627} end
+  if madecubix then mmp.clearspecials{6184} end
+  if madescrewdriver then mmp.clearspecials{6831, 10185} end
+  if madewheel then mmp.clearspecials{6831, 10509} end
+  if mademud then mmp.clearspecials{6831, 9985} end
+  if madesnowglobe then mmp.clearspecials{6831, 10992} end
+  if madecookie then mmp.clearspecials{6831, 9888} end
+  if madehead then mmp.clearspecials{6831, 11811} end
+  if madeicicle then mmp.clearspecials{6831, 10457} end
+  if madetibia then mmp.clearspecials{6831, 11600} end
+end
+</script>
+                        <eventHandlerList>
+                            <string>mmapper went outside</string>
                         </eventHandlerList>
                     </Script>
                 </Script>
@@ -6720,4 +7095,7 @@ end</script>
         </ScriptGroup>
     </ScriptPackage>
     <KeyPackage/>
+    <HelpPackage>
+        <helpURL></helpURL>
+    </HelpPackage>
 </MudletPackage>
