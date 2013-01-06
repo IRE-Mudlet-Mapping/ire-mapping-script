@@ -2574,7 +2574,7 @@ cecho(&quot;)&quot;)
             <command></command>
             <packageName></packageName>
             <time>00:00:00.000</time>
-            <Timer isActive="yes" isFolder="no" isTempTimer="no" isOffsetTimer="no">
+            <Timer isActive="no" isFolder="no" isTempTimer="no" isOffsetTimer="no">
                 <name>Check for updates periodically</name>
                 <script>mmp.checkforupdate()</script>
                 <command></command>
@@ -3569,6 +3569,44 @@ end</script>
                 <packageName></packageName>
                 <regex>^room marks$</regex>
             </Alias>
+            <Alias isActive="yes" isFolder="no">
+                <name>Toggle map sizes</name>
+                <script>local size = matches[2]
+
+if size == &quot;biggest&quot; then
+  mapper = Geyser.Mapper:new({
+    name = &quot;mapper&quot;,
+    x = 0, y = 0,
+    width = &quot;100%&quot;, height = &quot;97%&quot;
+  })
+  mmp.echo(&quot;Map size set to pretty damn big.&quot;)
+
+elseif size == &quot;small&quot; then
+  mapper = Geyser.Mapper:new({
+    x = &quot;70%&quot;, y = 0,
+    width = &quot;28%&quot;, height = &quot;50%&quot;
+  })
+  mmp.echo(&quot;Map size set to comfortable.&quot;)
+
+elseif size == &quot;big&quot; then
+  local window_width, window_height = getMainWindowSize()
+  local used_width = getMainConsoleWidth()
+
+  local available_space = window_width - used_width
+
+  if matches[3] then available_space = available_space - tonumber(matches[3]) end
+
+  mapper = Geyser.Mapper:new({
+    x = available_space*-1, y = 0,
+    width = available_space, height = &quot;100%&quot;
+  })
+
+  mmp.echo(&quot;Set the map size to big - it'll cover all of the space on the right that game text isn't using. You'll want to call this alias again if you resize the window to update.&quot;)
+end</script>
+                <command></command>
+                <packageName></packageName>
+                <regex>^(small|big|biggest)map(?: (\d+))?$</regex>
+            </Alias>
         </AliasGroup>
     </AliasPackage>
     <ActionPackage/>
@@ -3733,7 +3771,7 @@ mmp.speedWalkPath = mmp.speedWalkPath or {}
 mmp.speedWalkDir = mmp.speedWalkDir or {}
 
 
-local newversion = &quot;12.12.8&quot;
+local newversion = &quot;12.12.9&quot;
 if mmp.version and mmp.version ~= newversion then 
   if not mmp.game then mmp.echo(&quot;Mapper script updated - Thanks! I don't know what game are you connected to, though - so please reconnect, if you could.&quot;)
   else mmp.echo(&quot;Mapper script updated - thanks! You don't need to restart.&quot;) end
@@ -3942,7 +3980,7 @@ end
 local oldnum
 function speedwalking( event, num )
   local num = tonumber(num) or tonumber(gmcp.Room.Info.num)
-  mmp.previousroom = mmp.currentroom
+  if num ~= mmp.currentroom then mmp.previousroom = mmp.currentroom end
   mmp.currentroom = num
   mmp.currentroomname = getRoomName(num)
 
@@ -4558,7 +4596,7 @@ function mmp.getPath(from, to)
   return getPath(from, to)
 end
 
-function mmp.clearpathcache() getpathcache = {} end
+function mmp.clearpathcache() end
 
 function mmp.roomFind(query)
   if query:ends('.') then query = query:sub(1,-2) end
@@ -5580,11 +5618,37 @@ function mmp.setIcicle()
   if mmp.settings.icicle then mmp.echo(&quot;Okay, will see about using Icicle whenever it's quicker&quot;)
   else mmp.echo(&quot;Won't use Icicle anymore.&quot;) end
 end
+
 function mmp.setTibia()
   mmp.clearpathcache() -- clear the cache so it'll use wings or will stop using wings
 
   if mmp.settings.tibia then mmp.echo(&quot;Okay, will see about using Tibia whenever it's quicker&quot;)
   else mmp.echo(&quot;Won't use Tibia anymore.&quot;) end
+end
+
+function mmp.mapLook(roomid, delay)
+  centerview(roomid)
+  if mmp.maplooktimer then killTimer(mmp.maplooktimer) end
+  mmp.maplooktimer = tempTimer(tonumber(delay) or 4, [[centerview(mmp.currentroom); mmp.maplooktimer = nil]])
+end
+
+-- accepts areaname or ID
+function mmp.cleanAreaName(area)
+  local areaname = type(area) == &quot;number&quot; and mmp.areatabler[area] or area
+
+  -- strip , the
+  areaname = areaname:gsub(&quot;, the$&quot;, '')
+
+  -- strip , the Type of
+  areaname = areaname:gsub(&quot;, the %w+ of$&quot;, '')
+
+  -- strip , the Type of (important)
+  areaname = areaname:gsub(&quot;, the %w+ of %((.+)%)$&quot;, &quot; (%1)&quot;)
+
+  -- strip , the (important)
+  areaname = areaname:gsub(&quot;, the %((.+)%)$&quot;, &quot; (%1)&quot;)
+
+  return areaname
 end</script>
                 <eventHandlerList/>
             </Script>
