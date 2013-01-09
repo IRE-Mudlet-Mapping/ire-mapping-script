@@ -3113,6 +3113,61 @@ end</script>
                     <packageName></packageName>
                     <regex>^rw(?: (\w+))? (\d+)$</regex>
                 </Alias>
+                <Alias isActive="yes" isFolder="no">
+                    <name>Set exit weight</name>
+                    <script>local room = (matches[2] ~= &quot;&quot; and tonumber(matches[2]) or mmp.currentroom)
+
+local weight, exit = tonumber(matches[3]), matches[4]
+
+if not roomExists(room) then mmp.echo(&quot;Room &quot;..room..&quot; doesn't exist. It has to before we can set weights on exits.&quot;) return end
+
+setExitWeight(room, exit, weight)
+
+mmp.echo(string.format(&quot;Set the weight on the %d room going %s to %s. If it's a two-way exit, please set the reverse exit as well.&quot;, room, exit, weight))</script>
+                    <command></command>
+                    <packageName></packageName>
+                    <regex>^rwe(?: (\d+))? (\d+) (.+)$</regex>
+                </Alias>
+                <Alias isActive="yes" isFolder="no">
+                    <name>Add/delete doors</name>
+                    <script>local room = (matches[2] ~= &quot;&quot; and tonumber(matches[2]) or mmp.currentroom)
+
+local direction, status = matches[3], matches[4]
+
+if not roomExists(room) then mmp.echo(&quot;Room &quot;..room..&quot; doesn't exist. It has to before we can make doors in it.&quot;) return end
+
+local validdirs = {'e', 's', 'w', 'n', 'ne', 'se', 'sw', 'ne'}
+
+if not table.contains(validdirs, direction) then
+  mmp.echo(&quot;Can't make a door in the '&quot;..direction..&quot;' direction - available choices are:\n  &quot;..table.concat(validdirs, ', '))
+  return
+end
+
+local statusnum
+
+if status == &quot;&quot; or status == &quot;open&quot; or status == &quot;o&quot; then
+  statusnum = 1
+elseif status == &quot;closed&quot; or status ==  &quot;c&quot; then
+  statusnum = 2
+elseif status == &quot;locked&quot; or status ==  &quot;l&quot; then
+  statusnum = 3
+elseif status == &quot;clear&quot; or status == &quot;gone&quot; then
+  statusnum = 0
+end
+
+if not statusnum then mmp.echo(&quot;Unrecognized option - a door can be open, closed, locked or gone.&quot;) return end
+
+setDoor(room, direction, statusnum)
+
+if statusnum == 0 then
+  mmp.echo(&quot;OK, door removed.&quot;)
+else
+  mmp.echo(&quot;OK, door added/adjusted.&quot;)
+end</script>
+                    <command></command>
+                    <packageName></packageName>
+                    <regex>^rd(?: (\d+))? (\w+)(?: (\w+))?$</regex>
+                </Alias>
                 <Alias isActive="no" isFolder="no">
                     <name>-- (area functions)</name>
                     <script></script>
@@ -3771,7 +3826,7 @@ mmp.speedWalkPath = mmp.speedWalkPath or {}
 mmp.speedWalkDir = mmp.speedWalkDir or {}
 
 
-local newversion = &quot;13.1.1&quot;
+local newversion = &quot;13.1.2&quot;
 if mmp.version and mmp.version ~= newversion then 
   if not mmp.game then mmp.echo(&quot;Mapper script updated - Thanks! I don't know what game are you connected to, though - so please reconnect, if you could.&quot;)
   else mmp.echo(&quot;Mapper script updated - thanks! You don't need to restart.&quot;) end
@@ -4734,6 +4789,7 @@ function mmp.roomLook(input)
     local name = getRoomName(num)
     local islocked = roomLocked(num)
     local weight = (getRoomWeight(num) and getRoomWeight(num) or &quot;?&quot;) -- getRoomWeight is buggy in one of the versions, is actually linked to setRoomWeight and thus returns nil
+    local exitweights = (getExitWeights and getExitWeights(num) or {})
     local coords = {getRoomCoordinates(num)}
     local specexits = getSpecialExits(num)
     local env = getRoomEnv(num)
@@ -4749,9 +4805,11 @@ function mmp.roomLook(input)
 
     mmp.echo(string.format(&quot;Exits (%d):&quot;, table.size(exits)))
     for exit, leadsto in pairs(exits) do
-      echo(string.format(&quot;  %s -&gt; %s (%d)%s\n&quot;, exit, getRoomName(leadsto), leadsto,
+      echo(string.format(&quot;  %s -&gt; %s (%d)%s%s\n&quot;, exit, getRoomName(leadsto), leadsto,
         ((getRoomArea(leadsto) or &quot;?&quot;) == areanum and &quot;&quot;
-        or &quot; (in &quot;..(mmp.areatabler[getRoomArea(leadsto)] or &quot;?&quot;)..&quot;)&quot;)))
+        or &quot; (in &quot;..(mmp.areatabler[getRoomArea(leadsto)] or &quot;?&quot;)..&quot;)&quot;),
+        ((not exitweights[mmp.anytoshort(exit)] or exitweights[mmp.anytoshort(exit)] == 0) and &quot;&quot; or &quot; (weight: &quot;..exitweights[mmp.anytoshort(exit)]..&quot;)&quot;)
+      ))
     end
 
     -- display special exits if we got any
