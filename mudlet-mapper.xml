@@ -1172,6 +1172,28 @@ raiseEvent(&quot;mmapper updated pdb&quot;)</script>
                         </regexCodePropertyList>
                     </Trigger>
                 </Trigger>
+                <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="yes" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+                    <name>Alchemist ether seek</name>
+                    <script>mmp.locateAndEcho(multimatches[2][3], multimatches[2][2])</script>
+                    <triggerType>0</triggerType>
+                    <conditonLineDelta>0</conditonLineDelta>
+                    <mStayOpen>0</mStayOpen>
+                    <mCommand></mCommand>
+                    <packageName></packageName>
+                    <mFgColor>#ff0000</mFgColor>
+                    <mBgColor>#ffff00</mBgColor>
+                    <mSoundFile></mSoundFile>
+                    <colorTriggerFgColor>#000000</colorTriggerFgColor>
+                    <colorTriggerBgColor>#000000</colorTriggerBgColor>
+                    <regexCodeList>
+                        <string>You reach out into the ether, folding it aside to reveal</string>
+                        <string>^You reach out into the ether, folding it aside to reveal (\w+)\. As you peer into the opening, the image of (.+) swims into view, then fades away as the ether seeps back into place\.$</string>
+                    </regexCodeList>
+                    <regexCodePropertyList>
+                        <integer>2</integer>
+                        <integer>1</integer>
+                    </regexCodePropertyList>
+                </Trigger>
             </TriggerGroup>
             <TriggerGroup isActive="yes" isFolder="yes" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
                 <name>Aetolia</name>
@@ -3136,7 +3158,7 @@ local direction, status = matches[3], matches[4]
 
 if not roomExists(room) then mmp.echo(&quot;Room &quot;..room..&quot; doesn't exist. It has to before we can make doors in it.&quot;) return end
 
-local validdirs = {'e', 's', 'w', 'n', 'ne', 'se', 'sw', 'ne'}
+local validdirs = {'e', 's', 'w', 'n', 'ne', 'se', 'sw', 'nw'}
 
 if not table.contains(validdirs, direction) then
   mmp.echo(&quot;Can't make a door in the '&quot;..direction..&quot;' direction - available choices are:\n  &quot;..table.concat(validdirs, ', '))
@@ -3826,7 +3848,7 @@ mmp.speedWalkPath = mmp.speedWalkPath or {}
 mmp.speedWalkDir = mmp.speedWalkDir or {}
 
 
-local newversion = &quot;13.1.2&quot;
+local newversion = &quot;13.1.3&quot;
 if mmp.version and mmp.version ~= newversion then 
   if not mmp.game then mmp.echo(&quot;Mapper script updated - Thanks! I don't know what game are you connected to, though - so please reconnect, if you could.&quot;)
   else mmp.echo(&quot;Mapper script updated - thanks! You don't need to restart.&quot;) end
@@ -5111,7 +5133,7 @@ function mmp.locateAndEcho(room, person)
     echo&quot;\n&quot;
     if table.size(t) == 1 then
       local k,v = next(t)
-      cecho(&quot;&lt;red&gt;From your knowledge, that room is in &lt;orange_red&gt;&quot;..(mmp.areatabler[getRoomArea(type(k) == &quot;number&quot; and k or v)] or &quot;?&quot;)..&quot;&lt;red&gt;.&quot;)
+      cecho(&quot;&lt;red&gt;From your knowledge, that room is in &lt;orange_red&gt;&quot;..mmp.cleanAreaName(mmp.areatabler[getRoomArea(type(k) == &quot;number&quot; and k or v)] or &quot;?&quot;)..&quot;&lt;red&gt;.&quot;)
     else
       local k,v = next(t)
     local areas = {}
@@ -5127,7 +5149,7 @@ function mmp.locateAndEcho(room, person)
 
       local flattened_areas = {}
       for k, _ in pairs(areas) do
-        if k ~= &quot;&quot; then flattened_areas[#flattened_areas+1] = k end
+        if k ~= &quot;&quot; then flattened_areas[#flattened_areas+1] = mmp.cleanAreaName(k) end
       end
 
       cecho(&quot;&lt;red&gt;From your knowledge, that room might be in &lt;orange_red&gt;&quot;..table.concat(flattened_areas, &quot;, or &quot;)..&quot;&lt;red&gt;.&quot;)
@@ -5155,7 +5177,7 @@ function mmp.locateAndEchoSide(room, person)
     --echo&quot;\n&quot;
     if table.size(t) == 1 then
       local k,v = next(t)
-      cecho(&quot;&lt;red&gt;  (&quot;..(mmp.areatabler[getRoomArea(type(k) == &quot;number&quot; and k or v)] or &quot;?&quot;)..&quot;)&quot;)
+      cecho(&quot;&lt;red&gt;  (&quot;..mmp.cleanAreaName(mmp.areatabler[getRoomArea(type(k) == &quot;number&quot; and k or v)] or &quot;?&quot;)..&quot;)&quot;)
     else
       local k,v = next(t)
     local areas = {}
@@ -5171,7 +5193,7 @@ function mmp.locateAndEchoSide(room, person)
 
       local flattened_areas = {}
       for k, _ in pairs(areas) do
-        if k ~= &quot;&quot; then flattened_areas[#flattened_areas+1] = k end
+        if k ~= &quot;&quot; then flattened_areas[#flattened_areas+1] = mmp.cleanAreaName(k) end
       end
 
       cecho(&quot;&lt;red&gt; (&quot;..table.concat(flattened_areas, &quot;, &quot;)..&quot;)&quot;)
@@ -5197,7 +5219,7 @@ function mmp.locateAndEchoInternal(room, person)
     --echo&quot;\n&quot;
     if table.size(t) == 1 then
       local k,v = next(t)
-      cecho(&quot;&lt;red&gt; in &quot;..(mmp.areatabler[getRoomArea(type(k) == &quot;number&quot; and k or v)] or &quot;?&quot;)..&quot;.&quot;)
+      cecho(&quot;&lt;red&gt; in &quot;..mmp.cleanAreaName(mmp.areatabler[getRoomArea(type(k) == &quot;number&quot; and k or v)] or &quot;?&quot;)..&quot;.&quot;)
     else
       local k,v = next(t)
     local areas = {}
@@ -5213,7 +5235,7 @@ function mmp.locateAndEchoInternal(room, person)
 
       local flattened_areas = {}
       for k, _ in pairs(areas) do
-        if k ~= &quot;&quot; then flattened_areas[#flattened_areas+1] = k end
+        if k ~= &quot;&quot; then flattened_areas[#flattened_areas+1] = mmp.cleanAreaName(k) end
       end
 
       cecho(&quot;&lt;red&gt; in &quot;..table.concat(flattened_areas, &quot;, &quot;)..&quot;.&quot;)
