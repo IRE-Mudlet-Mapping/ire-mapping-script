@@ -231,7 +231,7 @@ end
 
 local currentroomname = mmp.currentroomname
 if string.ends(currentroomname, &quot; (road)&quot;) then
-	currentroomname = string.sub(currentroomname, 1, (#currentroomname-7))
+  currentroomname = string.sub(currentroomname, 1, (#currentroomname-7))
 end
 
 if matches[3] == currentroomname then
@@ -268,19 +268,16 @@ enableTrigger&quot;Mudlet Mapper prompt trigger&quot;</script>
 -- handle alertness
 if mmp.alertness then
 
-  if svo and svo.showprompt then selectCurrentLine() replace&quot;&quot;
-  elseif mm and mm.showprompt then selectCurrentLine() replace&quot;&quot;
-  end
+  local dirs = {}
+  for direction, _ in pairs(mmp.alertness) do dirs[#dirs+1] = direction end
+  local people = select(2, next(mmp.alertness))
 
-  for direction, people in pairs(mmp.alertness) do
-    cecho(&quot;&lt;red&gt;[&lt;cyan&gt;&quot; .. direction .. &quot; &lt;red&gt;- &lt;white&gt;&quot; .. ((svo and svo.concatand) and svo.concatand(people) or table.concat(people, ', ')) .. &quot; (&quot;..#people..&quot;)&lt;red&gt;]\n&quot;)
-  end
-
-  if svo and svo.showprompt then svo.showprompt()
-  elseif mm and mm.showprompt then mm.showprompt()
-  end
+  moveCursor(0, getLineNumber())
+  cinsertText(&quot;&lt;red&gt;[&lt;cyan&gt;&quot; .. table.concat(dirs, ', ') .. &quot; &lt;red&gt;-&quot;..(#dirs &gt; 1 and (&quot;\n  &quot;) or '')..&quot; &lt;white&gt;&quot; .. ((svo and svo.concatand) and svo.concatand(people) or table.concat(people, ', ')) .. &quot; (&quot;..#people..&quot;)&lt;red&gt;]\n&quot;)
+  moveCursorEnd()
 
   mmp.alertness = nil
+
   raiseEvent(&quot;mmapper updated pdb&quot;)
 end
 
@@ -2596,7 +2593,7 @@ cecho(&quot;)&quot;)
             <command></command>
             <packageName></packageName>
             <time>00:00:00.000</time>
-            <Timer isActive="no" isFolder="no" isTempTimer="no" isOffsetTimer="no">
+            <Timer isActive="yes" isFolder="no" isTempTimer="no" isOffsetTimer="no">
                 <name>Check for updates periodically</name>
                 <script>mmp.checkforupdate()</script>
                 <command></command>
@@ -2743,7 +2740,7 @@ mmp.settings:setOption(matches[3], val)</script>
                 <packageName></packageName>
                 <regex>^area list$</regex>
             </Alias>
-            <AliasGroup isActive="yes" isFolder="yes">
+            <AliasGroup isActive="no" isFolder="yes">
                 <name>mm Mapping</name>
                 <script></script>
                 <command></command>
@@ -3830,8 +3827,8 @@ end</script>
 mmp = mmp or {
   paused = false,
   autowalking = false,
-  currentroom = false,
-  currentroomname = false,
+  currentroom = 0,
+  currentroomname = &quot;(unknown)&quot;,
   firstRun = true,
   specials = {}
 }
@@ -4522,6 +4519,8 @@ function mmp.pause(what)
 end
 
 function mmp.getnums(roomname, exact)
+  if tonumber(roomname) then return {roomname} end
+
   local t = (not exact and mmp.searchRoom or mmp.searchRoomExact)(roomname)
 
   if not t or not next(t) then
@@ -4690,8 +4689,8 @@ function mmp.roomFind(query)
       cecho(string.format(&quot;  &lt;LightSlateGray&gt;%s&lt;DarkSlateGrey&gt; (&lt;blue&gt;&quot;,
         tostring(roomname)))
       echoLink(roomid, 'mmp.gotoRoom('..roomid..')', string.format(&quot;Go to %s (%s)&quot;, roomid, tostring(roomname)))
-      cecho(string.format(&quot;&lt;DarkSlateGrey&gt;) in the &lt;LightSlateGray&gt;%s&lt;DarkSlateGrey&gt;.&quot;, tostring(mmp.areatabler[getRoomArea(roomid)])))
-            fg(&quot;DarkSlateGrey&quot;) echoLink(&quot; &gt; Show path\n&quot;, [[mmp.echoPath(mmp.currentroom, ]]..roomid..[[)]], &quot;Display directions&quot;, true) resetFormat()
+      cecho(string.format(&quot;&lt;DarkSlateGrey&gt;) in &lt;LightSlateGray&gt;%s&lt;DarkSlateGrey&gt;.&quot;, mmp.cleanAreaName(tostring(mmp.areatabler[getRoomArea(roomid)]))))
+      fg(&quot;DarkSlateGrey&quot;) echoLink(&quot; &gt; Show path\n&quot;, [[mmp.echoPath(mmp.currentroom, ]]..roomid..[[)]], &quot;Display directions&quot;, true) resetFormat()
     end
 
   else -- new style
@@ -4699,7 +4698,7 @@ function mmp.roomFind(query)
       cecho(string.format(&quot;  &lt;LightSlateGray&gt;%s&lt;DarkSlateGrey&gt; (&lt;blue&gt;&quot;,
         tostring(roomname)))
       echoLink(roomid, 'mmp.gotoRoom('..roomid..')', string.format(&quot;Go to %s (%s)&quot;, roomid, tostring(roomname)))
-      cecho(string.format(&quot;&lt;DarkSlateGrey&gt;) in the &lt;LightSlateGray&gt;%s&lt;DarkSlateGrey&gt;.&quot;, tostring(mmp.areatabler[getRoomArea(roomid)])))
+      cecho(string.format(&quot;&lt;DarkSlateGrey&gt;) in &lt;LightSlateGray&gt;%s&lt;DarkSlateGrey&gt;.&quot;, mmp.cleanAreaName(tostring(mmp.areatabler[getRoomArea(roomid)]))))
       fg(&quot;DarkSlateGrey&quot;) echoLink(&quot; &gt; Show path\n&quot;, [[mmp.echoPath(mmp.currentroom, ]]..roomid..[[)]], &quot;Display directions&quot;, true) resetFormat()
     end
   end
@@ -4855,16 +4854,27 @@ function mmp.roomLook(input)
 
     -- actions we can do. This will be a short menu of sorts for actions
     mmp.echo(&quot;Stuff you can do:&quot;)
-    echo&quot;  &quot; echo(&quot;Clear all labels &quot;) echoLink(&quot;(in area)&quot;, 'mmp.clearLabels('..areanum..')', '') echo&quot; &quot; echoLink(&quot;(whole map)&quot;, 'mmp.clearLabels(&quot;map&quot;)', '') echo&quot;\n&quot;
-    echo&quot;  &quot; echoLink(&quot;Check for all updates&quot;, 'mmp.echo(&quot;Checking...&quot;) mmp.checkforupdate()', '')
-    echo&quot; &quot; echoLink(&quot;(force map)&quot;, [[
+    echo&quot;  &quot; echo(&quot;Clear all labels &quot;) setUnderline(true) echoLink(&quot;(in area)&quot;, 'mmp.clearLabels('..areanum..')', '', true) setUnderline(false) 
+    echo&quot; &quot; setUnderline(true) 
+    echoLink(&quot;(whole map)&quot;, [[
+    if not mmp.clearinglabels then
+      mmp.echo(&quot;Are you sure you want to clear all of your labels on this map? If yes, click the link again.&quot;)
+      mmp.clearinglabels = true
+    else
+      mmp.clearLabels(&quot;map&quot;)
+      mmp.clearinglabels = nil
+    end
+    ]], '', true) setUnderline(false) echo&quot;\n&quot;
+    echo&quot;  &quot; setUnderline(true) echoLink(&quot;Check for mapper &amp; map updates&quot;, 'mmp.echo(&quot;Checking...&quot;) mmp.checkforupdate()', '', true) setUnderline(false)
+    echo&quot; &quot; setUnderline(true) echoLink(&quot;(force map)&quot;, [[
       if io.exists(getMudletHomeDir()..&quot;/map downloads/current&quot;) then
         local s,m = os.remove(getMudletHomeDir()..&quot;/map downloads/current&quot;)
         if not s then mmp.echo(&quot;Couldn't delete '&quot;..getMudletHomeDir()..&quot;/map downloads/current' file: &quot;..tostring(m)..&quot;.&quot;) end
       end
-      mmp.echo(&quot;Re-downloading the latest map... please make sure you have the map open.&quot;)
+      mmp.echo(&quot;Re-downloading the latest crowdmap...&quot;)
       mmp.checkforupdate()
-    ]], &quot;Re-download the map regardless if you have latest&quot;)
+    ]], &quot;Re-download the map regardless if you have latest&quot;, true)
+    setUnderline(false)
     echo&quot;\n&quot;	
   end
 
@@ -6941,11 +6951,15 @@ end</script>
 
 	mmp.crowdchangelog = env.changelog
 
-    mmp.echon(&quot;The public map was &quot;)
+    mmp.echon(&quot;The crowdmap map was &quot;)
+    setUnderline(true)
     echoLink(&quot;updated&quot;, '', &quot;New version: &quot;..tostring(mmp.newversion)..&quot;, previous version: &quot;..(mmp.oldversion or &quot;(none)&quot;), true)
+    setUnderline(false)
     echo(&quot; (&quot;)
-    echoLink(&quot;changelog&quot;, &quot;mmp.showcrowdchangelog()&quot;, 'View the full changelog for mappers')
-    echo(&quot;)\n&quot;)
+    setUnderline(true)
+    echoLink(&quot;see full changelog&quot;, &quot;mmp.showcrowdchangelog()&quot;, 'View the full changelog for mappers', true)
+    setUnderline(false)
+    echo(&quot;). Latest improvement is: &quot;..tostring(mmp.crowdchangelog[#mmp.crowdchangelog])..&quot;.\n&quot;)
 
     mmp.downloadcrowdmap(mmp.newversion)
 
@@ -7174,7 +7188,7 @@ function mmp.downloadcrowdmap(newversion)
 
   downloadFile(mmp.crowdmapfile, &quot;http://dl.dropbox.com/s/sbj9f1s1l4h7otg/map?dl=1&quot;)
 
-  mmp.echo(&quot;Downloading the latest public map... please make sure you have the map open.&quot;)
+  mmp.echo(&quot;Downloading the latest crowdmap...&quot;)
 end
 
 function mmp.showcrowdchangelog()
@@ -7211,6 +7225,7 @@ function mmp.changeUpdateMap()
   else
     mmp.echo(&quot;Won't check for new map updates.&quot;)
     disableTimer&quot;Check for updates periodically&quot;
+	if mmp.checkforupdatetimer then killTimer(&quot;mmp.checkforupdatetimer&quot;) end
   end
 end</script>
                         <eventHandlerList>
