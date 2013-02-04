@@ -266,11 +266,11 @@ enableTrigger&quot;Mudlet Mapper prompt trigger&quot;</script>
                 <script>-- to be enabled by functions that need it and disabled after it's done. Sort of like a cheap prompttrigger from Svo.
 
 -- handle alertness
-if mmp.alertness then
+if mmp.alertness and next(mmp.alertness) then
 
   local dirs = {}
   for direction, _ in pairs(mmp.alertness) do dirs[#dirs+1] = direction end
-  local people = select(2, next(mmp.alertness))
+  local people = select(2, next(mmp.alertness)) or {}
 
   moveCursor(0, getLineNumber())
   cinsertText(&quot;&lt;red&gt;[&lt;cyan&gt;&quot; .. table.concat(dirs, ', ') .. &quot; &lt;red&gt;-&quot;..(#dirs &gt; 1 and (&quot;\n  &quot;) or '')..&quot; &lt;white&gt;&quot; .. ((svo and svo.concatand) and svo.concatand(people) or table.concat(people, ', ')) .. &quot; (&quot;..#people..&quot;)&lt;red&gt;]\n&quot;)
@@ -507,9 +507,9 @@ mmp.echo(&quot;We're connected to Achaea.&quot;)</script>
                     <script>local t = mmp.getnums(multimatches[2][2], true)
 if not t then return end
 if #t == 1 then
-	cecho(&quot; &lt;orange_red&gt;(&quot;..mmp.areatabler[getRoomArea(t[1])]..&quot;)&quot;)
+	cecho(&quot; &lt;orange_red&gt;(&quot;..mmp.cleanAreaName(mmp.areatabler[getRoomArea(t[1])])..&quot;)&quot;)
 else
-	cecho(&quot; &lt;orange_red&gt;Maybe (&quot;..mmp.areatabler[getRoomArea(t[1])]..&quot;)&quot;)
+	cecho(&quot; &lt;orange_red&gt;Maybe (&quot;..mmp.cleanAreaName(mmp.areatabler[getRoomArea(t[1])])..&quot;)&quot;)
 end
 echo &quot; &quot;; mmp.echonums(multimatches[2][2])
 
@@ -2740,7 +2740,7 @@ mmp.settings:setOption(matches[3], val)</script>
                 <packageName></packageName>
                 <regex>^area list$</regex>
             </Alias>
-            <AliasGroup isActive="no" isFolder="yes">
+            <AliasGroup isActive="yes" isFolder="yes">
                 <name>mm Mapping</name>
                 <script></script>
                 <command></command>
@@ -5725,6 +5725,7 @@ end
 -- accepts areaname or ID
 function mmp.cleanAreaName(area)
   local areaname = type(area) == &quot;number&quot; and mmp.areatabler[area] or area
+  if not areaname then return area end
 
   -- strip , the
   areaname = areaname:gsub(&quot;, the$&quot;, '')
@@ -5739,6 +5740,23 @@ function mmp.cleanAreaName(area)
   areaname = areaname:gsub(&quot;, the %((.+)%)$&quot;, &quot; (%1)&quot;)
 
   return areaname
+end
+
+-- if this room is in a unique area, report it. Otherwise gives nil
+function mmp.getexactarea(roomname)
+  local rooms = mmp.searchRoomExact(roomname)
+
+  if not rooms or not next(rooms) then return nil end
+
+  local areaid
+  for roomid, roomname in pairs(rooms) do
+
+    local caid = getRoomArea(roomid)
+    if areaid and areaid ~= caid then return nil end
+    areaid = caid
+  end
+
+  if areaid then return mmp.areatabler[areaid] end
 end</script>
                 <eventHandlerList/>
             </Script>
@@ -6979,7 +6997,7 @@ end</script>
       local wc = mmp.lockWormholes()
 	  local ws = mmp.lockSewers()
       if mmp.game == &quot;achaea&quot; and wc == 0 and ws == 0 then -- in achaea, using crowdmap, if we didn't get any special exits - it means Mudlet needs to be updated
-        mmp.echo(&quot;Sorry, it seems your Mudlet isn't compatible with the new crowdmap format - and the map cannot be loaded fully. Please update your Mudlet:\n  http://svo.vadisystems.com/2012/08/crowdmap-fix-in-achaea/&quot;)
+        mmp.echo(&quot;Sorry, it seems your Mudlet isn't compatible with the new crowdmap format - and the map cannot be loaded fully. Please update your Mudlet:\n  http://www.mudlet.org/download/&quot;)
         return
       end
 
@@ -7011,7 +7029,7 @@ end</script>
         local wc = mmp.lockWormholes()
 	    local ws = mmp.lockSewers()
         if mmp.game == &quot;achaea&quot; and wc == 0 and ws == 0 then -- in achaea, using crowdmap, if we didn't get any special exits - it means Mudlet needs to be updated
-          mmp.echo(&quot;Sorry, it seems your Mudlet isn't compatible with the new crowdmap format - and the map cannot be loaded fully. Please update your Mudlet:\n  http://svo.vadisystems.com/2012/08/crowdmap-fix-in-achaea/&quot;)
+          mmp.echo(&quot;Sorry, it seems your Mudlet isn't compatible with the new crowdmap format - and the map cannot be loaded fully. Please update your Mudlet:\n  http://www.mudlet.org/download/&quot;)
           return
         end
 
@@ -7045,7 +7063,7 @@ end</script>
       if not mmp.settings.crowdmap then
         mmp.echon(&quot;The games map was &quot;)
         echoLink(&quot;updated&quot;, '', &quot;New MD5: &quot;..tostring(currentmd5)..&quot;, previous MD5: &quot;..(oldmd5 or &quot;(none)&quot;), true)
-        echo(&quot; - you should update yours! Go to Settings -&gt; Special Options tab and click on the button there. Once you've updated, &quot;)
+        echo(&quot; - you should update yours! Go to Settings -&gt; Mapper tab and click on the button there. Once you've updated, &quot;)
         echoLink(&quot;click here&quot;, &quot;mmp.updatedmap('&quot;..currentmd5..&quot;')&quot;, &quot;Click here to quiet the update reminder&quot;)
         echo(&quot; to remove the reminder.&quot;)
       else
