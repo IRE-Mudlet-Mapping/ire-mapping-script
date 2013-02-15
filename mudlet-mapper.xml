@@ -1191,6 +1191,28 @@ raiseEvent(&quot;mmapper updated pdb&quot;)</script>
                         <integer>1</integer>
                     </regexCodePropertyList>
                 </Trigger>
+                <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="yes" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+                    <name>Allsight</name>
+                    <script>mmp.locateAndEcho(multimatches[2][3], multimatches[2][2])</script>
+                    <triggerType>0</triggerType>
+                    <conditonLineDelta>0</conditonLineDelta>
+                    <mStayOpen>0</mStayOpen>
+                    <mCommand></mCommand>
+                    <packageName></packageName>
+                    <mFgColor>#ff0000</mFgColor>
+                    <mBgColor>#ffff00</mBgColor>
+                    <mSoundFile></mSoundFile>
+                    <colorTriggerFgColor>#000000</colorTriggerFgColor>
+                    <colorTriggerBgColor>#000000</colorTriggerBgColor>
+                    <regexCodeList>
+                        <string>Allsight:</string>
+                        <string>^Allsight: (\w+) enters (.+)\.$</string>
+                    </regexCodeList>
+                    <regexCodePropertyList>
+                        <integer>2</integer>
+                        <integer>1</integer>
+                    </regexCodePropertyList>
+                </Trigger>
             </TriggerGroup>
             <TriggerGroup isActive="yes" isFolder="yes" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
                 <name>Aetolia</name>
@@ -3529,6 +3551,7 @@ end</script>
       if mmp.settings.waterwalk then mmp.enableWaterWalk() else mmp.disableWaterWalk() end
 
       if loc ~= &quot;&quot; then mmp.echo(&quot;Map loaded.&quot;) else mmp.echo(&quot;Loaded the default map.&quot;) end
+      raiseEvent(&quot;mmapper updated map&quot;)
     end
 end
 
@@ -3889,6 +3912,16 @@ function mmp.startup()
   private_settings[&quot;head&quot;] = createOption(false, mmp.setHead, { &quot;boolean&quot; }, &quot;Make use of your Doll's Head in Lusternia&quot;)
   private_settings[&quot;icicle&quot;] = createOption(false, mmp.setIcicle, { &quot;boolean&quot; }, &quot;Make use of your Icicle in Lusternia&quot;)
   private_settings[&quot;tibia&quot;] = createOption(false, mmp.setTibia, { &quot;boolean&quot; }, &quot;Make use of your Tibia in Lusternia&quot;)
+  private_settings[&quot;bonecurio&quot;] = createOption(false, mmp.setBonecurio, { &quot;boolean&quot; }, &quot;Make use of your Bone curios in Lusternia&quot;)
+  private_settings[&quot;flowercurio&quot;] = createOption(false, mmp.setFlowercurio, { &quot;boolean&quot; }, &quot;Make use of your Flower curios in Lusternia&quot;)
+  private_settings[&quot;torus&quot;] = createOption(false, mmp.setTorus, { &quot;boolean&quot; }, &quot;Make use of your Torus in Lusternia&quot;)
+  private_settings[&quot;utensilcurio&quot;] = createOption(false, mmp.setUtensilcurio, { &quot;boolean&quot; }, &quot;Make use of your Utensil curios in Lusternia&quot;)
+  private_settings[&quot;fluttercurio&quot;] = createOption(false, mmp.setFluttercurio, { &quot;boolean&quot; }, &quot;Make use of your Flutter curios in Lusternia&quot;)
+  private_settings[&quot;toolcurio&quot;] = createOption(false, mmp.setToolcurio, { &quot;boolean&quot; }, &quot;Make use of your Tool curios in Lusternia&quot;)
+  private_settings[&quot;facecurio&quot;] = createOption(false, mmp.setFacecurio, { &quot;boolean&quot; }, &quot;Make use of your Face curios in Lusternia&quot;)
+  private_settings[&quot;toycurio&quot;] = createOption(false, mmp.setToycurio, { &quot;boolean&quot; }, &quot;Make use of your Toy curios in Lusternia&quot;)
+  private_settings[&quot;feathercurio&quot;] = createOption(false, mmp.setFeathercurio, { &quot;boolean&quot; }, &quot;Make use of your Feather curios in Lusternia&quot;)
+  private_settings[&quot;figurecurio&quot;] = createOption(false, mmp.setFigurecurio, { &quot;boolean&quot; }, &quot;Make use of your Figure curios in Lusternia&quot;)
 
 
   mmp.settings = createOptionsTable(private_settings)
@@ -4115,7 +4148,7 @@ function mmp.gotoRoom (where, dashtype)
    return
   end
 
-  local madeduanathar, madeduanatharan, mademedallion, madefingerblade, madebelt, madecubix, madescrewdriver, madewheel, mademud, madesnowglobe, madecookie, madehead, madeicicle, madetibia
+  local madeduanathar, madeduanatharan, mademedallion, madefingerblade, madebelt, madecubix, madescrewdriver, madewheel, mademud, madesnowglobe, madecookie, madehead, madeicicle, madetibia, madebonecurio, madeflowercurio, madetorus, madeutensilcurio, madefluttercurio, madetoolcurio, madefacecurio, madetoycurio, madefeathercurio, madefigurecurio
 
   local function getcmd(word)
 		if mmp.game == &quot;achaea&quot; then
@@ -4126,6 +4159,24 @@ function mmp.gotoRoom (where, dashtype)
 		elseif mmp.game == &quot;lusternia&quot; then
 			if word == &quot;snowglobe&quot; then
 				return [[script:send(&quot;shake snowglobe&quot;,false)]]
+			elseif word == &quot;bonecurio&quot; then
+				return [[script:send(&quot;curio collection activate bone&quot;,false)]]
+			elseif word == &quot;flowercurio&quot; then
+				return [[script:send(&quot;curio collection activate flower&quot;,false)]]
+			elseif word == &quot;utensilcurio&quot; then
+				return [[script:send(&quot;curio collection activate utensil&quot;,false)]]
+			elseif word == &quot;fluttercurio&quot; then
+				return [[script:send(&quot;curio collection activate flutter&quot;,false)]]
+			elseif word == &quot;toolcurio&quot; then
+				return [[script:send(&quot;curio collection activate tool&quot;,false)]]
+			elseif word == &quot;facecurio&quot; then
+				return [[script:send(&quot;curio collection activate face&quot;,false)]]
+			elseif word == &quot;toycurio&quot; then
+				return [[script:send(&quot;curio collection activate toy&quot;,false)]]
+			elseif word == &quot;feathercurio&quot; then
+				return [[script:send(&quot;curio collection activate feather&quot;,false)]]
+			elseif word == &quot;figurecurio&quot; then
+				return [[script:send(&quot;curio collection activate figure&quot;,false)]]
 			else
 				return [[script:send(&quot;touch ]]..word..[[&quot;, false)]]
 			end
@@ -4143,7 +4194,7 @@ function mmp.gotoRoom (where, dashtype)
       mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
       madeduanathar = true
     end
-	elseif mmp.game == &quot;lusternia&quot; and (mmp.settings.medallion or mmp.settings.fingerblade or mmp.settings.belt or mmp.settings.cubix or mmp.settings.screwdriver or mmp.settings.wheel or mmp.settings.mud or mmp.settings.snowglobe or mmp.settings.cookie or mmp.settings.head or mmp.settings.icicle or mmp.settings.tibia) and gmcp.Room and (not table.contains(gmcp.Room.Info.details,&quot;indoors&quot;) or table.contains(gmcp.Room.Info.details, &quot;an Aetherbubble&quot;)) then
+	elseif mmp.game == &quot;lusternia&quot; and (mmp.settings.medallion or mmp.settings.fingerblade or mmp.settings.belt or mmp.settings.cubix or mmp.settings.screwdriver or mmp.settings.wheel or mmp.settings.mud or mmp.settings.snowglobe or mmp.settings.cookie or mmp.settings.head or mmp.settings.icicle or mmp.settings.tibia or mmp.settings.bonecurio or mmp.settings.flowercurio or mmp.settings.torus) and gmcp.Room and (not table.contains(gmcp.Room.Info.details,&quot;indoors&quot;) or table.contains(gmcp.Room.Info.details, &quot;an Aetherbubble&quot;)) then
 	if mmp.settings.medallion and mmp.usebix() then
       addSpecialExit(mmp.currentroom, 13367, getcmd(&quot;medallion&quot;))
       mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
@@ -4236,6 +4287,56 @@ function mmp.gotoRoom (where, dashtype)
       mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
       madetibia = true
 	end
+	if mmp.settings.bonecurio and mmp.usebix() then
+      addSpecialExit(mmp.currentroom, 28613, getcmd(&quot;bonecurio&quot;))
+      mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
+      madebonecurio = true
+	end
+	if mmp.settings.flowercurio and mmp.usebix() then
+      addSpecialExit(mmp.currentroom, 28624, getcmd(&quot;flowercurio&quot;))
+      mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
+      madeflowercurio = true
+	end
+	if mmp.settings.torus and mmp.usebix() then
+      addSpecialExit(mmp.currentroom, 28548, getcmd(&quot;torus&quot;))		-- room number will vary for each torus
+      mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
+      madetorus = true
+	end
+	if mmp.settings.utensilcurio and mmp.usebix() then
+      addSpecialExit(mmp.currentroom, 28617, getcmd(&quot;utensilcurio&quot;))
+      mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
+      madeutensilcurio = true
+	end
+	if mmp.settings.fluttercurio and mmp.usebix() then
+      addSpecialExit(mmp.currentroom, 28622, getcmd(&quot;fluttercurio&quot;))
+      mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
+      madefluttercurio = true
+	end
+	if mmp.settings.toolcurio and mmp.usebix() then
+      addSpecialExit(mmp.currentroom, 28586, getcmd(&quot;toolcurio&quot;))
+      mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
+      madetoolcurio = true
+	end
+	if mmp.settings.facecurio and mmp.usebix() then
+      addSpecialExit(mmp.currentroom, 28433, getcmd(&quot;facecurio&quot;))
+      mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
+      madefacecurio = true
+	end
+	if mmp.settings.toycurio and mmp.usebix() then
+      addSpecialExit(mmp.currentroom, 21548, getcmd(&quot;toycurio&quot;))
+      mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
+      madetoycurio = true
+	end
+	if mmp.settings.feathercurio and mmp.usebix() then
+      addSpecialExit(mmp.currentroom, 28591, getcmd(&quot;feathercurio&quot;))
+      mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
+      madefeathercurio = true
+	end
+	if mmp.settings.figurecurio and mmp.usebix() then
+      addSpecialExit(mmp.currentroom, 28312, getcmd(&quot;figurecurio&quot;))
+      mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
+      madefigurecurio = true
+	end
   end
 
   -- if getPath worked, then the dirs and room #'s tables were populated for us
@@ -4259,6 +4360,16 @@ function mmp.gotoRoom (where, dashtype)
  	 if madehead then mmp.clearspecials{6831, 11811} end
  	 if madeicicle then mmp.clearspecials{6831, 10457} end
  	 if madetibia then mmp.clearspecials{6831, 11600} end
+ 	 if madebonecurio then mmp.clearspecials{28613} end
+ 	 if madeflowercurio then mmp.clearspecials{28624} end
+ 	 if madetorus then mmp.clearspecials{28548} end
+ 	 if madeutensilcurio then mmp.clearspecials{28617} end
+ 	 if madefluttercurio then mmp.clearspecials{28622} end
+ 	 if madetoolcurio then mmp.clearspecials{28586} end
+ 	 if madefacecurio then mmp.clearspecials{28433} end
+ 	 if madetoycurio then mmp.clearspecials{21548} end
+ 	 if madefeathercurio then mmp.clearspecials{28591} end
+ 	 if madefigurecurio then mmp.clearspecials{28312} end
     return
   end
 
@@ -4276,6 +4387,16 @@ function mmp.gotoRoom (where, dashtype)
   if madehead then mmp.clearspecials{6831, 11811} end
   if madeicicle then mmp.clearspecials{6831, 10457} end
   if madetibia then mmp.clearspecials{6831, 11600} end
+  if madebonecurio then mmp.clearspecials{28613} end
+  if madeflowercurio then mmp.clearspecials{28624} end
+  if madetorus then mmp.clearspecials{28548} end
+  if madeutensilcurio then mmp.clearspecials{28617} end
+  if madefluttercurio then mmp.clearspecials{28622} end
+  if madetoolcurio then mmp.clearspecials{28586} end
+  if madefacecurio then mmp.clearspecials{28433} end
+  if madetoycurio then mmp.clearspecials{21548} end
+  if madefeathercurio then mmp.clearspecials{28591} end
+  if madefigurecurio then mmp.clearspecials{28312} end
 end
 
 function mmp.gotoArea (where, number, dashtype, exact)
@@ -5716,6 +5837,77 @@ function mmp.setTibia()
   else mmp.echo(&quot;Won't use Tibia anymore.&quot;) end
 end
 
+function mmp.setBonecurio()
+  mmp.clearpathcache() -- clear the cache so it'll use wings or will stop using wings
+
+  if mmp.settings.bonecurio then mmp.echo(&quot;Okay, will see about using Bone Curio collection whenever it's quicker&quot;)
+  else mmp.echo(&quot;Won't use Bone Curio collection anymore.&quot;) end
+end
+
+function mmp.setFlowercurio()
+  mmp.clearpathcache() -- clear the cache so it'll use wings or will stop using wings
+
+  if mmp.settings.flowercurio then mmp.echo(&quot;Okay, will see about using Flower Curio collection whenever it's quicker&quot;)
+  else mmp.echo(&quot;Won't use Flower Curio collection anymore.&quot;) end
+end
+
+function mmp.setTorus()
+  mmp.clearpathcache() -- clear the cache so it'll use wings or will stop using wings
+
+  if mmp.settings.torus then mmp.echo(&quot;Okay, will see about using your Torus whenever it's quicker&quot;)
+  else mmp.echo(&quot;Won't use your Torus anymore.&quot;) end
+end
+
+
+
+function mmp.setUtensilcurio()
+  mmp.clearpathcache() -- clear the cache so it'll use wings or will stop using wings
+
+  if mmp.settings.utensilcurio then mmp.echo(&quot;Okay, will see about using Utensil Curio collection whenever it's quicker&quot;)
+  else mmp.echo(&quot;Won't use Utensil Curio collection anymore.&quot;) end
+end
+
+function mmp.setFluttercurio()
+  mmp.clearpathcache() -- clear the cache so it'll use wings or will stop using wings
+
+  if mmp.settings.fluttercurio then mmp.echo(&quot;Okay, will see about using Flutter Curio collection whenever it's quicker&quot;)
+  else mmp.echo(&quot;Won't use Flutter Curio collection anymore.&quot;) end
+end
+
+function mmp.setToolcurio()
+  mmp.clearpathcache() -- clear the cache so it'll use wings or will stop using wings
+
+  if mmp.settings.toolcurio then mmp.echo(&quot;Okay, will see about using Tool Curio collection whenever it's quicker&quot;)
+  else mmp.echo(&quot;Won't use Tool Curio collection anymore.&quot;) end
+end
+
+function mmp.setFacecurio()
+  mmp.clearpathcache() -- clear the cache so it'll use wings or will stop using wings
+
+  if mmp.settings.facecurio then mmp.echo(&quot;Okay, will see about using Face Curio collection whenever it's quicker&quot;)
+  else mmp.echo(&quot;Won't use Face Curio collection anymore.&quot;) end
+end
+
+function mmp.setToycurio()
+  mmp.clearpathcache() -- clear the cache so it'll use wings or will stop using wings
+
+  if mmp.settings.toycurio then mmp.echo(&quot;Okay, will see about using Toy Curio collection whenever it's quicker&quot;)
+  else mmp.echo(&quot;Won't use Toy Curio collection anymore.&quot;) end
+end
+
+function mmp.setFeathercurio()
+  mmp.clearpathcache() -- clear the cache so it'll use wings or will stop using wings
+
+  if mmp.settings.feathercurio then mmp.echo(&quot;Okay, will see about using Feather Curio collection whenever it's quicker&quot;)
+  else mmp.echo(&quot;Won't use Feather Curio collection anymore.&quot;) end
+end
+
+function mmp.setFigurecurio()
+  mmp.clearpathcache() -- clear the cache so it'll use wings or will stop using wings
+
+  if mmp.settings.figurecurio then mmp.echo(&quot;Okay, will see about using Figure Curio collection whenever it's quicker&quot;)
+  else mmp.echo(&quot;Won't use Figure Curio collection anymore.&quot;) end
+end
 function mmp.mapLook(roomid, delay)
   centerview(roomid)
   if mmp.maplooktimer then killTimer(mmp.maplooktimer) end
@@ -6498,15 +6690,33 @@ end</script>
                         <packageName></packageName>
                         <script>function mmapper_lusternia_went_outside()
   -- track whenever we need to use items when we get outside!	
-  if not mmp.autowalking or not (mmp.settings.medallion or mmp.settings.fingerblade or mmp.settings.belt or mmp.settings.cubix or mmp.settings.screwdriver or mmp.settings.wheel or mmp.settings.mud or mmp.settings.snowglobe or mmp.settings.cookie or mmp.settings.head or mmp.settings.icicle or mmp.settings.tibia) or mmp.game ~= &quot;lusternia&quot; or 
+  if not mmp.autowalking or not (mmp.settings.medallion or mmp.settings.fingerblade or mmp.settings.belt or mmp.settings.cubix or mmp.settings.screwdriver or mmp.settings.wheel or mmp.settings.mud or mmp.settings.snowglobe or mmp.settings.cookie or mmp.settings.head or mmp.settings.icicle or mmp.settings.tibia or mmp.settings.bonecurio or mmp.settings.flowercurio or mmp.settings.torus or mmp.settings.utensilcurio or mmp.settings.fluttercurio or mmp.settings.toolcurio or mmp.settings.facecurio or mmp.settings.toycurio or mmp.settings.feathercurio or mmp.settings.figurecurio) or mmp.game ~= &quot;lusternia&quot; or 
     (mmp.currentroom == mmp.speedWalkPath[#mmp.speedWalkPath]) then return end
 
   -- repath, maybe that'll allow us to use wings now.
-  local mademedallion, madefingerblade, madebelt, madecubix, madescrewdriver, madewheel, mademud, madesnowglobe, madehead, madecookie, madeicicle, madetibia
+  local mademedallion, madefingerblade, madebelt, madecubix, madescrewdriver, madewheel, mademud, madesnowglobe, madehead, madecookie, madeicicle, madetibia, madebonecurio, madeflowercurio, madetorus, madeutensilcurio, madefluttercurio, madetoolcurio, madefacecurio, madetoycurio, madefeathercurio, madefigurecurio
 
   local function getcmd(item)
 		if item == &quot;snowglobe&quot; then
 			return [[script:send(&quot;shake snowglobe&quot;,false)]]
+		elseif word == &quot;bonecurio&quot; then
+			return [[script:send(&quot;curio collection activate bone&quot;,false)]]
+		elseif word == &quot;flowercurio&quot; then
+			return [[script:send(&quot;curio collection activate flower&quot;,false)]]
+		elseif word == &quot;utensilcurio&quot; then
+			return [[script:send(&quot;curio collection activate utensil&quot;,false)]]
+		elseif word == &quot;fluttercurio&quot; then
+			return [[script:send(&quot;curio collection activate flutter&quot;,false)]]
+		elseif word == &quot;toolcurio&quot; then
+			return [[script:send(&quot;curio collection activate tool&quot;,false)]]
+		elseif word == &quot;facecurio&quot; then
+			return [[script:send(&quot;curio collection activate face&quot;,false)]]
+		elseif word == &quot;toycurio&quot; then
+			return [[script:send(&quot;curio collection activate toy&quot;,false)]]
+		elseif word == &quot;feathercurio&quot; then
+			return [[script:send(&quot;curio collection activate feather&quot;,false)]]
+		elseif word == &quot;figurecurio&quot; then
+			return [[script:send(&quot;curio collection activate figure&quot;,false)]]
 		else
 			return [[script:send(&quot;touch ]]..(item)..[[&quot;, false)]]
 		end
@@ -6604,11 +6814,61 @@ end</script>
       mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
       madetibia = true
 	end
+   if mmp.settings.bonecurio and mmp.usebix() then
+      addSpecialExit(mmp.currentroom, 28613, getcmd(&quot;bonecurio&quot;))
+      mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
+      madebonecurio = true
+	end
+	if mmp.settings.flowercurio and mmp.usebix() then
+      addSpecialExit(mmp.currentroom, 28624, getcmd(&quot;flowercurio&quot;))
+      mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
+      madeflowercurio = true
+	end
+	if mmp.settings.torus and mmp.usebix() then
+      addSpecialExit(mmp.currentroom, 25848, getcmd(&quot;torus&quot;))
+      mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
+      madetorus = true
+	end
+	if mmp.settings.utensilcurio and mmp.usebix() then
+      addSpecialExit(mmp.currentroom, 28617, getcmd(&quot;utensilcurio&quot;))
+      mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
+      madeutensilcurio = true
+	end
+	if mmp.settings.fluttercurio and mmp.usebix() then
+      addSpecialExit(mmp.currentroom, 28622, getcmd(&quot;fluttercurio&quot;))
+      mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
+      madefluttercurio = true
+	end
+	if mmp.settings.toolcurio and mmp.usebix() then
+      addSpecialExit(mmp.currentroom, 28586, getcmd(&quot;toolcurio&quot;))
+      mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
+      madetoolcurio = true
+	end
+	if mmp.settings.facecurio and mmp.usebix() then
+      addSpecialExit(mmp.currentroom, 28433, getcmd(&quot;facecurio&quot;))
+      mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
+      madefacecurio = true
+	end
+	if mmp.settings.toycurio and mmp.usebix() then
+      addSpecialExit(mmp.currentroom, 21548, getcmd(&quot;toycurio&quot;))
+      mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
+      madetoycurio = true
+	end
+	if mmp.settings.feathercurio and mmp.usebix() then
+      addSpecialExit(mmp.currentroom, 28591, getcmd(&quot;feathercurio&quot;))
+      mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
+      madefeathercurio = true
+	end
+	if mmp.settings.figurecurio and mmp.usebix() then
+      addSpecialExit(mmp.currentroom, 28312, getcmd(&quot;figurecurio&quot;))
+      mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
+      madefigurecurio = true
+	end
 
   mmp.getPath(mmp.currentroom, mmp.speedWalkPath[#mmp.speedWalkPath]) -- don't need to check return value since that fact shouldnt've changed
   
   -- if our path didn't change, re-instate it as it was (since the new path starts from this room that we checked at)
-  if speedWalkDir[1]:find(&quot;medallion&quot;,1,true) or speedWalkDir[1]:find(&quot;fingerblade&quot;,1,true) or speedWalkDir[1]:find(&quot;belt&quot;) or speedWalkDir[1]:find(&quot;cubix&quot;) then
+  if speedWalkDir[1]:find(&quot;medallion&quot;,1,true) or speedWalkDir[1]:find(&quot;fingerblade&quot;,1,true) or speedWalkDir[1]:find(&quot;belt&quot;) or speedWalkDir[1]:find(&quot;cubix&quot;) or speedWalkDir[1]:find(&quot;bonecurio&quot;,1,true) or speedWalkDir[1]:find(&quot;flowercurio&quot;,1,true) or speedWalkDir[1]:find(&quot;torus&quot;,1,true) or speedWalkDir[1]:find(&quot;utensilcurio&quot;,1,true) or speedWalkDir[1]:find(&quot;fluttercurio&quot;,1,true) or speedWalkDir[1]:find(&quot;toolcurio&quot;,1,true) or speedWalkDir[1]:find(&quot;facecurio&quot;,1,true) or speedWalkDir[1]:find(&quot;toycurio&quot;,1,true) or speedWalkDir[1]:find(&quot;feathercurio&quot;,1,true) or speedWalkDir[1]:find(&quot;figurecurio&quot;,1,true) then
     speedWalkCounter = 0
     mmp.echo(&quot;We got outside - going to shortcut with 'bix device.&quot;)
     mmp.gotoRoom(mmp.speedWalkPath[#mmp.speedWalkPath])
@@ -6627,6 +6887,16 @@ end</script>
   if madehead then mmp.clearspecials{6831, 11811} end
   if madeicicle then mmp.clearspecials{6831, 10457} end
   if madetibia then mmp.clearspecials{6831, 11600} end
+  if madebonecurio then mmp.clearspecials{28613} end
+  if madeflowercurio then mmp.clearspecials{28624} end
+  if madetorus then mmp.clearspecials{25848} end
+  if madeutensilcurio then mmp.clearspecials{28617} end
+  if madefluttercurio then mmp.clearspecials{28622} end
+  if madetoolcurio then mmp.clearspecials{28586} end
+  if madefacecurio then mmp.clearspecials{28433} end
+  if madetoycurio then mmp.clearspecials{21548} end
+  if madefeathercurio then mmp.clearspecials{28591} end
+  if madefigurecurio then mmp.clearspecials{28312} end
 end
 </script>
                         <eventHandlerList>
@@ -7015,6 +7285,8 @@ end</script>
       for k,v in pairs(oldmaptable) do newmaptable[k] = v end
       setRoomUserData(1, &quot;gotoMapping&quot;, yajl.to_string(newmaptable))
       mmp.echo(&quot;Marks from the old map migrated successfully.&quot;)
+
+      raiseEvent(&quot;mmapper updated map&quot;)
     else
       mmp.echon(&quot;Map failed to load - you need to have the mapper open. Please open it, and then &quot;)
       echoLink(&quot;click here&quot;, [[
@@ -7045,6 +7317,7 @@ end</script>
           for k,v in pairs(oldmaptable) do newmaptable[k] = v end
           setRoomUserData(1, &quot;gotoMapping&quot;, yajl.to_string(newmaptable))
           mmp.echo(&quot;Marks from the old map migrated successfully.&quot;)
+          raiseEvent(&quot;mmapper updated map&quot;)
         else mmp.echo(&quot;Nope, didn't work. Open the map and try again?&quot;) end
       ]], 
       &quot;Click here to try loading the map again&quot;)
