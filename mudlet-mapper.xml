@@ -791,6 +791,28 @@ enableTrigger(&quot;Angel sense&quot;)</script>
                         </regexCodePropertyList>
                     </Trigger>
                 </Trigger>
+                <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="yes" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+                    <name>Demon sense</name>
+                    <script>mmp.locateAndEchoSide(multimatches[2][3], multimatches[2][2])</script>
+                    <triggerType>0</triggerType>
+                    <conditonLineDelta>0</conditonLineDelta>
+                    <mStayOpen>0</mStayOpen>
+                    <mCommand></mCommand>
+                    <packageName></packageName>
+                    <mFgColor>#ff0000</mFgColor>
+                    <mBgColor>#ffff00</mBgColor>
+                    <mSoundFile></mSoundFile>
+                    <colorTriggerFgColor>#000000</colorTriggerFgColor>
+                    <colorTriggerBgColor>#000000</colorTriggerBgColor>
+                    <regexCodeList>
+                        <string>Your Baalzadeen senses </string>
+                        <string>^Your Baalzadeen senses (\w+) at (.+), on a health of</string>
+                    </regexCodeList>
+                    <regexCodePropertyList>
+                        <integer>2</integer>
+                        <integer>1</integer>
+                    </regexCodePropertyList>
+                </Trigger>
                 <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
                     <name>Annwyn circle</name>
                     <script>mmp.customwalkdelay(12)</script>
@@ -1900,6 +1922,73 @@ end</script>
                         <integer>1</integer>
                     </regexCodePropertyList>
                 </Trigger>
+                <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="yes" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+                    <name>City/commune shops menu</name>
+                    <script></script>
+                    <triggerType>0</triggerType>
+                    <conditonLineDelta>3</conditonLineDelta>
+                    <mStayOpen>500</mStayOpen>
+                    <mCommand></mCommand>
+                    <packageName></packageName>
+                    <mFgColor>#ff0000</mFgColor>
+                    <mBgColor>#ffff00</mBgColor>
+                    <mSoundFile></mSoundFile>
+                    <colorTriggerFgColor>#000000</colorTriggerFgColor>
+                    <colorTriggerBgColor>#000000</colorTriggerBgColor>
+                    <regexCodeList>
+                        <string>************************[ Local shops selling healing ]************************</string>
+                        <string>3</string>
+                    </regexCodeList>
+                    <regexCodePropertyList>
+                        <integer>3</integer>
+                        <integer>5</integer>
+                    </regexCodePropertyList>
+                    <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+                        <name>Shop</name>
+                        <script>local shop = line:sub(1, 25):trim()
+if shop:sub(1,1) == '*' then return end
+
+cecho(&quot;  &lt;orange_red&gt;(&quot;)
+mmp.echonums(shop)
+cecho(&quot;&lt;orange_red&gt;)&quot;)</script>
+                        <triggerType>0</triggerType>
+                        <conditonLineDelta>0</conditonLineDelta>
+                        <mStayOpen>0</mStayOpen>
+                        <mCommand></mCommand>
+                        <packageName></packageName>
+                        <mFgColor>#ff0000</mFgColor>
+                        <mBgColor>#ffff00</mBgColor>
+                        <mSoundFile></mSoundFile>
+                        <colorTriggerFgColor>#000000</colorTriggerFgColor>
+                        <colorTriggerBgColor>#000000</colorTriggerBgColor>
+                        <regexCodeList>
+                            <string>^</string>
+                        </regexCodeList>
+                        <regexCodePropertyList>
+                            <integer>1</integer>
+                        </regexCodePropertyList>
+                    </Trigger>
+                    <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+                        <name>Stop (city/commune shops menu)</name>
+                        <script>setTriggerStayOpen(&quot;City/commune shops menu&quot;, 0)</script>
+                        <triggerType>0</triggerType>
+                        <conditonLineDelta>0</conditonLineDelta>
+                        <mStayOpen>0</mStayOpen>
+                        <mCommand></mCommand>
+                        <packageName></packageName>
+                        <mFgColor>#ff0000</mFgColor>
+                        <mBgColor>#ffff00</mBgColor>
+                        <mSoundFile></mSoundFile>
+                        <colorTriggerFgColor>#000000</colorTriggerFgColor>
+                        <colorTriggerBgColor>#000000</colorTriggerBgColor>
+                        <regexCodeList>
+                            <string>return isPrompt()</string>
+                        </regexCodeList>
+                        <regexCodePropertyList>
+                            <integer>4</integer>
+                        </regexCodePropertyList>
+                    </Trigger>
+                </Trigger>
             </TriggerGroup>
             <TriggerGroup isActive="yes" isFolder="yes" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
                 <name>Imperian</name>
@@ -2762,7 +2851,7 @@ mmp.settings:setOption(matches[3], val)</script>
                 <packageName></packageName>
                 <regex>^area list$</regex>
             </Alias>
-            <AliasGroup isActive="yes" isFolder="yes">
+            <AliasGroup isActive="no" isFolder="yes">
                 <name>mm Mapping</name>
                 <script></script>
                 <command></command>
@@ -5951,6 +6040,37 @@ function mmp.getexactarea(roomname)
   if areaid then return mmp.areatabler[areaid] end
 end</script>
                 <eventHandlerList/>
+                <Script isActive="yes" isFolder="no">
+                    <name>mmp.wormholesfix</name>
+                    <packageName></packageName>
+                    <script>function mmp.wormholesfix()
+  local c = 0
+  local weight = 10
+  for area in pairs(mmp.areatabler) do
+    local rooms = getAreaRooms(area) or {}
+    for i = 0, #rooms do
+      local exits = getSpecialExits(rooms[i] or 0)
+
+       if exits and next(exits) then
+         for exit, cmd in pairs(exits) do
+           if type(cmd) == &quot;table&quot; then cmd = next(cmd) end
+
+           if (cmd:lower():find(&quot;worm warp&quot;, 1, true)) then
+				setExitWeight(rooms[i], cmd, weight)
+             c = c + 1
+           end
+         end
+       end
+    end
+  end
+
+  mmp.echo(string.format(&quot;%s wormholes weighted to %s (so we don't take them over too short distances).&quot;, c, weight))
+end</script>
+                    <eventHandlerList>
+                        <string>mmapper updated map</string>
+                        <string>sysMapDownloadEvent</string>
+                    </eventHandlerList>
+                </Script>
             </Script>
             <Script isActive="yes" isFolder="no">
                 <name>Person tracking</name>
