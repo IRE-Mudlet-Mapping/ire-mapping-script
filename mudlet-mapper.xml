@@ -3957,7 +3957,7 @@ mmp.speedWalkPath = mmp.speedWalkPath or {}
 mmp.speedWalkDir = mmp.speedWalkDir or {}
 
 
-local newversion = &quot;13.3.1&quot;
+local newversion = &quot;13.4.1&quot;
 if mmp.version and mmp.version ~= newversion then 
   if not mmp.game then mmp.echo(&quot;Mapper script updated - Thanks! I don't know what game are you connected to, though - so please reconnect, if you could.&quot;)
   else mmp.echo(&quot;Mapper script updated - thanks! You don't need to restart.&quot;) end
@@ -6526,6 +6526,7 @@ end</script>
                     <string>mmp areas changed</string>
                     <string>sys2DMapLoad</string>
                     <string>sys3DMapLoad</string>
+                    <string>sysMapDownloadEvent</string>
                 </eventHandlerList>
             </Script>
             <Script isActive="yes" isFolder="no">
@@ -7518,7 +7519,7 @@ function mmp.checkforupdate()
     end
 
     if mmp.settings.crowdmap and mmp.game and mmp.game == &quot;achaea&quot; then
-      downloadFile(mmp.mapfile, &quot;http://dl.dropbox.com/s/iqk5bf905iox0k9/version.txt?dl=1&quot;)
+      downloadFile(mmp.mapfile, &quot;http://dl.dropboxusercontent.com/s/iqk5bf905iox0k9/version.txt?dl=1&quot;)
     else
       downloadFile(mmp.mapfile, &quot;http://www.&quot;..game..&quot;.com/maps/MD5SUM&quot;)
     end
@@ -7551,7 +7552,7 @@ end
 function mmp.retrievecrowdchangelog()
   mmp.crowdchangelogfile = downloadfolder..&quot;crowdchangelogfile&quot;
 
-  downloadFile(mmp.crowdchangelogfile, &quot;http://dl.dropbox.com/s/pu51s482csta8zj/changelog.txt?dl=1&quot;)
+  downloadFile(mmp.crowdchangelogfile, &quot;http://dl.dropboxusercontent.com/s/pu51s482csta8zj/changelog.txt?dl=1&quot;)
 end
 
 -- downloads the public crowdsources map!
@@ -7597,7 +7598,7 @@ function mmp.downloadcrowdmap(newversion)
   f:close()
 
 
-  downloadFile(mmp.crowdmapfile, &quot;http://dl.dropbox.com/s/sbj9f1s1l4h7otg/map?dl=1&quot;)
+  downloadFile(mmp.crowdmapfile, &quot;http://dl.dropboxusercontent.com/s/sbj9f1s1l4h7otg/map?dl=1&quot;)
 
   mmp.echo(&quot;Downloading the latest crowdmap...&quot;)
 end
