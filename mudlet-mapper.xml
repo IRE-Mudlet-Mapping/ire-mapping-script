@@ -281,6 +281,12 @@ if mmp.alertness and next(mmp.alertness) then
   raiseEvent(&quot;mmapper updated pdb&quot;)
 end
 
+-- reset names we last seen, so scripts can be efficient
+-- not finished yet
+--if next(mmp.pdb_lastupdate) then
+--  mmp.pdb_lastupdate = {}
+--end
+
 disableTrigger&quot;Mudlet Mapper prompt trigger&quot;</script>
                 <triggerType>0</triggerType>
                 <conditonLineDelta>0</conditonLineDelta>
@@ -729,7 +735,7 @@ mmp.locateAndEcho(matches[3], matches[2])</script>
                     </regexCodePropertyList>
                 </Trigger>
                 <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
-                    <name>Angel presences</name>
+                    <name>Angel/Demon presences</name>
                     <script>disableTrigger(&quot;Angel sense&quot;)
 
 mmp.pdb_lastupdate = {}</script>
@@ -745,8 +751,10 @@ mmp.pdb_lastupdate = {}</script>
                     <colorTriggerBgColor>#000000</colorTriggerBgColor>
                     <regexCodeList>
                         <string>You bid your guardian angel to seek out life presences nearby.</string>
+                        <string>You bid your Baalzadeen to seek out life presences nearby.</string>
                     </regexCodeList>
                     <regexCodePropertyList>
+                        <integer>3</integer>
                         <integer>3</integer>
                     </regexCodePropertyList>
                     <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
@@ -764,14 +772,16 @@ mmp.pdb_lastupdate = {}</script>
                         <colorTriggerBgColor>#000000</colorTriggerBgColor>
                         <regexCodeList>
                             <string>^Your guardian angel senses (\w+) at (.+?),</string>
+                            <string>^Your Baalzadeen senses (\w+) at (.+?),</string>
                         </regexCodeList>
                         <regexCodePropertyList>
+                            <integer>1</integer>
                             <integer>1</integer>
                         </regexCodePropertyList>
                     </Trigger>
                     <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
-                        <name>Stop (angel presences</name>
-                        <script>setTriggerStayOpen(&quot;Angel presences&quot;, 0)
+                        <name>Stop (angel presences)</name>
+                        <script>setTriggerStayOpen(&quot;Angel/Demon presences&quot;, 0)
 enableTrigger(&quot;Angel sense&quot;)</script>
                         <triggerType>0</triggerType>
                         <conditonLineDelta>0</conditonLineDelta>
@@ -2851,7 +2861,7 @@ mmp.settings:setOption(matches[3], val)</script>
                 <packageName></packageName>
                 <regex>^area list$</regex>
             </Alias>
-            <AliasGroup isActive="no" isFolder="yes">
+            <AliasGroup isActive="yes" isFolder="yes">
                 <name>mm Mapping</name>
                 <script></script>
                 <command></command>
@@ -3426,6 +3436,94 @@ setRoomUserData(1, &quot;areaContinents&quot;, toserialize)</script>
                     <packageName></packageName>
                     <regex>^ac ([\w']+)(?: (.+))?$</regex>
                 </Alias>
+                <Alias isActive="yes" isFolder="no">
+                    <name>Add/remove a ferry room</name>
+                    <script>local room = tonumber(matches[2])
+
+-- load the ferry rooms if they haven't been already
+if not mmp.ferry_rooms then
+  local tmp = getRoomUserData(1, &quot;ferry rooms&quot;)
+
+  mmp.ferry_rooms = {}
+  if tmp ~= &quot;&quot; then
+    for _, i in ipairs(yajl.to_value(tmp)) do
+      mmp.ferry_rooms[i] = true
+    end
+  end
+end
+
+if matches[3] == &quot;add&quot; then
+  if mmp.ferry_rooms[room] then
+    mmp.echo(&quot;Ferry room #&quot;..room..&quot; is already recorded as such.&quot;) return
+  else
+    mmp.ferry_rooms[room] = true; mmp.echo(&quot;Added #&quot;..room..&quot; to be a ferry room.&quot;)
+  end
+else
+  if not mmp.ferry_rooms[room] then
+    mmp.echo(&quot;Room #&quot;..room..&quot; isn't a ferry one already.&quot;) return
+  else
+    mmp.ferry_rooms[room] = nil; mmp.echo(&quot;Removed #&quot;..room..&quot; from being a ferry room.&quot;)
+  end
+end
+
+local keys = {}; for k,_ in pairs(mmp.ferry_rooms) do keys[#keys+1] = k end
+
+setRoomUserData(1, &quot;ferry rooms&quot;, yajl.to_string(keys))</script>
+                    <command></command>
+                    <packageName></packageName>
+                    <regex>^fr (\d+) (add|remove)$</regex>
+                </Alias>
+                <Alias isActive="yes" isFolder="no">
+                    <name>Show ferry rooms</name>
+                    <script>if not mmp.ferry_rooms then
+  local tmp = getRoomUserData(1, &quot;ferry rooms&quot;)
+
+  mmp.ferry_rooms = {}
+  if tmp ~= &quot;&quot; then
+    for _, i in ipairs(yajl.to_value(tmp)) do
+      mmp.ferry_rooms[i] = true
+    end
+  end
+end
+
+mmp.echo(&quot;Ferry rooms available:&quot;)
+if not next(mmp.ferry_rooms) then  mmp.echo(&quot;(none)&quot;) return end
+
+for k, _ in pairs(mmp.ferry_rooms) do
+  mmp.echo(string.format(&quot;  (%d) - %s\n&quot;, k, getRoomName(k)))
+end</script>
+                    <command></command>
+                    <packageName></packageName>
+                    <regex>^fr show$</regex>
+                </Alias>
+                <Alias isActive="yes" isFolder="no">
+                    <name>Weight ferry exits</name>
+                    <script>  local c = 0
+  local weight = 200
+  for area in pairs(mmp.areatabler) do
+    local rooms = getAreaRooms(area) or {}
+    for i = 0, #rooms do
+      local exits = getSpecialExits(rooms[i] or 0)
+
+       if exits and next(exits) then
+         for exit, cmd in pairs(exits) do
+           if type(cmd) == &quot;table&quot; then cmd = next(cmd) end
+
+           if (cmd:lower():find(&quot;buy passage to&quot;, 1, true)) then
+				setExitWeight(rooms[i], cmd, weight)
+				mmp.echo(&quot;Weighted &quot;..cmd..&quot; going to &quot;..rooms[i]..&quot; (&quot;..getRoomName(rooms[i])..&quot;).&quot;)
+             c = c + 1
+           end
+         end
+       end
+    end
+  end
+
+  mmp.echo(string.format(&quot;%s ferry exits weighted to %s (so we don't take them over too short distances).&quot;, c, weight))</script>
+                    <command></command>
+                    <packageName></packageName>
+                    <regex>^weight ferry exits$</regex>
+                </Alias>
                 <Alias isActive="no" isFolder="no">
                     <name>-- (dangerous functions)</name>
                     <script></script>
@@ -3793,6 +3891,18 @@ end</script>
                 <packageName></packageName>
                 <regex>^(small|big|biggest)map(?: (\d+))?$</regex>
             </Alias>
+            <Alias isActive="yes" isFolder="no">
+                <name>^make maps$</name>
+                <script>local c = 0
+for _, id in pairs(getAreaTable()) do
+  tempTimer(c*.5, [[exportAreaImage(]]..id..[[)]])
+  c = c + 1
+end
+mmp.echo(&quot;Done!&quot;)</script>
+                <command></command>
+                <packageName></packageName>
+                <regex>^make maps$</regex>
+            </Alias>
         </AliasGroup>
     </AliasPackage>
     <ActionPackage/>
@@ -3942,7 +4052,8 @@ mmp = mmp or {
   currentroom = 0,
   currentroomname = &quot;(unknown)&quot;,
   firstRun = true,
-  specials = {}
+  specials = {},
+  ferry_rooms = {}
 }
 
 speedWalkWatch = createStopWatch()
@@ -3957,7 +4068,7 @@ mmp.speedWalkPath = mmp.speedWalkPath or {}
 mmp.speedWalkDir = mmp.speedWalkDir or {}
 
 
-local newversion = &quot;13.4.1&quot;
+local newversion = &quot;13.4.2&quot;
 if mmp.version and mmp.version ~= newversion then 
   if not mmp.game then mmp.echo(&quot;Mapper script updated - Thanks! I don't know what game are you connected to, though - so please reconnect, if you could.&quot;)
   else mmp.echo(&quot;Mapper script updated - thanks! You don't need to restart.&quot;) end
@@ -4024,6 +4135,13 @@ function mmp.startup()
 
   mmp.settings.dispDefaultWriteError = function()
     mmp.echo(&quot;Please use the mconfig alias to set options!&quot;)
+  end
+
+  local tmp = getRoomUserData(1, &quot;ferry rooms&quot;)
+  if tmp ~= &quot;&quot; then
+    for _, i in ipairs(yajl.to_value(tmp)) do
+      mmp.ferry_rooms[i] = true
+    end
   end
 
   raiseEvent(&quot;mmp areas changed&quot;)
@@ -4213,16 +4331,16 @@ function speedwalking( event, num )
   elseif mmp.speedWalkPath[speedWalkCounter] == num then
     speedWalkCounter = speedWalkCounter + 1
     mmp.move()
-  elseif #mmp.speedWalkPath&gt; 0 then -- ended up somewhere we didn't want to be?
+  elseif #mmp.speedWalkPath&gt; 0 and not mmp.ferry_rooms[num] then -- ended up somewhere we didn't want to be, and this isn't a ferry room?
     speedWalkMoved = false
     -- re-calculate path then
     mmp.echo(&quot;Ended up off the path, recalculating a new path...&quot;)
     local destination = mmp.speedWalkPath[#mmp.speedWalkPath]
     if not mmp.getPath(num, destination) then
-      mmp.echo(string.format(&quot;Don't know how to get to %d (%s) anymore :(&quot;,
+      mmp.echo(string.format(&quot;Don't know how to get to %d (%s) anymore :( Move into a room we know of to continue&quot;,
         destination, getRoomName(destination)))
     else
-		mmp.gotoRoom (destination)
+      mmp.gotoRoom (destination)
     end
   end
 end
@@ -6071,6 +6189,17 @@ end</script>
                         <string>sysMapDownloadEvent</string>
                     </eventHandlerList>
                 </Script>
+                <Script isActive="yes" isFolder="no">
+                    <name>mmp.clearlastupdate</name>
+                    <packageName></packageName>
+                    <script>function mmp.clearlastupdate()
+  -- reset mmp.pdb_lastupdate on the prompt
+  enableTrigger&quot;Mudlet Mapper prompt trigger&quot;
+end</script>
+                    <eventHandlerList>
+                        <string>mmapper updated pdb</string>
+                    </eventHandlerList>
+                </Script>
             </Script>
             <Script isActive="yes" isFolder="no">
                 <name>Person tracking</name>
@@ -6567,39 +6696,39 @@ end</script>
 
   mmp.envids =
   {
-    Path = 11,
-    Sewer = 23,
-    Freshwater = 22,
-    [&quot;Natural underground&quot;] = 3,
-    [&quot;Magma Caves&quot;] = 31,
-    Polar = 27,
-    Nothing = 0,
     [&quot;Constructed underground&quot;] = 2,
-    Ruins = 32,
-    Blighted = 29,
-    Forest = 4,
-    Tundra = 16,
-    [&quot;Tsol'aa city&quot;] = 19,
-    [&quot;Dwarven city&quot;] = 18,
-    Jungle = 17,
-    Ocean = 20,
-    River = 10,
-    Mountains = 14,
     [&quot;Deep Ocean&quot;] = 24,
-    Desert = 6,
-    Garden = 21,
-    Swamp = 15,
-    Road = 12,
-    Water = 30,
-    Grasslands = 7,
-    Valley = 13,
-    Reef = 25,
-    Hills = 9,
-    Vessel = 36,
+    [&quot;Dwarven city&quot;] = 18,
+    [&quot;Magma Caves&quot;] = 31,
+    [&quot;Natural underground&quot;] = 3,
+    [&quot;Ocean floor&quot;] = 34,
+    [&quot;Tsol'aa city&quot;] = 19,
     Beach = 5,
-    Urban = 8,
+    Blighted = 29,
+    Desert = 6,
+    Forest = 4,
+    Freshwater = 22,
+    Garden = 21,
+    Grasslands = 7,
+    Hills = 9,
+    Jungle = 17,
+    Mountains = 14,
+    Nothing = 0,
+    Ocean = 20,
+    Path = 11,
+    Polar = 27,
+    Reef = 25,
+    River = 10,
+    Road = 12,
+    Ruins = 32,
+    Sewer = 23,
+    Swamp = 15,
     Trees = 28,
-    [&quot;Ocean floor&quot;] = 34
+    Tundra = 16,
+    Urban = 8,
+    Valley = 13,
+    Vessel = 36,
+    Water = 30,
   }
 
   mmp.waterenvs = {}
