@@ -2959,6 +2959,26 @@ centerview(mmp.currentroom)</script>
                     <regex>^(?:spe|exit special) (\w+) (.+)$</regex>
                 </Alias>
                 <Alias isActive="yes" isFolder="no">
+                    <name>Add a special exit from one remote room to another</name>
+                    <script>local room1, room2 = tonumber(matches[2]), tonumber(matches[3])
+
+if not room1 or not mmp.roomexists(room1) then
+  mmp.echo(&quot;Room #&quot;..matches[2]..&quot; doesn't exist - create it first, or make sure you got the room ID right?&quot;)
+  return
+end
+
+if not room2 or not mmp.roomexists(room2) then
+  mmp.echo(&quot;Room #&quot;..matches[3]..&quot; doesn't exist - create it first, or make sure you got the room ID right?&quot;)
+  return
+end
+
+addSpecialExit(room1, room2, matches[4])
+mmp.echo(string.format(&quot;Added special exit with command '%s' to from %s (%d) to %s (%d).&quot;, matches[4], getRoomName(room1), room1, getRoomName(room2), room2))</script>
+                    <command></command>
+                    <packageName></packageName>
+                    <regex>^spev (\d+) (\d+) (.+)$</regex>
+                </Alias>
+                <Alias isActive="yes" isFolder="no">
                     <name>List special exits</name>
                     <script>mmp.listSpecialExits(matches[2])</script>
                     <command></command>
@@ -4068,7 +4088,7 @@ mmp.speedWalkPath = mmp.speedWalkPath or {}
 mmp.speedWalkDir = mmp.speedWalkDir or {}
 
 
-local newversion = &quot;13.4.2&quot;
+local newversion = &quot;13.4.3&quot;
 if mmp.version and mmp.version ~= newversion then 
   if not mmp.game then mmp.echo(&quot;Mapper script updated - Thanks! I don't know what game are you connected to, though - so please reconnect, if you could.&quot;)
   else mmp.echo(&quot;Mapper script updated - thanks! You don't need to restart.&quot;) end
@@ -6466,19 +6486,31 @@ local s,m = xpcall(function ()
     return
   end
 
+  -- wilderness mapping right now is UNFINISHED! It does not handle the grid breakup. So, please don't try it, and please won't whine about it.
+  local function inwilderness()
+    return (gmcp.Room.Info.coords == &quot;&quot; and gmcp.Room.Info.area == &quot;&quot;)
+  end
+
+  local getRoomName, getRoomCoordinates, getRoomsByPosition = getRoomName, getRoomCoordinates, getRoomsByPosition
+
   local num = tonumber(num) or tonumber(gmcp.Room.Info.num)
   local currentexits = gmcp.Room.Info.exits
   local s = &quot;&quot;
 
   if not mmp.roomexists(num) then
-    -- two-step method: if we can't determine a link via GMCP, we'll do it via last dir
     -- see if we can create and link this room with an existing one
-    for exit, id in pairs(currentexits) do
-      if mmp.roomexists(id) then
-        s = makeroom(id, num, getshiftedcoords(exit, getRoomCoordinates(id)))
+    -- wilderness and non-wilderness rooms require different methods of calculating relative coordinates
+    if not inwilderness() then
+      for exit, id in pairs(currentexits) do
+        if mmp.roomexists(id) then
+          s = makeroom(id, num, getshiftedcoords(exit, getRoomCoordinates(id)))
+        end
       end
+    else
+      local x,y = tostring(num):match(&quot;.-(%d%d%d)(%d%d%d)$&quot;)
+      -- Achaea's coordinates seem to be in the 4th quadrant, while Mudlets 0,0 is in the middle of the map. Invert y so going north-south looks alright
+      s = makeroom(mmp.previousroom, num, x,y*-1,0)
     end
-
   end
 
   -- if we created it, and some data could be filled in
@@ -6508,20 +6540,60 @@ local s,m = xpcall(function ()
     end
 
     -- autolink exits
-    local x = getRoomExits(num) or {}
-    -- check for missing exits
-    for exit, id in pairs(currentexits) do
-      if id == 0 then
-        s = s .. (#s &gt; 0 and &quot; &quot; or &quot;&quot;) .. &quot;Can't link to the &quot;..exit..&quot;, it leads to a room with ID 0 (and that's not supported yet).&quot;
-      else
-        if not x[mmp.anytolong(exit)] then
-          if not mmp.roomexists(id) then
-            s = makeroom(num, id, getshiftedcoords(mmp.ranytolong(exit), getRoomCoordinates(num)))
+    if not inwilderness() then
+      local x = getRoomExits(num) or {}
+      -- check for missing exits
+      for exit, id in pairs(currentexits) do
+        if id == 0 then
+          s = s .. (#s &gt; 0 and &quot; &quot; or &quot;&quot;) .. &quot;Can't link to the &quot;..exit..&quot;, it leads to a room with ID 0 (and that's not supported yet).&quot;
+        else
+          if not x[mmp.anytolong(exit)] then
+            if not mmp.roomexists(id) then
+              s = makeroom(num, id, getshiftedcoords(mmp.ranytolong(exit), getRoomCoordinates(num)))
+            end
+            if setExit(num, id, exit) then
+              s = s .. (#s &gt; 0 and &quot; &quot; or &quot;&quot;) .. &quot;Added missing exit &quot;..exit..&quot; to &quot;..(getRoomName(id) ~= &quot;&quot; and getRoomName(id) or &quot;''&quot;)..&quot; (&quot;..id..&quot;).&quot;
+            else
+              s = s .. (#s &gt; 0 and &quot; &quot; or &quot;&quot;) .. string.format(&quot;Failed to link %d withh %d via %s exit for some reason :/&quot;, num, id, exit)
+            end
           end
-          if setExit(num, id, exit) then
-            s = s .. (#s &gt; 0 and &quot; &quot; or &quot;&quot;) .. &quot;Added missing exit &quot;..exit..&quot; to &quot;..(getRoomName(id) ~= &quot;&quot; and getRoomName(id) or &quot;''&quot;)..&quot; (&quot;..id..&quot;).&quot;
-          else
-            s = s .. (#s &gt; 0 and &quot; &quot; or &quot;&quot;) .. string.format(&quot;Failed to link %d withh %d via %s exit for some reason :/&quot;, num, id, exit)
+        end
+      end
+    else
+      local function getshiftedcoords(direction, ox, oy, oz)
+        if direction == 'n' then return ox, oy+1, oz
+        elseif direction  == 'e' then return ox+1, oy, oz
+        elseif direction == 's' then return ox, oy-1, oz
+        elseif direction == 'w' then return ox-1, oy, oz
+        elseif direction == 'ne' then return ox+1, oy+1, oz
+        elseif direction == 'se' then return ox+1, oy-1, oz
+        elseif direction == 'sw' then return ox-1, oy-1, oz
+        elseif direction == 'nw' then return ox-1, oy+1, oz
+        else error(&quot;getshiftedcoords: direction &quot;..direction..&quot; isn't supported yet.&quot;)
+        end
+      end
+
+      local x,y,z = getRoomCoordinates(num)
+      local currentexits = getRoomExits(num) or {}
+      for _, exit in ipairs{'n', 'e', 's', 'w', 'ne', 'se', 'sw', 'nw'} do
+        local roomatdir = getRoomsByPosition(getRoomArea(num), getshiftedcoords(exit, x,y,z))
+
+        if roomatdir[0] then
+          local id = roomatdir[0]
+
+          if not currentexits[mmp.anytolong(exit)] then
+            if setExit(num, id, exit) then
+              s = s .. (#s &gt; 0 and &quot; &quot; or &quot;&quot;) .. &quot;Added missing exit &quot;..exit..&quot; to &quot;..(getRoomName(id) ~= &quot;&quot; and getRoomName(id) or &quot;''&quot;)..&quot; (&quot;..id..&quot;).&quot;
+            else
+              s = s .. (#s &gt; 0 and &quot; &quot; or &quot;&quot;) .. string.format(&quot;Failed to link %d withh %d via %s exit for some reason :/&quot;, num, id, exit)
+            end
+
+            local exit = mmp.anytoshort(mmp.ranytolong(exit))
+            if setExit(id, num, exit) then
+              s = s .. (#s &gt; 0 and &quot; &quot; or &quot;&quot;) .. &quot;Added missing exit &quot;..exit..&quot; to &quot;..(getRoomName(id) ~= &quot;&quot; and getRoomName(id) or &quot;''&quot;)..&quot; (&quot;..id..&quot;).&quot;
+            else
+              s = s .. (#s &gt; 0 and &quot; &quot; or &quot;&quot;) .. string.format(&quot;Failed to link %d withh %d via %s exit for some reason :/&quot;, num, id, exit)
+            end            
           end
         end
       end
@@ -6552,6 +6624,12 @@ local s,m = xpcall(function ()
       setRoomUserData(num, &quot;indoors&quot;, &quot;&quot;)
       s = s .. (#s &gt; 0 and &quot; &quot; or &quot;&quot;) .. &quot;Updated room to be outdoors.&quot;
     end
+
+    -- check for wilderness exits
+    if getRoomChar(num) ~= &quot;W&quot; and table.contains(gmcp.Room.Info.details, &quot;wilderness&quot;) then
+      setRoomChar(num, &quot;W&quot;)
+      s = s .. (#s &gt; 0 and &quot; &quot; or &quot;&quot;) .. &quot;Added the wilderness mark.&quot;
+    end
   end
 
   if #s &gt; 0 then mmp.echo(s); centerview(mmp.currentroom) end
@@ -6560,25 +6638,11 @@ end, function (error)
   echo&quot;  &quot; echoLink(&quot;view steps&quot;, 'echo[['..debug.traceback()..']]', &quot;View steps of code that led up to it&quot;)
 end)
 if not s then mmp.echo(m) end
-end</script>
+end
+</script>
                     <eventHandlerList>
                         <string>gmcp.Room.Info</string>
                         <string>RoomNum</string>
-                    </eventHandlerList>
-                </Script>
-                <Script isActive="yes" isFolder="no">
-                    <name>mmp_track_exits</name>
-                    <packageName></packageName>
-                    <script>function mmp_track_exits(_, cmd)
-  if not mmp.editing then return end
-
-  local dir = mmp.anytolong(cmd)
-  if not dir then return end
-
-  mmp.lastdir = dir
-end</script>
-                    <eventHandlerList>
-                        <string>sysDataSendRequest</string>
                     </eventHandlerList>
                 </Script>
                 <Script isActive="yes" isFolder="no">
