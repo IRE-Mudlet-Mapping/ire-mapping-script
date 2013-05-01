@@ -2652,7 +2652,7 @@ mmp.echo(&quot;We're connected to Lithmeria.&quot;)</script>
                 <regexCodeList/>
                 <regexCodePropertyList/>
                 <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="yes" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
-                    <name>Worm Sources</name>
+                    <name>Worm sources</name>
                     <script>deleteLine()
 local from = multimatches[2][2]
 local to = multimatches[2][3]
@@ -2702,6 +2702,34 @@ cecho(&quot;)&quot;)
                     <regexCodePropertyList>
                         <integer>2</integer>
                         <integer>1</integer>
+                    </regexCodePropertyList>
+                </Trigger>
+                <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+                    <name>Wormhole Vision™</name>
+                    <script>--if not getSpecialExitsSwap or mmp.settings.lockwormholes then return end
+if not getSpecialExitsSwap then return end
+
+local exits = getSpecialExitsSwap(mmp.currentroom)
+if exits[&quot;worm warp&quot;] then
+  cecho(string.format(&quot;\n&lt;DarkSlateGrey&gt;A wormhole is here, leading to: &lt;orange_red&gt;%s (#%d)&lt;DarkSlateGrey&gt; in %s.\n&quot;, getRoomName(exits[&quot;worm warp&quot;]), exits[&quot;worm warp&quot;], mmp.cleanAreaName(mmp.getAreaName(exits[&quot;worm warp&quot;]))))
+end</script>
+                    <triggerType>0</triggerType>
+                    <conditonLineDelta>0</conditonLineDelta>
+                    <mStayOpen>0</mStayOpen>
+                    <mCommand></mCommand>
+                    <packageName></packageName>
+                    <mFgColor>#ff0000</mFgColor>
+                    <mBgColor>#ffff00</mBgColor>
+                    <mSoundFile></mSoundFile>
+                    <colorTriggerFgColor>#000000</colorTriggerFgColor>
+                    <colorTriggerBgColor>#000000</colorTriggerBgColor>
+                    <regexCodeList>
+                        <string>You see exits</string>
+                        <string>You see a single exit</string>
+                    </regexCodeList>
+                    <regexCodePropertyList>
+                        <integer>2</integer>
+                        <integer>2</integer>
                     </regexCodePropertyList>
                 </Trigger>
             </TriggerGroup>
@@ -2861,7 +2889,7 @@ mmp.settings:setOption(matches[3], val)</script>
                 <packageName></packageName>
                 <regex>^area list$</regex>
             </Alias>
-            <AliasGroup isActive="yes" isFolder="yes">
+            <AliasGroup isActive="no" isFolder="yes">
                 <name>mm Mapping</name>
                 <script></script>
                 <command></command>
@@ -4088,7 +4116,7 @@ mmp.speedWalkPath = mmp.speedWalkPath or {}
 mmp.speedWalkDir = mmp.speedWalkDir or {}
 
 
-local newversion = &quot;13.4.3&quot;
+local newversion = &quot;13.4.4&quot;
 if mmp.version and mmp.version ~= newversion then 
   if not mmp.game then mmp.echo(&quot;Mapper script updated - Thanks! I don't know what game are you connected to, though - so please reconnect, if you could.&quot;)
   else mmp.echo(&quot;Mapper script updated - thanks! You don't need to restart.&quot;) end
@@ -6176,6 +6204,11 @@ function mmp.getexactarea(roomname)
   end
 
   if areaid then return mmp.areatabler[areaid] end
+end
+
+-- returns the area name of a room or ?
+function mmp.getAreaName(roomid)
+   return mmp.areatabler[getRoomArea(roomid)] or '?'
 end</script>
                 <eventHandlerList/>
                 <Script isActive="yes" isFolder="no">
