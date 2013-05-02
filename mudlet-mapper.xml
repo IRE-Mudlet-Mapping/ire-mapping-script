@@ -1298,7 +1298,7 @@ mmp.game = &quot;aetolia&quot;</script>
                 <colorTriggerBgColor>#000000</colorTriggerBgColor>
                 <regexCodeList/>
                 <regexCodePropertyList/>
-                <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="yes" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+                <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
                     <name>Login</name>
                     <script>raiseEvent(&quot;mmp logged in&quot;, &quot;Lusternia&quot;)
 mmp.game = &quot;lusternia&quot;</script>
@@ -1313,19 +1313,9 @@ mmp.game = &quot;lusternia&quot;</script>
                     <colorTriggerFgColor>#000000</colorTriggerFgColor>
                     <colorTriggerBgColor>#000000</colorTriggerBgColor>
                     <regexCodeList>
-                        <string>     .____                      __                           .__</string>
-                        <string>     |    |     __ __   _______/  |_   ____  _______   ____  |__|_____</string>
-                        <string>     |    |    |  |  \ /  ___/\   __\_/ __ \ \_  __ \ /    \ |  |\__  \</string>
-                        <string>     |    |___ |  |  / \___ \  |  |  \  ___/  |  | \/|   |  \|  | / __ \_</string>
-                        <string>     |_______ \|____/ /____  &gt; |__|   \___  &gt; |__|   |___|  /|__|(____  /</string>
-                        <string>             \/            \/             \/              \/          \/</string>
+                        <string>                        A G E  O F  A S C E N S I O N</string>
                     </regexCodeList>
                     <regexCodePropertyList>
-                        <integer>3</integer>
-                        <integer>3</integer>
-                        <integer>3</integer>
-                        <integer>3</integer>
-                        <integer>3</integer>
                         <integer>3</integer>
                     </regexCodePropertyList>
                 </Trigger>
@@ -2710,7 +2700,7 @@ cecho(&quot;)&quot;)
 if not getSpecialExitsSwap then return end
 
 local exits = getSpecialExitsSwap(mmp.currentroom)
-if exits[&quot;worm warp&quot;] then
+if exits and exits[&quot;worm warp&quot;] then
   cecho(string.format(&quot;\n&lt;DarkSlateGrey&gt;A wormhole is here, leading to: &lt;orange_red&gt;%s (#%d)&lt;DarkSlateGrey&gt; in %s.\n&quot;, getRoomName(exits[&quot;worm warp&quot;]), exits[&quot;worm warp&quot;], mmp.cleanAreaName(mmp.getAreaName(exits[&quot;worm warp&quot;]))))
 end</script>
                     <triggerType>0</triggerType>
@@ -4116,7 +4106,7 @@ mmp.speedWalkPath = mmp.speedWalkPath or {}
 mmp.speedWalkDir = mmp.speedWalkDir or {}
 
 
-local newversion = &quot;13.4.4&quot;
+local newversion = &quot;13.5.1&quot;
 if mmp.version and mmp.version ~= newversion then 
   if not mmp.game then mmp.echo(&quot;Mapper script updated - Thanks! I don't know what game are you connected to, though - so please reconnect, if you could.&quot;)
   else mmp.echo(&quot;Mapper script updated - thanks! You don't need to restart.&quot;) end
@@ -4150,6 +4140,7 @@ function mmp.startup()
   private_settings[&quot;waterwalk&quot;] = createOption(true, mmp.setWaterWalk, { &quot;boolean&quot; }, &quot;Have waterwalk (don't avoid water)?&quot;)
   private_settings[&quot;medallion&quot;] = createOption(false, mmp.setMedallion, { &quot;boolean&quot; }, &quot;Make use of your Medallion in Lusternia&quot;)
   private_settings[&quot;fingerblade&quot;] = createOption(false, mmp.setFingerblade, { &quot;boolean&quot; }, &quot;Make use of your Fingerblade in Lusternia&quot;)
+  private_settings[&quot;blossom&quot;] = createOption(false, mmp.setBlossom, { &quot;boolean&quot; }, &quot;Make use of your Flame of dae'Seren in Lusternia&quot;)
   private_settings[&quot;belt&quot;] = createOption(false, mmp.setBelt, { &quot;boolean&quot; }, &quot;Make use of your Belt in Lusternia?&quot;)
   private_settings[&quot;cubix&quot;] = createOption(false, mmp.setCubix, { &quot;boolean&quot; }, &quot;Make use of your Cubix in Lusternia&quot;)
   private_settings[&quot;screwdriver&quot;] = createOption(false, mmp.setScrewdriver, { &quot;boolean&quot; }, &quot;Make use of your Screwdriver in Lusternia&quot;)
@@ -4403,7 +4394,7 @@ function mmp.gotoRoom (where, dashtype)
    return
   end
 
-  local madeduanathar, madeduanatharan, mademedallion, madefingerblade, madebelt, madecubix, madescrewdriver, madewheel, mademud, madesnowglobe, madecookie, madehead, madeicicle, madetibia, madebonecurio, madeflowercurio, madetorus, madeutensilcurio, madefluttercurio, madetoolcurio, madefacecurio, madetoycurio, madefeathercurio, madefigurecurio
+  local madeduanathar, madeduanatharan, mademedallion, madefingerblade, madeblossom, madebelt, madecubix, madescrewdriver, madewheel, mademud, madesnowglobe, madecookie, madehead, madeicicle, madetibia, madebonecurio, madeflowercurio, madetorus, madeutensilcurio, madefluttercurio, madetoolcurio, madefacecurio, madetoycurio, madefeathercurio, madefigurecurio
 
   local function getcmd(word)
 		if mmp.game == &quot;achaea&quot; then
@@ -4449,7 +4440,7 @@ function mmp.gotoRoom (where, dashtype)
       mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
       madeduanathar = true
     end
-	elseif mmp.game == &quot;lusternia&quot; and (mmp.settings.medallion or mmp.settings.fingerblade or mmp.settings.belt or mmp.settings.cubix or mmp.settings.screwdriver or mmp.settings.wheel or mmp.settings.mud or mmp.settings.snowglobe or mmp.settings.cookie or mmp.settings.head or mmp.settings.icicle or mmp.settings.tibia or mmp.settings.bonecurio or mmp.settings.flowercurio or mmp.settings.torus) and gmcp.Room and (not table.contains(gmcp.Room.Info.details,&quot;indoors&quot;) or table.contains(gmcp.Room.Info.details, &quot;an Aetherbubble&quot;)) then
+	elseif mmp.game == &quot;lusternia&quot; and (mmp.settings.medallion or mmp.settings.fingerblade or mmp.settings.blossom or mmp.settings.belt or mmp.settings.cubix or mmp.settings.screwdriver or mmp.settings.wheel or mmp.settings.mud or mmp.settings.snowglobe or mmp.settings.cookie or mmp.settings.head or mmp.settings.icicle or mmp.settings.tibia or mmp.settings.bonecurio or mmp.settings.flowercurio or mmp.settings.torus) and gmcp.Room and (not table.contains(gmcp.Room.Info.details,&quot;indoors&quot;) or table.contains(gmcp.Room.Info.details, &quot;an Aetherbubble&quot;)) then
 	if mmp.settings.medallion and mmp.usebix() then
       addSpecialExit(mmp.currentroom, 13367, getcmd(&quot;medallion&quot;))
       mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
@@ -4459,6 +4450,11 @@ function mmp.gotoRoom (where, dashtype)
       addSpecialExit(mmp.currentroom, 18777, getcmd(&quot;fingerblade&quot;))
       mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
       madefingerblade = true
+	end 
+	if mmp.settings.blossom and mmp.usebix() then
+      addSpecialExit(mmp.currentroom, 18730, getcmd(&quot;blossom&quot;))
+      mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
+      madeblossom = true
 	end 
 	if mmp.settings.belt and mmp.usebix() then
       addSpecialExit(mmp.currentroom, 19627, getcmd(&quot;belt&quot;))
@@ -4605,6 +4601,7 @@ function mmp.gotoRoom (where, dashtype)
     if madeduanatharan then mmp.clearspecials{4882, 3885} elseif madeduanathar then mmp.clearspecials{3885} end
   	 if mademedallion then mmp.clearspecials{13367} end
   	 if madefingerblade then mmp.clearspecials{18777} end
+    if madeblossom then mmp.clearspecials{18730} end
   	 if madebelt then mmp.clearspecials{19627} end
  	 if madecubix then mmp.clearspecials{6184} end
   	 if madescrewdriver then mmp.clearspecials{6831, 10185} end
@@ -4632,6 +4629,7 @@ function mmp.gotoRoom (where, dashtype)
   if madeduanatharan then mmp.clearspecials{4882, 3885} elseif madeduanathar then mmp.clearspecials{3885} end
   if mademedallion then mmp.clearspecials{13367} end
   if madefingerblade then mmp.clearspecials{18777} end
+  if madeblossom then mmp.clearspecials{18730} end
   if madebelt then mmp.clearspecials{19627} end
   if madecubix then mmp.clearspecials{6184} end
   if madescrewdriver then mmp.clearspecials{6831, 10185} end
@@ -6023,6 +6021,12 @@ function mmp.setFingerblade()
   else mmp.echo(&quot;Won't use Fingerblade anymore.&quot;) end
 end
 
+function mmp.setBlossom()
+  mmp.clearpathcache() -- clear the cache so it'll use wings or will stop using wings
+
+  if mmp.settings.blossom then mmp.echo(&quot;Okay, will see about using the Flame whenever it's quicker&quot;)
+  else mmp.echo(&quot;Won't use the Flame anymore.&quot;) end
+end
 function mmp.setBelt()
   mmp.clearpathcache() -- clear the cache so it'll use wings or will stop using wings
 
@@ -7037,11 +7041,11 @@ end</script>
                         <packageName></packageName>
                         <script>function mmapper_lusternia_went_outside()
   -- track whenever we need to use items when we get outside!	
-  if not mmp.autowalking or not (mmp.settings.medallion or mmp.settings.fingerblade or mmp.settings.belt or mmp.settings.cubix or mmp.settings.screwdriver or mmp.settings.wheel or mmp.settings.mud or mmp.settings.snowglobe or mmp.settings.cookie or mmp.settings.head or mmp.settings.icicle or mmp.settings.tibia or mmp.settings.bonecurio or mmp.settings.flowercurio or mmp.settings.torus or mmp.settings.utensilcurio or mmp.settings.fluttercurio or mmp.settings.toolcurio or mmp.settings.facecurio or mmp.settings.toycurio or mmp.settings.feathercurio or mmp.settings.figurecurio) or mmp.game ~= &quot;lusternia&quot; or 
+  if not mmp.autowalking or not (mmp.settings.medallion or mmp.settings.fingerblade or mmp.settings.blossom or mmp.settings.belt or mmp.settings.cubix or mmp.settings.screwdriver or mmp.settings.wheel or mmp.settings.mud or mmp.settings.snowglobe or mmp.settings.cookie or mmp.settings.head or mmp.settings.icicle or mmp.settings.tibia or mmp.settings.bonecurio or mmp.settings.flowercurio or mmp.settings.torus or mmp.settings.utensilcurio or mmp.settings.fluttercurio or mmp.settings.toolcurio or mmp.settings.facecurio or mmp.settings.toycurio or mmp.settings.feathercurio or mmp.settings.figurecurio) or mmp.game ~= &quot;lusternia&quot; or 
     (mmp.currentroom == mmp.speedWalkPath[#mmp.speedWalkPath]) then return end
 
   -- repath, maybe that'll allow us to use wings now.
-  local mademedallion, madefingerblade, madebelt, madecubix, madescrewdriver, madewheel, mademud, madesnowglobe, madehead, madecookie, madeicicle, madetibia, madebonecurio, madeflowercurio, madetorus, madeutensilcurio, madefluttercurio, madetoolcurio, madefacecurio, madetoycurio, madefeathercurio, madefigurecurio
+  local mademedallion, madefingerblade, madeblossom, madebelt, madecubix, madescrewdriver, madewheel, mademud, madesnowglobe, madehead, madecookie, madeicicle, madetibia, madebonecurio, madeflowercurio, madetorus, madeutensilcurio, madefluttercurio, madetoolcurio, madefacecurio, madetoycurio, madefeathercurio, madefigurecurio
 
   local function getcmd(item)
 		if item == &quot;snowglobe&quot; then
@@ -7078,6 +7082,11 @@ end</script>
       addSpecialExit(mmp.currentroom, 18777, getcmd(&quot;fingerblade&quot;))
       mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
       madefingerblade = true
+	end 
+	if mmp.settings.blossom and mmp.usebix() then
+      addSpecialExit(mmp.currentroom, 18730, getcmd(&quot;blossom&quot;))
+      mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
+      madeblossom = true
 	end 
 	if mmp.settings.belt and mmp.usebix() then
       addSpecialExit(mmp.currentroom, 19627, getcmd(&quot;belt&quot;))
@@ -7215,7 +7224,7 @@ end</script>
   mmp.getPath(mmp.currentroom, mmp.speedWalkPath[#mmp.speedWalkPath]) -- don't need to check return value since that fact shouldnt've changed
   
   -- if our path didn't change, re-instate it as it was (since the new path starts from this room that we checked at)
-  if speedWalkDir[1]:find(&quot;medallion&quot;,1,true) or speedWalkDir[1]:find(&quot;fingerblade&quot;,1,true) or speedWalkDir[1]:find(&quot;belt&quot;) or speedWalkDir[1]:find(&quot;cubix&quot;) or speedWalkDir[1]:find(&quot;bonecurio&quot;,1,true) or speedWalkDir[1]:find(&quot;flowercurio&quot;,1,true) or speedWalkDir[1]:find(&quot;torus&quot;,1,true) or speedWalkDir[1]:find(&quot;utensilcurio&quot;,1,true) or speedWalkDir[1]:find(&quot;fluttercurio&quot;,1,true) or speedWalkDir[1]:find(&quot;toolcurio&quot;,1,true) or speedWalkDir[1]:find(&quot;facecurio&quot;,1,true) or speedWalkDir[1]:find(&quot;toycurio&quot;,1,true) or speedWalkDir[1]:find(&quot;feathercurio&quot;,1,true) or speedWalkDir[1]:find(&quot;figurecurio&quot;,1,true) then
+  if speedWalkDir[1]:find(&quot;medallion&quot;,1,true) or speedWalkDir[1]:find(&quot;fingerblade&quot;,1,true) or speedWalkDir[1]:find(&quot;blossom&quot;,1,true) or speedWalkDir[1]:find(&quot;belt&quot;) or speedWalkDir[1]:find(&quot;cubix&quot;) or speedWalkDir[1]:find(&quot;bonecurio&quot;,1,true) or speedWalkDir[1]:find(&quot;flowercurio&quot;,1,true) or speedWalkDir[1]:find(&quot;torus&quot;,1,true) or speedWalkDir[1]:find(&quot;utensilcurio&quot;,1,true) or speedWalkDir[1]:find(&quot;fluttercurio&quot;,1,true) or speedWalkDir[1]:find(&quot;toolcurio&quot;,1,true) or speedWalkDir[1]:find(&quot;facecurio&quot;,1,true) or speedWalkDir[1]:find(&quot;toycurio&quot;,1,true) or speedWalkDir[1]:find(&quot;feathercurio&quot;,1,true) or speedWalkDir[1]:find(&quot;figurecurio&quot;,1,true) then
     speedWalkCounter = 0
     mmp.echo(&quot;We got outside - going to shortcut with 'bix device.&quot;)
     mmp.gotoRoom(mmp.speedWalkPath[#mmp.speedWalkPath])
@@ -7224,6 +7233,7 @@ end</script>
 
   if mademedallion then mmp.clearspecials{13367} end
   if madefingerblade then mmp.clearspecials{18777} end
+  if madeblossom then mmp.clearspecials{18730} end
   if madebelt then mmp.clearspecials{19627} end
   if madecubix then mmp.clearspecials{6184} end
   if madescrewdriver then mmp.clearspecials{6831, 10185} end
