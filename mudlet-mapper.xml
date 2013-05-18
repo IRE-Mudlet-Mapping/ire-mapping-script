@@ -4106,7 +4106,7 @@ mmp.speedWalkPath = mmp.speedWalkPath or {}
 mmp.speedWalkDir = mmp.speedWalkDir or {}
 
 
-local newversion = &quot;13.5.1&quot;
+local newversion = &quot;13.5.2&quot;
 if mmp.version and mmp.version ~= newversion then 
   if not mmp.game then mmp.echo(&quot;Mapper script updated - Thanks! I don't know what game are you connected to, though - so please reconnect, if you could.&quot;)
   else mmp.echo(&quot;Mapper script updated - thanks! You don't need to restart.&quot;) end
@@ -4370,7 +4370,7 @@ function speedwalking( event, num )
   elseif mmp.speedWalkPath[speedWalkCounter] == num then
     speedWalkCounter = speedWalkCounter + 1
     mmp.move()
-  elseif #mmp.speedWalkPath&gt; 0 and not mmp.ferry_rooms[num] then -- ended up somewhere we didn't want to be, and this isn't a ferry room?
+  elseif #mmp.speedWalkPath&gt; 0 and not mmp.ferry_rooms[num] and not (gmcp.Room.Info.details and table.contains(gmcp.Room.Info.details, &quot;ferry&quot;)) then -- ended up somewhere we didn't want to be, and this isn't a ferry room?
     speedWalkMoved = false
     -- re-calculate path then
     mmp.echo(&quot;Ended up off the path, recalculating a new path...&quot;)
@@ -4695,6 +4695,11 @@ function mmp.gotoArea (where, number, dashtype, exact)
     return
   end
 
+  mmp.computeShortestWatch = mmp.computeShortestWatch or createStopWatch()
+  startStopWatch(mmp.computeShortestWatch)
+  local getStopWatchTime = getStopWatchTime
+
+  -- allocate only 500ms to finding the shortest path, or more if we failed to find anything
   for id, _ in pairs(possibleRooms) do
     if mmp.getPath(mmp.currentroom, tonumber(id)) then
       if shortestBorder==0 or #shortestPath &gt; #speedWalkPath then
@@ -4702,7 +4707,11 @@ function mmp.gotoArea (where, number, dashtype, exact)
         shortestBorder = tonumber(id)
       end
     end
+
+    if shortestBorder ~= 0 and (getStopWatchTime(mmp.computeShortestWatch) &gt;= .5) then break end
   end
+
+  stopStopWatch(mmp.computeShortestWatch)
 
   if shortestBorder == 0 then
     mmp.echo(&quot;Don't know how to get there from here :(&quot;)
@@ -5039,14 +5048,32 @@ function mmp.roomWhoFind(query)
   end
 end
 
--- used to cache, but with pathfinding much quicker now, this is not necessary
+--- DOES NOT ACCOUNT FOR CHANGING THE MAP YET (within a profile load), because we don't know when it happens
+local getpathcache = {}
+setmetatable(getpathcache, {__mode = &quot;kv&quot;}) -- weak keys/values = it'll periodically get cleaned up by gc
+
 function mmp.getPath(from, to)
   assert(tonumber(from) and tonumber(to), &quot;mmp.getPath: both from and to have to be room IDs&quot;)
+ 
+  local key = string.format(&quot;%s_%s&quot;, from, to)
+  local resulttbl = getpathcache[key]
 
-  return getPath(from, to)
+  -- not in cache?
+  if not resulttbl then
+    local boolean = getPath(from, to)
+    -- save it into the cache &amp; send away
+    getpathcache[key] = {boolean, mmp.speedWalkDir, mmp.speedWalkPath}
+    return boolean
+  end
+
+  -- or if it is, retrieve &amp; send away
+  mmp.speedWalkDir = getpathcache[key][2]
+  mmp.speedWalkPath = getpathcache[key][3]
+  return getpathcache[key][1]
 end
 
-function mmp.clearpathcache() end
+function mmp.clearpathcache() getpathcache = {} end
+function mmp.showpathcache() return getpathcache end
 
 function mmp.roomFind(query)
   if query:ends('.') then query = query:sub(1,-2) end
@@ -6566,11 +6593,15 @@ local s,m = xpcall(function ()
     if string.ends(rootroomname, &quot; (road)&quot;) then
       rootroomname = string.sub(rootroomname, 1, (#rootroomname-7))
     end
+    if string.ends(rootroomname, &quot; (indoors)&quot;) then
+      rootroomname = string.sub(rootroomname, 1, (#rootroomname-10))
+    end
     if string.ends(rootroomname, &quot;.&quot;) then
       rootroomname = string.sub(rootroomname, 1, (#rootroomname-1))
     end
 
-    if getRoomName(num):lower() ~= string.lower(rootroomname) then
+    -- match exact case, so mappers alertness' works properly
+    if getRoomName(num) ~= rootroomname then
       setRoomName(num, rootroomname)
       unHighlightRoom(num)
       s = s .. (#s &gt; 0 and &quot; &quot; or &quot;&quot;) .. &quot;Updated room name to '&quot;..rootroomname..&quot;'.&quot;
@@ -6751,12 +6782,12 @@ end</script>
   for k,v in pairs(t) do
     mmp.areatabler[tonumber(v)] = k
   end
+
+  mmp.clearpathcache()
 end</script>
                 <eventHandlerList>
                     <string>mmp areas changed</string>
-                    <string>sys2DMapLoad</string>
-                    <string>sys3DMapLoad</string>
-                    <string>sysMapDownloadEvent</string>
+                    <string>mmapper map reloaded</string>
                 </eventHandlerList>
             </Script>
             <Script isActive="yes" isFolder="no">
@@ -6771,7 +6802,7 @@ end</script>
 	end
 end</script>
                 <eventHandlerList>
-                    <string>sysMapLoad</string>
+                    <string>mmapper map reloaded</string>
                 </eventHandlerList>
             </Script>
             <ScriptGroup isActive="yes" isFolder="yes">
@@ -6865,11 +6896,11 @@ function mmapper_achaea_went_outside()
     if mmp.settings.duanatharan then
       addSpecialExit(mmp.currentroom, 4882, getcmd(&quot;duanatharan&quot;))
       addSpecialExit(mmp.currentroom, 3885, getcmd(&quot;duanathar&quot;))
-      mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
+      --mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
       madeduanatharan = true
     else
       addSpecialExit(mmp.currentroom, 3885, getcmd(&quot;duanathar&quot;))
-      mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
+      --mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
       madeduanathar = true
     end
 
@@ -7898,6 +7929,20 @@ end</script>
                 <packageName></packageName>
                 <script>mmp.startup()</script>
                 <eventHandlerList/>
+                <Script isActive="yes" isFolder="no">
+                    <name>mmp.mapdata_changed</name>
+                    <packageName></packageName>
+                    <script>-- aggregates map load and such events into one
+function mmp.mapdata_changed()
+  raiseEvent(&quot;mmapper map reloaded&quot;)
+end</script>
+                    <eventHandlerList>
+                        <string>sysMapLoad</string>
+                        <string>sys2DMapLoad</string>
+                        <string>sys3DMapLoad</string>
+                        <string>sysMapDownloadEvent</string>
+                    </eventHandlerList>
+                </Script>
             </Script>
         </ScriptGroup>
     </ScriptPackage>
