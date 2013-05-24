@@ -4106,7 +4106,7 @@ mmp.speedWalkPath = mmp.speedWalkPath or {}
 mmp.speedWalkDir = mmp.speedWalkDir or {}
 
 
-local newversion = &quot;13.5.2&quot;
+local newversion = &quot;13.5.3&quot;
 if mmp.version and mmp.version ~= newversion then 
   if not mmp.game then mmp.echo(&quot;Mapper script updated - Thanks! I don't know what game are you connected to, though - so please reconnect, if you could.&quot;)
   else mmp.echo(&quot;Mapper script updated - thanks! You don't need to restart.&quot;) end
@@ -4162,6 +4162,7 @@ function mmp.startup()
   private_settings[&quot;feathercurio&quot;] = createOption(false, mmp.setFeathercurio, { &quot;boolean&quot; }, &quot;Make use of your Feather curios in Lusternia&quot;)
   private_settings[&quot;figurecurio&quot;] = createOption(false, mmp.setFigurecurio, { &quot;boolean&quot; }, &quot;Make use of your Figure curios in Lusternia&quot;)
 
+  private_settings[&quot;prism&quot;] = createOption(false, mmp.setPrism, {&quot;boolean&quot;}, &quot;Make use of your transplanar prism in Lusternia&quot;)
 
   mmp.settings = createOptionsTable(private_settings)
   mmp.settings.disp = mmp.echo
@@ -4394,7 +4395,7 @@ function mmp.gotoRoom (where, dashtype)
    return
   end
 
-  local madeduanathar, madeduanatharan, mademedallion, madefingerblade, madeblossom, madebelt, madecubix, madescrewdriver, madewheel, mademud, madesnowglobe, madecookie, madehead, madeicicle, madetibia, madebonecurio, madeflowercurio, madetorus, madeutensilcurio, madefluttercurio, madetoolcurio, madefacecurio, madetoycurio, madefeathercurio, madefigurecurio
+  local madeduanathar, madeduanatharan, mademedallion, madefingerblade, madeblossom, madebelt, madecubix, madeprism, madescrewdriver, madewheel, mademud, madesnowglobe, madecookie, madehead, madeicicle, madetibia, madebonecurio, madeflowercurio, madetorus, madeutensilcurio, madefluttercurio, madetoolcurio, madefacecurio, madetoycurio, madefeathercurio, madefigurecurio
 
   local function getcmd(word)
 		if mmp.game == &quot;achaea&quot; then
@@ -4588,6 +4589,11 @@ function mmp.gotoRoom (where, dashtype)
       mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
       madefigurecurio = true
 	end
+   if mmp.settings.prism and mmp.useprism() then
+		addSpecialExit(mmp.currentroom, 6182, getcmd(&quot;prism&quot;))
+		mmp.clearpathcache()
+		madeprism = true
+	end
   end
 
   -- if getPath worked, then the dirs and room #'s tables were populated for us
@@ -4622,6 +4628,7 @@ function mmp.gotoRoom (where, dashtype)
  	 if madetoycurio then mmp.clearspecials{21548} end
  	 if madefeathercurio then mmp.clearspecials{28591} end
  	 if madefigurecurio then mmp.clearspecials{28312} end
+     if madeprism then mmp.clearspecials{6182} end
     return
   end
 
@@ -4650,6 +4657,7 @@ function mmp.gotoRoom (where, dashtype)
   if madetoycurio then mmp.clearspecials{21548} end
   if madefeathercurio then mmp.clearspecials{28591} end
   if madefigurecurio then mmp.clearspecials{28312} end
+  if madeprism then mmp.clearspecials{6182} end
 end
 
 function mmp.gotoArea (where, number, dashtype, exact)
@@ -4673,6 +4681,9 @@ function mmp.gotoArea (where, number, dashtype, exact)
 
   local possibleRooms, shortestPath, shortestBorder = {}, {}, 0
 
+  mmp.computeShortestWatch = mmp.computeShortestWatch or createStopWatch()
+  startStopWatch(mmp.computeShortestWatch)
+
   local areaid, msg, multiples = mmp.findAreaID(where, exact)
   if areaid then
      possibleRooms = mmp.getAreaBorders(areaid)
@@ -4695,13 +4706,13 @@ function mmp.gotoArea (where, number, dashtype, exact)
     return
   end
 
-  mmp.computeShortestWatch = mmp.computeShortestWatch or createStopWatch()
-  startStopWatch(mmp.computeShortestWatch)
-  local getStopWatchTime = getStopWatchTime
+  local getStopWatchTime, tonumber, getPath = getStopWatchTime, tonumber, mmp.getPath
+
+--mmp.echo(string.format(&quot;Have %s area edge nodes, %ss taken so far...&quot;, table.size(possibleRooms), getStopWatchTime(mmp.computeShortestWatch)))
 
   -- allocate only 500ms to finding the shortest path, or more if we failed to find anything
   for id, _ in pairs(possibleRooms) do
-    if mmp.getPath(mmp.currentroom, tonumber(id)) then
+    if getPath(mmp.currentroom, tonumber(id)) then
       if shortestBorder==0 or #shortestPath &gt; #speedWalkPath then
         shortestPath = speedWalkPath
         shortestBorder = tonumber(id)
@@ -4709,8 +4720,10 @@ function mmp.gotoArea (where, number, dashtype, exact)
     end
 
     if shortestBorder ~= 0 and (getStopWatchTime(mmp.computeShortestWatch) &gt;= .5) then break end
+   -- mmp.echo(string.format(&quot;pathed from %s to %s, running time so far: %s&quot;, mmp.currentroom, id, getStopWatchTime(mmp.computeShortestWatch)))
   end
 
+  --mmp.echo(string.format(&quot;total time took: %s&quot;, getStopWatchTime(mmp.computeShortestWatch)))
   stopStopWatch(mmp.computeShortestWatch)
 
   if shortestBorder == 0 then
@@ -4726,8 +4739,9 @@ function mmp.gotoArea (where, number, dashtype, exact)
 end
 
 function doSpeedWalk(dashtype)
-  mmp.speedWalkDir = speedWalkDir
-  mmp.speedWalkPath = speedWalkPath
+  mmp.speedWalkDir = mmp.deepcopy(speedWalkDir)
+  mmp.speedWalkPath = mmp.deepcopy(speedWalkPath)
+  speedWalkDir, speedWalkPath = {}, {}
 
   resetStopWatch(speedWalkWatch)
   startStopWatch(speedWalkWatch)
@@ -5062,7 +5076,7 @@ function mmp.getPath(from, to)
   if not resulttbl then
     local boolean = getPath(from, to)
     -- save it into the cache &amp; send away
-    getpathcache[key] = {boolean, mmp.speedWalkDir, mmp.speedWalkPath}
+    getpathcache[key] = {boolean, speedWalkDir, speedWalkPath}
     return boolean
   end
 
@@ -5504,27 +5518,27 @@ function mmp.roomArea(otherroom, name, exact)
 end
 
 function mmp.getAreaBorders(areaid)
-
     local roomlist, endresult = getAreaRooms(areaid), {}
     -- sometimes getAreaRooms can give us no result :(
     if not roomlist then mmp.echo(&quot;Sorry, seems we can't go there - getAreaRooms(&quot;..areaid..&quot;) didn't give us any results (Mudlet problem - redownloading the map might help fix it)&quot;) return end
+
+	local getRoomExits, getRoomName, getSpecialExitsSwap, contains, pairs = getRoomExits, getRoomName, getSpecialExitsSwap, table.contains, pairs
 
     -- obtain a room list for each of the room IDs we got
     for _, id in pairs(roomlist) do
       local exits = getRoomExits(id)
       for _, to in pairs(exits) do
-        if not table.contains(roomlist, to) then
+        if not contains(roomlist, to) then
           endresult[id] = getRoomName(id)
         end
       end
       local specialexits = getSpecialExitsSwap(id)
       for _, to in pairs(specialexits) do
-        if not table.contains(roomlist, to) then
+        if not contains(roomlist, to) then
           endresult[id] = getRoomName(id)
         end
       end
     end
-
 
     return endresult
 end
@@ -6018,6 +6032,19 @@ function mmp.usebix()
 	return false
 end
 
+function mmp.useprism()
+	if mmp.game ~= &quot;lusternia&quot; then return end
+	if (table.contains(gmcp.Room.Info.details, &quot;the Prime Material Plane&quot;) or
+	table.contains(gmcp.Room.Info.details, &quot;the Ethereal Plane&quot;) or
+	table.contains(gmcp.Room.Info.details, &quot;the Water Elemental Plane&quot;) or
+	table.contains(gmcp.Room.Info.details, &quot;the Air Elemental Plane&quot;) or
+	table.contains(gmcp.Room.Info.details, &quot;the Fire Elemental Plane&quot;) or
+	table.contains(gmcp.Room.Info.details, &quot;the Earth Elemental Plane&quot;)) and
+	table.contains(gmcp.Room.Info.details, &quot;outdoors&quot;) then
+		return true
+	end
+	return false
+end
 function mmp.usebubblix()
 	if mmp.game ~= &quot;lusternia&quot; then return end
 	
@@ -6066,6 +6093,12 @@ function mmp.setCubix()
 
   if mmp.settings.cubix then mmp.echo(&quot;Okay, will see about using Cubix whenever it's quicker&quot;)
   else mmp.echo(&quot;Won't use Cubix anymore.&quot;) end
+end
+
+function mmp.setPrism()
+	mmp.clearpathcache()
+	if mmp.settings.prism then mmp.echo(&quot;Okay, will see about using Prism whenever it's quicker&quot;)
+	else mmp.echo(&quot;Won't use Prism anymore.&quot;) end
 end
 
 function mmp.setScrewdriver()
@@ -6284,6 +6317,28 @@ end</script>
                         <string>mmapper updated pdb</string>
                     </eventHandlerList>
                 </Script>
+                <Script isActive="yes" isFolder="no">
+                    <name>Third-party</name>
+                    <packageName></packageName>
+                    <script>-- from: http://lua-users.org/wiki/CopyTable
+local function deepcopy(orig)
+    local orig_type = type(orig)
+    local copy
+    if orig_type == 'table' then
+        copy = {}
+        for orig_key, orig_value in next, orig, nil do
+            copy[deepcopy(orig_key)] = deepcopy(orig_value)
+        end
+        setmetatable(copy, deepcopy(getmetatable(orig)))
+    else -- number, string, boolean, etc
+        copy = orig
+    end
+    return copy
+end
+
+mmp.deepcopy = deepcopy</script>
+                    <eventHandlerList/>
+                </Script>
             </Script>
             <Script isActive="yes" isFolder="no">
                 <name>Person tracking</name>
@@ -6380,7 +6435,8 @@ end
                     <name>mmp_center_roominfo</name>
                     <packageName></packageName>
                     <script>function mmp_center_roominfo()
-	centerview(gmcp.Room.Info.num)
+  -- lusternia has gmcp.Room.Players before gmcp.Room.Info is created
+  if gmcp.Room.Info then centerview(gmcp.Room.Info.num) end
 end</script>
                     <eventHandlerList>
                         <string>gmcp.Room</string>
@@ -7076,7 +7132,7 @@ end</script>
     (mmp.currentroom == mmp.speedWalkPath[#mmp.speedWalkPath]) then return end
 
   -- repath, maybe that'll allow us to use wings now.
-  local mademedallion, madefingerblade, madeblossom, madebelt, madecubix, madescrewdriver, madewheel, mademud, madesnowglobe, madehead, madecookie, madeicicle, madetibia, madebonecurio, madeflowercurio, madetorus, madeutensilcurio, madefluttercurio, madetoolcurio, madefacecurio, madetoycurio, madefeathercurio, madefigurecurio
+  local mademedallion, madefingerblade, madeblossom, madebelt, madeprism, madecubix, madescrewdriver, madewheel, mademud, madesnowglobe, madehead, madecookie, madeicicle, madetibia, madebonecurio, madeflowercurio, madetorus, madeutensilcurio, madefluttercurio, madetoolcurio, madefacecurio, madetoycurio, madefeathercurio, madefigurecurio
 
   local function getcmd(item)
 		if item == &quot;snowglobe&quot; then
@@ -7251,11 +7307,16 @@ end</script>
       mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
       madefigurecurio = true
 	end
+   if mmp.settings.prism and mmp.useprism() then
+		addSpecialExit(mmp.currentroom, 6182, getcmd(&quot;prism&quot;))
+		mmp.clearpathcache()
+		madeprism = true
+	end
 
   mmp.getPath(mmp.currentroom, mmp.speedWalkPath[#mmp.speedWalkPath]) -- don't need to check return value since that fact shouldnt've changed
   
   -- if our path didn't change, re-instate it as it was (since the new path starts from this room that we checked at)
-  if speedWalkDir[1]:find(&quot;medallion&quot;,1,true) or speedWalkDir[1]:find(&quot;fingerblade&quot;,1,true) or speedWalkDir[1]:find(&quot;blossom&quot;,1,true) or speedWalkDir[1]:find(&quot;belt&quot;) or speedWalkDir[1]:find(&quot;cubix&quot;) or speedWalkDir[1]:find(&quot;bonecurio&quot;,1,true) or speedWalkDir[1]:find(&quot;flowercurio&quot;,1,true) or speedWalkDir[1]:find(&quot;torus&quot;,1,true) or speedWalkDir[1]:find(&quot;utensilcurio&quot;,1,true) or speedWalkDir[1]:find(&quot;fluttercurio&quot;,1,true) or speedWalkDir[1]:find(&quot;toolcurio&quot;,1,true) or speedWalkDir[1]:find(&quot;facecurio&quot;,1,true) or speedWalkDir[1]:find(&quot;toycurio&quot;,1,true) or speedWalkDir[1]:find(&quot;feathercurio&quot;,1,true) or speedWalkDir[1]:find(&quot;figurecurio&quot;,1,true) then
+  if speedWalkDir[1]:find(&quot;medallion&quot;,1,true) or speedWalkDir[1]:find(&quot;fingerblade&quot;,1,true) or speedWalkDir[1]:find(&quot;blossom&quot;,1,true) or speedWalkDir[1]:find(&quot;belt&quot;) or speedWalkDir[1]:find(&quot;cubix&quot;) or speedWalkDir[1]:find(&quot;bonecurio&quot;,1,true) or speedWalkDir[1]:find(&quot;flowercurio&quot;,1,true) or speedWalkDir[1]:find(&quot;torus&quot;,1,true) or speedWalkDir[1]:find(&quot;utensilcurio&quot;,1,true) or speedWalkDir[1]:find(&quot;fluttercurio&quot;,1,true) or speedWalkDir[1]:find(&quot;toolcurio&quot;,1,true) or speedWalkDir[1]:find(&quot;facecurio&quot;,1,true) or speedWalkDir[1]:find(&quot;toycurio&quot;,1,true) or speedWalkDir[1]:find(&quot;feathercurio&quot;,1,true) or speedWalkDir[1]:find(&quot;figurecurio&quot;,1,true) or speedWalkDir[1]:find(&quot;prism&quot;,1,true) then
     speedWalkCounter = 0
     mmp.echo(&quot;We got outside - going to shortcut with 'bix device.&quot;)
     mmp.gotoRoom(mmp.speedWalkPath[#mmp.speedWalkPath])
@@ -7285,6 +7346,7 @@ end</script>
   if madetoycurio then mmp.clearspecials{21548} end
   if madefeathercurio then mmp.clearspecials{28591} end
   if madefigurecurio then mmp.clearspecials{28312} end
+  if madeprism then mmp.clearspecials{6182} end
 end
 </script>
                         <eventHandlerList>
