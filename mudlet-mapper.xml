@@ -4106,7 +4106,7 @@ mmp.speedWalkPath = mmp.speedWalkPath or {}
 mmp.speedWalkDir = mmp.speedWalkDir or {}
 
 
-local newversion = &quot;13.5.3&quot;
+local newversion = &quot;13.5.4&quot;
 if mmp.version and mmp.version ~= newversion then 
   if not mmp.game then mmp.echo(&quot;Mapper script updated - Thanks! I don't know what game are you connected to, though - so please reconnect, if you could.&quot;)
   else mmp.echo(&quot;Mapper script updated - thanks! You don't need to restart.&quot;) end
@@ -5081,8 +5081,8 @@ function mmp.getPath(from, to)
   end
 
   -- or if it is, retrieve &amp; send away
-  mmp.speedWalkDir = getpathcache[key][2]
-  mmp.speedWalkPath = getpathcache[key][3]
+  speedWalkDir = getpathcache[key][2]
+  speedWalkPath = getpathcache[key][3]
   return getpathcache[key][1]
 end
 
