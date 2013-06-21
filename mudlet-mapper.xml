@@ -61,8 +61,10 @@
                 <regexCodeList>
                     <string>You begin to slowly clamber over the rubble that blocks your way.</string>
                     <string>You begin to slowly clamber over a pile of rubble that blocks your way.</string>
+                    <string>You start plodding carefully across the constructed trenches.</string>
                 </regexCodeList>
                 <regexCodePropertyList>
+                    <integer>3</integer>
                     <integer>3</integer>
                     <integer>3</integer>
                 </regexCodePropertyList>
@@ -2515,7 +2517,7 @@ mmp.echo(&quot;We're connected to Lithmeria.&quot;)</script>
                         </regexCodePropertyList>
                     </Trigger>
                     <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
-                        <name>Mhaldor council room</name>
+                        <name>Self-closing door</name>
                         <script>mmp.failpath()</script>
                         <triggerType>0</triggerType>
                         <conditonLineDelta>0</conditonLineDelta>
@@ -4081,7 +4083,7 @@ end</script>
                 <eventHandlerList/>
             </Script>
             <Script isActive="yes" isFolder="no">
-                <name>speedwalking</name>
+                <name>Load settings</name>
                 <packageName></packageName>
                 <script>-- mmp = mudlet mapper namespace
 mmp = mmp or {
@@ -4106,7 +4108,7 @@ mmp.speedWalkPath = mmp.speedWalkPath or {}
 mmp.speedWalkDir = mmp.speedWalkDir or {}
 
 
-local newversion = &quot;13.5.4&quot;
+local newversion = &quot;13.6.1&quot;
 if mmp.version and mmp.version ~= newversion then 
   if not mmp.game then mmp.echo(&quot;Mapper script updated - Thanks! I don't know what game are you connected to, though - so please reconnect, if you could.&quot;)
   else mmp.echo(&quot;Mapper script updated - thanks! You don't need to restart.&quot;) end
@@ -4189,203 +4191,13 @@ function mmp.startup()
   mmp.echon(&quot;Mudlet Mapper script for IREs (&quot;..tostring(mmp.version)..&quot;) loaded! (&quot;)
   echoLink(&quot;homepage&quot;,&quot;(openUrl or openURL)'http://wiki.mudlet.org/w/IRE_mapping_script'&quot;, &quot;Clicky clicky to read up on what's this about&quot;)
   echo(&quot;)\n&quot;)
-end
-
-function mmp.setmovetimer(time)
-  if mmp.movetimer then killTimer(mmp.movetimer) end
-  if mmp.settings.slowwalk then return end
-
-  mmp.movetimer = tempTimer(getNetworkLatency()+(time or 0.5), function ()
-    mmp.movetimer = false
-    mmp.move()
-  end)
-end
-
--- moves to the next room we need to.
-function mmp.move()
-  if mmp.paused or not mmp.autowalking or mmp.movetimer or not mmp.canmove() then return end
-  -- sometimes it's 0 - default to 1
-  if speedWalkCounter == 0 then speedWalkCounter = 1 end
-
-  local cmd
-  if mmp.settings[&quot;caravan&quot;] then cmd = &quot;lead caravan &quot;..mmp.speedWalkDir[speedWalkCounter]
-  else
-    cmd = mmp.speedWalkDir[speedWalkCounter]
-  end
-  
-  cmd = cmd or ''
-
-  -- timeout before loadstring, so it can set its own if it would like to.
-  mmp.setmovetimer()
-
-  if string.starts(cmd, &quot;script:&quot;) then 
-    cmd = string.gsub( cmd, &quot;script:&quot;, &quot;&quot; ) loadstring(cmd)()
-    if mmp.settings.showcmds then cecho(string.format(&quot;&lt;red&gt;(&lt;maroon&gt;%d - &lt;dark_slate_grey&gt;%s&lt;red&gt;)&quot;, #mmp.speedWalkDir - speedWalkCounter + 1, &quot;&lt;script&gt;&quot;)) end
-  else 
-    send(cmd, false)
-    if mmp.settings.showcmds then cecho(string.format(&quot;&lt;red&gt;(&lt;maroon&gt;%d - &lt;dark_slate_grey&gt;%s&lt;red&gt;)&quot;, #mmp.speedWalkDir - speedWalkCounter + 1, cmd)) end
-  end
-end
-
-function mmp.swim()
-  -- not going anywhere? don't do anything
-  if not mmp.speedWalkDir[speedWalkCounter] then return end
-
-  send(&quot;swim &quot; .. mmp.speedWalkDir[speedWalkCounter], false)
-  if mmp.settings.showcmds then cecho(string.format(&quot;&lt;red&gt;(&lt;maroon&gt;%d - &lt;dark_slate_grey&gt;swim %s&lt;red&gt;)&quot;, #mmp.speedWalkDir - speedWalkCounter + 1, mmp.speedWalkDir[speedWalkCounter])) end
-
-  mmp.setmovetimer(2.5)
-end
-
-function mmp.enterGrate()
-  -- not going anywhere? don't do anything
-  if not mmp.speedWalkDir[speedWalkCounter] then return end
-
-  send(&quot;enter grate &quot; .. mmp.speedWalkDir[speedWalkCounter], false)
-  if mmp.settings.showcmds then cecho(string.format(&quot;&lt;red&gt;(&lt;maroon&gt;%d - &lt;dark_slate_grey&gt;enter grate %s&lt;red&gt;)&quot;, #mmp.speedWalkDir - speedWalkCounter + 1, mmp.speedWalkDir[speedWalkCounter])) end
-
-  mmp.setmovetimer(2.5)
-end
-
-function mmp.openDoor()
-  -- not going anywhere? don't do anything
-  if not mmp.speedWalkDir[speedWalkCounter] then return end
-
-  send(&quot;open door &quot; .. mmp.speedWalkDir[speedWalkCounter], false)
-  if mmp.settings.showcmds then cecho(string.format(&quot;&lt;red&gt;(&lt;maroon&gt;%d - &lt;dark_slate_grey&gt;open door %s&lt;red&gt;)&quot;, #mmp.speedWalkDir - speedWalkCounter + 1, mmp.speedWalkDir[speedWalkCounter])) end
-
-  mmp.setmovetimer(getNetworkLatency())
-end
-
-function mmp.unlockDoor()
-  -- not going anywhere? don't do anything
-  if not mmp.speedWalkDir[speedWalkCounter] then return end
-
-  send(&quot;unlock door &quot; .. mmp.speedWalkDir[speedWalkCounter], false)
-  if mmp.settings.showcmds then cecho(string.format(&quot;&lt;red&gt;(&lt;maroon&gt;%d - &lt;dark_slate_grey&gt;unlock door %s&lt;red&gt;)&quot;, #mmp.speedWalkDir - speedWalkCounter, mmp.speedWalkDir[speedWalkCounter])) end
-
-  mmp.setmovetimer(getNetworkLatency())
-end
-
-function mmp.customwalkdelay(delay)
-  mmp.setmovetimer(getNetworkLatency()+delay)
-end
-
-function mmp.stop()
-  mmp.speedWalkPath = {}
-  mmp.speedWalkDir = {}
-  speedWalkCounter = 0
-  stopStopWatch(speedWalkWatch)
-  --if mmp.movetimer then killTimer( mmp.movetimer ) end
-  mmp.autowalking = false
-
-  -- clear all the temps we've got
-  for trigger, ID in pairs(mmp.specials) do
-    killTrigger(ID)
-  end
-  mmp.specials = {}
-
-  mmp.echo(&quot;Stopped walking.&quot;)
-  raiseEvent(&quot;mmapper stopped&quot;)
-  if mmp.settings.shackle then expandAlias(&quot;wear shackle&quot;) end
-end
-
--- Aetolia and Lusternia support showing balances in GMCP. This is easy to support, so we do!
--- if we can't move, setup a polling timer to prompt walking when we can again.
--- popular systems that expose balance &amp; equilibrium values can be added here as well, perhaps though a similarly-named function.
-function mmp.canmove(fromtimer)
-  if mapper_can_move and mapper_can_move() then
-	if fromtimer then
-      mmp.move()
-    else return true end
-  elseif mapper_can_move then
-    tempTimer(0.2, [[mmp.canmove(true)]])
-    return false
-  end
-
-  if not gmcp.Char then return true end
-
-  if (gmcp.Char and
-    (not gmcp.Char.Vitals.balance or gmcp.Char.Vitals.balance == &quot;1&quot;) and
-    (not gmcp.Char.Vitals.equilibrium or gmcp.Char.Vitals.equilibrium == &quot;1&quot;) and
-    (not gmcp.Char.Vitals.right_arm or gmcp.Char.Vitals.right_arm == &quot;1&quot;) and
-    (not gmcp.Char.Vitals.left_arm or gmcp.Char.Vitals.left_arm == &quot;1&quot;) and
-    (not gmcp.Char.Vitals.right_leg or gmcp.Char.Vitals.right_leg == &quot;1&quot;) and
-    (not gmcp.Char.Vitals.left_leg or gmcp.Char.Vitals.left_leg == &quot;1&quot;) and
-    (not gmcp.Char.Vitals.psisuper or gmcp.Char.Vitals.psisuper ~= &quot;0&quot;) and
-    (not gmcp.Char.Vitals.psisub or gmcp.Char.Vitals.psisub ~= &quot;0&quot;) and
-    (not gmcp.Char.Vitals.psiid or gmcp.Char.Vitals.psiid ~= &quot;0&quot;) and
-    (not gmcp.Char.Balance or gmcp.Char.Balance.List.balance == &quot;1&quot;) and
-    (not gmcp.Char.Balance or gmcp.Char.Balance.List.equilibrium == &quot;1&quot;) and
-    (not gmcp.Char.Balance or gmcp.Char.Balance.List.rarm == &quot;1&quot;) and
-    (not gmcp.Char.Balance or gmcp.Char.Balance.List.larm == &quot;1&quot;) and
-    (not gmcp.Char.Balance or gmcp.Char.Balance.List.legs == &quot;1&quot;) and
-    (not gmcp.Char.Vitals.prone or (gmcp.Char.Vitals.prone == &quot;0&quot; or gmcp.Char.Vitals.prone == 0))
-  ) then
-	if fromtimer then
-      mmp.move()
-    else return true end
-  else
-    tempTimer(0.2, [[mmp.canmove(true)]])
-    return false
-  end
-end
-
-local oldnum
-function speedwalking( event, num )
-  local num = tonumber(num) or tonumber(gmcp.Room.Info.num)
-  if num ~= mmp.currentroom then mmp.previousroom = mmp.currentroom end
-  mmp.currentroom = num
-  mmp.currentroomname = getRoomName(num)
-
-  -- track if we're inside or outside, if possible
-  if gmcp.Room then
-    if mmp.inside and not table.contains(gmcp.Room.Info.details, &quot;indoors&quot;) then
-      mmp.inside = false
-      raiseEvent(&quot;mmapper went outside&quot;)
-    elseif not mmp.inside and table.contains(gmcp.Room.Info.details, &quot;indoors&quot;) then
-      mmp.inside = true
-      raiseEvent(&quot;mmapper went inside&quot;)
-    end
-    -- the event could cancel speedwalking - in this case quit
-    if mmp.ignore_speedwalking then
-      mmp.ignore_speedwalking = nil
-      return
-    end
-  end
-  if oldnum == num then return else oldnum = num end
-
-  if not mmp.autowalking then return end
-
-  if mmp.movetimer then killTimer(mmp.movetimer); mmp.movetimer = false end
-
-  if num == mmp.speedWalkPath[#mmp.speedWalkPath] then
-    local walktime = stopStopWatch(speedWalkWatch)
-    mmp.echo(string.format(&quot;We've arrived! Took us %.1fs.\n&quot;, walktime))
-    raiseEvent(&quot;mmapper arrived&quot;)
-    if mmp.settings.shackle then expandAlias(&quot;wear shackle&quot;) end
-    mmp.speedWalkPath = {}
-    mmp.speedWalkDir = {}
-    speedWalkCounter = 0
-    mmp.autowalking = false
-  elseif mmp.speedWalkPath[speedWalkCounter] == num then
-    speedWalkCounter = speedWalkCounter + 1
-    mmp.move()
-  elseif #mmp.speedWalkPath&gt; 0 and not mmp.ferry_rooms[num] and not (gmcp.Room.Info.details and table.contains(gmcp.Room.Info.details, &quot;ferry&quot;)) then -- ended up somewhere we didn't want to be, and this isn't a ferry room?
-    speedWalkMoved = false
-    -- re-calculate path then
-    mmp.echo(&quot;Ended up off the path, recalculating a new path...&quot;)
-    local destination = mmp.speedWalkPath[#mmp.speedWalkPath]
-    if not mmp.getPath(num, destination) then
-      mmp.echo(string.format(&quot;Don't know how to get to %d (%s) anymore :( Move into a room we know of to continue&quot;,
-        destination, getRoomName(destination)))
-    else
-      mmp.gotoRoom (destination)
-    end
-  end
-end
-
-function mmp.gotoRoom (where, dashtype)
+end</script>
+                <eventHandlerList/>
+            </Script>
+            <Script isActive="yes" isFolder="no">
+                <name>speedwalking</name>
+                <packageName></packageName>
+                <script>function mmp.gotoRoom(where, dashtype)
   if not where or not tonumber(where) then
     mmp.echo(&quot;Where do you want to go to?&quot;) return end
 
@@ -4711,15 +4523,17 @@ function mmp.gotoArea (where, number, dashtype, exact)
 --mmp.echo(string.format(&quot;Have %s area edge nodes, %ss taken so far...&quot;, table.size(possibleRooms), getStopWatchTime(mmp.computeShortestWatch)))
 
   -- allocate only 500ms to finding the shortest path, or more if we failed to find anything
+  local checkedsofar, outoftime = 0
   for id, _ in pairs(possibleRooms) do
-    if getPath(mmp.currentroom, tonumber(id)) then
+    if mmp.getPath(mmp.currentroom, tonumber(id)) then
       if shortestBorder==0 or #shortestPath &gt; #speedWalkPath then
         shortestPath = speedWalkPath
         shortestBorder = tonumber(id)
       end
     end
+    checkedsofar = checkedsofar + 1
 
-    if shortestBorder ~= 0 and (getStopWatchTime(mmp.computeShortestWatch) &gt;= .5) then break end
+    if (getStopWatchTime(mmp.computeShortestWatch) &gt;= .5) then outoftime = true break end
    -- mmp.echo(string.format(&quot;pathed from %s to %s, running time so far: %s&quot;, mmp.currentroom, id, getStopWatchTime(mmp.computeShortestWatch)))
   end
 
@@ -4727,7 +4541,14 @@ function mmp.gotoArea (where, number, dashtype, exact)
   stopStopWatch(mmp.computeShortestWatch)
 
   if shortestBorder == 0 then
-    mmp.echo(&quot;Don't know how to get there from here :(&quot;)
+    if outoftime then
+      mmp.echo(string.format(
+        &quot;I checked %d of the %d possible exits \&quot;%s\&quot; has, but none of the ways there worked and it was taking too long :( try doing this again?&quot;,
+        checkedsofar, table.size(possibleRooms), where
+      ))
+    else
+      mmp.echo(&quot;Checked &quot;..table.size(possibleRooms)..&quot; exits in that area, and none of them worked :( I Don't know how to get you there.&quot;)
+    end
     mmp.speedWalkPath = {}
     mmp.speedWalkDir = {}
     speedWalkCounter = 0
@@ -4736,6 +4557,227 @@ function mmp.gotoArea (where, number, dashtype, exact)
   end
 
   mmp.gotoRoom(shortestBorder, dashtype)
+end
+
+--- DOES NOT ACCOUNT FOR CHANGING THE MAP YET (within a profile load), because we don't know when it happens
+local getpathcache = {}
+setmetatable(getpathcache, {__mode = &quot;kv&quot;}) -- weak keys/values = it'll periodically get cleaned up by gc
+
+function mmp.getPath(from, to)
+  assert(tonumber(from) and tonumber(to), &quot;mmp.getPath: both from and to have to be room IDs&quot;)
+ 
+  local key = string.format(&quot;%s_%s&quot;, from, to)
+  local resulttbl = getpathcache[key]
+
+  -- not in cache?
+  if not resulttbl then
+    local boolean = getPath(from, to)
+    -- save it into the cache &amp; send away
+    getpathcache[key] = {boolean, speedWalkDir, speedWalkPath}
+    return boolean
+  end
+
+  -- or if it is, retrieve &amp; send away
+  speedWalkDir = resulttbl[2]
+  speedWalkPath = resulttbl[3]
+  return resulttbl[1]
+end
+
+function mmp.clearpathcache() getpathcache = {} end
+function mmp.showpathcache() return getpathcache end
+
+function mmp.setmovetimer(time)
+  if mmp.movetimer then killTimer(mmp.movetimer) end
+  if mmp.settings.slowwalk then return end
+
+  mmp.movetimer = tempTimer(getNetworkLatency()+(time or 0.5), function ()
+    mmp.movetimer = false
+    mmp.move()
+  end)
+end
+
+-- moves to the next room we need to.
+function mmp.move()
+  if mmp.paused or not mmp.autowalking or mmp.movetimer or not mmp.canmove() then return end
+  -- sometimes it's 0 - default to 1
+  if speedWalkCounter == 0 then speedWalkCounter = 1 end
+
+  local cmd
+  if mmp.settings[&quot;caravan&quot;] then cmd = &quot;lead caravan &quot;..mmp.speedWalkDir[speedWalkCounter]
+  else
+    cmd = mmp.speedWalkDir[speedWalkCounter]
+  end
+  
+  cmd = cmd or ''
+
+  -- timeout before loadstring, so it can set its own if it would like to.
+  mmp.setmovetimer()
+
+  if string.starts(cmd, &quot;script:&quot;) then 
+    cmd = string.gsub( cmd, &quot;script:&quot;, &quot;&quot; ) loadstring(cmd)()
+    if mmp.settings.showcmds then cecho(string.format(&quot;&lt;red&gt;(&lt;maroon&gt;%d - &lt;dark_slate_grey&gt;%s&lt;red&gt;)&quot;, #mmp.speedWalkDir - speedWalkCounter + 1, &quot;&lt;script&gt;&quot;)) end
+  else 
+    send(cmd, false)
+    if mmp.settings.showcmds then cecho(string.format(&quot;&lt;red&gt;(&lt;maroon&gt;%d - &lt;dark_slate_grey&gt;%s&lt;red&gt;)&quot;, #mmp.speedWalkDir - speedWalkCounter + 1, cmd)) end
+  end
+end
+
+function mmp.swim()
+  -- not going anywhere? don't do anything
+  if not mmp.speedWalkDir[speedWalkCounter] then return end
+
+  send(&quot;swim &quot; .. mmp.speedWalkDir[speedWalkCounter], false)
+  if mmp.settings.showcmds then cecho(string.format(&quot;&lt;red&gt;(&lt;maroon&gt;%d - &lt;dark_slate_grey&gt;swim %s&lt;red&gt;)&quot;, #mmp.speedWalkDir - speedWalkCounter + 1, mmp.speedWalkDir[speedWalkCounter])) end
+
+  mmp.setmovetimer(2.5)
+end
+
+function mmp.enterGrate()
+  -- not going anywhere? don't do anything
+  if not mmp.speedWalkDir[speedWalkCounter] then return end
+
+  send(&quot;enter grate &quot; .. mmp.speedWalkDir[speedWalkCounter], false)
+  if mmp.settings.showcmds then cecho(string.format(&quot;&lt;red&gt;(&lt;maroon&gt;%d - &lt;dark_slate_grey&gt;enter grate %s&lt;red&gt;)&quot;, #mmp.speedWalkDir - speedWalkCounter + 1, mmp.speedWalkDir[speedWalkCounter])) end
+
+  mmp.setmovetimer(2.5)
+end
+
+function mmp.openDoor()
+  -- not going anywhere? don't do anything
+  if not mmp.speedWalkDir[speedWalkCounter] then return end
+
+  send(&quot;open door &quot; .. mmp.speedWalkDir[speedWalkCounter], false)
+  if mmp.settings.showcmds then cecho(string.format(&quot;&lt;red&gt;(&lt;maroon&gt;%d - &lt;dark_slate_grey&gt;open door %s&lt;red&gt;)&quot;, #mmp.speedWalkDir - speedWalkCounter + 1, mmp.speedWalkDir[speedWalkCounter])) end
+
+  mmp.setmovetimer(getNetworkLatency())
+end
+
+function mmp.unlockDoor()
+  -- not going anywhere? don't do anything
+  if not mmp.speedWalkDir[speedWalkCounter] then return end
+
+  send(&quot;unlock door &quot; .. mmp.speedWalkDir[speedWalkCounter], false)
+  if mmp.settings.showcmds then cecho(string.format(&quot;&lt;red&gt;(&lt;maroon&gt;%d - &lt;dark_slate_grey&gt;unlock door %s&lt;red&gt;)&quot;, #mmp.speedWalkDir - speedWalkCounter, mmp.speedWalkDir[speedWalkCounter])) end
+
+  mmp.setmovetimer(getNetworkLatency())
+end
+
+function mmp.customwalkdelay(delay)
+  mmp.setmovetimer(getNetworkLatency()+delay)
+end
+
+function mmp.stop()
+  mmp.speedWalkPath = {}
+  mmp.speedWalkDir = {}
+  speedWalkCounter = 0
+  stopStopWatch(speedWalkWatch)
+  --if mmp.movetimer then killTimer( mmp.movetimer ) end
+  mmp.autowalking = false
+
+  -- clear all the temps we've got
+  for trigger, ID in pairs(mmp.specials) do
+    killTrigger(ID)
+  end
+  mmp.specials = {}
+
+  mmp.echo(&quot;Stopped walking.&quot;)
+  raiseEvent(&quot;mmapper stopped&quot;)
+  if mmp.settings.shackle then expandAlias(&quot;wear shackle&quot;) end
+end
+
+-- Aetolia and Lusternia support showing balances in GMCP. This is easy to support, so we do!
+-- if we can't move, setup a polling timer to prompt walking when we can again.
+-- popular systems that expose balance &amp; equilibrium values can be added here as well, perhaps though a similarly-named function.
+function mmp.canmove(fromtimer)
+  if mapper_can_move and mapper_can_move() then
+	if fromtimer then
+      mmp.move()
+    else return true end
+  elseif mapper_can_move then
+    tempTimer(0.2, [[mmp.canmove(true)]])
+    return false
+  end
+
+  if not gmcp.Char then return true end
+
+  if (gmcp.Char and
+    (not gmcp.Char.Vitals.balance or gmcp.Char.Vitals.balance == &quot;1&quot;) and
+    (not gmcp.Char.Vitals.equilibrium or gmcp.Char.Vitals.equilibrium == &quot;1&quot;) and
+    (not gmcp.Char.Vitals.right_arm or gmcp.Char.Vitals.right_arm == &quot;1&quot;) and
+    (not gmcp.Char.Vitals.left_arm or gmcp.Char.Vitals.left_arm == &quot;1&quot;) and
+    (not gmcp.Char.Vitals.right_leg or gmcp.Char.Vitals.right_leg == &quot;1&quot;) and
+    (not gmcp.Char.Vitals.left_leg or gmcp.Char.Vitals.left_leg == &quot;1&quot;) and
+    (not gmcp.Char.Vitals.psisuper or gmcp.Char.Vitals.psisuper ~= &quot;0&quot;) and
+    (not gmcp.Char.Vitals.psisub or gmcp.Char.Vitals.psisub ~= &quot;0&quot;) and
+    (not gmcp.Char.Vitals.psiid or gmcp.Char.Vitals.psiid ~= &quot;0&quot;) and
+    (not gmcp.Char.Balance or gmcp.Char.Balance.List.balance == &quot;1&quot;) and
+    (not gmcp.Char.Balance or gmcp.Char.Balance.List.equilibrium == &quot;1&quot;) and
+    (not gmcp.Char.Balance or gmcp.Char.Balance.List.rarm == &quot;1&quot;) and
+    (not gmcp.Char.Balance or gmcp.Char.Balance.List.larm == &quot;1&quot;) and
+    (not gmcp.Char.Balance or gmcp.Char.Balance.List.legs == &quot;1&quot;) and
+    (not gmcp.Char.Vitals.prone or (gmcp.Char.Vitals.prone == &quot;0&quot; or gmcp.Char.Vitals.prone == 0))
+  ) then
+	if fromtimer then
+      mmp.move()
+    else return true end
+  else
+    tempTimer(0.2, [[mmp.canmove(true)]])
+    return false
+  end
+end
+
+local oldnum
+function speedwalking( event, num )
+  local num = tonumber(num) or tonumber(gmcp.Room.Info.num)
+  if num ~= mmp.currentroom then mmp.previousroom = mmp.currentroom end
+  mmp.currentroom = num
+  mmp.currentroomname = getRoomName(num)
+
+  -- track if we're inside or outside, if possible
+  if gmcp.Room then
+    if mmp.inside and not table.contains(gmcp.Room.Info.details, &quot;indoors&quot;) then
+      mmp.inside = false
+      raiseEvent(&quot;mmapper went outside&quot;)
+    elseif not mmp.inside and table.contains(gmcp.Room.Info.details, &quot;indoors&quot;) then
+      mmp.inside = true
+      raiseEvent(&quot;mmapper went inside&quot;)
+    end
+    -- the event could cancel speedwalking - in this case quit
+    if mmp.ignore_speedwalking then
+      mmp.ignore_speedwalking = nil
+      return
+    end
+  end
+  if oldnum == num then return else oldnum = num end
+
+  if not mmp.autowalking then return end
+
+  if mmp.movetimer then killTimer(mmp.movetimer); mmp.movetimer = false end
+
+  if num == mmp.speedWalkPath[#mmp.speedWalkPath] then
+    local walktime = stopStopWatch(speedWalkWatch)
+    mmp.echo(string.format(&quot;We've arrived! Took us %.1fs.\n&quot;, walktime))
+    raiseEvent(&quot;mmapper arrived&quot;)
+    if mmp.settings.shackle then expandAlias(&quot;wear shackle&quot;) end
+    mmp.speedWalkPath = {}
+    mmp.speedWalkDir = {}
+    speedWalkCounter = 0
+    mmp.autowalking = false
+  elseif mmp.speedWalkPath[speedWalkCounter] == num then
+    speedWalkCounter = speedWalkCounter + 1
+    mmp.move()
+  elseif #mmp.speedWalkPath&gt; 0 and not mmp.ferry_rooms[num] and not (gmcp.Room.Info.details and table.contains(gmcp.Room.Info.details, &quot;ferry&quot;)) then -- ended up somewhere we didn't want to be, and this isn't a ferry room?
+    speedWalkMoved = false
+    -- re-calculate path then
+    mmp.echo(&quot;Ended up off the path, recalculating a new path...&quot;)
+    local destination = mmp.speedWalkPath[#mmp.speedWalkPath]
+    if not mmp.getPath(num, destination) then
+      mmp.echo(string.format(&quot;Don't know how to get to %d (%s) anymore :( Move into a room we know of to continue&quot;,
+        destination, getRoomName(destination)))
+    else
+      mmp.gotoRoom (destination)
+    end
+  end
 end
 
 function doSpeedWalk(dashtype)
@@ -4881,64 +4923,75 @@ end</script>
             <Script isActive="yes" isFolder="no">
                 <name>Utilities</name>
                 <packageName></packageName>
-                <script>function mmp.echo(what)
-  what = what or &quot;&quot;
-  moveCursorEnd(&quot;main&quot;) if getCurrentLine() ~= &quot;&quot; then echo&quot;\n&quot; end
-  decho(&quot;&lt;112,229,0&gt;(&lt;73,149,0&gt;mapper&lt;112,229,0&gt;): &lt;255,255,255&gt;&quot;)
-  cecho(tostring(what))
-  echo(&quot;\n&quot;)
+                <script>-- functions internal to the mapper
+
+function mmp.highlight_unfinished_rooms()
+	if not mmp.areatable then return end
+	for a,b in pairs (mmp.areatable) do
+		local roomList = getAreaRooms(b) or {}
+		for c,d in pairs (roomList) do
+			if (getRoomName(d) == &quot;&quot;) then
+				local fgr,fgg,fgb = unpack(color_table.red)
+				local bgr,bgg,bgb = unpack(color_table.blue)
+				highlightRoom(d, fgr,fgg,fgb,bgr,bgg,bgb, 1, 100, 100)
+			end
+		end
+	end
 end
 
-function mmp.echon(what)
-  moveCursorEnd(&quot;main&quot;) if getCurrentLine() ~= &quot;&quot; then echo&quot;\n&quot; end
-  decho(&quot;&lt;112,229,0&gt;(&lt;73,149,0&gt;mapper&lt;112,229,0&gt;): &lt;255,255,255&gt;&quot;)
-  cecho(tostring(what))
+function mmp.usebix()
+	if mmp.game ~= &quot;lusternia&quot; then return end
+	
+	if (table.contains(gmcp.Room.Info.details, &quot;the Prime Material Plane&quot;) or
+		table.contains(gmcp.Room.Info.details, &quot;the Ethereal Plane&quot;) or
+		table.contains(gmcp.Room.Info.details, &quot;the Water Elemental Plane&quot;) or
+		table.contains(gmcp.Room.Info.details, &quot;the Air Elemental Plane&quot;) or
+		table.contains(gmcp.Room.Info.details, &quot;the Fire Elemental Plane&quot;) or
+		table.contains(gmcp.Room.Info.details, &quot;the Earth Elemental Plane&quot;) or
+		table.contains(gmcp.Room.Info.details, &quot;Celestia, Plane of Light&quot;) or
+		table.contains(gmcp.Room.Info.details, &quot;the Tainted Plane of Nil&quot;) or
+		table.contains(gmcp.Room.Info.details, &quot;the Cosmic Plane of Continuum&quot;) or
+		table.contains(gmcp.Room.Info.details, &quot;the Cosmic Plane of Vortex&quot;) or
+		table.contains(gmcp.Room.Info.details, &quot;the Astral Plane&quot;)) and
+		table.contains(gmcp.Room.Info.details, &quot;outdoors&quot;) then
+		return true
+	end
+	return false
 end
 
-function mmp.deleteLineP()
-  deleteLine()
-  tempLineTrigger(1,1,[[
-    if isPrompt() then deleteLine() end
-  ]])
+function mmp.useprism()
+	if mmp.game ~= &quot;lusternia&quot; then return end
+	if (table.contains(gmcp.Room.Info.details, &quot;the Prime Material Plane&quot;) or
+	table.contains(gmcp.Room.Info.details, &quot;the Ethereal Plane&quot;) or
+	table.contains(gmcp.Room.Info.details, &quot;the Water Elemental Plane&quot;) or
+	table.contains(gmcp.Room.Info.details, &quot;the Air Elemental Plane&quot;) or
+	table.contains(gmcp.Room.Info.details, &quot;the Fire Elemental Plane&quot;) or
+	table.contains(gmcp.Room.Info.details, &quot;the Earth Elemental Plane&quot;)) and
+	table.contains(gmcp.Room.Info.details, &quot;outdoors&quot;) then
+		return true
+	end
+	return false
 end
-
-function mmp.pause(what)
-  assert(what == nil or what == &quot;on&quot; or what == &quot;off&quot;, &quot;mmp.pause wants 'on', 'off' or nothing as an argument&quot;)
-
-  if what == &quot;on&quot; or (what == nil and not mmp.paused) then
-    mmp.paused = true
-  elseif  what == &quot;off&quot; or (what == nil and mmp.paused) then
-    mmp.paused = false
-  end
-
-  mmp.echo(&quot;Speedwalking &quot; .. (mmp.paused and &quot;paused&quot; or &quot;unpaused&quot;) .. &quot;.&quot;)
-  if not mmp.paused then mmp.move() end
-end
-
-function mmp.getnums(roomname, exact)
-  if tonumber(roomname) then return {roomname} end
-
-  local t = (not exact and mmp.searchRoom or mmp.searchRoomExact)(roomname)
-
-  if not t or not next(t) then
-    return nil end
-
-  local result = {}
-
-  if not tonumber(select(2, next(t))) then
-    for roomid,_ in pairs(t) do
-      if roomid ~= 0 then result[#result+1] = tonumber(roomid) end
-    end
-  else
-    for _,roomid in pairs(t) do
-      if roomid ~= 0 then result[#result+1] = tonumber(roomid) end
-    end
-  end
-
-  return result
-end
-
--- for a given room name, we'll echo all the vnums
+function mmp.usebubblix()
+	if mmp.game ~= &quot;lusternia&quot; then return end
+	
+	if ((table.contains(gmcp.Room.Info.details, &quot;the Prime Material Plane&quot;) or
+		table.contains(gmcp.Room.Info.details, &quot;the Ethereal Plane&quot;) or
+		table.contains(gmcp.Room.Info.details, &quot;the Water Elemental Plane&quot;) or
+		table.contains(gmcp.Room.Info.details, &quot;the Air Elemental Plane&quot;) or
+		table.contains(gmcp.Room.Info.details, &quot;the Fire Elemental Plane&quot;) or
+		table.contains(gmcp.Room.Info.details, &quot;the Earth Elemental Plane&quot;)) and
+		table.contains(gmcp.Room.Info.details, &quot;outdoors&quot;)) or
+		table.contains(gmcp.Room.Info.details, &quot;an Aetherbubble&quot;) then		
+		return true
+	end
+	return false
+end</script>
+                <eventHandlerList/>
+                <Script isActive="yes" isFolder="no">
+                    <name>Locating &amp; echoing functions</name>
+                    <packageName></packageName>
+                    <script>-- for a given room name, we'll echo all the vnums
 function mmp.echonums(roomname)
   local t = mmp.searchRoomExact(roomname)
 
@@ -4987,560 +5040,6 @@ function mmp.roomEcho(query)
       cecho(&quot;&lt;DarkSlateGrey&gt;)&quot;)
     end
   end
-end
-
-
--- searchRoom with a cache!
-local cache = {}
-setmetatable(cache, {__mode = &quot;kv&quot;}) -- weak keys/values = it'll periodically get cleaned up by gc
-
-function mmp.searchRoom(what)
-  local result = cache[what]
-  if not result then
-    result = searchRoom(what)
-    local realResult = {}
-    for key, value in pairs(type(result) == &quot;table&quot; and result or {}) do
-        -- both ways, because searchRoom can return either id-room name or the reverse
-        if type(key) == &quot;string&quot; then
-          realResult[key:ends(&quot; (road)&quot;) and key:sub(1, -8) or key] = value
-        else
-          realResult[key] = value:ends(&quot; (road)&quot;) and value:sub(1, -8) or value
-        end
-    end
-    cache[what] = realResult
-    result = realResult
-  end
-  return result
-end
-
-local function endswith(s, suffix)
-    return s:sub(#s - #suffix + 1) == suffix
-end
-
-function mmp.searchRoomExact(what)
-  if type(what) ~= 'string' then return end
-
-  local roomTable = mmp.searchRoom(what)
-  local realResult = {}
-  what = what:lower()
-  for key, value in pairs (roomTable) do
-    if type(key) == &quot;string&quot; and (key:lower() == what or (endswith(key, '.') and key:sub(1, -2) == what)) then
-        realResult[key:ends(&quot; (road)&quot;) and key:sub(1, -8) or key] = value
-    elseif type(value) == &quot;string&quot; and (value:lower() == what or (endswith(value, '.') and value:sub(1, -2) == what)) then
-        realResult[key] = value:ends(&quot; (road)&quot;) and value:sub(1, -8) or value
-    end
-  end
-  if (table.is_empty(realResult)) then
-    return roomTable
-  else
-    return realResult
-  end
-end
-
-function mmp.roomWhoFind(query)
-  if query:ends('.') then query = query:sub(1,-2) end
-  local result = mmp.searchRoomExact(query)
-
-  if type(result) == &quot;string&quot; or not next(result) then
-    cecho(&quot;&lt;CadetBlue&gt;  You have no recollection of any room with that name.&quot;) return end
-
-  if not tonumber(select(2, next(result))) then -- old style
-    for roomid, roomname in pairs(result) do roomid = tonumber(roomid)
-      cecho(string.format(&quot;  &lt;LightSlateGray&gt;%s&lt;DarkSlateGrey&gt; (&lt;blue&gt;&quot;,
-        tostring(roomname)))
-      echoLink(roomid, 'mmp.gotoRoom('..roomid..')', string.format(&quot;Go to %s (%s)&quot;, roomid, tostring(roomname)))
-      cecho(string.format(&quot;&lt;DarkSlateGrey&gt;) &lt;white&gt;%s&lt;DarkSlateGrey&gt;.\n&quot;, tostring(mmp.areatabler[getRoomArea(roomid)])))
-    end
-
-  else -- new style
-    for roomname, roomid in pairs(result) do roomid = tonumber(roomid)
-      cecho(string.format(&quot;  &lt;LightSlateGray&gt;%s&lt;DarkSlateGrey&gt; (&lt;blue&gt;&quot;,
-        tostring(roomname)))
-      echoLink(roomid, 'mmp.gotoRoom('..roomid..')', string.format(&quot;Go to %s (%s)&quot;, roomid, tostring(roomname)))
-      cecho(string.format(&quot;&lt;DarkSlateGrey&gt;) &lt;white&gt;%s&lt;DarkSlateGrey&gt;.\n&quot;, tostring(mmp.areatabler[getRoomArea(roomid)])))
-    end
-  end
-end
-
---- DOES NOT ACCOUNT FOR CHANGING THE MAP YET (within a profile load), because we don't know when it happens
-local getpathcache = {}
-setmetatable(getpathcache, {__mode = &quot;kv&quot;}) -- weak keys/values = it'll periodically get cleaned up by gc
-
-function mmp.getPath(from, to)
-  assert(tonumber(from) and tonumber(to), &quot;mmp.getPath: both from and to have to be room IDs&quot;)
- 
-  local key = string.format(&quot;%s_%s&quot;, from, to)
-  local resulttbl = getpathcache[key]
-
-  -- not in cache?
-  if not resulttbl then
-    local boolean = getPath(from, to)
-    -- save it into the cache &amp; send away
-    getpathcache[key] = {boolean, speedWalkDir, speedWalkPath}
-    return boolean
-  end
-
-  -- or if it is, retrieve &amp; send away
-  speedWalkDir = getpathcache[key][2]
-  speedWalkPath = getpathcache[key][3]
-  return getpathcache[key][1]
-end
-
-function mmp.clearpathcache() getpathcache = {} end
-function mmp.showpathcache() return getpathcache end
-
-function mmp.roomFind(query)
-  if query:ends('.') then query = query:sub(1,-2) end
-  local result = mmp.searchRoom(query)
-
-  if type(result) == &quot;string&quot; or not next(result) then
-    cecho(&quot;&lt;grey&gt;You have no recollection of any room with that name.&quot;) return end
-
-  cecho(&quot;&lt;DarkSlateGrey&gt;You know the following relevant rooms:\n&quot;)
-
-
-  if not tonumber(select(2, next(result))) then -- old style
-    for roomid, roomname in pairs(result) do roomid = tonumber(roomid)
-      cecho(string.format(&quot;  &lt;LightSlateGray&gt;%s&lt;DarkSlateGrey&gt; (&lt;blue&gt;&quot;,
-        tostring(roomname)))
-      echoLink(roomid, 'mmp.gotoRoom('..roomid..')', string.format(&quot;Go to %s (%s)&quot;, roomid, tostring(roomname)))
-      cecho(string.format(&quot;&lt;DarkSlateGrey&gt;) in &lt;LightSlateGray&gt;%s&lt;DarkSlateGrey&gt;.&quot;, mmp.cleanAreaName(tostring(mmp.areatabler[getRoomArea(roomid)]))))
-      fg(&quot;DarkSlateGrey&quot;) echoLink(&quot; &gt; Show path\n&quot;, [[mmp.echoPath(mmp.currentroom, ]]..roomid..[[)]], &quot;Display directions&quot;, true) resetFormat()
-    end
-
-  else -- new style
-    for roomname, roomid in pairs(result) do roomid = tonumber(roomid)
-      cecho(string.format(&quot;  &lt;LightSlateGray&gt;%s&lt;DarkSlateGrey&gt; (&lt;blue&gt;&quot;,
-        tostring(roomname)))
-      echoLink(roomid, 'mmp.gotoRoom('..roomid..')', string.format(&quot;Go to %s (%s)&quot;, roomid, tostring(roomname)))
-      cecho(string.format(&quot;&lt;DarkSlateGrey&gt;) in &lt;LightSlateGray&gt;%s&lt;DarkSlateGrey&gt;.&quot;, mmp.cleanAreaName(tostring(mmp.areatabler[getRoomArea(roomid)]))))
-      fg(&quot;DarkSlateGrey&quot;) echoLink(&quot; &gt; Show path\n&quot;, [[mmp.echoPath(mmp.currentroom, ]]..roomid..[[)]], &quot;Display directions&quot;, true) resetFormat()
-    end
-  end
-
-  cecho(string.format(&quot;  &lt;DarkSlateGrey&gt;%d rooms found.\n&quot;, table.size(result)))
-end
-
-function mmp.findAreaID(areaname, exact)
-  local areaname = areaname:lower()
-  local list = getAreaTable()
-
-  -- iterate over the list of areas, matching them with substring match.
-  -- if we get match a single area, then return it's ID, otherwise return
-  -- 'false' and a message that there are than one are matches
-  local returnid, fullareaname, multipleareas = nil, nil, {}
-  for area, id in pairs(list) do
-    if (not exact and area:lower():find(areaname, 1, true)) or (exact and areaname == area:lower()) then
-      returnid = id; fullareaname = area; multipleareas[#multipleareas+1] = area
-    end
-  end
-
-  if #multipleareas == 1 then
-    return returnid, fullareaname
-  else
-    return nil, nil, multipleareas
-  end
-end
-
-function mmp.echoRoomList(areaname, exact)
-  local id, msg, multiples = mmp.findAreaID(areaname, exact)
-  if id then
-    local roomlist, endresult = getAreaRooms(id) or {}, {}
-
-    -- obtain a room list for each of the room IDs we got
-    for _, id in pairs(roomlist) do
-      endresult[id] = getRoomName(id)
-    end
-
-  -- sort room IDs so we can display them in order
-    table.sort(roomlist)
-
-    -- now display something half-decent looking
-    cecho(string.format(
-      &quot;&lt;DarkSlateGrey&gt;List of all rooms in &lt;grey&gt;%s&lt;DarkSlateGrey&gt; (&lt;grey&gt;%d&lt;DarkSlateGrey&gt;):\n&quot;, msg, table.size(endresult)))
-    for _, roomid in ipairs(roomlist) do
-    local roomname = endresult[roomid]
-      fg(&quot;blue&quot;) echoLink(string.format(&quot;%6s&quot;, roomid), 'mmp.gotoRoom('..roomid..')', string.format(&quot;Go to %s (%s)&quot;, roomid, tostring(roomname)), true)
-       cecho(string.format(&quot;&lt;DarkSlateGrey&gt;: &lt;LightSlateGray&gt;%s&lt;DarkSlateGrey&gt;.\n&quot;, roomname))
-    end
-  elseif not id and #multiples &gt; 0 then
-    mmp.echo(&quot;For which area would you want to list rooms for?&quot;)
-
-  fg(&quot;DimGrey&quot;)
-    for _, areaname in ipairs(multiples) do
-      echo&quot;  &quot;; setUnderline(true) echoLink(areaname, 'mmp.echoRoomList(&quot;'..areaname..'&quot;, true)', &quot;Click to view the room list for &quot;..areaname, true) setUnderline(false) echo&quot;\n&quot;
-    end
-  resetFormat()
-  else
-    mmp.echo(string.format(&quot;Don't know of any area named '%s'.&quot;, areaname))
-  end
-end
-
-function mmp.echoAreaList()
-  local list = getAreaTable()
-  local ids, rlist = {}, {}
-  for area, id in pairs(list) do
-    if id ~= 0 then ids[#ids+1] = id; rlist[id] = area end end
-  table.sort(ids)
-
-  cecho(string.format(
-      &quot;&lt;DarkSlateGrey&gt;List of all areas we know of (click to view room list):\n&quot;))
-  for _, id in pairs(ids) do
-    cecho(string.format(&quot;&lt;blue&gt;%s%d &quot;, string.rep(&quot; &quot;, (6-#tostring(id))), id))
-    fg(&quot;DarkSlateGrey&quot;) echoLink(rlist[id], 'mmp.echoRoomList(&quot;'..rlist[id]..'&quot;, true)', &quot;View the room list for &quot;..rlist[id], true) echo(&quot;\n&quot;)
-  end
-end
-
-function mmp.clearLabels(areaid)
-  local function clearlabels(areaid)
-    local t = getMapLabels(areaid)
-    if type(t) ~= &quot;table&quot; then return end
-
-    for labelid, _ in pairs(t) do deleteMapLabel(areaid, labelid) end
-  end
-
-  if areaid == &quot;map&quot; then
-    for areaid in pairs(mmp.areatabler) do
-      clearlabels(areaid)
-    end
-
-    mmp.echo(&quot;Cleared labels in all of the map.&quot;)
-    return
-  end
-
-  clearlabels(areaid)
-  mmp.echo(string.format(&quot;Cleared all labels in '%s'.&quot;, mmp.areatabler[areaid]))
-end
-
-function mmp.roomLook(input)
-
-  -- we can do a report with a number
-  local function handle_number(num)
-    -- compile all available data
-    if not mmp.roomexists(num) then mmp.echo(num..&quot; doesn't seem to exist.&quot;) return end
-    local s, areanum = pcall(getRoomArea,num)
-    if not s then mmp.echo(areanum); return; end
-
-    local exits = getRoomExits(num)
-    local name = getRoomName(num)
-    local islocked = roomLocked(num)
-    local weight = (getRoomWeight(num) and getRoomWeight(num) or &quot;?&quot;) -- getRoomWeight is buggy in one of the versions, is actually linked to setRoomWeight and thus returns nil
-    local exitweights = (getExitWeights and getExitWeights(num) or {})
-    local coords = {getRoomCoordinates(num)}
-    local specexits = getSpecialExits(num)
-    local env = getRoomEnv(num)
-    local envname = (mmp.envidsr and mmp.envidsr[env]) or &quot;?&quot;
-
-    -- generate a report
-    mmp.echo(string.format(&quot;Room: %s #: %d area: %s (%d)&quot;,
-      name, num, tostring(mmp.areatabler[areanum]), areanum))
-
-    mmp.echo(string.format(&quot;Coordinates: x:%d, y:%d, z:%d, locked: %s, weight: %s&quot;, coords[1], coords[2], coords[3], (islocked and &quot;yep&quot; or &quot;nope&quot;), tostring(weight)))
-
-    mmp.echo(string.format(&quot;Environment: %s (%d)%s&quot;, tostring(envname), env, (getRoomUserData(num, &quot;indoors&quot;) ~= '' and &quot;, indoors&quot; or '')))
-
-    mmp.echo(string.format(&quot;Exits (%d):&quot;, table.size(exits)))
-    for exit, leadsto in pairs(exits) do
-      echo(string.format(&quot;  %s -&gt; %s (%d)%s%s\n&quot;, exit, getRoomName(leadsto), leadsto,
-        ((getRoomArea(leadsto) or &quot;?&quot;) == areanum and &quot;&quot;
-        or &quot; (in &quot;..(mmp.areatabler[getRoomArea(leadsto)] or &quot;?&quot;)..&quot;)&quot;),
-        ((not exitweights[mmp.anytoshort(exit)] or exitweights[mmp.anytoshort(exit)] == 0) and &quot;&quot; or &quot; (weight: &quot;..exitweights[mmp.anytoshort(exit)]..&quot;)&quot;)
-      ))
-    end
-
-    -- display special exits if we got any
-    if next(specexits) then
-      mmp.echo(string.format(&quot;Special exits (%d):&quot;,table.size(specexits)))
-
-      for leadsto, command in pairs(specexits) do
-        if type(command) == &quot;string&quot; then
-          echo(string.format(&quot;  %s -&gt; %s (%d)\n&quot;, command, getRoomName(leadsto), leadsto))
-        else -- new format - exit name, command
-          for cmd, locked in pairs(command) do
-            if locked == '1' then
-              cecho(string.format(&quot;&lt;DarkSlateGrey&gt;  %s -&gt; %s (%d) (locked)\n&quot;, cmd, getRoomName(leadsto), leadsto))
-            else
-              echo(string.format(&quot;  %s -&gt; %s (%d)\n&quot;, cmd, getRoomName(leadsto), leadsto))
-            end
-          end
-        end
-      end
-    end
-
-    -- actions we can do. This will be a short menu of sorts for actions
-    mmp.echo(&quot;Stuff you can do:&quot;)
-    echo&quot;  &quot; echo(&quot;Clear all labels &quot;) setUnderline(true) echoLink(&quot;(in area)&quot;, 'mmp.clearLabels('..areanum..')', '', true) setUnderline(false) 
-    echo&quot; &quot; setUnderline(true) 
-    echoLink(&quot;(whole map)&quot;, [[
-    if not mmp.clearinglabels then
-      mmp.echo(&quot;Are you sure you want to clear all of your labels on this map? If yes, click the link again.&quot;)
-      mmp.clearinglabels = true
-    else
-      mmp.clearLabels(&quot;map&quot;)
-      mmp.clearinglabels = nil
-    end
-    ]], '', true) setUnderline(false) echo&quot;\n&quot;
-    echo&quot;  &quot; setUnderline(true) echoLink(&quot;Check for mapper &amp; map updates&quot;, 'mmp.echo(&quot;Checking...&quot;) mmp.checkforupdate()', '', true) setUnderline(false)
-    echo&quot; &quot; setUnderline(true) echoLink(&quot;(force map)&quot;, [[
-      if io.exists(getMudletHomeDir()..&quot;/map downloads/current&quot;) then
-        local s,m = os.remove(getMudletHomeDir()..&quot;/map downloads/current&quot;)
-        if not s then mmp.echo(&quot;Couldn't delete '&quot;..getMudletHomeDir()..&quot;/map downloads/current' file: &quot;..tostring(m)..&quot;.&quot;) end
-      end
-      mmp.echo(&quot;Re-downloading the latest crowdmap...&quot;)
-      mmp.checkforupdate()
-    ]], &quot;Re-download the map regardless if you have latest&quot;, true)
-    setUnderline(false)
-    echo&quot;\n&quot;	
-  end
-
-  -- see if we can do anything with the name
-  local function handle_name(name)
-    local result = mmp.searchRoom(name)
-
-    if type(result) == &quot;string&quot; then
-      cecho(&quot;&lt;grey&gt;You have no recollection of any room with that name.&quot;) return end
-
-    -- if we got one result, then act on it
-    if table.size(result) == 1 then
-      if type(next(result)) == &quot;number&quot; then
-        handle_number(next(result))
-      else
-        handle_number(select(2, next(result)))
-      end
-      return
-    end
-
-    -- if not, then ask the user to clarify which one would they want
-    mmp.echo(&quot;Which room specifically would you like to look up?&quot;)
-    if not select(2, next(result)) or not tonumber(select(2, next(result))) then
-      for roomid, roomname in pairs(result) do roomid = tonumber(roomid)
-        cecho(string.format(&quot;  &lt;LightSlateGray&gt;%s&lt;DarkSlateGrey&gt; (&lt;blue&gt;&quot;,
-          tostring(roomname)))
-        echoLink(roomid, 'mmp.roomLook('..roomid..')', string.format(&quot;View room details for %s (%s)&quot;, roomid, tostring(roomname)))
-        cecho(string.format(&quot;&lt;DarkSlateGrey&gt;) in the &lt;LightSlateGray&gt;%s&lt;DarkSlateGrey&gt;.\n&quot;, tostring(mmp.areatabler[getRoomArea(roomid)])))
-      end
-
-    else
-      for roomname, roomid in pairs(result) do roomid = tonumber(roomid)
-        cecho(string.format(&quot;  &lt;LightSlateGray&gt;%s&lt;DarkSlateGrey&gt; (&lt;blue&gt;&quot;,
-          tostring(roomname)))
-        echoLink(roomid, 'mmp.roomLook('..roomid..')', string.format(&quot;View room details for %s (%s)&quot;, roomid, tostring(roomname)))
-        cecho(string.format(&quot;&lt;DarkSlateGrey&gt;) in the &lt;LightSlateGray&gt;%s&lt;DarkSlateGrey&gt;.\n&quot;, tostring(mmp.areatabler[getRoomArea(roomid)])))
-      end
-    end
-  end
-
-  if not input then
-    if not mmp.roomexists(mmp.currentroom) then
-      mmp.echo(mmp.currentroom.. &quot; doesn't seem to be mapped yet.&quot;)
-      mmp.echo(&quot;Stuff you can do:&quot;)
-      echo&quot;  &quot; echoLink(&quot;Check for all updates&quot;, 'mmp.echo(&quot;Checking...&quot;) mmp.checkforupdate()', '') 
-      echo&quot; &quot; echoLink(&quot;(force map)&quot;, [[
-      local s,m = os.remove(getMudletHomeDir()..&quot;/map downloads/current&quot;)
-        if io.exists(getMudletHomeDir()..&quot;/map downloads/current&quot;) then
-          local s,m = os.remove(getMudletHomeDir()..&quot;/map downloads/current&quot;)
-          if not s then mmp.echo(&quot;Couldn't delete '&quot;..getMudletHomeDir()..&quot;/map downloads/current' file: &quot;..tostring(m)..&quot;.&quot;) end
-        end
-        mmp.echo(&quot;Re-downloading the latest map...&quot;)
-        mmp.checkforupdate()
-      ]], &quot;Re-download the map regardless if you have latest&quot;)
-      echo&quot;\n&quot;
-    else input = mmp.currentroom end
-  end
-
-  if tonumber(input) then
-    handle_number(tonumber(input))
-  else
-    handle_name(input)
-  end
-
-  mmp.echo(string.format(&quot;version %s.&quot;, tostring(mmp.version)))
-end
-
-function mmp.roomexists(num)
-  if not num then return false end
-  if roomExists then return roomExists(num) end
-
-  local s,m = pcall(getRoomArea, tonumber(num))
-  return (s and true or false)
-end
-
--- translates n to north and so forth
-function mmp.anytolong(exit)
-  local t = {
-    n = &quot;north&quot;,
-    e = &quot;east&quot;,
-    s = &quot;south&quot;,
-    w = &quot;west&quot;,
-    ne = &quot;northeast&quot;,
-    se = &quot;southeast&quot;,
-    sw = &quot;southwest&quot;,
-    nw = &quot;northwest&quot;,
-    u = &quot;up&quot;,
-    d = &quot;down&quot;,
-    i = &quot;in&quot;,
-    o = &quot;out&quot;,
-    [&quot;in&quot;] = &quot;in&quot;
-  }
-
-  for s, l in pairs(t) do t[l] = l end
-
-  return t[exit]
-end
-
-function mmp.anytoshort(exit)
-  local t = {
-    n = &quot;north&quot;,
-    e = &quot;east&quot;,
-    s = &quot;south&quot;,
-    w = &quot;west&quot;,
-    ne = &quot;northeast&quot;,
-    se = &quot;southeast&quot;,
-    sw = &quot;southwest&quot;,
-    nw = &quot;northwest&quot;,
-    u = &quot;up&quot;,
-    d = &quot;down&quot;,
-    [&quot;in&quot;] = &quot;in&quot;,
-    out = &quot;out&quot;
-  }
-  local rt = {}
-  for s,l in pairs(t) do
-    rt[l] = s; rt[s] = s
-  end
-
-  return rt[exit]
-end
-
-
-function mmp.ranytolong(exit)
-  local t = {
-    n = &quot;south&quot;,
-    north = &quot;south&quot;,
-    e = &quot;west&quot;,
-    east = &quot;west&quot;,
-    s = &quot;north&quot;,
-    south = &quot;north&quot;,
-    w = &quot;east&quot;,
-    west = &quot;east&quot;,
-    ne = &quot;southwest&quot;,
-    northeast = &quot;southwest&quot;,
-    se = &quot;northwest&quot;,
-    southeast = &quot;northwest&quot;,
-    sw = &quot;northeast&quot;,
-    southwest = &quot;northeast&quot;,
-    nw = &quot;southeast&quot;,
-    northwest = &quot;southeast&quot;,
-    u = &quot;down&quot;,
-    up = &quot;down&quot;,
-    d = &quot;up&quot;,
-    down = &quot;up&quot;,
-    i = &quot;out&quot;,
-    [&quot;in&quot;] = &quot;out&quot;,
-    o = &quot;in&quot;,
-    out = &quot;in&quot;
-  }
-
-  return t[exit]
-end
-
--- returns nil or the room number relative to this one
-function mmp.relativeroom(from, dir)
-  if not mmp.roomexists(from) then return end
-
-  local exits = getRoomExits(tonumber(from))
-  return exits[mmp.anytolong(dir)]
-end
-
-function mmp.deleteArea(name, exact)
-  local id, fname, ma = mmp.findAreaID(name, exact)
-
-  if id then
-    deleteArea(id)
-    mmp.echo(string.format(&quot;Deleted %s (%d).&quot;, fname, id))
-    centerview(mmp.currentroom)
-  elseif next(ma) then
-    mmp.echo(&quot;Which one of these specifically would you like to delete?&quot;)
-
-    fg(&quot;DimGrey&quot;)
-    for _,name in ipairs(ma) do
-    echo &quot;  &quot; setUnderline(true) echoLink(name, [[mmp.deleteArea(&quot;]]..name..[[&quot;, true)]], &quot;Delete &quot;..name, true) setUnderline(false) echo&quot;\n&quot;
-    end
-    resetFormat()
-    else
-      mmp.echo(&quot;Don't know of that area.&quot;)
-  end
-
-  raiseEvent(&quot;mmp areas changed&quot;)
-end
-
-function mmp.renameArea(name, exact)
-  if not (mmp.currentroom or getRoomArea(mmp.currentroom)) then
-    mmp.echo(&quot;Don't know what area are we in at the moment, to rename it.&quot;)
-  else
-  setAreaName(getRoomArea(mmp.currentroom), name)
-  mmp.echo(string.format(&quot;Renamed %s to %s (%d).&quot;, mmp.areatabler[getRoomArea(mmp.currentroom)], name, getRoomArea(mmp.currentroom)))
-  centerview(mmp.currentroom)
-  end
-
-  raiseEvent(&quot;mmp areas changed&quot;)
-end
-
-function mmp.roomArea(otherroom, name, exact)
-    local id,fname,ma
-    if tonumber(name) then id = tonumber(name); fname = mmp.areatabler[id]
-    else id, fname, ma = mmp.findAreaID(name, exact) end
-
-    if otherroom ~= &quot;&quot; and not mmp.roomexists(otherroom) then
-      mmp.echo(&quot;Room id &quot;..otherroom..&quot; doesn't seem to exist.&quot;)
-      return
-    elseif otherroom == &quot;&quot; and not mmp.roomexists(mmp.currentroom) then
-      mmp.echo(&quot;Don't know where we are at the moment.&quot;)
-      return
-    end
-
-   otherroom = otherroom ~= &quot;&quot; and otherroom or mmp.currentroom
-
-  if id then
-    setRoomArea(otherroom, id)
-    mmp.echo(string.format(&quot;Moved %s to %s (%d).&quot;, (getRoomName(otherroom) ~= &quot;&quot; and getRoomName(otherroom) or &quot;''&quot;), fname, id))
-    centerview(otherroom)
-  elseif next(ma) then
-    mmp.echo(&quot;Into which area exactly would you like to move the room?&quot;)
-
-    fg(&quot;DimGrey&quot;)
-    for _,name in ipairs(ma) do
-    echo &quot;  &quot; setUnderline(true) echoLink(name, [[mmp.roomArea('', &quot;]]..name..[[&quot;, true)]], &quot;Move the room to &quot;..name, true) setUnderline(false) echo&quot;\n&quot;
-    end
-    resetFormat()
-    else
-      mmp.echo(&quot;Don't know of that area.&quot;)
-  end
-end
-
-function mmp.getAreaBorders(areaid)
-    local roomlist, endresult = getAreaRooms(areaid), {}
-    -- sometimes getAreaRooms can give us no result :(
-    if not roomlist then mmp.echo(&quot;Sorry, seems we can't go there - getAreaRooms(&quot;..areaid..&quot;) didn't give us any results (Mudlet problem - redownloading the map might help fix it)&quot;) return end
-
-	local getRoomExits, getRoomName, getSpecialExitsSwap, contains, pairs = getRoomExits, getRoomName, getSpecialExitsSwap, table.contains, pairs
-
-    -- obtain a room list for each of the room IDs we got
-    for _, id in pairs(roomlist) do
-      local exits = getRoomExits(id)
-      for _, to in pairs(exits) do
-        if not contains(roomlist, to) then
-          endresult[id] = getRoomName(id)
-        end
-      end
-      local specialexits = getSpecialExitsSwap(id)
-      for _, to in pairs(specialexits) do
-        if not contains(roomlist, to) then
-          endresult[id] = getRoomName(id)
-        end
-      end
-    end
-
-    return endresult
 end
 
 function mmp.locateAndEcho(room, person)
@@ -5675,7 +5174,231 @@ function mmp.locateAndEchoInternal(room, person)
       mmp.pdb_lastupdate[person] = true
       raiseEvent(&quot;mmapper updated pdb&quot;)
    end
+end</script>
+                    <eventHandlerList/>
+                </Script>
+                <Script isActive="yes" isFolder="no">
+                    <name>Aliases</name>
+                    <packageName></packageName>
+                    <script>function mmp.roomWhoFind(query)
+  if query:ends('.') then query = query:sub(1,-2) end
+  local result = mmp.searchRoomExact(query)
+
+  if type(result) == &quot;string&quot; or not next(result) then
+    cecho(&quot;&lt;CadetBlue&gt;  You have no recollection of any room with that name.&quot;) return end
+
+  if not tonumber(select(2, next(result))) then -- old style
+    for roomid, roomname in pairs(result) do roomid = tonumber(roomid)
+      cecho(string.format(&quot;  &lt;LightSlateGray&gt;%s&lt;DarkSlateGrey&gt; (&lt;blue&gt;&quot;,
+        tostring(roomname)))
+      echoLink(roomid, 'mmp.gotoRoom('..roomid..')', string.format(&quot;Go to %s (%s)&quot;, roomid, tostring(roomname)))
+      cecho(string.format(&quot;&lt;DarkSlateGrey&gt;) &lt;white&gt;%s&lt;DarkSlateGrey&gt;.\n&quot;, tostring(mmp.areatabler[getRoomArea(roomid)])))
+    end
+
+  else -- new style
+    for roomname, roomid in pairs(result) do roomid = tonumber(roomid)
+      cecho(string.format(&quot;  &lt;LightSlateGray&gt;%s&lt;DarkSlateGrey&gt; (&lt;blue&gt;&quot;,
+        tostring(roomname)))
+      echoLink(roomid, 'mmp.gotoRoom('..roomid..')', string.format(&quot;Go to %s (%s)&quot;, roomid, tostring(roomname)))
+      cecho(string.format(&quot;&lt;DarkSlateGrey&gt;) &lt;white&gt;%s&lt;DarkSlateGrey&gt;.\n&quot;, tostring(mmp.areatabler[getRoomArea(roomid)])))
+    end
+  end
 end
+
+function mmp.roomFind(query)
+  if query:ends('.') then query = query:sub(1,-2) end
+  local result = mmp.searchRoom(query)
+
+  if type(result) == &quot;string&quot; or not next(result) then
+    cecho(&quot;&lt;grey&gt;You have no recollection of any room with that name.&quot;) return end
+
+  cecho(&quot;&lt;DarkSlateGrey&gt;You know the following relevant rooms:\n&quot;)
+
+
+  if not tonumber(select(2, next(result))) then -- old style
+    for roomid, roomname in pairs(result) do roomid = tonumber(roomid)
+      cecho(string.format(&quot;  &lt;LightSlateGray&gt;%s&lt;DarkSlateGrey&gt; (&lt;blue&gt;&quot;,
+        tostring(roomname)))
+      echoLink(roomid, 'mmp.gotoRoom('..roomid..')', string.format(&quot;Go to %s (%s)&quot;, roomid, tostring(roomname)))
+      cecho(string.format(&quot;&lt;DarkSlateGrey&gt;) in &lt;LightSlateGray&gt;%s&lt;DarkSlateGrey&gt;.&quot;, mmp.cleanAreaName(tostring(mmp.areatabler[getRoomArea(roomid)]))))
+      fg(&quot;DarkSlateGrey&quot;) echoLink(&quot; &gt; Show path\n&quot;, [[mmp.echoPath(mmp.currentroom, ]]..roomid..[[)]], &quot;Display directions&quot;, true) resetFormat()
+    end
+
+  else -- new style
+    for roomname, roomid in pairs(result) do roomid = tonumber(roomid)
+      cecho(string.format(&quot;  &lt;LightSlateGray&gt;%s&lt;DarkSlateGrey&gt; (&lt;blue&gt;&quot;,
+        tostring(roomname)))
+      echoLink(roomid, 'mmp.gotoRoom('..roomid..')', string.format(&quot;Go to %s (%s)&quot;, roomid, tostring(roomname)))
+      cecho(string.format(&quot;&lt;DarkSlateGrey&gt;) in &lt;LightSlateGray&gt;%s&lt;DarkSlateGrey&gt;.&quot;, mmp.cleanAreaName(tostring(mmp.areatabler[getRoomArea(roomid)]))))
+      fg(&quot;DarkSlateGrey&quot;) echoLink(&quot; &gt; Show path\n&quot;, [[mmp.echoPath(mmp.currentroom, ]]..roomid..[[)]], &quot;Display directions&quot;, true) resetFormat()
+    end
+  end
+
+  cecho(string.format(&quot;  &lt;DarkSlateGrey&gt;%d rooms found.\n&quot;, table.size(result)))
+end
+
+function mmp.echoRoomList(areaname, exact)
+  local id, msg, multiples = mmp.findAreaID(areaname, exact)
+  if id then
+    local roomlist, endresult = getAreaRooms(id) or {}, {}
+
+    -- obtain a room list for each of the room IDs we got
+    for _, id in pairs(roomlist) do
+      endresult[id] = getRoomName(id)
+    end
+
+  -- sort room IDs so we can display them in order
+    table.sort(roomlist)
+
+    -- now display something half-decent looking
+    cecho(string.format(
+      &quot;&lt;DarkSlateGrey&gt;List of all rooms in &lt;grey&gt;%s&lt;DarkSlateGrey&gt; (&lt;grey&gt;%d&lt;DarkSlateGrey&gt;):\n&quot;, msg, table.size(endresult)))
+    for _, roomid in ipairs(roomlist) do
+    local roomname = endresult[roomid]
+      fg(&quot;blue&quot;) echoLink(string.format(&quot;%6s&quot;, roomid), 'mmp.gotoRoom('..roomid..')', string.format(&quot;Go to %s (%s)&quot;, roomid, tostring(roomname)), true)
+       cecho(string.format(&quot;&lt;DarkSlateGrey&gt;: &lt;LightSlateGray&gt;%s&lt;DarkSlateGrey&gt;.\n&quot;, roomname))
+    end
+  elseif not id and #multiples &gt; 0 then
+    mmp.echo(&quot;For which area would you want to list rooms for?&quot;)
+
+  fg(&quot;DimGrey&quot;)
+    for _, areaname in ipairs(multiples) do
+      echo&quot;  &quot;; setUnderline(true) echoLink(areaname, 'mmp.echoRoomList(&quot;'..areaname..'&quot;, true)', &quot;Click to view the room list for &quot;..areaname, true) setUnderline(false) echo&quot;\n&quot;
+    end
+  resetFormat()
+  else
+    mmp.echo(string.format(&quot;Don't know of any area named '%s'.&quot;, areaname))
+  end
+end
+
+function mmp.echoAreaList()
+  local list = getAreaTable()
+  local ids, rlist = {}, {}
+  for area, id in pairs(list) do
+    if id ~= 0 then ids[#ids+1] = id; rlist[id] = area end end
+  table.sort(ids)
+
+  cecho(string.format(
+      &quot;&lt;DarkSlateGrey&gt;List of all areas we know of (click to view room list):\n&quot;))
+  for _, id in pairs(ids) do
+    cecho(string.format(&quot;&lt;blue&gt;%s%d &quot;, string.rep(&quot; &quot;, (6-#tostring(id))), id))
+    fg(&quot;DarkSlateGrey&quot;) echoLink(rlist[id], 'mmp.echoRoomList(&quot;'..rlist[id]..'&quot;, true)', &quot;View the room list for &quot;..rlist[id], true) echo(&quot;\n&quot;)
+  end
+end
+
+function mmp.clearLabels(areaid)
+  local function clearlabels(areaid)
+    local t = getMapLabels(areaid)
+    if type(t) ~= &quot;table&quot; then return end
+
+    for labelid, _ in pairs(t) do deleteMapLabel(areaid, labelid) end
+  end
+
+  if areaid == &quot;map&quot; then
+    for areaid in pairs(mmp.areatabler) do
+      clearlabels(areaid)
+    end
+
+    mmp.echo(&quot;Cleared labels in all of the map.&quot;)
+    return
+  end
+
+  clearlabels(areaid)
+  mmp.echo(string.format(&quot;Cleared all labels in '%s'.&quot;, mmp.areatabler[areaid]))
+end
+
+function mmp.deleteArea(name, exact)
+  local id, fname, ma = mmp.findAreaID(name, exact)
+
+  if id then
+    deleteArea(id)
+    mmp.echo(string.format(&quot;Deleted %s (%d).&quot;, fname, id))
+    centerview(mmp.currentroom)
+  elseif next(ma) then
+    mmp.echo(&quot;Which one of these specifically would you like to delete?&quot;)
+
+    fg(&quot;DimGrey&quot;)
+    for _,name in ipairs(ma) do
+    echo &quot;  &quot; setUnderline(true) echoLink(name, [[mmp.deleteArea(&quot;]]..name..[[&quot;, true)]], &quot;Delete &quot;..name, true) setUnderline(false) echo&quot;\n&quot;
+    end
+    resetFormat()
+    else
+      mmp.echo(&quot;Don't know of that area.&quot;)
+  end
+
+  raiseEvent(&quot;mmp areas changed&quot;)
+end
+
+function mmp.renameArea(name, exact)
+  if not (mmp.currentroom or getRoomArea(mmp.currentroom)) then
+    mmp.echo(&quot;Don't know what area are we in at the moment, to rename it.&quot;)
+  else
+  setAreaName(getRoomArea(mmp.currentroom), name)
+  mmp.echo(string.format(&quot;Renamed %s to %s (%d).&quot;, mmp.areatabler[getRoomArea(mmp.currentroom)], name, getRoomArea(mmp.currentroom)))
+  centerview(mmp.currentroom)
+  end
+
+  raiseEvent(&quot;mmp areas changed&quot;)
+end
+
+function mmp.roomArea(otherroom, name, exact)
+    local id,fname,ma
+    if tonumber(name) then id = tonumber(name); fname = mmp.areatabler[id]
+    else id, fname, ma = mmp.findAreaID(name, exact) end
+
+    if otherroom ~= &quot;&quot; and not mmp.roomexists(otherroom) then
+      mmp.echo(&quot;Room id &quot;..otherroom..&quot; doesn't seem to exist.&quot;)
+      return
+    elseif otherroom == &quot;&quot; and not mmp.roomexists(mmp.currentroom) then
+      mmp.echo(&quot;Don't know where we are at the moment.&quot;)
+      return
+    end
+
+   otherroom = otherroom ~= &quot;&quot; and otherroom or mmp.currentroom
+
+  if id then
+    setRoomArea(otherroom, id)
+    mmp.echo(string.format(&quot;Moved %s to %s (%d).&quot;, (getRoomName(otherroom) ~= &quot;&quot; and getRoomName(otherroom) or &quot;''&quot;), fname, id))
+    centerview(otherroom)
+  elseif next(ma) then
+    mmp.echo(&quot;Into which area exactly would you like to move the room?&quot;)
+
+    fg(&quot;DimGrey&quot;)
+    for _,name in ipairs(ma) do
+    echo &quot;  &quot; setUnderline(true) echoLink(name, [[mmp.roomArea('', &quot;]]..name..[[&quot;, true)]], &quot;Move the room to &quot;..name, true) setUnderline(false) echo&quot;\n&quot;
+    end
+    resetFormat()
+    else
+      mmp.echo(&quot;Don't know of that area.&quot;)
+  end
+end
+
+function mmp.getAreaBorders(areaid)
+    local roomlist, endresult = getAreaRooms(areaid), {}
+    -- sometimes getAreaRooms can give us no result :(
+    if not roomlist then mmp.echo(&quot;Sorry, seems we can't go there - getAreaRooms(&quot;..areaid..&quot;) didn't give us any results (Mudlet problem - redownloading the map might help fix it)&quot;) return end
+
+	local getRoomExits, getRoomName, getSpecialExitsSwap, contains, pairs = getRoomExits, getRoomName, getSpecialExitsSwap, table.contains, pairs
+
+    -- obtain a room list for each of the room IDs we got
+    for _, id in pairs(roomlist) do
+      local exits = getRoomExits(id)
+      for _, to in pairs(exits) do
+        if not contains(roomlist, to) then
+          endresult[id] = getRoomName(id)
+        end
+      end
+      local specialexits = getSpecialExitsSwap(id)
+      for _, to in pairs(specialexits) do
+        if not contains(roomlist, to) then
+          endresult[id] = getRoomName(id)
+        end
+      end
+    end
+
+    return endresult
+end
+
 
 function mmp.viewArea (where, exact)
   if not where or not type(where)==&quot;string&quot; then
@@ -5836,13 +5559,109 @@ function mmp.listSpecialExits(filter)
   end
 
   mmp.echo(string.format(&quot;%d exits listed%s.&quot;, c, (not filter and '' or &quot;, with for the filter '&quot;..filter..&quot;'&quot;)))
+end</script>
+                    <eventHandlerList/>
+                </Script>
+                <Script isActive="yes" isFolder="no">
+                    <name>Directions-translating functions</name>
+                    <packageName></packageName>
+                    <script>-- translates n to north and so forth
+function mmp.anytolong(exit)
+  local t = {
+    n = &quot;north&quot;,
+    e = &quot;east&quot;,
+    s = &quot;south&quot;,
+    w = &quot;west&quot;,
+    ne = &quot;northeast&quot;,
+    se = &quot;southeast&quot;,
+    sw = &quot;southwest&quot;,
+    nw = &quot;northwest&quot;,
+    u = &quot;up&quot;,
+    d = &quot;down&quot;,
+    i = &quot;in&quot;,
+    o = &quot;out&quot;,
+    [&quot;in&quot;] = &quot;in&quot;
+  }
+
+  for s, l in pairs(t) do t[l] = l end
+
+  return t[exit]
 end
 
-function mmp.doLock (what, lock, filter)
+function mmp.anytoshort(exit)
+  local t = {
+    n = &quot;north&quot;,
+    e = &quot;east&quot;,
+    s = &quot;south&quot;,
+    w = &quot;west&quot;,
+    ne = &quot;northeast&quot;,
+    se = &quot;southeast&quot;,
+    sw = &quot;southwest&quot;,
+    nw = &quot;northwest&quot;,
+    u = &quot;up&quot;,
+    d = &quot;down&quot;,
+    [&quot;in&quot;] = &quot;in&quot;,
+    out = &quot;out&quot;
+  }
+  local rt = {}
+  for s,l in pairs(t) do
+    rt[l] = s; rt[s] = s
+  end
+
+  return rt[exit]
+end
+
+
+function mmp.ranytolong(exit)
+  local t = {
+    n = &quot;south&quot;,
+    north = &quot;south&quot;,
+    e = &quot;west&quot;,
+    east = &quot;west&quot;,
+    s = &quot;north&quot;,
+    south = &quot;north&quot;,
+    w = &quot;east&quot;,
+    west = &quot;east&quot;,
+    ne = &quot;southwest&quot;,
+    northeast = &quot;southwest&quot;,
+    se = &quot;northwest&quot;,
+    southeast = &quot;northwest&quot;,
+    sw = &quot;northeast&quot;,
+    southwest = &quot;northeast&quot;,
+    nw = &quot;southeast&quot;,
+    northwest = &quot;southeast&quot;,
+    u = &quot;down&quot;,
+    up = &quot;down&quot;,
+    d = &quot;up&quot;,
+    down = &quot;up&quot;,
+    i = &quot;out&quot;,
+    [&quot;in&quot;] = &quot;out&quot;,
+    o = &quot;in&quot;,
+    out = &quot;in&quot;
+  }
+
+  return t[exit]
+end
+
+-- returns nil or the room number relative to this one
+function mmp.relativeroom(from, dir)
+  if not mmp.roomexists(from) then return end
+
+  local exits = getRoomExits(tonumber(from))
+  return exits[mmp.anytolong(dir)]
+end
+</script>
+                    <eventHandlerList/>
+                </Script>
+                <Script isActive="yes" isFolder="no">
+                    <name>mconfig settings functions</name>
+                    <packageName></packageName>
+                    <script>function mmp.doLock(what, lock, filter)
   mmp.echo(string.format(&quot;%s all %s...&quot;, (lock and &quot;Locking&quot; or &quot;Unlocking&quot;), what))
   local c = 0
 
-  for area in pairs(mmp.areatabler) do
+  local getAreaRooms, getSpecialExits, lockSpecialExit = getAreaRooms, getSpecialExits, lockSpecialExit
+  for _, area in pairs(getAreaTable()) do
     local rooms = getAreaRooms(area) or {}
     for i = 0, #rooms do
       local exits = getSpecialExits(rooms[i] or 0)
@@ -5965,102 +5784,6 @@ function mmp.setWaterWalk()
   end
 end
 
--- patches welcome to finish this function.
-function mmp.removecontinent(area, continent)
-  local tmp = getRoomUserData(1, &quot;areaContinents&quot;)
-  local continents = {}
-
-  if tmp ~= &quot;&quot; then
-    continents = yajl.to_value(tmp)
-  end
-
-  if not next(continents) then return nil, &quot;no continents are known&quot; end
-  if not continents[continent] then return nil, &quot;no such continent is recorded&quot; end
- 
-end
-
-function mmp.indexof_valueonly(data, value)
-  for i = 1, #data do
-    if data[i] == value then return i end
-  end
-
-  return false
-end
-
--- checks if given area ID is on the given continent. Returns true only if certainly knows
-function mmp.oncontinent(areaid, continent)
-  local tmp = getRoomUserData(1, &quot;areaContinents&quot;)
-  if tmp == &quot;&quot; then return end
-
-  local continents = yajl.to_value(tmp)
-  if not continents[continent] then return end
-  
-  return mmp.indexof_valueonly(continents[continent], areaid)
-end
-
-function mmp.highlight_unfinished_rooms()
-	if not mmp.areatable then return end
-	for a,b in pairs (mmp.areatable) do
-		local roomList = getAreaRooms(b) or {}
-		for c,d in pairs (roomList) do
-			if (getRoomName(d) == &quot;&quot;) then
-				local fgr,fgg,fgb = unpack(color_table.red)
-				local bgr,bgg,bgb = unpack(color_table.blue)
-				highlightRoom(d, fgr,fgg,fgb,bgr,bgg,bgb, 1, 100, 100)
-			end
-		end
-	end
-end
-
-function mmp.usebix()
-	if mmp.game ~= &quot;lusternia&quot; then return end
-	
-	if (table.contains(gmcp.Room.Info.details, &quot;the Prime Material Plane&quot;) or
-		table.contains(gmcp.Room.Info.details, &quot;the Ethereal Plane&quot;) or
-		table.contains(gmcp.Room.Info.details, &quot;the Water Elemental Plane&quot;) or
-		table.contains(gmcp.Room.Info.details, &quot;the Air Elemental Plane&quot;) or
-		table.contains(gmcp.Room.Info.details, &quot;the Fire Elemental Plane&quot;) or
-		table.contains(gmcp.Room.Info.details, &quot;the Earth Elemental Plane&quot;) or
-		table.contains(gmcp.Room.Info.details, &quot;Celestia, Plane of Light&quot;) or
-		table.contains(gmcp.Room.Info.details, &quot;the Tainted Plane of Nil&quot;) or
-		table.contains(gmcp.Room.Info.details, &quot;the Cosmic Plane of Continuum&quot;) or
-		table.contains(gmcp.Room.Info.details, &quot;the Cosmic Plane of Vortex&quot;) or
-		table.contains(gmcp.Room.Info.details, &quot;the Astral Plane&quot;)) and
-		table.contains(gmcp.Room.Info.details, &quot;outdoors&quot;) then
-		return true
-	end
-	return false
-end
-
-function mmp.useprism()
-	if mmp.game ~= &quot;lusternia&quot; then return end
-	if (table.contains(gmcp.Room.Info.details, &quot;the Prime Material Plane&quot;) or
-	table.contains(gmcp.Room.Info.details, &quot;the Ethereal Plane&quot;) or
-	table.contains(gmcp.Room.Info.details, &quot;the Water Elemental Plane&quot;) or
-	table.contains(gmcp.Room.Info.details, &quot;the Air Elemental Plane&quot;) or
-	table.contains(gmcp.Room.Info.details, &quot;the Fire Elemental Plane&quot;) or
-	table.contains(gmcp.Room.Info.details, &quot;the Earth Elemental Plane&quot;)) and
-	table.contains(gmcp.Room.Info.details, &quot;outdoors&quot;) then
-		return true
-	end
-	return false
-end
-function mmp.usebubblix()
-	if mmp.game ~= &quot;lusternia&quot; then return end
-	
-	if ((table.contains(gmcp.Room.Info.details, &quot;the Prime Material Plane&quot;) or
-		table.contains(gmcp.Room.Info.details, &quot;the Ethereal Plane&quot;) or
-		table.contains(gmcp.Room.Info.details, &quot;the Water Elemental Plane&quot;) or
-		table.contains(gmcp.Room.Info.details, &quot;the Air Elemental Plane&quot;) or
-		table.contains(gmcp.Room.Info.details, &quot;the Fire Elemental Plane&quot;) or
-		table.contains(gmcp.Room.Info.details, &quot;the Earth Elemental Plane&quot;)) and
-		table.contains(gmcp.Room.Info.details, &quot;outdoors&quot;)) or
-		table.contains(gmcp.Room.Info.details, &quot;an Aetherbubble&quot;) then		
-		return true
-	end
-	return false
-end
-
 function mmp.setMedallion()
   mmp.clearpathcache() -- clear the cache so it'll use wings or will stop using wings
 
@@ -6177,8 +5900,6 @@ function mmp.setTorus()
   else mmp.echo(&quot;Won't use your Torus anymore.&quot;) end
 end
 
-
-
 function mmp.setUtensilcurio()
   mmp.clearpathcache() -- clear the cache so it'll use wings or will stop using wings
 
@@ -6226,11 +5947,186 @@ function mmp.setFigurecurio()
 
   if mmp.settings.figurecurio then mmp.echo(&quot;Okay, will see about using Figure Curio collection whenever it's quicker&quot;)
   else mmp.echo(&quot;Won't use Figure Curio collection anymore.&quot;) end
+end</script>
+                    <eventHandlerList/>
+                </Script>
+                <Script isActive="yes" isFolder="no">
+                    <name>API</name>
+                    <packageName></packageName>
+                    <script>-------------------------------------------------
+-- This script lists some of the API functions available from the IRE mudlet-mapper
+-- not all functions that are available are included here, however.
+
+function mmp.echo(what)
+  what = what or &quot;&quot;
+  moveCursorEnd(&quot;main&quot;) if getCurrentLine() ~= &quot;&quot; then echo&quot;\n&quot; end
+  decho(&quot;&lt;112,229,0&gt;(&lt;73,149,0&gt;mapper&lt;112,229,0&gt;): &lt;255,255,255&gt;&quot;)
+  cecho(tostring(what))
+  echo(&quot;\n&quot;)
 end
+
+function mmp.echon(what)
+  moveCursorEnd(&quot;main&quot;) if getCurrentLine() ~= &quot;&quot; then echo&quot;\n&quot; end
+  decho(&quot;&lt;112,229,0&gt;(&lt;73,149,0&gt;mapper&lt;112,229,0&gt;): &lt;255,255,255&gt;&quot;)
+  cecho(tostring(what))
+end
+
+function mmp.deleteLineP()
+  deleteLine()
+  tempLineTrigger(1,1,[[
+    if isPrompt() then deleteLine() end
+  ]])
+end
+
+function mmp.pause(what)
+  assert(what == nil or what == &quot;on&quot; or what == &quot;off&quot;, &quot;mmp.pause wants 'on', 'off' or nothing as an argument&quot;)
+
+  if what == &quot;on&quot; or (what == nil and not mmp.paused) then
+    mmp.paused = true
+  elseif  what == &quot;off&quot; or (what == nil and mmp.paused) then
+    mmp.paused = false
+  end
+
+  mmp.echo(&quot;Speedwalking &quot; .. (mmp.paused and &quot;paused&quot; or &quot;unpaused&quot;) .. &quot;.&quot;)
+  if not mmp.paused then mmp.move() end
+end
+
 function mmp.mapLook(roomid, delay)
   centerview(roomid)
   if mmp.maplooktimer then killTimer(mmp.maplooktimer) end
   mmp.maplooktimer = tempTimer(tonumber(delay) or 4, [[centerview(mmp.currentroom); mmp.maplooktimer = nil]])
+end
+
+function mmp.getnums(roomname, exact)
+  if tonumber(roomname) then return {roomname} end
+
+  local t = (not exact and mmp.searchRoom or mmp.searchRoomExact)(roomname)
+
+  if not t or not next(t) then
+    return nil end
+
+  local result = {}
+
+  if not tonumber(select(2, next(t))) then
+    for roomid,_ in pairs(t) do
+      if roomid ~= 0 then result[#result+1] = tonumber(roomid) end
+    end
+  else
+    for _,roomid in pairs(t) do
+      if roomid ~= 0 then result[#result+1] = tonumber(roomid) end
+    end
+  end
+
+  return result
+end
+
+-- searchRoom with a cache!
+local cache = {}
+setmetatable(cache, {__mode = &quot;kv&quot;}) -- weak keys/values = it'll periodically get cleaned up by gc
+
+function mmp.searchRoom(what)
+  local result = cache[what]
+  if not result then
+    result = searchRoom(what)
+    local realResult = {}
+    for key, value in pairs(type(result) == &quot;table&quot; and result or {}) do
+        -- both ways, because searchRoom can return either id-room name or the reverse
+        if type(key) == &quot;string&quot; then
+          realResult[key:ends(&quot; (road)&quot;) and key:sub(1, -8) or key] = value
+        else
+          realResult[key] = value:ends(&quot; (road)&quot;) and value:sub(1, -8) or value
+        end
+    end
+    cache[what] = realResult
+    result = realResult
+  end
+  return result
+end
+
+local function endswith(s, suffix)
+    return s:sub(#s - #suffix + 1) == suffix
+end
+
+function mmp.searchRoomExact(what)
+  if type(what) ~= 'string' then return end
+
+  local roomTable = mmp.searchRoom(what)
+  local realResult = {}
+  what = what:lower()
+  for key, value in pairs (roomTable) do
+    if type(key) == &quot;string&quot; and (key:lower() == what or (endswith(key, '.') and key:sub(1, -2) == what)) then
+        realResult[key:ends(&quot; (road)&quot;) and key:sub(1, -8) or key] = value
+    elseif type(value) == &quot;string&quot; and (value:lower() == what or (endswith(value, '.') and value:sub(1, -2) == what)) then
+        realResult[key] = value:ends(&quot; (road)&quot;) and value:sub(1, -8) or value
+    end
+  end
+  if (table.is_empty(realResult)) then
+    return roomTable
+  else
+    return realResult
+  end
+end
+
+function mmp.findAreaID(areaname, exact)
+  local areaname = areaname:lower()
+  local list = getAreaTable()
+
+  -- iterate over the list of areas, matching them with substring match.
+  -- if we get match a single area, then return it's ID, otherwise return
+  -- 'false' and a message that there are than one are matches
+  local returnid, fullareaname, multipleareas = nil, nil, {}
+  for area, id in pairs(list) do
+    if (not exact and area:lower():find(areaname, 1, true)) or (exact and areaname == area:lower()) then
+      returnid = id; fullareaname = area; multipleareas[#multipleareas+1] = area
+    end
+  end
+
+  if #multipleareas == 1 then
+    return returnid, fullareaname
+  else
+    return nil, nil, multipleareas
+  end
+end
+
+function mmp.roomexists(num)
+  if not num then return false end
+  if roomExists then return roomExists(num) end
+
+  local s,m = pcall(getRoomArea, tonumber(num))
+  return (s and true or false)
+end
+
+-- patches welcome to finish this function.
+function mmp.removecontinent(area, continent)
+  local tmp = getRoomUserData(1, &quot;areaContinents&quot;)
+  local continents = {}
+
+  if tmp ~= &quot;&quot; then
+    continents = yajl.to_value(tmp)
+  end
+
+  if not next(continents) then return nil, &quot;no continents are known&quot; end
+  if not continents[continent] then return nil, &quot;no such continent is recorded&quot; end
+ 
+end
+
+function mmp.indexof_valueonly(data, value)
+  for i = 1, #data do
+    if data[i] == value then return i end
+  end
+
+  return false
+end
+
+-- checks if given area ID is on the given continent. Returns true only if certainly knows
+function mmp.oncontinent(areaid, continent)
+  local tmp = getRoomUserData(1, &quot;areaContinents&quot;)
+  if tmp == &quot;&quot; then return end
+
+  local continents = yajl.to_value(tmp)
+  if not continents[continent] then return end
+  
+  return mmp.indexof_valueonly(continents[continent], areaid)
 end
 
 -- accepts areaname or ID
@@ -6274,14 +6170,163 @@ end
 function mmp.getAreaName(roomid)
    return mmp.areatabler[getRoomArea(roomid)] or '?'
 end</script>
-                <eventHandlerList/>
+                    <eventHandlerList/>
+                </Script>
+                <Script isActive="yes" isFolder="no">
+                    <name>mmp.roomLook</name>
+                    <packageName></packageName>
+                    <script>function mmp.roomLook(input)
+  -- we can do a report with a number
+  local function handle_number(num)
+    -- compile all available data
+    if not mmp.roomexists(num) then mmp.echo(num..&quot; doesn't seem to exist.&quot;) return end
+    local s, areanum = pcall(getRoomArea,num)
+    if not s then mmp.echo(areanum); return; end
+
+    local exits = getRoomExits(num)
+    local name = getRoomName(num)
+    local islocked = roomLocked(num)
+    local weight = (getRoomWeight(num) and getRoomWeight(num) or &quot;?&quot;) -- getRoomWeight is buggy in one of the versions, is actually linked to setRoomWeight and thus returns nil
+    local exitweights = (getExitWeights and getExitWeights(num) or {})
+    local coords = {getRoomCoordinates(num)}
+    local specexits = getSpecialExits(num)
+    local env = getRoomEnv(num)
+    local envname = (mmp.envidsr and mmp.envidsr[env]) or &quot;?&quot;
+
+    -- generate a report
+    mmp.echo(string.format(&quot;Room: %s #: %d area: %s (%d)&quot;,
+      name, num, tostring(mmp.areatabler[areanum]), areanum))
+
+    mmp.echo(string.format(&quot;Coordinates: x:%d, y:%d, z:%d, locked: %s, weight: %s&quot;, coords[1], coords[2], coords[3], (islocked and &quot;yep&quot; or &quot;nope&quot;), tostring(weight)))
+
+    mmp.echo(string.format(&quot;Environment: %s (%d)%s&quot;, tostring(envname), env, (getRoomUserData(num, &quot;indoors&quot;) ~= '' and &quot;, indoors&quot; or '')))
+
+    mmp.echo(string.format(&quot;Exits (%d):&quot;, table.size(exits)))
+    for exit, leadsto in pairs(exits) do
+      echo(string.format(&quot;  %s -&gt; %s (%d)%s%s\n&quot;, exit, getRoomName(leadsto), leadsto,
+        ((getRoomArea(leadsto) or &quot;?&quot;) == areanum and &quot;&quot;
+        or &quot; (in &quot;..(mmp.areatabler[getRoomArea(leadsto)] or &quot;?&quot;)..&quot;)&quot;),
+        ((not exitweights[mmp.anytoshort(exit)] or exitweights[mmp.anytoshort(exit)] == 0) and &quot;&quot; or &quot; (weight: &quot;..exitweights[mmp.anytoshort(exit)]..&quot;)&quot;)
+      ))
+    end
+
+    -- display special exits if we got any
+    if next(specexits) then
+      mmp.echo(string.format(&quot;Special exits (%d):&quot;,table.size(specexits)))
+
+      for leadsto, command in pairs(specexits) do
+        if type(command) == &quot;string&quot; then
+          echo(string.format(&quot;  %s -&gt; %s (%d)\n&quot;, command, getRoomName(leadsto), leadsto))
+        else -- new format - exit name, command
+          for cmd, locked in pairs(command) do
+            if locked == '1' then
+              cecho(string.format(&quot;&lt;DarkSlateGrey&gt;  %s -&gt; %s (%d) (locked)\n&quot;, cmd, getRoomName(leadsto), leadsto))
+            else
+              echo(string.format(&quot;  %s -&gt; %s (%d)\n&quot;, cmd, getRoomName(leadsto), leadsto))
+            end
+          end
+        end
+      end
+    end
+
+    -- actions we can do. This will be a short menu of sorts for actions
+    mmp.echo(&quot;Stuff you can do:&quot;)
+    echo&quot;  &quot; echo(&quot;Clear all labels &quot;) setUnderline(true) echoLink(&quot;(in area)&quot;, 'mmp.clearLabels('..areanum..')', '', true) setUnderline(false) 
+    echo&quot; &quot; setUnderline(true) 
+    echoLink(&quot;(whole map)&quot;, [[
+    if not mmp.clearinglabels then
+      mmp.echo(&quot;Are you sure you want to clear all of your labels on this map? If yes, click the link again.&quot;)
+      mmp.clearinglabels = true
+    else
+      mmp.clearLabels(&quot;map&quot;)
+      mmp.clearinglabels = nil
+    end
+    ]], '', true) setUnderline(false) echo&quot;\n&quot;
+    echo&quot;  &quot; setUnderline(true) echoLink(&quot;Check for mapper &amp; map updates&quot;, 'mmp.echo(&quot;Checking...&quot;) mmp.checkforupdate()', '', true) setUnderline(false)
+    echo&quot; &quot; setUnderline(true) echoLink(&quot;(force map)&quot;, [[
+      if io.exists(getMudletHomeDir()..&quot;/map downloads/current&quot;) then
+        local s,m = os.remove(getMudletHomeDir()..&quot;/map downloads/current&quot;)
+        if not s then mmp.echo(&quot;Couldn't delete '&quot;..getMudletHomeDir()..&quot;/map downloads/current' file: &quot;..tostring(m)..&quot;.&quot;) end
+      end
+      mmp.echo(&quot;Re-downloading the latest crowdmap...&quot;)
+      mmp.checkforupdate()
+    ]], &quot;Re-download the map regardless if you have latest&quot;, true)
+    setUnderline(false)
+    echo&quot;\n&quot;	
+  end
+
+  -- see if we can do anything with the name
+  local function handle_name(name)
+    local result = mmp.searchRoom(name)
+
+    if type(result) == &quot;string&quot; then
+      cecho(&quot;&lt;grey&gt;You have no recollection of any room with that name.&quot;) return end
+
+    -- if we got one result, then act on it
+    if table.size(result) == 1 then
+      if type(next(result)) == &quot;number&quot; then
+        handle_number(next(result))
+      else
+        handle_number(select(2, next(result)))
+      end
+      return
+    end
+
+    -- if not, then ask the user to clarify which one would they want
+    mmp.echo(&quot;Which room specifically would you like to look up?&quot;)
+    if not select(2, next(result)) or not tonumber(select(2, next(result))) then
+      for roomid, roomname in pairs(result) do roomid = tonumber(roomid)
+        cecho(string.format(&quot;  &lt;LightSlateGray&gt;%s&lt;DarkSlateGrey&gt; (&lt;blue&gt;&quot;,
+          tostring(roomname)))
+        echoLink(roomid, 'mmp.roomLook('..roomid..')', string.format(&quot;View room details for %s (%s)&quot;, roomid, tostring(roomname)))
+        cecho(string.format(&quot;&lt;DarkSlateGrey&gt;) in the &lt;LightSlateGray&gt;%s&lt;DarkSlateGrey&gt;.\n&quot;, tostring(mmp.areatabler[getRoomArea(roomid)])))
+      end
+
+    else
+      for roomname, roomid in pairs(result) do roomid = tonumber(roomid)
+        cecho(string.format(&quot;  &lt;LightSlateGray&gt;%s&lt;DarkSlateGrey&gt; (&lt;blue&gt;&quot;,
+          tostring(roomname)))
+        echoLink(roomid, 'mmp.roomLook('..roomid..')', string.format(&quot;View room details for %s (%s)&quot;, roomid, tostring(roomname)))
+        cecho(string.format(&quot;&lt;DarkSlateGrey&gt;) in the &lt;LightSlateGray&gt;%s&lt;DarkSlateGrey&gt;.\n&quot;, tostring(mmp.areatabler[getRoomArea(roomid)])))
+      end
+    end
+  end
+
+  if not input then
+    if not mmp.roomexists(mmp.currentroom) then
+      mmp.echo(mmp.currentroom.. &quot; doesn't seem to be mapped yet.&quot;)
+      mmp.echo(&quot;Stuff you can do:&quot;)
+      echo&quot;  &quot; echoLink(&quot;Check for all updates&quot;, 'mmp.echo(&quot;Checking...&quot;) mmp.checkforupdate()', '') 
+      echo&quot; &quot; echoLink(&quot;(force map)&quot;, [[
+      local s,m = os.remove(getMudletHomeDir()..&quot;/map downloads/current&quot;)
+        if io.exists(getMudletHomeDir()..&quot;/map downloads/current&quot;) then
+          local s,m = os.remove(getMudletHomeDir()..&quot;/map downloads/current&quot;)
+          if not s then mmp.echo(&quot;Couldn't delete '&quot;..getMudletHomeDir()..&quot;/map downloads/current' file: &quot;..tostring(m)..&quot;.&quot;) end
+        end
+        mmp.echo(&quot;Re-downloading the latest map...&quot;)
+        mmp.checkforupdate()
+      ]], &quot;Re-download the map regardless if you have latest&quot;)
+      echo&quot;\n&quot;
+    else input = mmp.currentroom end
+  end
+
+  if tonumber(input) then
+    handle_number(tonumber(input))
+  else
+    handle_name(input)
+  end
+
+  mmp.echo(string.format(&quot;version %s.&quot;, tostring(mmp.version)))
+end</script>
+                    <eventHandlerList/>
+                </Script>
                 <Script isActive="yes" isFolder="no">
                     <name>mmp.wormholesfix</name>
                     <packageName></packageName>
                     <script>function mmp.wormholesfix()
   local c = 0
   local weight = 10
-  for area in pairs(mmp.areatabler) do
+  for _, area in pairs(getAreaTable()) do
     local rooms = getAreaRooms(area) or {}
     for i = 0, #rooms do
       local exits = getSpecialExits(rooms[i] or 0)
@@ -6299,7 +6344,7 @@ end</script>
     end
   end
 
-  mmp.echo(string.format(&quot;%s wormholes weighted to %s (so we don't take them over too short distances).&quot;, c, weight))
+  if c &gt; 0 then mmp.echo(string.format(&quot;%s wormholes weighted to %s (so we don't take them over too short distances).&quot;, c, weight)) end
 end</script>
                     <eventHandlerList>
                         <string>mmapper updated map</string>
@@ -6318,7 +6363,7 @@ end</script>
                     </eventHandlerList>
                 </Script>
                 <Script isActive="yes" isFolder="no">
-                    <name>Third-party</name>
+                    <name>Third-party functions</name>
                     <packageName></packageName>
                     <script>-- from: http://lua-users.org/wiki/CopyTable
 local function deepcopy(orig)
@@ -6337,6 +6382,126 @@ local function deepcopy(orig)
 end
 
 mmp.deepcopy = deepcopy</script>
+                    <eventHandlerList/>
+                </Script>
+                <Script isActive="yes" isFolder="no">
+                    <name>mmp_regenerate_areas</name>
+                    <packageName></packageName>
+                    <script>function mmp_regenerate_areas()
+  -- cached data
+  mmp.areatable = getAreaTable() -- this translates an area name to an ID
+  mmp.areatabler = {} -- this translates an ID to an area name
+
+  local t = getAreaTable()
+  for k,v in pairs(t) do
+    mmp.areatabler[tonumber(v)] = k
+  end
+
+  mmp.clearpathcache()
+end</script>
+                    <eventHandlerList>
+                        <string>mmp areas changed</string>
+                        <string>mmapper map reloaded</string>
+                    </eventHandlerList>
+                </Script>
+                <Script isActive="yes" isFolder="no">
+                    <name>mmp_relock_areas</name>
+                    <packageName></packageName>
+                    <script>function mmp_relock_areas()
+	for area in pairs(mmp.locked) do
+		local rooms = getAreaRooms(area) or {}
+		for _, roomid in pairs(rooms) do
+			lockRoom(roomid, true)
+		end
+	end
+end</script>
+                    <eventHandlerList>
+                        <string>mmapper map reloaded</string>
+                    </eventHandlerList>
+                </Script>
+                <Script isActive="yes" isFolder="no">
+                    <name>Fix setExit</name>
+                    <packageName></packageName>
+                    <script>do
+local oldsetExit = setExit
+
+local exitmap = {
+  n = 1,
+  north = 1,
+  ne = 2,
+  northeast = 2,
+  nw = 3,
+  northwest = 3,
+  e = 4,
+  east = 4,
+  w = 5,
+  west = 5,
+  s = 6,
+  south = 6,
+  se = 7,
+  southeast = 7,
+  sw = 8,
+  southwest = 8,
+  u = 9,
+  up = 9,
+  d = 10,
+  down = 10,
+  [&quot;in&quot;] = 11,
+  out = 12
+}
+
+function setExit(from, to, direction)
+  if type(direction) == &quot;string&quot; and not exitmap[direction] then return false end
+
+  return oldsetExit(from, to, type(direction) == &quot;string&quot; and exitmap[direction] or direction)
+end
+end</script>
+                    <eventHandlerList/>
+                </Script>
+                <Script isActive="yes" isFolder="no">
+                    <name>Fix exit locking funcs</name>
+                    <packageName></packageName>
+                    <script>do
+local oldlockExit = lockExit
+local oldhasExitLock = hasExitLock
+
+local exitmap = {
+  n = 1,
+  north = 1,
+  ne = 2,
+  northeast = 2,
+  nw = 3,
+  northwest = 3,
+  e = 4,
+  east = 4,
+  w = 5,
+  west = 5,
+  s = 6,
+  south = 6,
+  se = 7,
+  southeast = 7,
+  sw = 8,
+  southwest = 8,
+  u = 9,
+  up = 9,
+  d = 10,
+  down = 10,
+  [&quot;in&quot;] = 11,
+  out = 12
+}
+
+function lockExit(from, direction, status)
+  if type(direction) == &quot;string&quot; and not exitmap[direction] then return false end
+
+  return oldlockExit(from, type(direction) == &quot;string&quot; and exitmap[direction] or direction, status)
+end
+
+function hasExitLock(from, direction)
+  if type(direction) == &quot;string&quot; and not exitmap[direction] then return false end
+
+  return oldhasExitLock(from, type(direction) == &quot;string&quot; and exitmap[direction] or direction)
+end
+end</script>
                     <eventHandlerList/>
                 </Script>
             </Script>
@@ -6442,91 +6607,6 @@ end</script>
                         <string>gmcp.Room</string>
                     </eventHandlerList>
                 </Script>
-            </Script>
-            <Script isActive="yes" isFolder="no">
-                <name>Fix setExit</name>
-                <packageName></packageName>
-                <script>do
-local oldsetExit = setExit
-
-local exitmap = {
-  n = 1,
-  north = 1,
-  ne = 2,
-  northeast = 2,
-  nw = 3,
-  northwest = 3,
-  e = 4,
-  east = 4,
-  w = 5,
-  west = 5,
-  s = 6,
-  south = 6,
-  se = 7,
-  southeast = 7,
-  sw = 8,
-  southwest = 8,
-  u = 9,
-  up = 9,
-  d = 10,
-  down = 10,
-  [&quot;in&quot;] = 11,
-  out = 12
-}
-
-function setExit(from, to, direction)
-  if type(direction) == &quot;string&quot; and not exitmap[direction] then return false end
-
-  return oldsetExit(from, to, type(direction) == &quot;string&quot; and exitmap[direction] or direction)
-end
-end</script>
-                <eventHandlerList/>
-            </Script>
-            <Script isActive="yes" isFolder="no">
-                <name>Fix exit locking funcs</name>
-                <packageName></packageName>
-                <script>do
-local oldlockExit = lockExit
-local oldhasExitLock = hasExitLock
-
-local exitmap = {
-  n = 1,
-  north = 1,
-  ne = 2,
-  northeast = 2,
-  nw = 3,
-  northwest = 3,
-  e = 4,
-  east = 4,
-  w = 5,
-  west = 5,
-  s = 6,
-  south = 6,
-  se = 7,
-  southeast = 7,
-  sw = 8,
-  southwest = 8,
-  u = 9,
-  up = 9,
-  d = 10,
-  down = 10,
-  [&quot;in&quot;] = 11,
-  out = 12
-}
-
-function lockExit(from, direction, status)
-  if type(direction) == &quot;string&quot; and not exitmap[direction] then return false end
-
-  return oldlockExit(from, type(direction) == &quot;string&quot; and exitmap[direction] or direction, status)
-end
-
-function hasExitLock(from, direction)
-  if type(direction) == &quot;string&quot; and not exitmap[direction] then return false end
-
-  return oldhasExitLock(from, type(direction) == &quot;string&quot; and exitmap[direction] or direction)
-end
-end</script>
-                <eventHandlerList/>
             </Script>
             <ScriptGroup isActive="yes" isFolder="yes">
                 <name>mm Mapping</name>
@@ -6806,12 +6886,13 @@ function mmp_load_locks()
 	if string.char(getMudletHomeDir():byte()) == &quot;/&quot; then _sep = &quot;/&quot; else  _sep = &quot;\\&quot; end
 	local loadFile = getMudletHomeDir() ..  _sep .. &quot;mapper.options.lua&quot;
 
-	table.load(loadFile, loadTable)
+    if io.exists(loadFile) then table.load(loadFile, loadTable) end
 
 	if loadTable.locked_areas then
 		mmp.locked = loadTable.locked_areas
 	end
 
+    local lockRoom, getAreaRooms = lockRoom, getAreaRooms
 	for area in pairs(mmp.locked) do
 		local rooms = getAreaRooms(area)
 		for _, roomid in pairs(rooms or {}) do
@@ -6826,41 +6907,6 @@ end</script>
                     </eventHandlerList>
                 </Script>
             </ScriptGroup>
-            <Script isActive="yes" isFolder="no">
-                <name>mmp_regenerate_areas</name>
-                <packageName></packageName>
-                <script>function mmp_regenerate_areas()
-  -- cached data
-  mmp.areatable = getAreaTable() -- this translates an area name to an ID
-  mmp.areatabler = {} -- this translates an ID to an area name
-
-  local t = getAreaTable()
-  for k,v in pairs(t) do
-    mmp.areatabler[tonumber(v)] = k
-  end
-
-  mmp.clearpathcache()
-end</script>
-                <eventHandlerList>
-                    <string>mmp areas changed</string>
-                    <string>mmapper map reloaded</string>
-                </eventHandlerList>
-            </Script>
-            <Script isActive="yes" isFolder="no">
-                <name>mmp_relock_areas</name>
-                <packageName></packageName>
-                <script>function mmp_relock_areas()
-	for area in pairs(mmp.locked) do
-		local rooms = getAreaRooms(area) or {}
-		for _, roomid in pairs(rooms) do
-			lockRoom(roomid, true)
-		end
-	end
-end</script>
-                <eventHandlerList>
-                    <string>mmapper map reloaded</string>
-                </eventHandlerList>
-            </Script>
             <ScriptGroup isActive="yes" isFolder="yes">
                 <name>Game-specific</name>
                 <packageName></packageName>
