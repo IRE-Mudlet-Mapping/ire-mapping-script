@@ -3395,7 +3395,7 @@ if not next(continents) then mmp.echo(&quot;No continents known.&quot;)
 else
   for continent, areadata in pairs(continents) do
     mmp.echo(continent..&quot; continent:&quot;)
-    
+
     for _, areaid in ipairs(areadata) do
       cecho(&quot;  &quot;..getRoomAreaName(areaid)..&quot;\n&quot;)
     end
@@ -3603,7 +3603,7 @@ for area, areaname in pairs(mmp.areatabler) do
   local rooms = getAreaRooms(area) or {}
   for i = 0, #rooms do
     local char = getRoomChar(rooms[i] or 0)
-    if char == '$' then 
+    if char == '$' then
       local exits = getRoomExits(rooms[i] or 0) -- retrieve after $, more efficient
 
       if exits.down then
@@ -3665,7 +3665,7 @@ mmp.echo(string.format(&quot;Fixed up %s room%s.&quot;, c, (c ~= 1 and 's' or ''
                     <name>Find single exits</name>
                     <script>local c = 0
 
-local getAreaRooms, getRoomExits, contains, echoLink, getRoomEnv, envidsr = 
+local getAreaRooms, getRoomExits, contains, echoLink, getRoomEnv, envidsr =
   getAreaRooms, getRoomExits, table.contains, echoLink, getRoomEnv, mmp.envidsr
 
 for area, id in pairs(getAreaTable()) do
@@ -3674,7 +3674,7 @@ for area, id in pairs(getAreaTable()) do
     for dir, otherroom in pairs(exits) do
       local otherexits = getRoomExits(otherroom) or {}
       if not contains(otherexits, roomid) then
-        echoLink(string.format(&quot;%s -&gt; %s is oneway (%s-&gt;%s type)\n&quot;, roomid, otherroom, 
+        echoLink(string.format(&quot;%s -&gt; %s is oneway (%s-&gt;%s type)\n&quot;, roomid, otherroom,
           (envidsr and envidsr[getRoomEnv(roomid)] or &quot;?&quot;),
           (envidsr and envidsr[getRoomEnv(otherroom)] or &quot;?&quot;)),
         [[mmp.gotoRoom(]]..roomid..[[)]], &quot;Click to go to the start room &quot;..roomid, true)
@@ -4108,8 +4108,8 @@ mmp.speedWalkPath = mmp.speedWalkPath or {}
 mmp.speedWalkDir = mmp.speedWalkDir or {}
 
 
-local newversion = &quot;13.6.1&quot;
-if mmp.version and mmp.version ~= newversion then 
+local newversion = &quot;13.6.2&quot;
+if mmp.version and mmp.version ~= newversion then
   if not mmp.game then mmp.echo(&quot;Mapper script updated - Thanks! I don't know what game are you connected to, though - so please reconnect, if you could.&quot;)
   else mmp.echo(&quot;Mapper script updated - thanks! You don't need to restart.&quot;) end
 end
@@ -4143,6 +4143,7 @@ function mmp.startup()
   private_settings[&quot;medallion&quot;] = createOption(false, mmp.setMedallion, { &quot;boolean&quot; }, &quot;Make use of your Medallion in Lusternia&quot;)
   private_settings[&quot;fingerblade&quot;] = createOption(false, mmp.setFingerblade, { &quot;boolean&quot; }, &quot;Make use of your Fingerblade in Lusternia&quot;)
   private_settings[&quot;blossom&quot;] = createOption(false, mmp.setBlossom, { &quot;boolean&quot; }, &quot;Make use of your Flame of dae'Seren in Lusternia&quot;)
+  private_settings[&quot;mandala&quot;] = createOption(false, mmp.setMandala, { &quot;boolean&quot; }, &quot;Make use of your Mandala in Lusternia&quot;)
   private_settings[&quot;belt&quot;] = createOption(false, mmp.setBelt, { &quot;boolean&quot; }, &quot;Make use of your Belt in Lusternia?&quot;)
   private_settings[&quot;cubix&quot;] = createOption(false, mmp.setCubix, { &quot;boolean&quot; }, &quot;Make use of your Cubix in Lusternia&quot;)
   private_settings[&quot;screwdriver&quot;] = createOption(false, mmp.setScrewdriver, { &quot;boolean&quot; }, &quot;Make use of your Screwdriver in Lusternia&quot;)
@@ -4163,6 +4164,7 @@ function mmp.startup()
   private_settings[&quot;toycurio&quot;] = createOption(false, mmp.setToycurio, { &quot;boolean&quot; }, &quot;Make use of your Toy curios in Lusternia&quot;)
   private_settings[&quot;feathercurio&quot;] = createOption(false, mmp.setFeathercurio, { &quot;boolean&quot; }, &quot;Make use of your Feather curios in Lusternia&quot;)
   private_settings[&quot;figurecurio&quot;] = createOption(false, mmp.setFigurecurio, { &quot;boolean&quot; }, &quot;Make use of your Figure curios in Lusternia&quot;)
+  private_settings[&quot;vernalcurio&quot;] = createOption(false, mmp.setVernalcurio, { &quot;boolean&quot; }, &quot;Make use of your Vernal curios in Lusternia&quot;)
 
   private_settings[&quot;prism&quot;] = createOption(false, mmp.setPrism, {&quot;boolean&quot;}, &quot;Make use of your transplanar prism in Lusternia&quot;)
 
@@ -4171,8 +4173,8 @@ function mmp.startup()
 
   mmp.game = false
 
-  mmp.settings.dispOption = function(opt, val) 
-    cecho(&quot;&lt;green&gt;&quot; .. val.use .. &quot;&lt;white&gt; (&quot; ..opt..&quot;) &quot; .. string.rep(&quot; &quot;, 50 - val.use:len() - opt:len()) .. tostring(val.value) .. &quot;\n&quot;) 
+  mmp.settings.dispOption = function(opt, val)
+    cecho(&quot;&lt;green&gt;&quot; .. val.use .. &quot;&lt;white&gt; (&quot; ..opt..&quot;) &quot; .. string.rep(&quot; &quot;, 50 - val.use:len() - opt:len()) .. tostring(val.value) .. &quot;\n&quot;)
   end
 
   mmp.settings.dispDefaultWriteError = function()
@@ -4207,11 +4209,11 @@ end</script>
    return
   end
 
-  local madeduanathar, madeduanatharan, mademedallion, madefingerblade, madeblossom, madebelt, madecubix, madeprism, madescrewdriver, madewheel, mademud, madesnowglobe, madecookie, madehead, madeicicle, madetibia, madebonecurio, madeflowercurio, madetorus, madeutensilcurio, madefluttercurio, madetoolcurio, madefacecurio, madetoycurio, madefeathercurio, madefigurecurio
+  local madeduanathar, madeduanatharan, mademedallion, madefingerblade, madeblossom, madebelt, madecubix, madeprism, madescrewdriver, madewheel, mademud, madesnowglobe, madecookie, madehead, madeicicle, madetibia, madebonecurio, madeflowercurio, madetorus, madeutensilcurio, madefluttercurio, madetoolcurio, madefacecurio, madetoycurio, madefeathercurio, madefigurecurio, mademandala, madevernalcurio
 
   local function getcmd(word)
 		if mmp.game == &quot;achaea&quot; then
-    		return mmp.settings.removewings and 
+    		return mmp.settings.removewings and
       			[[script:sendAll(&quot;wear wings&quot;, &quot;say *]]..(mmp.settings.winglanguage)..[[ ]]..word..[[&quot;, &quot;remove wings&quot;, false)]]
       		or
       			[[script:send(&quot;say *]]..(mmp.settings.winglanguage)..[[ ]]..word..[[&quot;, false)]]
@@ -4236,6 +4238,8 @@ end</script>
 				return [[script:send(&quot;curio collection activate feather&quot;,false)]]
 			elseif word == &quot;figurecurio&quot; then
 				return [[script:send(&quot;curio collection activate figure&quot;,false)]]
+			elseif word == &quot;vernalcurio&quot; then
+				return [[script:send(&quot;curio collection activate vernal&quot;,false)]]
 			else
 				return [[script:send(&quot;touch ]]..word..[[&quot;, false)]]
 			end
@@ -4253,7 +4257,7 @@ end</script>
       mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
       madeduanathar = true
     end
-	elseif mmp.game == &quot;lusternia&quot; and (mmp.settings.medallion or mmp.settings.fingerblade or mmp.settings.blossom or mmp.settings.belt or mmp.settings.cubix or mmp.settings.screwdriver or mmp.settings.wheel or mmp.settings.mud or mmp.settings.snowglobe or mmp.settings.cookie or mmp.settings.head or mmp.settings.icicle or mmp.settings.tibia or mmp.settings.bonecurio or mmp.settings.flowercurio or mmp.settings.torus) and gmcp.Room and (not table.contains(gmcp.Room.Info.details,&quot;indoors&quot;) or table.contains(gmcp.Room.Info.details, &quot;an Aetherbubble&quot;)) then
+	elseif mmp.game == &quot;lusternia&quot; and (mmp.settings.medallion or mmp.settings.fingerblade or mmp.settings.blossom or mmp.settings.mandala or mmp.settings.belt or mmp.settings.cubix or mmp.settings.screwdriver or mmp.settings.wheel or mmp.settings.mud or mmp.settings.snowglobe or mmp.settings.cookie or mmp.settings.head or mmp.settings.icicle or mmp.settings.tibia or mmp.settings.bonecurio or mmp.settings.flowercurio or mmp.settings.torus or mmp.settings.vernalcurio) and gmcp.Room and (not table.contains(gmcp.Room.Info.details,&quot;indoors&quot;) or table.contains(gmcp.Room.Info.details, &quot;an Aetherbubble&quot;)) then
 	if mmp.settings.medallion and mmp.usebix() then
       addSpecialExit(mmp.currentroom, 13367, getcmd(&quot;medallion&quot;))
       mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
@@ -4263,12 +4267,17 @@ end</script>
       addSpecialExit(mmp.currentroom, 18777, getcmd(&quot;fingerblade&quot;))
       mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
       madefingerblade = true
-	end 
+	end
 	if mmp.settings.blossom and mmp.usebix() then
       addSpecialExit(mmp.currentroom, 18730, getcmd(&quot;blossom&quot;))
       mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
       madeblossom = true
-	end 
+	end
+	if mmp.settings.mandala and mmp.usebix() then
+      addSpecialExit(mmp.currentroom, 19563, getcmd(&quot;mandala&quot;))
+      mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
+      mademandala = true
+	end
 	if mmp.settings.belt and mmp.usebix() then
       addSpecialExit(mmp.currentroom, 19627, getcmd(&quot;belt&quot;))
       mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
@@ -4406,6 +4415,11 @@ end</script>
 		mmp.clearpathcache()
 		madeprism = true
 	end
+	if mmp.settings.vernalcurio and mmp.usebix() then
+      addSpecialExit(mmp.currentroom, 29908, getcmd(&quot;vernalcurio&quot;))
+      mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
+      madefigurecurio = true
+	end
   end
 
   -- if getPath worked, then the dirs and room #'s tables were populated for us
@@ -4419,7 +4433,8 @@ end</script>
     if madeduanatharan then mmp.clearspecials{4882, 3885} elseif madeduanathar then mmp.clearspecials{3885} end
   	 if mademedallion then mmp.clearspecials{13367} end
   	 if madefingerblade then mmp.clearspecials{18777} end
-    if madeblossom then mmp.clearspecials{18730} end
+     if madeblossom then mmp.clearspecials{18730} end
+  	 if mademandala then mmp.clearspecials{19563} end
   	 if madebelt then mmp.clearspecials{19627} end
  	 if madecubix then mmp.clearspecials{6184} end
   	 if madescrewdriver then mmp.clearspecials{6831, 10185} end
@@ -4441,6 +4456,7 @@ end</script>
  	 if madefeathercurio then mmp.clearspecials{28591} end
  	 if madefigurecurio then mmp.clearspecials{28312} end
      if madeprism then mmp.clearspecials{6182} end
+ 	 if madevernalcurio then mmp.clearspecials{22908} end
     return
   end
 
@@ -4449,6 +4465,7 @@ end</script>
   if mademedallion then mmp.clearspecials{13367} end
   if madefingerblade then mmp.clearspecials{18777} end
   if madeblossom then mmp.clearspecials{18730} end
+  if mademandala then mmp.clearspecials{19563} end
   if madebelt then mmp.clearspecials{19627} end
   if madecubix then mmp.clearspecials{6184} end
   if madescrewdriver then mmp.clearspecials{6831, 10185} end
@@ -4470,6 +4487,7 @@ end</script>
   if madefeathercurio then mmp.clearspecials{28591} end
   if madefigurecurio then mmp.clearspecials{28312} end
   if madeprism then mmp.clearspecials{6182} end
+  if madevernalcurio then mmp.clearspecials{22908} end
 end
 
 function mmp.gotoArea (where, number, dashtype, exact)
@@ -4565,7 +4583,7 @@ setmetatable(getpathcache, {__mode = &quot;kv&quot;}) -- weak keys/values = it'l
 
 function mmp.getPath(from, to)
   assert(tonumber(from) and tonumber(to), &quot;mmp.getPath: both from and to have to be room IDs&quot;)
- 
+
   local key = string.format(&quot;%s_%s&quot;, from, to)
   local resulttbl = getpathcache[key]
 
@@ -4607,16 +4625,16 @@ function mmp.move()
   else
     cmd = mmp.speedWalkDir[speedWalkCounter]
   end
-  
+
   cmd = cmd or ''
 
   -- timeout before loadstring, so it can set its own if it would like to.
   mmp.setmovetimer()
 
-  if string.starts(cmd, &quot;script:&quot;) then 
+  if string.starts(cmd, &quot;script:&quot;) then
     cmd = string.gsub( cmd, &quot;script:&quot;, &quot;&quot; ) loadstring(cmd)()
     if mmp.settings.showcmds then cecho(string.format(&quot;&lt;red&gt;(&lt;maroon&gt;%d - &lt;dark_slate_grey&gt;%s&lt;red&gt;)&quot;, #mmp.speedWalkDir - speedWalkCounter + 1, &quot;&lt;script&gt;&quot;)) end
-  else 
+  else
     send(cmd, false)
     if mmp.settings.showcmds then cecho(string.format(&quot;&lt;red&gt;(&lt;maroon&gt;%d - &lt;dark_slate_grey&gt;%s&lt;red&gt;)&quot;, #mmp.speedWalkDir - speedWalkCounter + 1, cmd)) end
   end
@@ -4941,7 +4959,7 @@ end
 
 function mmp.usebix()
 	if mmp.game ~= &quot;lusternia&quot; then return end
-	
+
 	if (table.contains(gmcp.Room.Info.details, &quot;the Prime Material Plane&quot;) or
 		table.contains(gmcp.Room.Info.details, &quot;the Ethereal Plane&quot;) or
 		table.contains(gmcp.Room.Info.details, &quot;the Water Elemental Plane&quot;) or
@@ -4974,7 +4992,7 @@ function mmp.useprism()
 end
 function mmp.usebubblix()
 	if mmp.game ~= &quot;lusternia&quot; then return end
-	
+
 	if ((table.contains(gmcp.Room.Info.details, &quot;the Prime Material Plane&quot;) or
 		table.contains(gmcp.Room.Info.details, &quot;the Ethereal Plane&quot;) or
 		table.contains(gmcp.Room.Info.details, &quot;the Water Elemental Plane&quot;) or
@@ -4982,7 +5000,7 @@ function mmp.usebubblix()
 		table.contains(gmcp.Room.Info.details, &quot;the Fire Elemental Plane&quot;) or
 		table.contains(gmcp.Room.Info.details, &quot;the Earth Elemental Plane&quot;)) and
 		table.contains(gmcp.Room.Info.details, &quot;outdoors&quot;)) or
-		table.contains(gmcp.Room.Info.details, &quot;an Aetherbubble&quot;) then		
+		table.contains(gmcp.Room.Info.details, &quot;an Aetherbubble&quot;) then
 		return true
 	end
 	return false
@@ -5804,6 +5822,14 @@ function mmp.setBlossom()
   if mmp.settings.blossom then mmp.echo(&quot;Okay, will see about using the Flame whenever it's quicker&quot;)
   else mmp.echo(&quot;Won't use the Flame anymore.&quot;) end
 end
+
+function mmp.setMandala()
+  mmp.clearpathcache() -- clear the cache so it'll use wings or will stop using wings
+
+  if mmp.settings.mandala then mmp.echo(&quot;Okay, will see about using Mandala whenever it's quicker&quot;)
+  else mmp.echo(&quot;Won't use Mandala anymore.&quot;) end
+end
+
 function mmp.setBelt()
   mmp.clearpathcache() -- clear the cache so it'll use wings or will stop using wings
 
@@ -5947,6 +5973,13 @@ function mmp.setFigurecurio()
 
   if mmp.settings.figurecurio then mmp.echo(&quot;Okay, will see about using Figure Curio collection whenever it's quicker&quot;)
   else mmp.echo(&quot;Won't use Figure Curio collection anymore.&quot;) end
+end
+
+function mmp.setVernalcurio()
+  mmp.clearpathcache() -- clear the cache so it'll use wings or will stop using wings
+
+  if mmp.settings.vernalcurio then mmp.echo(&quot;Okay, will see about using Vernal Curio collection whenever it's quicker&quot;)
+  else mmp.echo(&quot;Won't use Vernal Curio collection anymore.&quot;) end
 end</script>
                     <eventHandlerList/>
                 </Script>
@@ -6107,7 +6140,7 @@ function mmp.removecontinent(area, continent)
 
   if not next(continents) then return nil, &quot;no continents are known&quot; end
   if not continents[continent] then return nil, &quot;no such continent is recorded&quot; end
- 
+
 end
 
 function mmp.indexof_valueonly(data, value)
@@ -6125,7 +6158,7 @@ function mmp.oncontinent(areaid, continent)
 
   local continents = yajl.to_value(tmp)
   if not continents[continent] then return end
-  
+
   return mmp.indexof_valueonly(continents[continent], areaid)
 end
 
@@ -6231,8 +6264,8 @@ end</script>
 
     -- actions we can do. This will be a short menu of sorts for actions
     mmp.echo(&quot;Stuff you can do:&quot;)
-    echo&quot;  &quot; echo(&quot;Clear all labels &quot;) setUnderline(true) echoLink(&quot;(in area)&quot;, 'mmp.clearLabels('..areanum..')', '', true) setUnderline(false) 
-    echo&quot; &quot; setUnderline(true) 
+    echo&quot;  &quot; echo(&quot;Clear all labels &quot;) setUnderline(true) echoLink(&quot;(in area)&quot;, 'mmp.clearLabels('..areanum..')', '', true) setUnderline(false)
+    echo&quot; &quot; setUnderline(true)
     echoLink(&quot;(whole map)&quot;, [[
     if not mmp.clearinglabels then
       mmp.echo(&quot;Are you sure you want to clear all of your labels on this map? If yes, click the link again.&quot;)
@@ -6252,7 +6285,7 @@ end</script>
       mmp.checkforupdate()
     ]], &quot;Re-download the map regardless if you have latest&quot;, true)
     setUnderline(false)
-    echo&quot;\n&quot;	
+    echo&quot;\n&quot;
   end
 
   -- see if we can do anything with the name
@@ -6296,7 +6329,7 @@ end</script>
     if not mmp.roomexists(mmp.currentroom) then
       mmp.echo(mmp.currentroom.. &quot; doesn't seem to be mapped yet.&quot;)
       mmp.echo(&quot;Stuff you can do:&quot;)
-      echo&quot;  &quot; echoLink(&quot;Check for all updates&quot;, 'mmp.echo(&quot;Checking...&quot;) mmp.checkforupdate()', '') 
+      echo&quot;  &quot; echoLink(&quot;Check for all updates&quot;, 'mmp.echo(&quot;Checking...&quot;) mmp.checkforupdate()', '')
       echo&quot; &quot; echoLink(&quot;(force map)&quot;, [[
       local s,m = os.remove(getMudletHomeDir()..&quot;/map downloads/current&quot;)
         if io.exists(getMudletHomeDir()..&quot;/map downloads/current&quot;) then
@@ -6797,7 +6830,7 @@ local s,m = xpcall(function ()
               s = s .. (#s &gt; 0 and &quot; &quot; or &quot;&quot;) .. &quot;Added missing exit &quot;..exit..&quot; to &quot;..(getRoomName(id) ~= &quot;&quot; and getRoomName(id) or &quot;''&quot;)..&quot; (&quot;..id..&quot;).&quot;
             else
               s = s .. (#s &gt; 0 and &quot; &quot; or &quot;&quot;) .. string.format(&quot;Failed to link %d withh %d via %s exit for some reason :/&quot;, num, id, exit)
-            end            
+            end
           end
         end
       end
@@ -6981,7 +7014,7 @@ end</script>
                         <packageName></packageName>
                         <script>-- track whenever we need to use wings when we get outside!
 function mmapper_achaea_went_outside()
-  if not mmp.autowalking or not (mmp.settings.duanathar or mmp.settings.duanatharan) or mmp.game ~= &quot;achaea&quot; or 
+  if not mmp.autowalking or not (mmp.settings.duanathar or mmp.settings.duanatharan) or mmp.game ~= &quot;achaea&quot; or
     (mmp.currentroom == mmp.speedWalkPath[#mmp.speedWalkPath]) or
     not mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Prime&quot;) then return end
 
@@ -6989,7 +7022,7 @@ function mmapper_achaea_went_outside()
   local madeduanatharan, madeduanathar
 
   local function getcmd(word)
-    return mmp.settings.removewings and 
+    return mmp.settings.removewings and
       [[script:sendAll(&quot;wear wings&quot;, &quot;say *]]..(mmp.settings.winglanguage)..[[ ]]..word..[[&quot;, &quot;remove wings&quot;, false)]]
       or
       [[script:send(&quot;say *]]..(mmp.settings.winglanguage)..[[ ]]..word..[[&quot;, false)]]
@@ -7007,7 +7040,7 @@ function mmapper_achaea_went_outside()
     end
 
   mmp.getPath(mmp.currentroom, mmp.speedWalkPath[#mmp.speedWalkPath]) -- don't need to check return value since that fact shouldnt've changed
-  
+
   -- if our path didn't change, re-instate it as it was (since the new path starts from this room that we checked at)
   if speedWalkDir[1]:find(&quot;duanathar&quot;, 1, true) then
     speedWalkCounter = 0
@@ -7173,12 +7206,12 @@ end</script>
                         <name>mmapper_lusternia_went_outside</name>
                         <packageName></packageName>
                         <script>function mmapper_lusternia_went_outside()
-  -- track whenever we need to use items when we get outside!	
-  if not mmp.autowalking or not (mmp.settings.medallion or mmp.settings.fingerblade or mmp.settings.blossom or mmp.settings.belt or mmp.settings.cubix or mmp.settings.screwdriver or mmp.settings.wheel or mmp.settings.mud or mmp.settings.snowglobe or mmp.settings.cookie or mmp.settings.head or mmp.settings.icicle or mmp.settings.tibia or mmp.settings.bonecurio or mmp.settings.flowercurio or mmp.settings.torus or mmp.settings.utensilcurio or mmp.settings.fluttercurio or mmp.settings.toolcurio or mmp.settings.facecurio or mmp.settings.toycurio or mmp.settings.feathercurio or mmp.settings.figurecurio) or mmp.game ~= &quot;lusternia&quot; or 
+  -- track whenever we need to use items when we get outside!
+  if not mmp.autowalking or not (mmp.settings.medallion or mmp.settings.fingerblade or mmp.settings.blossom or mmp.settings.belt or mmp.settings.cubix or mmp.settings.screwdriver or mmp.settings.wheel or mmp.settings.mud or mmp.settings.snowglobe or mmp.settings.cookie or mmp.settings.head or mmp.settings.icicle or mmp.settings.tibia or mmp.settings.bonecurio or mmp.settings.flowercurio or mmp.settings.torus or mmp.settings.utensilcurio or mmp.settings.fluttercurio or mmp.settings.toolcurio or mmp.settings.facecurio or mmp.settings.toycurio or mmp.settings.mandala or mmp.settings.feathercurio or mmp.settings.figurecurio or mmp.settings.vernalcurio) or mmp.game ~= &quot;lusternia&quot; or
     (mmp.currentroom == mmp.speedWalkPath[#mmp.speedWalkPath]) then return end
 
   -- repath, maybe that'll allow us to use wings now.
-  local mademedallion, madefingerblade, madeblossom, madebelt, madeprism, madecubix, madescrewdriver, madewheel, mademud, madesnowglobe, madehead, madecookie, madeicicle, madetibia, madebonecurio, madeflowercurio, madetorus, madeutensilcurio, madefluttercurio, madetoolcurio, madefacecurio, madetoycurio, madefeathercurio, madefigurecurio
+  local mademedallion, madefingerblade, madeblossom, madebelt, madeprism, madecubix, madescrewdriver, madewheel, mademud, madesnowglobe, madehead, madecookie, madeicicle, madetibia, madebonecurio, madeflowercurio, madetorus, madeutensilcurio, madefluttercurio, madetoolcurio, madefacecurio, madetoycurio, madefeathercurio, madefigurecurio, mademandala, madevernalcurio
 
   local function getcmd(item)
 		if item == &quot;snowglobe&quot; then
@@ -7201,6 +7234,8 @@ end</script>
 			return [[script:send(&quot;curio collection activate feather&quot;,false)]]
 		elseif word == &quot;figurecurio&quot; then
 			return [[script:send(&quot;curio collection activate figure&quot;,false)]]
+		elseif word == &quot;vernalcurio&quot; then
+			return [[script:send(&quot;curio collection activate vernal&quot;,false)]]
 		else
 			return [[script:send(&quot;touch ]]..(item)..[[&quot;, false)]]
 		end
@@ -7215,12 +7250,17 @@ end</script>
       addSpecialExit(mmp.currentroom, 18777, getcmd(&quot;fingerblade&quot;))
       mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
       madefingerblade = true
-	end 
+	end
 	if mmp.settings.blossom and mmp.usebix() then
       addSpecialExit(mmp.currentroom, 18730, getcmd(&quot;blossom&quot;))
       mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
       madeblossom = true
-	end 
+	end
+	if mmp.settings.mandala and mmp.usebix() then
+      addSpecialExit(mmp.currentroom, 19563, getcmd(&quot;mandala&quot;))
+      mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
+      mademandala = true
+	end
 	if mmp.settings.belt and mmp.usebix() then
       addSpecialExit(mmp.currentroom, 19627, getcmd(&quot;belt&quot;))
       mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
@@ -7358,11 +7398,16 @@ end</script>
 		mmp.clearpathcache()
 		madeprism = true
 	end
+	if mmp.settings.vernalcurio and mmp.usebix() then
+      addSpecialExit(mmp.currentroom, 29908, getcmd(&quot;vernalcurio&quot;))
+      mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
+      madeverbalcurio = true
+	end
 
   mmp.getPath(mmp.currentroom, mmp.speedWalkPath[#mmp.speedWalkPath]) -- don't need to check return value since that fact shouldnt've changed
-  
+
   -- if our path didn't change, re-instate it as it was (since the new path starts from this room that we checked at)
-  if speedWalkDir[1]:find(&quot;medallion&quot;,1,true) or speedWalkDir[1]:find(&quot;fingerblade&quot;,1,true) or speedWalkDir[1]:find(&quot;blossom&quot;,1,true) or speedWalkDir[1]:find(&quot;belt&quot;) or speedWalkDir[1]:find(&quot;cubix&quot;) or speedWalkDir[1]:find(&quot;bonecurio&quot;,1,true) or speedWalkDir[1]:find(&quot;flowercurio&quot;,1,true) or speedWalkDir[1]:find(&quot;torus&quot;,1,true) or speedWalkDir[1]:find(&quot;utensilcurio&quot;,1,true) or speedWalkDir[1]:find(&quot;fluttercurio&quot;,1,true) or speedWalkDir[1]:find(&quot;toolcurio&quot;,1,true) or speedWalkDir[1]:find(&quot;facecurio&quot;,1,true) or speedWalkDir[1]:find(&quot;toycurio&quot;,1,true) or speedWalkDir[1]:find(&quot;feathercurio&quot;,1,true) or speedWalkDir[1]:find(&quot;figurecurio&quot;,1,true) or speedWalkDir[1]:find(&quot;prism&quot;,1,true) then
+  if speedWalkDir[1]:find(&quot;medallion&quot;,1,true) or speedWalkDir[1]:find(&quot;fingerblade&quot;,1,true) or speedWalkDir[1]:find(&quot;blossom&quot;,1,true) or speedWalkDir[1]:find(&quot;belt&quot;) or speedWalkDir[1]:find(&quot;cubix&quot;) or speedWalkDir[1]:find(&quot;bonecurio&quot;,1,true) or speedWalkDir[1]:find(&quot;flowercurio&quot;,1,true) or speedWalkDir[1]:find(&quot;torus&quot;,1,true) or speedWalkDir[1]:find(&quot;utensilcurio&quot;,1,true) or speedWalkDir[1]:find(&quot;fluttercurio&quot;,1,true) or speedWalkDir[1]:find(&quot;toolcurio&quot;,1,true) or speedWalkDir[1]:find(&quot;facecurio&quot;,1,true) or speedWalkDir[1]:find(&quot;toycurio&quot;,1,true) or speedWalkDir[1]:find(&quot;feathercurio&quot;,1,true) or speedWalkDir[1]:find(&quot;mandala&quot;,1,true) or speedWalkDir[1]:find(&quot;figurecurio&quot;,1,true) or speedWalkDir[1]:find(&quot;prism&quot;,1,true) or speedWalkDir[1]:find(&quot;vernalcurio&quot;,1,true) then
     speedWalkCounter = 0
     mmp.echo(&quot;We got outside - going to shortcut with 'bix device.&quot;)
     mmp.gotoRoom(mmp.speedWalkPath[#mmp.speedWalkPath])
@@ -7393,6 +7438,8 @@ end</script>
   if madefeathercurio then mmp.clearspecials{28591} end
   if madefigurecurio then mmp.clearspecials{28312} end
   if madeprism then mmp.clearspecials{6182} end
+  if madevernalcurio then mmp.clearspecials{29908} end
+  if mademandala then mmp.clearspecials{19563} end
 end
 </script>
                         <eventHandlerList>
@@ -7696,7 +7743,7 @@ end</script>
 
     local f, s = io.open(filename)
     if f then s = f:read(&quot;*l&quot;):trim(); io.close(f) end
-    
+
     if s ~= tostring(mmp.version) then
       mmp.newmapperversion = s
       mmp.retrievechangelog()
@@ -7768,12 +7815,12 @@ end</script>
       end
 
       if mmp.settings.waterwalk then mmp.enableWaterWalk() else mmp.disableWaterWalk() end
-      
+
       mmp.echo(&quot;Map loaded fine - enjoy!&quot;)
 
       tmp = getRoomUserData(1, &quot;gotoMapping&quot;)
       local newmaptable = {}
-      
+
       if tmp ~= &quot;&quot; then
         newmaptable = yajl.to_value(tmp)
       end
@@ -7802,11 +7849,11 @@ end</script>
         end
 
         if mmp.settings.waterwalk then mmp.enableWaterWalk() else mmp.disableWaterWalk() end
-        
+
         mmp.echo(&quot;Map loaded successfully!&quot;)
 
           tmp = getRoomUserData(1, &quot;gotoMapping&quot;)
-          local newmaptable = {}      
+          local newmaptable = {}
           if tmp ~= &quot;&quot; then
             newmaptable = yajl.to_value(tmp)
           end
@@ -7815,7 +7862,7 @@ end</script>
           mmp.echo(&quot;Marks from the old map migrated successfully.&quot;)
           raiseEvent(&quot;mmapper updated map&quot;)
         else mmp.echo(&quot;Nope, didn't work. Open the map and try again?&quot;) end
-      ]], 
+      ]],
       &quot;Click here to try loading the map again&quot;)
       echo(&quot; to try loading it in again.\n&quot;)
     end
