@@ -4108,7 +4108,7 @@ mmp.speedWalkPath = mmp.speedWalkPath or {}
 mmp.speedWalkDir = mmp.speedWalkDir or {}
 
 
-local newversion = &quot;13.6.2&quot;
+local newversion = &quot;13.6.3&quot;
 if mmp.version and mmp.version ~= newversion then
   if not mmp.game then mmp.echo(&quot;Mapper script updated - Thanks! I don't know what game are you connected to, though - so please reconnect, if you could.&quot;)
   else mmp.echo(&quot;Mapper script updated - thanks! You don't need to restart.&quot;) end
@@ -4125,7 +4125,7 @@ function mmp.startup()
   private_settings[&quot;gallop&quot;] = createOption(false, mmp.changeBoolFunc, { &quot;boolean&quot; }, &quot;Use Gallop?&quot;)
   private_settings[&quot;sprint&quot;] = createOption(false, mmp.changeBoolFunc, { &quot;boolean&quot; }, &quot;Use Sprint?&quot;)
   private_settings[&quot;runaway&quot;] = createOption(false, mmp.changeBoolFunc, { &quot;boolean&quot; }, &quot;Use Jester Runaway?&quot;)
-  private_settings[&quot;updatemap&quot;] = createOption(true, mmp.changeUpdateMap, { &quot;boolean&quot; }, &quot;Check for new maps?&quot;)
+  private_settings[&quot;updatemap&quot;] = createOption(true, mmp.changeUpdateMap, { &quot;boolean&quot; }, &quot;Check for new maps from your MUD?&quot;)
   private_settings[&quot;lockpathways&quot;] = createOption(true, mmp.lockPathways, { &quot;boolean&quot; }, &quot;Lock pathway exits?&quot;)
   private_settings[&quot;lockwormholes&quot;] = createOption(true, mmp.lockWormholes, { &quot;boolean&quot; }, &quot;Lock all wormholes?&quot;)
   private_settings[&quot;locksewers&quot;] = createOption(false, mmp.lockSewers, { &quot;boolean&quot; }, &quot;Lock all sewers?&quot;)
@@ -7942,7 +7942,7 @@ function mmp.checkforupdate()
 
     if mmp.settings.crowdmap and mmp.game and mmp.game == &quot;achaea&quot; then
       downloadFile(mmp.mapfile, &quot;http://dl.dropboxusercontent.com/s/iqk5bf905iox0k9/version.txt?dl=1&quot;)
-    else
+    elseif mmp.settings.updatemap then
       downloadFile(mmp.mapfile, &quot;http://www.&quot;..game..&quot;.com/maps/MD5SUM&quot;)
     end
 
@@ -8045,19 +8045,17 @@ end</script>
                         <name>mmp_checkupdatestart</name>
                         <packageName></packageName>
                         <script>function mmp_checkupdatestart(...)
-  if mmp.settings.updatemap then
-    if mmp.checkforupdatetimer then killTimer(mmp.checkforupdatetimer) end
-    mmp.checkforupdatetimer = tempTimer(math.random(3, 10), mmp.checkforupdate)
-  end
+  if mmp.checkforupdatetimer then killTimer(mmp.checkforupdatetimer) end
+  mmp.checkforupdatetimer = tempTimer(math.random(3, 10), mmp.checkforupdate)
 end
 
 function mmp.changeUpdateMap()
   if mmp.settings.updatemap then
-    mmp.echo(&quot;Will check for new map updates.&quot;)
+    mmp.echo(&quot;Will check for new map updates from your MUD.&quot;)
     enableTimer&quot;Check for updates periodically&quot;
     mmp_checkupdatestart()
   else
-    mmp.echo(&quot;Won't check for new map updates.&quot;)
+    mmp.echo(&quot;Won't check for new map updates from your MUD.&quot;)
     disableTimer&quot;Check for updates periodically&quot;
 	if mmp.checkforupdatetimer then killTimer(&quot;mmp.checkforupdatetimer&quot;) end
   end
