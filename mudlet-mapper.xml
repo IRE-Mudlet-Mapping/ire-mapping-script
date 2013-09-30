@@ -4155,7 +4155,7 @@ mmp.speedWalkPath = mmp.speedWalkPath or {}
 mmp.speedWalkDir = mmp.speedWalkDir or {}
 
 
-local newversion = &quot;13.9.2&quot;
+local newversion = &quot;13.9.3&quot;
 if mmp.version and mmp.version ~= newversion then
   if not mmp.game then mmp.echo(&quot;Mapper script updated - Thanks! I don't know what game are you connected to, though - so please reconnect, if you could.&quot;)
   else mmp.echo(&quot;Mapper script updated - thanks! You don't need to restart.&quot;) end
@@ -4626,7 +4626,7 @@ end
 
 --- DOES NOT ACCOUNT FOR CHANGING THE MAP YET (within a profile load), because we don't know when it happens
 local getpathcache = {}
-setmetatable(getpathcache, {__mode = &quot;kv&quot;}) -- weak keys/values = it'll periodically get cleaned up by gc
+--setmetatable(getpathcache, {__mode = &quot;kv&quot;}) -- weak keys/values = it'll periodically get cleaned up by gc
 
 function mmp.getPath(from, to)
   assert(tonumber(from) and tonumber(to), &quot;mmp.getPath: both from and to have to be room IDs&quot;)
@@ -4636,7 +4636,10 @@ function mmp.getPath(from, to)
 
   -- not in cache?
   if not resulttbl then
+    mmp.computeGetPath = mmp.computeGetPath or createStopWatch()
+    startStopWatch(mmp.computeGetPath)
     local boolean = getPath(from, to)
+    if mmp.debug then mmp.echo(&quot;getPath() from &quot;..from..&quot; to &quot;..to..&quot; took &quot;..stopStopWatch(mmp.computeGetPath)..&quot;s.&quot;) end
     -- save it into the cache &amp; send away
     getpathcache[key] = {boolean, speedWalkDir, speedWalkPath}
     return boolean
@@ -4648,7 +4651,10 @@ function mmp.getPath(from, to)
   return resulttbl[1]
 end
 
-function mmp.clearpathcache() getpathcache = {} end
+function mmp.clearpathcache()
+  if mmp.debug then mmp.echo(&quot;path cache cleared&quot;) end
+  getpathcache = {}
+end
 function mmp.showpathcache() return getpathcache end
 
 function mmp.setmovetimer(time)
@@ -5515,27 +5521,42 @@ function mmp.roomArea(otherroom, name, exact)
 end
 
 function mmp.getAreaBorders(areaid)
+	if mmp.debug then
+		mmp.getAreaBordersTimer = mmp.getAreaBordersTimer or createStopWatch()
+		startStopWatch(mmp.getAreaBordersTimer)
+	end
+
     local roomlist, endresult = getAreaRooms(areaid), {}
     -- sometimes getAreaRooms can give us no result :(
     if not roomlist then mmp.echo(&quot;Sorry, seems we can't go there - getAreaRooms(&quot;..areaid..&quot;) didn't give us any results (Mudlet problem - redownloading the map might help fix it)&quot;) return end
 
 	local getRoomExits, getRoomName, getSpecialExitsSwap, contains, pairs = getRoomExits, getRoomName, getSpecialExitsSwap, table.contains, pairs
 
+    -- make a key-value list of room IDs
+    local reverselist = {}
+    for i = 0, #roomlist do reverselist[roomlist[i]] = true end
+
     -- obtain a room list for each of the room IDs we got
-    for _, id in pairs(roomlist) do
+    --for _, id in pairs(roomlist) do
+    for i = 0, #roomlist do
+      local id = roomlist[i]
       local exits = getRoomExits(id)
       for _, to in pairs(exits) do
-        if not contains(roomlist, to) then
+        if not reverselist[to] then
           endresult[id] = getRoomName(id)
         end
       end
       local specialexits = getSpecialExitsSwap(id)
       for _, to in pairs(specialexits) do
-        if not contains(roomlist, to) then
+        if not reverselist[to] then
           endresult[id] = getRoomName(id)
         end
       end
     end
+
+	if mmp.debug then
+		mmp.echo(&quot;mmp.getAreaBordersTimer() on areaid &quot;..areaid..&quot; took &quot;..stopStopWatch(mmp.getAreaBordersTimer)..&quot;s to run. Returned &quot;..table.size(endresult)..&quot; results.&quot;)
+	end
 
     return endresult
 end
