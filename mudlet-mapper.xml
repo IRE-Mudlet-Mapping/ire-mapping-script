@@ -227,9 +227,10 @@ local alertness = mmp.alertness
 
 local roomexists, getRoomName, anytolong, matches, deleteLine = mmp.roomexists, getRoomName, mmp.anytolong, matches, deleteLine
 for k, v in pairs (gmcp.Room.Info.exits) do
-  if roomexists(v) and matches[3]:lower() == getRoomName(v):lower() and mmp.anytolong(k) then
-    alertness[mmp.anytolong(k)] = alertness[mmp.anytolong(k)] or {}
-    alertness[mmp.anytolong(k)][#alertness[mmp.anytolong(k)]+1] = matches[2]
+  local longexitname = mmp.anytolong(k)
+  if roomexists(v) and matches[3]:lower() == getRoomName(v):lower() and longexitname then
+    alertness[longexitname] = alertness[longexitname] or {}
+    alertness[longexitname][#alertness[longexitname]+1] = matches[2]
     deleteLine()
   end
 end
@@ -686,7 +687,7 @@ raiseEvent(&quot;mmapper updated pdb&quot;)</script>
                 </Trigger>
                 <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="yes" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
                     <name>Elementalism scry</name>
-                    <script>mmp.locateAndEcho(multimatches[2][2])</script>
+                    <script>mmp.locateAndEcho(multimatches[2][3], multimatches[2][2])</script>
                     <triggerType>0</triggerType>
                     <conditonLineDelta>0</conditonLineDelta>
                     <mStayOpen>0</mStayOpen>
@@ -699,7 +700,7 @@ raiseEvent(&quot;mmapper updated pdb&quot;)</script>
                     <colorTriggerBgColor>#000000</colorTriggerBgColor>
                     <regexCodeList>
                         <string>You create a pool of water in the air in front of you, and look through it, sensing</string>
-                        <string>You create a pool of water in the air in front of you, and look through it, sensing \w+ at (.+)\.$</string>
+                        <string>You create a pool of water in the air in front of you, and look through it, sensing (\w+) at (.+)\.$</string>
                     </regexCodeList>
                     <regexCodePropertyList>
                         <integer>2</integer>
@@ -2787,6 +2788,11 @@ elseif command:ends(&quot;glide&quot;) then
   where = where:sub(1, -7)
 end
 
+if mmp.debug then
+  mmp.gotoPerf = mmp.gotoPerf or createStopWatch()
+  startStopWatch(mmp.gotoPerf)
+end
+
 -- goto room ID
 if tonumber(where) then
 	mmp.gotoRoom(where, gallop)
@@ -2798,6 +2804,10 @@ else
     else
         mmp.gotoArea(where, nil, gallop)
     end
+end
+
+if mmp.debug then
+  mmp.echo(&quot;goto alias took &quot;..stopStopWatch(mmp.gotoPerf)..&quot;s to run.&quot;)
 end</script>
                 <command></command>
                 <packageName></packageName>
@@ -3990,6 +4000,19 @@ mmp.echo(&quot;Done!&quot;)</script>
                 <packageName></packageName>
                 <regex>^make maps$</regex>
             </Alias>
+            <Alias isActive="yes" isFolder="no">
+                <name>Set debug mode</name>
+                <script>if matches[2] == &quot;on&quot; then
+  mmp.debug = true
+else
+  mmp.debug = false
+end
+
+mmp.echo(&quot;Debug &amp; performance telemetry &quot;..(mmp.debug and &quot;enabled&quot; or &quot;disabled&quot;)..&quot;.&quot;)</script>
+                <command></command>
+                <packageName></packageName>
+                <regex>^(?:mdg|mdebug) (on|off)$</regex>
+            </Alias>
         </AliasGroup>
     </AliasPackage>
     <ActionPackage/>
@@ -4155,7 +4178,7 @@ mmp.speedWalkPath = mmp.speedWalkPath or {}
 mmp.speedWalkDir = mmp.speedWalkDir or {}
 
 
-local newversion = &quot;13.10.1&quot;
+local newversion = &quot;13.11.1&quot;
 if mmp.version and mmp.version ~= newversion then
   if not mmp.game then mmp.echo(&quot;Mapper script updated - Thanks! I don't know what game are you connected to, though - so please reconnect, if you could.&quot;)
   else mmp.echo(&quot;Mapper script updated - thanks! You don't need to restart.&quot;) end
@@ -4639,7 +4662,7 @@ function mmp.getPath(from, to)
     mmp.computeGetPath = mmp.computeGetPath or createStopWatch()
     startStopWatch(mmp.computeGetPath)
     local boolean = getPath(from, to)
-    if mmp.debug then mmp.echo(&quot;getPath() from &quot;..from..&quot; to &quot;..to..&quot; took &quot;..stopStopWatch(mmp.computeGetPath)..&quot;s.&quot;) end
+    if mmp.debug then mmp.echo(&quot;a new getPath() from &quot;..from..&quot; to &quot;..to..&quot; took &quot;..stopStopWatch(mmp.computeGetPath)..&quot;s.&quot;) end
     -- save it into the cache &amp; send away
     getpathcache[key] = {boolean, speedWalkDir, speedWalkPath}
     return boolean
@@ -7131,8 +7154,10 @@ end</script>
 
   mmp.envids =
   {
+    Catacombs                   = 14,
     [&quot;Constructed underground&quot;] = 2,
     [&quot;Deep Ocean&quot;]              = 24,
+    [&quot;Deep Ocean floor&quot;]        = 30,
     [&quot;Dwarven city&quot;]            = 18,
     [&quot;Magma Caves&quot;]             = 31,
     [&quot;Natural underground&quot;]     = 3,
@@ -7157,6 +7182,7 @@ end</script>
     Road                        = 12,
     Ruins                       = 32,
     Sewer                       = 23,
+    Skies                       = 10,
     Swamp                       = 15,
     Trees                       = 28,
     Tundra                      = 16,
