@@ -235,10 +235,7 @@ for k, v in pairs (gmcp.Room.Info.exits) do
   end
 end
 
-local currentroomname = mmp.currentroomname
-if string.ends(currentroomname, &quot; (road)&quot;) then
-  currentroomname = string.sub(currentroomname, 1, (#currentroomname-7))
-end
+local currentroomname = mmp.cleanroomname(mmp.currentroomname)
 
 if matches[3] == currentroomname then
   alertness.here = alertness.here or {}
@@ -1259,6 +1256,26 @@ raiseEvent(&quot;mmapper updated pdb&quot;)</script>
                     </regexCodeList>
                     <regexCodePropertyList>
                         <integer>2</integer>
+                        <integer>1</integer>
+                    </regexCodePropertyList>
+                </Trigger>
+                <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+                    <name>Polished skull locater</name>
+                    <script>mmp.locateAndEcho(matches[2])</script>
+                    <triggerType>0</triggerType>
+                    <conditonLineDelta>0</conditonLineDelta>
+                    <mStayOpen>0</mStayOpen>
+                    <mCommand></mCommand>
+                    <packageName></packageName>
+                    <mFgColor>#ff0000</mFgColor>
+                    <mBgColor>#ffff00</mBgColor>
+                    <mSoundFile></mSoundFile>
+                    <colorTriggerFgColor>#000000</colorTriggerFgColor>
+                    <colorTriggerBgColor>#000000</colorTriggerBgColor>
+                    <regexCodeList>
+                        <string>^An image of (.*) appears in your mind\.$</string>
+                    </regexCodeList>
+                    <regexCodePropertyList>
                         <integer>1</integer>
                     </regexCodePropertyList>
                 </Trigger>
@@ -6428,6 +6445,35 @@ end
 -- returns the area name of a room or ?
 function mmp.getAreaName(roomid)
    return mmp.areatabler[getRoomArea(roomid)] or '?'
+end
+
+-- removes extra prefixes and suffixes that are not part of the actual room name
+function mmp.cleanroomname(roomname)
+  local starts, ends = string.starts, string.ends
+
+  if starts(roomname, &quot;Flying above &quot;) then
+    roomname = string.sub(roomname, -(#roomname-13))
+  end
+  if starts(roomname, &quot;In the trees above &quot;) then
+    roomname = string.sub(roomname, -(#roomname-13))
+  end
+  if starts(roomname, &quot;The ruins of &quot;) then
+    roomname = string.sub(roomname, -(#roomname-13))
+  end
+  if ends(roomname, &quot; (road)&quot;) then
+    roomname = string.sub(roomname, 1, (#roomname-7))
+  end
+  if ends(roomname, &quot; (indoors)&quot;) then
+    roomname = string.sub(roomname, 1, (#roomname-10))
+  end
+  if ends(roomname, &quot;.&quot;) then
+    roomname = string.sub(roomname, 1, (#roomname-1))
+  end
+  if ends(roomname, &quot; (indoor road)&quot;) then
+    roomname = string.sub(roomname, 1, (#roomname-14))
+  end
+
+  return roomname
 end</script>
                     <eventHandlerList/>
                 </Script>
@@ -6997,26 +7043,8 @@ local s,m = xpcall(function ()
 
   -- if we created it, and some data could be filled in
   if mmp.roomexists(num) then
-    -- update room name
-    local rootroomname = gmcp.Room.Info.name
-    if string.starts(rootroomname, &quot;Flying above &quot;) then
-      rootroomname = string.sub(rootroomname, -(#rootroomname-13))
-    end
-    if string.starts(rootroomname, &quot;In the trees above &quot;) then
-      rootroomname = string.sub(rootroomname, -(#rootroomname-13))
-    end
-    if string.starts(rootroomname, &quot;The ruins of &quot;) then
-      rootroomname = string.sub(rootroomname, -(#rootroomname-13))
-    end
-    if string.ends(rootroomname, &quot; (road)&quot;) then
-      rootroomname = string.sub(rootroomname, 1, (#rootroomname-7))
-    end
-    if string.ends(rootroomname, &quot; (indoors)&quot;) then
-      rootroomname = string.sub(rootroomname, 1, (#rootroomname-10))
-    end
-    if string.ends(rootroomname, &quot;.&quot;) then
-      rootroomname = string.sub(rootroomname, 1, (#rootroomname-1))
-    end
+    -- cleanup the room name
+    local rootroomname = mmp.cleanroomname(gmcp.Room.Info.name)
 
     -- match exact case, so mappers alertness' works properly
     if getRoomName(num) ~= rootroomname then
