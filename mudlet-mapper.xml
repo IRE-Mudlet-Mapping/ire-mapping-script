@@ -4013,6 +4013,49 @@ mmp.echo(&quot;Debug &amp; performance telemetry &quot;..(mmp.debug and &quot;en
                 <packageName></packageName>
                 <regex>^(?:mdg|mdebug) (on|off)$</regex>
             </Alias>
+            <Alias isActive="yes" isFolder="no">
+                <name>measure getPath()</name>
+                <script>mmp = mmp or {}
+
+mmp.getPathPerf = mmp.getPathPerf or createStopWatch()
+startStopWatch(mmp.getPathPerf)
+
+local from, to = tonumber(matches[2]), tonumber(matches[3])
+
+getPath(from, to)
+
+mmp.echon = mmp.echon or echo
+mmp.echon(&quot;a new getPath() from &quot;..from..&quot; to &quot;..to..&quot; took &quot;..stopStopWatch(mmp.getPathPerf)..&quot;s. There are &quot;..#speedWalkPath..&quot; rooms to visit in it.&quot;)
+echo(&quot; &quot;)
+echoLink(&quot;[unhighlight]&quot;, [[
+  for room in pairs(mmp.getpathhighlights) do
+    unHighlightRoom(room)
+  end
+]], &quot;Click me to remove highlighting from getpath&quot;)
+
+mmp.getpathhighlights = mmp.getpathhighlights or {}
+
+for room in pairs(mmp.getpathhighlights) do
+  unHighlightRoom(room)
+end
+
+mmp.getpathhighlights = {}
+
+local r,g,b = unpack(color_table.yellow)
+local br,bg,bb = unpack(color_table.yellow)
+-- add the first room to the speedWalkPath, as we'd like it highlighted as well
+table.insert(speedWalkPath, 1, from)
+for i = 1, #speedWalkPath do
+  local room = speedWalkPath[i]
+  highlightRoom(room, r,g,b,br,bg,bb, 1, 255, 255)
+  mmp.getpathhighlights[room] = true
+end
+
+centerview(from)</script>
+                <command></command>
+                <packageName></packageName>
+                <regex>^getpath (?:from )?(\d+) (?:to )?(\d+)$</regex>
+            </Alias>
         </AliasGroup>
     </AliasPackage>
     <ActionPackage/>
@@ -5374,6 +5417,7 @@ end
 function mmp.echoAreaList()
   local list = getAreaTable()
   local ids, rlist = {}, {}
+  local totalroomcount = 0
   for area, id in pairs(list) do
     if id ~= 0 then ids[#ids+1] = id; rlist[id] = area end end
   table.sort(ids)
@@ -5381,9 +5425,12 @@ function mmp.echoAreaList()
 
   -- count the amount of rooms in an area, taking care to count the room in the 0th
   -- index as well if there is one
+  -- saves the total room count on the side as well
   local function countrooms(areaid)
-    local allrooms = getAreaRooms(areaid)
-    return (#allrooms or 0) + (allrooms[0] and 1 or 0)
+    local allrooms = getAreaRooms(areaid) or {}
+    local areac = (#allrooms or 0) + (allrooms[0] and 1 or 0)
+    totalroomcount = totalroomcount + areac
+    return areac
   end
 
   cecho(string.format(
@@ -5392,8 +5439,10 @@ function mmp.echoAreaList()
   for _, id in pairs(ids) do
     cecho(format(&quot;&lt;blue&gt;%s%d &quot;, rep(&quot; &quot;, (7-#tostring(id))), id))
     -- +1 because getAreaRooms starts counting at 0
-    fg(&quot;DarkSlateGrey&quot;) echoLink(rlist[id]..(&quot; &quot;):rep(40-#rlist[id])..&quot;(&quot;..countrooms(id)..&quot; rooms)&quot;, 'mmp.echoRoomList(&quot;'..rlist[id]..'&quot;, true)', &quot;View the room list for &quot;..rlist[id], true) echo(&quot;\n&quot;)
+    fg(&quot;DarkSlateGrey&quot;) echoLink(rlist[id]..(&quot; &quot;):rep(40-#rlist[id])..&quot;(&quot;..mmp.comma_value(countrooms(id))..&quot; rooms)&quot;, 'mmp.echoRoomList(&quot;'..rlist[id]..'&quot;, true)', &quot;View the room list for &quot;..rlist[id], true) echo(&quot;\n&quot;)
   end
+  cecho(string.format(
+      &quot;&lt;DarkSlateGrey&gt;Total amount of rooms in this map: %s\n&quot;, mmp.comma_value(totalroomcount)))
 end
 
 function mmp.clearLabels(areaid)
@@ -6726,6 +6775,15 @@ function hasExitLock(from, direction)
 
   return oldhasExitLock(from, type(direction) == &quot;string&quot; and exitmap[direction] or direction)
 end
+end</script>
+                    <eventHandlerList/>
+                </Script>
+                <Script isActive="yes" isFolder="no">
+                    <name>Assorted small utilities</name>
+                    <packageName></packageName>
+                    <script>function mmp.comma_value(n) -- credit http://richard.warburton.it
+	local left,num,right = string.match(n,'^([^%d]*%d)(%d*)(.-)$')
+	return left..(num:reverse():gsub('(%d%d%d)','%1,'):reverse())..right
 end</script>
                     <eventHandlerList/>
                 </Script>
