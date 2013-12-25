@@ -977,8 +977,12 @@ enableTrigger(&quot;Angel sense&quot;)</script>
                             <string>^\(Party\): \w+ says, &quot;Trace: (\w+) moved to (.+)\.&quot;</string>
                             <string>^\(Party\): \w+ says, &quot;(\w+) - (.+), in .+\.&quot;$</string>
                             <string>^\(Party\): \w+ says, &quot;(\w+) is at (.+) \(.+\)\.&quot;</string>
+                            <string>^\(Party\): \w+ says, &quot;Trace: (\w+) entered (.+) in .+\.&quot;</string>
+                            <string>^\(Party\): \w+ says, &quot;Trace: (\w+) entered (.+)\.&quot;</string>
                         </regexCodeList>
                         <regexCodePropertyList>
+                            <integer>1</integer>
+                            <integer>1</integer>
                             <integer>1</integer>
                             <integer>1</integer>
                             <integer>1</integer>
@@ -5109,6 +5113,7 @@ function mmp.usebix()
 		table.contains(gmcp.Room.Info.details, &quot;the Cosmic Plane of Continuum&quot;) or
 		table.contains(gmcp.Room.Info.details, &quot;the Cosmic Plane of Vortex&quot;) or
 		table.contains(gmcp.Room.Info.details, &quot;the Astral Plane&quot;)) and
+        gmcp.Room.Info.area ~= &quot;the City of Climanti&quot; and
 		table.contains(gmcp.Room.Info.details, &quot;outdoors&quot;) then
 		return true
 	end
@@ -5123,6 +5128,7 @@ function mmp.useprism()
 	table.contains(gmcp.Room.Info.details, &quot;the Air Elemental Plane&quot;) or
 	table.contains(gmcp.Room.Info.details, &quot;the Fire Elemental Plane&quot;) or
 	table.contains(gmcp.Room.Info.details, &quot;the Earth Elemental Plane&quot;)) and
+    gmcp.Room.Info.area ~= &quot;the City of Climanti&quot; and
 	table.contains(gmcp.Room.Info.details, &quot;outdoors&quot;) then
 		return true
 	end
@@ -5137,6 +5143,7 @@ function mmp.usebubblix()
 		table.contains(gmcp.Room.Info.details, &quot;the Air Elemental Plane&quot;) or
 		table.contains(gmcp.Room.Info.details, &quot;the Fire Elemental Plane&quot;) or
 		table.contains(gmcp.Room.Info.details, &quot;the Earth Elemental Plane&quot;)) and
+        gmcp.Room.Info.area ~= &quot;the City of Climanti&quot; and
 		table.contains(gmcp.Room.Info.details, &quot;outdoors&quot;)) or
 		table.contains(gmcp.Room.Info.details, &quot;an Aetherbubble&quot;) then
 		return true
@@ -7681,7 +7688,7 @@ end</script>
 	if mmp.settings.vernalcurio and mmp.usebix() then
       addSpecialExit(mmp.currentroom, 29908, getcmd(&quot;vernalcurio&quot;))
       mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
-      madeverbalcurio = true
+      madevernalcurio = true
 	end
 
   mmp.getPath(mmp.currentroom, mmp.speedWalkPath[#mmp.speedWalkPath]) -- don't need to check return value since that fact shouldnt've changed
