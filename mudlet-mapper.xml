@@ -226,6 +226,14 @@ end</script>
 local alertness = mmp.alertness
 
 local roomexists, getRoomName, anytolong, matches, deleteLine = mmp.roomexists, getRoomName, mmp.anytolong, matches, deleteLine
+
+if mmp.debug then
+  mmp.alertnessTime = mmp.alertnessTime or createStopWatch()
+  startStopWatch(mmp.alertnessTime)
+end
+
+    
+
 for k, v in pairs (gmcp.Room.Info.exits) do
   local longexitname = mmp.anytolong(k)
   if roomexists(v) and matches[3]:lower() == getRoomName(v):lower() and longexitname then
@@ -246,7 +254,9 @@ end
 mmp.pdb[matches[2]] = matches[3]
 mmp.pdb_lastupdate[matches[2]] = true
 
-enableTrigger&quot;Mudlet Mapper prompt trigger&quot;</script>
+enableTrigger&quot;Mudlet Mapper prompt trigger&quot;
+
+if mmp.debug then mmp.echo(&quot;alertness trigger for &quot;..matches[2]..&quot; took &quot;..stopStopWatch(mmp.alertnessTime)..&quot;s.&quot;) end</script>
                 <triggerType>0</triggerType>
                 <conditonLineDelta>0</conditonLineDelta>
                 <mStayOpen>0</mStayOpen>
@@ -3435,25 +3445,6 @@ mmp.echo(&quot;Stopped deleting rooms in the '&quot;..areaname..&quot;'. The are
                     <regex>^cancel area deletion$</regex>
                 </Alias>
                 <Alias isActive="yes" isFolder="no">
-                    <name>Test function for deleting an area; seeing if area deletion can be sped up...</name>
-                    <script>local rooms = getAreaRooms(tonumber(matches[2]))
-local roomcount = table.size(rooms)
-
-local deletedcount = 0
-local deleteRoom, print, sformat = deleteRoom, print, string.format
-for k,v in pairs(rooms) do
-  deleteRoom(k)
-  deletedcount = deletedcount + 1
-  if deletedcount % 100 == 0 then
-    print(sformat(&quot;Deleted %d rooms so far, %d left to go - %.2f done out of %d needed&quot;, 
-      deletedcount, roomcount - deletedcount, (100/roomcount)*deletedcount, deletedcount))
-  end
-end</script>
-                    <command></command>
-                    <packageName></packageName>
-                    <regex>^area delete2 (.+)$</regex>
-                </Alias>
-                <Alias isActive="yes" isFolder="no">
                     <name>Rename an area</name>
                     <script>mmp.renameArea(matches[2])</script>
                     <command></command>
@@ -3800,6 +3791,13 @@ end</script>
                     <command></command>
                     <packageName></packageName>
                     <regex>^show char marks$</regex>
+                </Alias>
+                <Alias isActive="yes" isFolder="no">
+                    <name>Delete all special exits across a map</name>
+                    <script>mmp.delSpecialExits(matches[2])</script>
+                    <command></command>
+                    <packageName></packageName>
+                    <regex>^spe delete all(?: (.+))?$</regex>
                 </Alias>
             </AliasGroup>
             <Alias isActive="yes" isFolder="no">
@@ -4242,7 +4240,7 @@ mmp.speedWalkPath = mmp.speedWalkPath or {}
 mmp.speedWalkDir = mmp.speedWalkDir or {}
 
 
-local newversion = &quot;13.11.1&quot;
+local newversion = &quot;14.1.1&quot;
 if mmp.version and mmp.version ~= newversion then
   if not mmp.game then mmp.echo(&quot;Mapper script updated - Thanks! I don't know what game are you connected to, though - so please reconnect, if you could.&quot;)
   else mmp.echo(&quot;Mapper script updated - thanks! You don't need to restart.&quot;) end
@@ -5511,7 +5509,6 @@ function mmp.deleteArea(name, exact)
 end
 
 -- the function actually doing area deletion
--- the function actually doing area deletion
 function mmp.doareadelete(areaid)
   mmp.deletingarea = {}
 
@@ -5819,6 +5816,45 @@ function mmp.listSpecialExits(filter)
   end
 
   mmp.echo(string.format(&quot;%d exits listed%s.&quot;, c, (not filter and '' or &quot;, with for the filter '&quot;..filter..&quot;'&quot;)))
+end
+
+function mmp.delSpecialExits(filter)
+  local c = 0
+  for area, areaname in pairs(mmp.areatabler) do
+    local rooms = getAreaRooms(area) or {}
+    for i = 0, #rooms do
+      local exits = getSpecialExits(rooms[i] or 0)
+
+       if exits and next(exits) then
+         for exit, cmd in pairs(exits) do
+           if type(cmd) == &quot;table&quot; then cmd = next(cmd) end
+           if cmd:match(&quot;^%d&quot;) then cmd = cmd:sub(2) end
+
+           if not filter or cmd:lower():find(filter, 1, true) then
+            local rid, action
+            local originalExits = {}
+            local e = getSpecialExits(rooms[i])
+            for t,n in pairs(e) do
+              rid = tonumber(t)
+              for a,l in pairs(n) do
+                action = tostring(a)
+              end
+              if not action:find(filter,1,true) then
+                originalExits[rid] = action
+              end
+            end
+            clearSpecialExits(rooms[i])
+            for rid, act in pairs(originalExits) do
+              addSpecialExit(rooms[i], tonumber(rid), tostring(act))
+            end
+            c = c + 1
+           end
+         end
+       end
+    end
+  end
+
+  mmp.echo(string.format(&quot;%d exits deleted%s.&quot;, c, (not filter and '' or &quot;, with for the filter '&quot;..filter..&quot;'&quot;)))
 end</script>
                     <eventHandlerList/>
                 </Script>
@@ -7083,7 +7119,7 @@ local s,m = xpcall(function ()
     else
       local function getshiftedcoords(direction, ox, oy, oz)
         if direction == 'n' then return ox, oy+1, oz
-        elseif direction  == 'e' then return ox+1, oy, oz
+        elseif direction == 'e' then return ox+1, oy, oz
         elseif direction == 's' then return ox, oy-1, oz
         elseif direction == 'w' then return ox-1, oy, oz
         elseif direction == 'ne' then return ox+1, oy+1, oz
