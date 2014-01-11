@@ -5382,7 +5382,7 @@ function mmp.roomFind(query)
         tostring(roomname)))
       echoLink(roomid, 'mmp.gotoRoom('..roomid..')', string.format(&quot;Go to %s (%s)&quot;, roomid, tostring(roomname)))
       cecho(string.format(&quot;&lt;DarkSlateGrey&gt;) in &lt;LightSlateGray&gt;%s&lt;DarkSlateGrey&gt;.&quot;, mmp.cleanAreaName(tostring(mmp.areatabler[getRoomArea(roomid)]))))
-      fg(&quot;DarkSlateGrey&quot;) echoLink(&quot; &gt; Show path\n&quot;, [[mmp.echoPath(mmp.currentroom, ]]..roomid..[[)]], &quot;Display directions&quot;, true) resetFormat()
+      fg(&quot;DarkSlateGrey&quot;) echoLink(&quot; &gt; Show path\n&quot;, [[mmp.echoPath(mmp.currentroom, ]]..roomid..[[)]], &quot;Display directions from here to &quot;..roomname, true) resetFormat()
     end
 
   else -- new style
@@ -5391,7 +5391,7 @@ function mmp.roomFind(query)
         tostring(roomname)))
       echoLink(roomid, 'mmp.gotoRoom('..roomid..')', string.format(&quot;Go to %s (%s)&quot;, roomid, tostring(roomname)))
       cecho(string.format(&quot;&lt;DarkSlateGrey&gt;) in &lt;LightSlateGray&gt;%s&lt;DarkSlateGrey&gt;.&quot;, mmp.cleanAreaName(tostring(mmp.areatabler[getRoomArea(roomid)]))))
-      fg(&quot;DarkSlateGrey&quot;) echoLink(&quot; &gt; Show path\n&quot;, [[mmp.echoPath(mmp.currentroom, ]]..roomid..[[)]], &quot;Display directions&quot;, true) resetFormat()
+      fg(&quot;DarkSlateGrey&quot;) echoLink(&quot; &gt; Show path\n&quot;, [[mmp.echoPath(mmp.currentroom, ]]..roomid..[[)]], &quot;Display directions from here to &quot;..roomname, true) resetFormat()
     end
   end
 
