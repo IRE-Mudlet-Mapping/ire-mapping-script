@@ -231,7 +231,6 @@ if mmp.debug then
   mmp.alertnessTime = mmp.alertnessTime or createStopWatch()
   startStopWatch(mmp.alertnessTime)
 end
-
     
 
 for k, v in pairs (gmcp.Room.Info.exits) do
@@ -240,7 +239,8 @@ for k, v in pairs (gmcp.Room.Info.exits) do
     alertness[longexitname] = alertness[longexitname] or {}
     alertness[longexitname][#alertness[longexitname]+1] = matches[2]
     deleteLine()
-  end
+
+   end
 end
 
 local currentroomname = mmp.cleanroomname(mmp.currentroomname)
@@ -4550,7 +4550,7 @@ end</script>
 	if mmp.settings.vernalcurio and mmp.usebix() then
       addSpecialExit(mmp.currentroom, 29908, getcmd(&quot;vernalcurio&quot;))
       mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
-      madefigurecurio = true
+      madevernalcurio = true
 	end
   end
 
@@ -5375,13 +5375,18 @@ function mmp.roomFind(query)
 
   cecho(&quot;&lt;DarkSlateGrey&gt;You know the following relevant rooms:\n&quot;)
 
+  local function showmeropis(roomid)
+    if mmp.game ~= &quot;achaea&quot; then return '' end
+
+    return mmp.oncontinent(getRoomArea(roomid), &quot;Prime&quot;) and '' or ' (Meropis)'
+  end
 
   if not tonumber(select(2, next(result))) then -- old style
     for roomid, roomname in pairs(result) do roomid = tonumber(roomid)
       cecho(string.format(&quot;  &lt;LightSlateGray&gt;%s&lt;DarkSlateGrey&gt; (&lt;blue&gt;&quot;,
         tostring(roomname)))
       echoLink(roomid, 'mmp.gotoRoom('..roomid..')', string.format(&quot;Go to %s (%s)&quot;, roomid, tostring(roomname)))
-      cecho(string.format(&quot;&lt;DarkSlateGrey&gt;) in &lt;LightSlateGray&gt;%s%s&lt;DarkSlateGrey&gt;.&quot;, mmp.cleanAreaName(tostring(mmp.areatabler[getRoomArea(roomid)])), mmp.oncontinent(getRoomArea(roomid), &quot;Prime&quot;) and '' or ' (Meropis)'))
+      cecho(string.format(&quot;&lt;DarkSlateGrey&gt;) in &lt;LightSlateGray&gt;%s%s&lt;DarkSlateGrey&gt;.&quot;, mmp.cleanAreaName(tostring(mmp.areatabler[getRoomArea(roomid)])), showmeropis(roomid)))
       fg(&quot;DarkSlateGrey&quot;) echoLink(&quot; &gt; Show path\n&quot;, [[mmp.echoPath(mmp.currentroom, ]]..roomid..[[)]], &quot;Display directions from here to &quot;..roomname, true) resetFormat()
     end
 
@@ -5390,7 +5395,7 @@ function mmp.roomFind(query)
       cecho(string.format(&quot;  &lt;LightSlateGray&gt;%s&lt;DarkSlateGrey&gt; (&lt;blue&gt;&quot;,
         tostring(roomname)))
       echoLink(roomid, 'mmp.gotoRoom('..roomid..')', string.format(&quot;Go to %s (%s)&quot;, roomid, tostring(roomname)))
-      cecho(string.format(&quot;&lt;DarkSlateGrey&gt;) in &lt;LightSlateGray&gt;%s%s&lt;DarkSlateGrey&gt;.&quot;, mmp.cleanAreaName(tostring(mmp.areatabler[getRoomArea(roomid)])), mmp.oncontinent(getRoomArea(roomid), &quot;Prime&quot;) and '' or ' (Meropis)'))
+      cecho(string.format(&quot;&lt;DarkSlateGrey&gt;) in &lt;LightSlateGray&gt;%s%s&lt;DarkSlateGrey&gt;.&quot;, mmp.cleanAreaName(tostring(mmp.areatabler[getRoomArea(roomid)])), showmeropis(roomid)))
       fg(&quot;DarkSlateGrey&quot;) echoLink(&quot; &gt; Show path\n&quot;, [[mmp.echoPath(mmp.currentroom, ]]..roomid..[[)]], &quot;Display directions from here to &quot;..roomname, true) resetFormat()
     end
   end
