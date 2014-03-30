@@ -706,8 +706,8 @@ raiseEvent(&quot;mmapper updated pdb&quot;)</script>
                     <colorTriggerFgColor>#000000</colorTriggerFgColor>
                     <colorTriggerBgColor>#000000</colorTriggerBgColor>
                     <regexCodeList>
-                        <string>You create a pool of water in the air in front of you, and look through it, sensing</string>
-                        <string>You create a pool of water in the air in front of you, and look through it, sensing (\w+) at (.+)\.$</string>
+                        <string>You create a pool of water in the air in front of you and look through it, sensing</string>
+                        <string>You create a pool of water in the air in front of you and look through it, sensing (\w+) at (.+)\.$</string>
                     </regexCodeList>
                     <regexCodePropertyList>
                         <integer>2</integer>
@@ -4857,6 +4857,10 @@ function mmp.canmove(fromtimer)
   if not gmcp.Char then return true end
 
   if (gmcp.Char and
+    -- Achaea
+    (not gmcp.Char.Vitals.bal or gmcp.Char.Vitals.bal == &quot;1&quot;) and
+    (not gmcp.Char.Vitals.eq or gmcp.Char.Vitals.eq == &quot;1&quot;) and
+    -- Lusternia
     (not gmcp.Char.Vitals.balance or gmcp.Char.Vitals.balance == &quot;1&quot;) and
     (not gmcp.Char.Vitals.equilibrium or gmcp.Char.Vitals.equilibrium == &quot;1&quot;) and
     (not gmcp.Char.Vitals.right_arm or gmcp.Char.Vitals.right_arm == &quot;1&quot;) and
@@ -6503,7 +6507,7 @@ function mmp.cleanroomname(roomname)
     roomname = string.sub(roomname, -(#roomname-13))
   end
   if starts(roomname, &quot;In the trees above &quot;) then
-    roomname = string.sub(roomname, -(#roomname-13))
+    roomname = string.sub(roomname, -(#roomname-19))
   end
   if starts(roomname, &quot;The ruins of &quot;) then
     roomname = string.sub(roomname, -(#roomname-13))
