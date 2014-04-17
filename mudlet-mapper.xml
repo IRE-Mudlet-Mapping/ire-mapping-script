@@ -4240,7 +4240,7 @@ mmp.speedWalkPath = mmp.speedWalkPath or {}
 mmp.speedWalkDir = mmp.speedWalkDir or {}
 
 
-local newversion = &quot;14.3.1&quot;
+local newversion = &quot;14.4.1&quot;
 if mmp.version and mmp.version ~= newversion then
   if not mmp.game then mmp.echo(&quot;Mapper script updated - Thanks! I don't know what game are you connected to, though - so please reconnect, if you could.&quot;)
   else mmp.echo(&quot;Mapper script updated - thanks! You don't need to restart.&quot;) end
@@ -4377,6 +4377,9 @@ end</script>
 			end
 		end
   end
+
+  -- allow mapper 'addons' to link their own exits in
+  raiseEvent(&quot;mmp link externals&quot;)
 
   if mmp.game == &quot;achaea&quot; and (mmp.settings.duanathar or mmp.settings.duanatharan) and gmcp.Room and not table.contains(gmcp.Room.Info.details, &quot;indoors&quot;) and mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Prime&quot;) then
     if mmp.settings.duanatharan then
@@ -4589,6 +4592,9 @@ end</script>
  	 if madefigurecurio then mmp.clearspecials{28312} end
      if madeprism then mmp.clearspecials{6182} end
  	 if madevernalcurio then mmp.clearspecials{22908} end
+
+    -- allow mapper 'addons' to unlink their special exits
+    raiseEvent(&quot;mmp clear externals&quot;)
     return
   end
 
@@ -4620,6 +4626,9 @@ end</script>
   if madefigurecurio then mmp.clearspecials{28312} end
   if madeprism then mmp.clearspecials{6182} end
   if madevernalcurio then mmp.clearspecials{22908} end
+
+  -- allow mapper 'addons' to unlink their special exits
+  raiseEvent(&quot;mmp clear externals&quot;)
 end
 
 function mmp.gotoArea (where, number, dashtype, exact)
