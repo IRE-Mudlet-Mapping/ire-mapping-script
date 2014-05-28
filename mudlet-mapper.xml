@@ -470,7 +470,7 @@ mmp.echo(&quot;We're connected to Achaea.&quot;)</script>
                 </Trigger>
                 <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="yes" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
                     <name>Mindsense</name>
-                    <script>mmp.locateAndEcho(multimatches[2][2])</script>
+                    <script>mmp.locateAndEchoSide(multimatches[2][3], multimatches[2][2])</script>
                     <triggerType>0</triggerType>
                     <conditonLineDelta>0</conditonLineDelta>
                     <mStayOpen>0</mStayOpen>
@@ -483,7 +483,7 @@ mmp.echo(&quot;We're connected to Achaea.&quot;)</script>
                     <colorTriggerBgColor>#000000</colorTriggerBgColor>
                     <regexCodeList>
                         <string>You seek out the mind of</string>
-                        <string>^You seek out the mind of \w+ and an image of (.+) appears in your mind\.$</string>
+                        <string>^You seek out the mind of (\w+) and an image of (.+) appears in your mind\.$</string>
                     </regexCodeList>
                     <regexCodePropertyList>
                         <integer>2</integer>
@@ -3373,7 +3373,7 @@ local direction, status = matches[3], matches[4]
 
 if not roomExists(room) then mmp.echo(&quot;Room &quot;..room..&quot; doesn't exist. It has to before we can make doors in it.&quot;) return end
 
-local validdirs = {'e', 's', 'w', 'n', 'ne', 'se', 'sw', 'nw'}
+local validdirs = {'e', 's', 'w', 'n', 'ne', 'se', 'sw', 'nw', 'in', 'out', 'up', 'down'}
 
 if not table.contains(validdirs, direction) then
   mmp.echo(&quot;Can't make a door in the '&quot;..direction..&quot;' direction - available choices are:\n  &quot;..table.concat(validdirs, ', '))
@@ -4240,7 +4240,7 @@ mmp.speedWalkPath = mmp.speedWalkPath or {}
 mmp.speedWalkDir = mmp.speedWalkDir or {}
 
 
-local newversion = &quot;14.4.1&quot;
+local newversion = &quot;14.5.1&quot;
 if mmp.version and mmp.version ~= newversion then
   if not mmp.game then mmp.echo(&quot;Mapper script updated - Thanks! I don't know what game are you connected to, though - so please reconnect, if you could.&quot;)
   else mmp.echo(&quot;Mapper script updated - thanks! You don't need to restart.&quot;) end
