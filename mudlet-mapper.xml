@@ -349,6 +349,42 @@ disableTrigger&quot;Mudlet Mapper prompt trigger&quot;</script>
                     <integer>3</integer>
                 </regexCodePropertyList>
             </Trigger>
+            <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+                <name>No wormhole</name>
+                <script>if mmp.speedWalkDir and mmp.speedWalkDir[speedWalkCounter] and mmp.speedWalkDir[speedWalkCounter]==&quot;worm warp&quot; then
+  mmp.echo(&quot;Missing wormhole detected, locking wormhole and trying new path...&quot;)
+ 
+  lockSpecialExit(mmp.currentroom, mmp.speedWalkPath[speedWalkCounter], &quot;worm warp&quot;, true)
+ 
+  local destination = mmp.speedWalkPath[#mmp.speedWalkPath]
+ 
+  mmp.stop()
+ 
+  mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
+ 
+  if not mmp.getPath(mmp.currentroom, destination) then
+    mmp.echo(string.format(&quot;Don't know how to get to %d (%s) anymore :( Move into a room we know of to continue&quot;, destination, getRoomName(destination)))
+  else
+    mmp.gotoRoom(destination)
+  end
+end</script>
+                <triggerType>0</triggerType>
+                <conditonLineDelta>0</conditonLineDelta>
+                <mStayOpen>0</mStayOpen>
+                <mCommand></mCommand>
+                <packageName></packageName>
+                <mFgColor>#ff0000</mFgColor>
+                <mBgColor>#ffff00</mBgColor>
+                <mSoundFile></mSoundFile>
+                <colorTriggerFgColor>#000000</colorTriggerFgColor>
+                <colorTriggerBgColor>#000000</colorTriggerBgColor>
+                <regexCodeList>
+                    <string>There is no wormhole here.</string>
+                </regexCodeList>
+                <regexCodePropertyList>
+                    <integer>3</integer>
+                </regexCodePropertyList>
+            </Trigger>
             <TriggerGroup isActive="yes" isFolder="yes" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
                 <name>Achaea</name>
                 <script></script>
@@ -2608,7 +2644,7 @@ mmp.echo(&quot;We're connected to Lithmeria.&quot;)</script>
                     </regexCodePropertyList>
                 </Trigger>
                 <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
-                    <name>Failed to open Door</name>
+                    <name>Failed to open door</name>
                     <script>mmp.failpath()</script>
                     <triggerType>0</triggerType>
                     <conditonLineDelta>0</conditonLineDelta>
