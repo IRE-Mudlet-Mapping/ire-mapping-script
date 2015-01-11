@@ -419,7 +419,7 @@ mmp.echo(&quot;We're connected to Achaea.&quot;)</script>
                         <string>Password correct. Welcome to Achaea.</string>
                     </regexCodeList>
                     <regexCodePropertyList>
-                        <integer>3</integer>
+                        <integer>0</integer>
                     </regexCodePropertyList>
                 </Trigger>
                 <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="yes" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
@@ -4276,7 +4276,7 @@ mmp.speedWalkPath = mmp.speedWalkPath or {}
 mmp.speedWalkDir = mmp.speedWalkDir or {}
 
 
-local newversion = &quot;14.6.1&quot;
+local newversion = &quot;15.1.1&quot;
 if mmp.version and mmp.version ~= newversion then
   if not mmp.game then mmp.echo(&quot;Mapper script updated - Thanks! I don't know what game are you connected to, though - so please reconnect, if you could.&quot;)
   else mmp.echo(&quot;Mapper script updated - thanks! You don't need to restart.&quot;) end
