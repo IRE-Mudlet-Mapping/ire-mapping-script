@@ -2044,11 +2044,11 @@ end</script>
                     <colorTriggerFgColor>#000000</colorTriggerFgColor>
                     <colorTriggerBgColor>#000000</colorTriggerBgColor>
                     <regexCodeList>
-                        <string>************************[ Local shops selling healing ]************************</string>
+                        <string>[ Local shops selling</string>
                         <string>3</string>
                     </regexCodeList>
                     <regexCodePropertyList>
-                        <integer>3</integer>
+                        <integer>0</integer>
                         <integer>5</integer>
                     </regexCodePropertyList>
                     <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
@@ -2998,7 +2998,7 @@ mmp.settings:setOption(matches[3], val)</script>
                 <packageName></packageName>
                 <regex>^area list$</regex>
             </Alias>
-            <AliasGroup isActive="yes" isFolder="yes">
+            <AliasGroup isActive="no" isFolder="yes">
                 <name>mm Mapping</name>
                 <script></script>
                 <command></command>
@@ -4300,7 +4300,7 @@ mmp.speedWalkPath = mmp.speedWalkPath or {}
 mmp.speedWalkDir = mmp.speedWalkDir or {}
 
 
-local newversion = &quot;15.1.2&quot;
+local newversion = &quot;15.1.3&quot;
 if mmp.version and mmp.version ~= newversion then
   if not mmp.game then mmp.echo(&quot;Mapper script updated - Thanks! I don't know what game are you connected to, though - so please reconnect, if you could.&quot;)
   else mmp.echo(&quot;Mapper script updated - thanks! You don't need to restart.&quot;) end
@@ -5031,12 +5031,14 @@ function doSpeedWalk(dashtype)
     return
   end
 
-  mmp.autowalking = true
 
   -- this is a fix: convert nums to actual numbers
   for i = 1, #mmp.speedWalkPath do
     mmp.speedWalkPath[i] = tonumber(mmp.speedWalkPath[i])
   end
+
+  mmp.autowalking = true
+  raiseEvent(&quot;s&quot;)
 
   if mmp.settings.shackle then expandAlias(&quot;remove shackle&quot;) end
   if not mmp.paused then
