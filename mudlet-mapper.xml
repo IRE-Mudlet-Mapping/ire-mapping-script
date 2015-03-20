@@ -1513,6 +1513,119 @@ raiseEvent(&quot;mmapper updated pdb&quot;)</script>
                     </Trigger>
                 </Trigger>
                 <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="yes" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+                    <name>mmp Lusternia kaleidoscope</name>
+                    <script>mmp.tempscent = {}
+mmp.pdb_lastupdate = {}
+
+</script>
+                    <triggerType>0</triggerType>
+                    <conditonLineDelta>1</conditonLineDelta>
+                    <mStayOpen>100</mStayOpen>
+                    <mCommand></mCommand>
+                    <packageName></packageName>
+                    <mFgColor>#ff0000</mFgColor>
+                    <mBgColor>#ffff00</mBgColor>
+                    <mSoundFile></mSoundFile>
+                    <colorTriggerFgColor>#000000</colorTriggerFgColor>
+                    <colorTriggerBgColor>#000000</colorTriggerBgColor>
+                    <regexCodeList>
+                        <string>You hold a kaleidoscopic telescope to your eye, you twist the end and stare intently through its twinkling surfaces.</string>
+                        <string>Through the glittering faceted planes, you see:</string>
+                    </regexCodeList>
+                    <regexCodePropertyList>
+                        <integer>3</integer>
+                        <integer>3</integer>
+                    </regexCodePropertyList>
+                    <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+                        <name>Got line</name>
+                        <script>local person, room = matches[2], matches[3]:trim()
+
+
+selectString(line, 1) replace&quot;&quot;
+
+-- get the name
+cecho(&quot;&lt;green&gt;&quot;..person..&quot;&lt;reset&gt;: &quot;)
+
+-- ids
+--mmp.echonums()
+
+-- pad spaces so we have aligned roomname
+echo(string.rep(&quot; &quot;, 13 - #getCurrentLine()))
+
+-- and finally, the roomname
+echo(room)
+
+mmp.locateAndEchoSide(room, person)
+
+
+if mmp.tempscent[room] then
+	mmp.tempscent[room][#mmp.tempscent[room]+1] = person
+else
+	mmp.tempscent[room] = {person}
+end
+
+-- save in our person tracking db
+mmp.pdb[person] = room
+mmp.pdb_lastupdate[person] = true</script>
+                        <triggerType>0</triggerType>
+                        <conditonLineDelta>0</conditonLineDelta>
+                        <mStayOpen>0</mStayOpen>
+                        <mCommand></mCommand>
+                        <packageName></packageName>
+                        <mFgColor>#ff0000</mFgColor>
+                        <mBgColor>#ffff00</mBgColor>
+                        <mSoundFile></mSoundFile>
+                        <colorTriggerFgColor>#000000</colorTriggerFgColor>
+                        <colorTriggerBgColor>#000000</colorTriggerBgColor>
+                        <regexCodeList>
+                            <string>^(\w+) - ([^\(]+)</string>
+                        </regexCodeList>
+                        <regexCodePropertyList>
+                            <integer>1</integer>
+                        </regexCodePropertyList>
+                    </Trigger>
+                    <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+                        <name>Stop capturing</name>
+                        <script>setTriggerStayOpen(&quot;mmp Lusternia kaleidoscope&quot;, 0)
+
+--[[for area, names in pairs(mmp.tempscent) do
+	for _, name in ipairs(names) do
+
+-- get the name
+cecho(&quot;\n&lt;green&gt;&quot;..name..&quot;&lt;reset&gt;: &quot;)
+
+-- ids
+mmp.echonums(area)
+
+-- pad spaces so we have aligned roomname
+echo(string.rep(&quot; &quot;, 25))
+
+-- and finally, the roomname
+echo(area)
+end
+end]]
+
+
+raiseEvent(&quot;mmapper updated pdb&quot;)</script>
+                        <triggerType>0</triggerType>
+                        <conditonLineDelta>0</conditonLineDelta>
+                        <mStayOpen>0</mStayOpen>
+                        <mCommand></mCommand>
+                        <packageName></packageName>
+                        <mFgColor>#ff0000</mFgColor>
+                        <mBgColor>#ffff00</mBgColor>
+                        <mSoundFile></mSoundFile>
+                        <colorTriggerFgColor>#000000</colorTriggerFgColor>
+                        <colorTriggerBgColor>#000000</colorTriggerBgColor>
+                        <regexCodeList>
+                            <string>return isPrompt()</string>
+                        </regexCodeList>
+                        <regexCodePropertyList>
+                            <integer>4</integer>
+                        </regexCodePropertyList>
+                    </Trigger>
+                </Trigger>
+                <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="yes" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
                     <name>Deathsight</name>
                     <script>mmp.locateAndEcho(multimatches[2][2])</script>
                     <triggerType>0</triggerType>
@@ -2998,7 +3111,7 @@ mmp.settings:setOption(matches[3], val)</script>
                 <packageName></packageName>
                 <regex>^area list$</regex>
             </Alias>
-            <AliasGroup isActive="no" isFolder="yes">
+            <AliasGroup isActive="yes" isFolder="yes">
                 <name>mm Mapping</name>
                 <script></script>
                 <command></command>
@@ -4300,7 +4413,7 @@ mmp.speedWalkPath = mmp.speedWalkPath or {}
 mmp.speedWalkDir = mmp.speedWalkDir or {}
 
 
-local newversion = &quot;15.1.3&quot;
+local newversion = &quot;15.3.1&quot;
 if mmp.version and mmp.version ~= newversion then
   if not mmp.game then mmp.echo(&quot;Mapper script updated - Thanks! I don't know what game are you connected to, though - so please reconnect, if you could.&quot;)
   else mmp.echo(&quot;Mapper script updated - thanks! You don't need to restart.&quot;) end
@@ -4401,7 +4514,7 @@ end</script>
    return
   end
 
-  local madeduanathar, madeduanatharan, mademedallion, madefingerblade, madeblossom, madebelt, madecubix, madeprism, madescrewdriver, madewheel, mademud, madesnowglobe, madecookie, madehead, madeicicle, madetibia, madebonecurio, madeflowercurio, madetorus, madeutensilcurio, madefluttercurio, madetoolcurio, madefacecurio, madetoycurio, madefeathercurio, madefigurecurio, mademandala, madevernalcurio
+  local madeduanathar, madeduanatharan, madeduantahar, mademedallion, madefingerblade, madeblossom, madebelt, madecubix, madeprism, madescrewdriver, madewheel, mademud, madesnowglobe, madecookie, madehead, madeicicle, madetibia, madebonecurio, madeflowercurio, madetorus, madeutensilcurio, madefluttercurio, madetoolcurio, madefacecurio, madetoycurio, madefeathercurio, madefigurecurio, mademandala, madevernalcurio
 
   local function getcmd(word)
 		if mmp.game == &quot;achaea&quot; then
@@ -4441,18 +4554,24 @@ end</script>
   -- allow mapper 'addons' to link their own exits in
   raiseEvent(&quot;mmp link externals&quot;)
 
-  if mmp.game == &quot;achaea&quot; and (mmp.settings.duanathar or mmp.settings.duanatharan) and gmcp.Room and not table.contains(gmcp.Room.Info.details, &quot;indoors&quot;) and mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Prime&quot;) then
+  if mmp.game == &quot;achaea&quot; and (mmp.settings.duanathar or mmp.settings.duanatharan or mmp.settings.duantahar) and gmcp.Room and not table.contains(gmcp.Room.Info.details, &quot;indoors&quot;) and mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Prime&quot;) then
     if mmp.settings.duanatharan then
       addSpecialExit(mmp.currentroom, 4882, getcmd(&quot;duanatharan&quot;))
       addSpecialExit(mmp.currentroom, 3885, getcmd(&quot;duanathar&quot;))
       mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
       madeduanatharan = true
+    elseif mmp.settings.duantahar then
+      addSpecialExit(mmp.currentroom, 42319, getcmd(&quot;duantahar&quot;))
+      addSpecialExit(mmp.currentroom, 4882, getcmd(&quot;duanatharan&quot;))
+      addSpecialExit(mmp.currentroom, 3885, getcmd(&quot;duanathar&quot;))
+      mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
+      madeduantahar = true
     else
       addSpecialExit(mmp.currentroom, 3885, getcmd(&quot;duanathar&quot;))
       mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
       madeduanathar = true
     end
-	elseif mmp.game == &quot;lusternia&quot; and (mmp.settings.medallion or mmp.settings.fingerblade or mmp.settings.blossom or mmp.settings.mandala or mmp.settings.belt or mmp.settings.cubix or mmp.settings.screwdriver or mmp.settings.wheel or mmp.settings.mud or mmp.settings.snowglobe or mmp.settings.cookie or mmp.settings.head or mmp.settings.icicle or mmp.settings.tibia or mmp.settings.bonecurio or mmp.settings.flowercurio or mmp.settings.torus or mmp.settings.vernalcurio) and gmcp.Room and (not table.contains(gmcp.Room.Info.details,&quot;indoors&quot;) or table.contains(gmcp.Room.Info.details, &quot;an Aetherbubble&quot;)) then
+  elseif mmp.game == &quot;lusternia&quot; and (mmp.settings.medallion or mmp.settings.fingerblade or mmp.settings.blossom or mmp.settings.mandala or mmp.settings.belt or mmp.settings.cubix or mmp.settings.screwdriver or mmp.settings.wheel or mmp.settings.mud or mmp.settings.snowglobe or mmp.settings.cookie or mmp.settings.head or mmp.settings.icicle or mmp.settings.tibia or mmp.settings.bonecurio or mmp.settings.flowercurio or mmp.settings.torus or mmp.settings.vernalcurio) and gmcp.Room and (not table.contains(gmcp.Room.Info.details,&quot;indoors&quot;) or table.contains(gmcp.Room.Info.details, &quot;an Aetherbubble&quot;)) then
 	if mmp.settings.medallion and mmp.usebix() then
       addSpecialExit(mmp.currentroom, 13367, getcmd(&quot;medallion&quot;))
       mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
@@ -4625,7 +4744,10 @@ end</script>
     speedWalkCounter = 0
     raiseEvent(&quot;mmapper failed path&quot;)
     if mmp.settings.shackle then expandAlias(&quot;wear shackle&quot;) end
-    if madeduanatharan then mmp.clearspecials{4882, 3885} elseif madeduanathar then mmp.clearspecials{3885} end
+    if madeduanatharan then mmp.clearspecials{4882, 3885} 
+    elseif madeduanathar then mmp.clearspecials{3885}
+    elseif madeduantahar then mmp.clearspecials{42319}
+    end
   	 if mademedallion then mmp.clearspecials{13367} end
   	 if madefingerblade then mmp.clearspecials{18777} end
      if madeblossom then mmp.clearspecials{18730} end
@@ -4651,7 +4773,7 @@ end</script>
  	 if madefeathercurio then mmp.clearspecials{28591} end
  	 if madefigurecurio then mmp.clearspecials{28312} end
      if madeprism then mmp.clearspecials{6182} end
- 	 if madevernalcurio then mmp.clearspecials{22908} end
+ 	 if madevernalcurio then mmp.clearspecials{29908} end
 
     -- allow mapper 'addons' to unlink their special exits
     raiseEvent(&quot;mmp clear externals&quot;)
@@ -4659,7 +4781,10 @@ end</script>
   end
 
   doSpeedWalk(dashtype)
-  if madeduanatharan then mmp.clearspecials{4882, 3885} elseif madeduanathar then mmp.clearspecials{3885} end
+    if madeduanatharan then mmp.clearspecials{4882, 3885} 
+    elseif madeduanathar then mmp.clearspecials{3885}
+    elseif madeduantahar then mmp.clearspecials{42319}
+    end
   if mademedallion then mmp.clearspecials{13367} end
   if madefingerblade then mmp.clearspecials{18777} end
   if madeblossom then mmp.clearspecials{18730} end
@@ -4685,7 +4810,7 @@ end</script>
   if madefeathercurio then mmp.clearspecials{28591} end
   if madefigurecurio then mmp.clearspecials{28312} end
   if madeprism then mmp.clearspecials{6182} end
-  if madevernalcurio then mmp.clearspecials{22908} end
+  if madevernalcurio then mmp.clearspecials{29908} end
 
   -- allow mapper 'addons' to unlink their special exits
   raiseEvent(&quot;mmp clear externals&quot;)
@@ -5105,10 +5230,15 @@ function mmp.fixPath(rFrom,rTo,dashtype)
         table.insert(currentPath,string.format(&quot;%s %s&quot;,dashtype,mmp.speedWalkDir[index]))
         currentIds[#currentIds+1] = mmp.speedWalkPath[index+repCount-1]
       else
-        -- Final room in this direction continues onwards, don't dash
-        for i = 1,repCount do
-          table.insert(currentPath,mmp.speedWalkDir[index])
-          currentIds[#currentIds+1] = mmp.speedWalkPath[index+i-1]
+        -- Final room in this direction continues onwards, don't dash unless on achaea
+        if mmp.game == &quot;achaea&quot; then
+          table.insert(currentPath,string.format(&quot;%s %s %s&quot;,dashtype,mmp.speedWalkDir[index],repCount))
+          currentIds[#currentIds+1] = mmp.speedWalkPath[index+repCount-1]
+        else
+          for i = 1,repCount do
+            table.insert(currentPath,mmp.speedWalkDir[index])
+            currentIds[#currentIds+1] = mmp.speedWalkPath[index+i-1]
+          end
         end
       end
       index = index + repCount
@@ -6099,6 +6229,13 @@ function mmp.setDuanatharan()
   mmp.clearpathcache() -- clear the cache so it'll use wings or will stop using wings
 
   if mmp.settings.duanatharan then mmp.echo(&quot;Okay, will see about using Atavian wings (both duanathar and duanatharan) when you goto somewhere while outside!&quot;)
+  else mmp.echo(&quot;Won't use Atavian wings anymore.&quot;) end
+end
+
+function mmp.setDuantahar()
+  mmp.clearpathcache() -- clear the cache so it'll use wings or will stop using wings
+
+  if mmp.settings.duantahar then mmp.echo(&quot;Okay, will see about using Chenubian wings (duanathar, duanatharan, and duantahar) when you goto somewhere while outside!&quot;)
   else mmp.echo(&quot;Won't use Atavian wings anymore.&quot;) end
 end
 
@@ -7417,12 +7554,12 @@ end</script>
                         <packageName></packageName>
                         <script>-- track whenever we need to use wings when we get outside!
 function mmapper_achaea_went_outside()
-  if not mmp.autowalking or not (mmp.settings.duanathar or mmp.settings.duanatharan) or mmp.game ~= &quot;achaea&quot; or
+  if not mmp.autowalking or not (mmp.settings.duanathar or mmp.settings.duanatharan or mmp.settings.duantahar) or mmp.game ~= &quot;achaea&quot; or
     (mmp.currentroom == mmp.speedWalkPath[#mmp.speedWalkPath]) or
     not mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Prime&quot;) then return end
 
   -- repath, maybe that'll allow us to use wings now.
-  local madeduanatharan, madeduanathar
+  local madeduanatharan, madeduanathar, madeduantahar
 
   local function getcmd(word)
     return mmp.settings.removewings and
@@ -7436,6 +7573,12 @@ function mmapper_achaea_went_outside()
       addSpecialExit(mmp.currentroom, 3885, getcmd(&quot;duanathar&quot;))
       --mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
       madeduanatharan = true
+    elseif mmp.settings.duantahar then
+      addSpecialExit(mmp.currentroom, 42319, getcmd(&quot;duantahar&quot;))
+      addSpecialExit(mmp.currentroom, 4882, getcmd(&quot;duanatharan&quot;))
+      addSpecialExit(mmp.currentroom, 3885, getcmd(&quot;duanathar&quot;))
+      mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
+      madeduantahar = true
     else
       addSpecialExit(mmp.currentroom, 3885, getcmd(&quot;duanathar&quot;))
       --mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
@@ -7452,7 +7595,10 @@ function mmapper_achaea_went_outside()
     mmp.ignore_speedwalking = true
   end
 
-  if madeduanatharan then mmp.clearspecials{4882, 3885} elseif madeduanathar then mmp.clearspecials{3885} end
+  if madeduanatharan then mmp.clearspecials{4882, 3885} 
+  elseif madeduanathar then mmp.clearspecials{3885}
+  elseif madeduantahar then mmp.clearspecials{42319}
+  end
 end</script>
                         <eventHandlerList>
                             <string>mmapper went outside</string>
