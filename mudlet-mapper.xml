@@ -1329,6 +1329,30 @@ raiseEvent(&quot;mmapper updated pdb&quot;)</script>
                         <integer>1</integer>
                     </regexCodePropertyList>
                 </Trigger>
+                <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="yes" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+                    <name>Downed shrine in Order logs</name>
+                    <script>local room = multimatches[2][2]
+
+mmp.locateAndEcho(room)</script>
+                    <triggerType>0</triggerType>
+                    <conditonLineDelta>0</conditonLineDelta>
+                    <mStayOpen>0</mStayOpen>
+                    <mCommand></mCommand>
+                    <packageName></packageName>
+                    <mFgColor>#ff0000</mFgColor>
+                    <mBgColor>#ffff00</mBgColor>
+                    <mSoundFile></mSoundFile>
+                    <colorTriggerFgColor>#000000</colorTriggerFgColor>
+                    <colorTriggerBgColor>#000000</colorTriggerBgColor>
+                    <regexCodeList>
+                        <string>- A shrine at</string>
+                        <string>- A shrine at '(.+)' was destroyed\.$</string>
+                    </regexCodeList>
+                    <regexCodePropertyList>
+                        <integer>0</integer>
+                        <integer>1</integer>
+                    </regexCodePropertyList>
+                </Trigger>
             </TriggerGroup>
             <TriggerGroup isActive="yes" isFolder="yes" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
                 <name>Aetolia</name>
@@ -4413,7 +4437,7 @@ mmp.speedWalkPath = mmp.speedWalkPath or {}
 mmp.speedWalkDir = mmp.speedWalkDir or {}
 
 
-local newversion = &quot;15.3.1&quot;
+local newversion = &quot;15.5.1&quot;
 if mmp.version and mmp.version ~= newversion then
   if not mmp.game then mmp.echo(&quot;Mapper script updated - Thanks! I don't know what game are you connected to, though - so please reconnect, if you could.&quot;)
   else mmp.echo(&quot;Mapper script updated - thanks! You don't need to restart.&quot;) end
@@ -4436,6 +4460,7 @@ function mmp.startup()
   private_settings[&quot;dash&quot;]          = createOption(false, mmp.changeBoolFunc, { &quot;boolean&quot; }, &quot;Use Dash?&quot;)
   private_settings[&quot;duanathar&quot;]     = createOption(false, mmp.setDuanathar, { &quot;boolean&quot; }, &quot;Use Eagle Wings in Achaea?&quot;)
   private_settings[&quot;duanatharan&quot;]   = createOption(false, mmp.setDuanatharan, { &quot;boolean&quot; }, &quot;Use Atavian Wings in Achaea?&quot;)
+  private_settings[&quot;duantahar&quot;]     = createOption(false, mmp.setDuantahar, { &quot;boolean&quot; }, &quot;Use Chenubian Wings in Achaea?&quot;)
   private_settings[&quot;facecurio&quot;]     = createOption(false, mmp.setFacecurio, { &quot;boolean&quot; }, &quot;Make use of your Face curios in Lusternia?&quot;)
   private_settings[&quot;feathercurio&quot;]  = createOption(false, mmp.setFeathercurio, { &quot;boolean&quot; }, &quot;Make use of your Feather curios in Lusternia?&quot;)
   private_settings[&quot;figurecurio&quot;]   = createOption(false, mmp.setFigurecurio, { &quot;boolean&quot; }, &quot;Make use of your Figure curios in Lusternia?&quot;)
@@ -4561,9 +4586,8 @@ end</script>
       mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
       madeduanatharan = true
     elseif mmp.settings.duantahar then
-      addSpecialExit(mmp.currentroom, 42319, getcmd(&quot;duantahar&quot;))
+      addSpecialExit(mmp.currentroom, 42319, getcmd(&quot;duanathar&quot;))
       addSpecialExit(mmp.currentroom, 4882, getcmd(&quot;duanatharan&quot;))
-      addSpecialExit(mmp.currentroom, 3885, getcmd(&quot;duanathar&quot;))
       mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
       madeduantahar = true
     else
@@ -4746,7 +4770,7 @@ end</script>
     if mmp.settings.shackle then expandAlias(&quot;wear shackle&quot;) end
     if madeduanatharan then mmp.clearspecials{4882, 3885} 
     elseif madeduanathar then mmp.clearspecials{3885}
-    elseif madeduantahar then mmp.clearspecials{42319}
+    elseif madeduantahar then mmp.clearspecials{42319, 4882}
     end
   	 if mademedallion then mmp.clearspecials{13367} end
   	 if madefingerblade then mmp.clearspecials{18777} end
@@ -4783,7 +4807,7 @@ end</script>
   doSpeedWalk(dashtype)
     if madeduanatharan then mmp.clearspecials{4882, 3885} 
     elseif madeduanathar then mmp.clearspecials{3885}
-    elseif madeduantahar then mmp.clearspecials{42319}
+    elseif madeduantahar then mmp.clearspecials{42319, 4882}
     end
   if mademedallion then mmp.clearspecials{13367} end
   if madefingerblade then mmp.clearspecials{18777} end
@@ -6236,7 +6260,7 @@ function mmp.setDuantahar()
   mmp.clearpathcache() -- clear the cache so it'll use wings or will stop using wings
 
   if mmp.settings.duantahar then mmp.echo(&quot;Okay, will see about using Chenubian wings (duanathar, duanatharan, and duantahar) when you goto somewhere while outside!&quot;)
-  else mmp.echo(&quot;Won't use Atavian wings anymore.&quot;) end
+  else mmp.echo(&quot;Won't use Chenubian wings anymore.&quot;) end
 end
 
 function mmp.chageMapSource()
@@ -7574,9 +7598,8 @@ function mmapper_achaea_went_outside()
       --mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
       madeduanatharan = true
     elseif mmp.settings.duantahar then
-      addSpecialExit(mmp.currentroom, 42319, getcmd(&quot;duantahar&quot;))
+      addSpecialExit(mmp.currentroom, 42319, getcmd(&quot;duanathar&quot;))
       addSpecialExit(mmp.currentroom, 4882, getcmd(&quot;duanatharan&quot;))
-      addSpecialExit(mmp.currentroom, 3885, getcmd(&quot;duanathar&quot;))
       mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
       madeduantahar = true
     else
@@ -7597,7 +7620,7 @@ function mmapper_achaea_went_outside()
 
   if madeduanatharan then mmp.clearspecials{4882, 3885} 
   elseif madeduanathar then mmp.clearspecials{3885}
-  elseif madeduantahar then mmp.clearspecials{42319}
+  elseif madeduantahar then mmp.clearspecials{42319, 4882}
   end
 end</script>
                         <eventHandlerList>
