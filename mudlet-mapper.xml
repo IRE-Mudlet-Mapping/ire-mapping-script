@@ -268,9 +268,11 @@ if mmp.debug then mmp.echo(&quot;alertness trigger for &quot;..matches[2]..&quot
                 <colorTriggerFgColor>#000000</colorTriggerFgColor>
                 <colorTriggerBgColor>#000000</colorTriggerBgColor>
                 <regexCodeList>
-                    <string>^Your enhanced senses inform you that (\w+) has entered (.+?)(?: nearby)?\.$</string>
+                    <string>^Your enhanced senses inform you that (\w+) has entered (.+?),(.*)\.$</string>
+                    <string>^Your enhanced senses inform you that (\w+) has entered (.+?) at your location\.$</string>
                 </regexCodeList>
                 <regexCodePropertyList>
+                    <integer>1</integer>
                     <integer>1</integer>
                 </regexCodePropertyList>
             </Trigger>
