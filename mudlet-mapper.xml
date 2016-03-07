@@ -7526,6 +7526,7 @@ end</script>
 
   mmp.envids =
   {
+    Abstract                    = 37,
     Catacombs                   = 14,
     [&quot;Constructed underground&quot;] = 2,
     [&quot;Deep Ocean&quot;]              = 24,
@@ -7537,6 +7538,7 @@ end</script>
     [&quot;Tsol'aa city&quot;]            = 19,
     Beach                       = 5,
     Blighted                    = 29,
+    Chaos                       = 38,
     Desert                      = 6,
     Forest                      = 4,
     Freshwater                  = 22,
@@ -7544,6 +7546,7 @@ end</script>
     Grasslands                  = 7,
     Hills                       = 9,
     Jungle                      = 17,
+    [&quot;Lava Fields&quot;]   = 39,
     Mountains                   = 14,
     Nothing                     = 0,
     Ocean                       = 20,
@@ -7560,12 +7563,13 @@ end</script>
     Tundra                      = 16,
     Urban                       = 8,
     Valley                      = 13,
+    [&quot;Vast Ocean&quot;]    = 40,
     Vessel                      = 36,
     Water                       = 30,
   }
 
   mmp.waterenvs = {}
-  local waterids = { &quot;Freshwater&quot;, &quot;Ocean&quot;, &quot;River&quot;, &quot;Deep Ocean&quot;, &quot;Water&quot;, &quot;Reef&quot;, &quot;Ocean floor&quot; }
+  local waterids = { &quot;Freshwater&quot;, &quot;Ocean&quot;, &quot;River&quot;, &quot;Deep Ocean&quot;, &quot;Water&quot;, &quot;Reef&quot;, &quot;Ocean floor&quot;, &quot;Vast Oceran&quot; }
   for i = 1, #waterids do mmp.waterenvs[mmp.envids[waterids[i]]] = true end
 
   mmp.envidsr = {};
