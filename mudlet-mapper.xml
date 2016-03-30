@@ -5022,8 +5022,8 @@ function mmp.openDoor()
   -- not going anywhere? don't do anything
   if not mmp.speedWalkDir[speedWalkCounter] then return end
 
-  send(&quot;open door &quot; .. mmp.speedWalkDir[speedWalkCounter], false)
-  if mmp.settings.showcmds then cecho(string.format(&quot;&lt;red&gt;(&lt;maroon&gt;%d - &lt;dark_slate_grey&gt;open door %s&lt;red&gt;)&quot;, #mmp.speedWalkDir - speedWalkCounter + 1, mmp.speedWalkDir[speedWalkCounter])) end
+  send(&quot;open door &quot; .. mmp.speedWalkDir[speedWalkCounter]:gsub(&quot;sprint &quot;, &quot;&quot;):gsub(&quot;dash &quot;, &quot;&quot;), false)
+  if mmp.settings.showcmds then cecho(string.format(&quot;&lt;red&gt;(&lt;maroon&gt;%d - &lt;dark_slate_grey&gt;open door %s&lt;red&gt;)&quot;, #mmp.speedWalkDir - speedWalkCounter + 1, mmp.speedWalkDir[speedWalkCounter]:gsub(&quot;sprint &quot;, &quot;&quot;):gsub(&quot;dash &quot;, &quot;&quot;))) end
 
   mmp.setmovetimer(getNetworkLatency())
 end
