@@ -16,4 +16,7 @@
 *.rtf	 diff=astextplain
 *.RTF	 diff=astextplain
 
+# Configure Git on Windows to properly handle line endings
+
+
 
