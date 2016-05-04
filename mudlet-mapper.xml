@@ -8521,7 +8521,7 @@ function mmp.checkforupdate()
     end
 
     if mmp.settings.crowdmap and mmp.game and mmp.game == &quot;achaea&quot; then
-      downloadFile(mmp.mapfile, &quot;http://vadisystems.com/achaea-mudlet-map/.latest_map_version&quot;)
+      downloadFile(mmp.mapfile, &quot;http://ire-mudlet-mapping.github.io/AchaeaCrowdmap/Map/version.txt&quot;)
     elseif mmp.settings.updatemap then
       downloadFile(mmp.mapfile, &quot;http://www.&quot;..game..&quot;.com/maps/MD5SUM&quot;)
     end
@@ -8554,7 +8554,7 @@ end
 function mmp.retrievecrowdchangelog()
   mmp.crowdchangelogfile = downloadfolder..&quot;crowdchangelogfile&quot;
 
-  downloadFile(mmp.crowdchangelogfile, &quot;http://vadisystems.com/achaea-mudlet-map/changelog&quot;)
+  downloadFile(mmp.crowdchangelogfile, &quot;http://ire-mudlet-mapping.github.io/AchaeaCrowdmap/Map/changelog.txt&quot;)
 end
 
 -- downloads the public crowdsources map!
@@ -8600,7 +8600,7 @@ function mmp.downloadcrowdmap(newversion)
   f:close()
 
 
-  downloadFile(mmp.crowdmapfile, &quot;http://vadisystems.com/achaea-mudlet-map/map&quot;)
+  downloadFile(mmp.crowdmapfile, &quot;http://ire-mudlet-mapping.github.io/AchaeaCrowdmap/Map/map&quot;)
 
   mmp.echo(&quot;Downloading the latest crowdmap...&quot;)
 end
