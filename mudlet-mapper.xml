@@ -8554,7 +8554,7 @@ end
 function mmp.retrievecrowdchangelog()
   mmp.crowdchangelogfile = downloadfolder..&quot;crowdchangelogfile&quot;
 
-  downloadFile(mmp.crowdchangelogfile, &quot;http://ire-mudlet-mapping.github.io/AchaeaCrowdmap/Map/changelog.txt&quot;)
+  downloadFile(mmp.crowdchangelogfile, &quot;http://ire-mudlet-mapping.github.io/AchaeaCrowdmap/Map/changelog.tx&quot;)
 end
 
 -- downloads the public crowdsources map!
@@ -8611,7 +8611,7 @@ function mmp.showcrowdchangelog()
   if not mmp.crowdchangelog then mmp.echo(&quot;(none yet)&quot;) return end
 
   for k,v in ipairs(mmp.crowdchangelog) do
-    cecho(string.format(&quot;  %s) %s\n&quot;, k,v:gsub(&quot;\t&quot;, &quot;     &quot;)))
+    cecho(string.format(&quot;  %s) %s\n&quot;, k,v:gsub(&quot;\t&quot;, &quot;http://ire-mudlet-mapping.github.io/AchaeaCrowdmap/Map/changelog.txt&quot;)))
   end
 end
 
