@@ -231,7 +231,7 @@ if mmp.debug then
   mmp.alertnessTime = mmp.alertnessTime or createStopWatch()
   startStopWatch(mmp.alertnessTime)
 end
-    
+
 
 for k, v in pairs (gmcp.Room.Info.exits) do
   local longexitname = mmp.anytolong(k)
@@ -297,7 +297,7 @@ if mmp.alertness and next(mmp.alertness) then
   end
 
   cinsertText(&quot;&lt;red&gt;[&lt;cyan&gt;&quot; .. table.concat(dirs, ', ') .. &quot; &lt;red&gt;-&quot;..(#dirs &gt; 1 and (&quot;\n  &quot;) or '')..&quot; &lt;white&gt;&quot; .. ((svo and svo.concatand) and svo.concatand(people) or table.concat(people, ', ')) .. &quot;&lt;cyan&gt; (&quot;..#people..&quot;)&lt;red&gt;]\n&quot;)
-  
+
   moveCursorEnd()
 
   mmp.alertness = nil
@@ -355,15 +355,15 @@ disableTrigger&quot;Mudlet Mapper prompt trigger&quot;</script>
                 <name>No wormhole</name>
                 <script>if mmp.speedWalkDir and mmp.speedWalkDir[speedWalkCounter] and mmp.speedWalkDir[speedWalkCounter]==&quot;worm warp&quot; then
   mmp.echo(&quot;Missing wormhole detected, locking wormhole and trying new path...&quot;)
- 
+
   lockSpecialExit(mmp.currentroom, mmp.speedWalkPath[speedWalkCounter], &quot;worm warp&quot;, true)
- 
+
   local destination = mmp.speedWalkPath[#mmp.speedWalkPath]
- 
+
   mmp.stop()
- 
+
   mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
- 
+
   if not mmp.getPath(mmp.currentroom, destination) then
     mmp.echo(string.format(&quot;Don't know how to get to %d (%s) anymore :( Move into a room we know of to continue&quot;, destination, getRoomName(destination)))
   else
@@ -4770,7 +4770,7 @@ end</script>
     speedWalkCounter = 0
     raiseEvent(&quot;mmapper failed path&quot;)
     if mmp.settings.shackle then expandAlias(&quot;wear shackle&quot;) end
-    if madeduanatharan then mmp.clearspecials{4882, 3885} 
+    if madeduanatharan then mmp.clearspecials{4882, 3885}
     elseif madeduanathar then mmp.clearspecials{3885}
     elseif madeduantahar then mmp.clearspecials{42319, 4882}
     end
@@ -4807,7 +4807,7 @@ end</script>
   end
 
   doSpeedWalk(dashtype)
-    if madeduanatharan then mmp.clearspecials{4882, 3885} 
+    if madeduanatharan then mmp.clearspecials{4882, 3885}
     elseif madeduanathar then mmp.clearspecials{3885}
     elseif madeduantahar then mmp.clearspecials{42319, 4882}
     end
@@ -5208,7 +5208,7 @@ function mmp.failpath()
   end
 
   mmp.autowalking = false
-  
+
   if mmp.settings.shackle then expandAlias(&quot;wear shackle&quot;) end
   mmp.speedWalkPath = {}
   mmp.speedWalkDir = {}
@@ -5794,8 +5794,8 @@ function mmp.doareadelete(areaid)
       deleteRoom(currentbatch[i])
     end
 
-    mmp.echo(string.format(&quot;Deleted %d batch%s so far, %d left to go - %.2f%% done out of %d needed&quot;, 
-          t.currentbatchi, (t.currentbatchi == 1 and '' or 'es'), #t.roombatches - t.currentbatchi, 
+    mmp.echo(string.format(&quot;Deleted %d batch%s so far, %d left to go - %.2f%% done out of %d needed&quot;,
+          t.currentbatchi, (t.currentbatchi == 1 and '' or 'es'), #t.roombatches - t.currentbatchi,
           (100/#t.roombatches)*t.currentbatchi, #t.roombatches))
 
     t.currentbatchi = t.currentbatchi + 1
@@ -7019,7 +7019,7 @@ end</script>
 	local rooms = getAreaRooms(0) or {}
 	for _, roomid in pairs(rooms) do
 		lockRoom(roomid, true)
-	end	
+	end
 end</script>
                     <eventHandlerList>
                         <string>mmapper map reloaded</string>
@@ -7624,7 +7624,7 @@ function mmapper_achaea_went_outside()
     mmp.ignore_speedwalking = true
   end
 
-  if madeduanatharan then mmp.clearspecials{4882, 3885} 
+  if madeduanatharan then mmp.clearspecials{4882, 3885}
   elseif madeduanathar then mmp.clearspecials{3885}
   elseif madeduantahar then mmp.clearspecials{42319, 4882}
   end
@@ -8521,7 +8521,7 @@ function mmp.checkforupdate()
     end
 
     if mmp.settings.crowdmap and mmp.game and mmp.game == &quot;achaea&quot; then
-      downloadFile(mmp.mapfile, &quot;http://vadisystems.com/achaea-mudlet-map/.latest_map_version&quot;)
+      downloadFile(mmp.mapfile, &quot;http://ire-mudlet-mapping.github.io/AchaeaCrowdmap/Map/version.txt&quot;)
     elseif mmp.settings.updatemap then
       downloadFile(mmp.mapfile, &quot;http://www.&quot;..game..&quot;.com/maps/MD5SUM&quot;)
     end
@@ -8554,7 +8554,7 @@ end
 function mmp.retrievecrowdchangelog()
   mmp.crowdchangelogfile = downloadfolder..&quot;crowdchangelogfile&quot;
 
-  downloadFile(mmp.crowdchangelogfile, &quot;http://vadisystems.com/achaea-mudlet-map/changelog&quot;)
+  downloadFile(mmp.crowdchangelogfile, &quot;http://ire-mudlet-mapping.github.io/AchaeaCrowdmap/Map/changelog.txt&quot;)
 end
 
 -- downloads the public crowdsources map!
@@ -8600,7 +8600,7 @@ function mmp.downloadcrowdmap(newversion)
   f:close()
 
 
-  downloadFile(mmp.crowdmapfile, &quot;http://vadisystems.com/achaea-mudlet-map/map&quot;)
+  downloadFile(mmp.crowdmapfile, &quot;http://ire-mudlet-mapping.github.io/AchaeaCrowdmap/Map/map&quot;)
 
   mmp.echo(&quot;Downloading the latest crowdmap...&quot;)
 end
