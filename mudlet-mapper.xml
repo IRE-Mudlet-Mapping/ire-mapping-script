@@ -267,7 +267,6 @@ if mmp.debug then mmp.echo(&quot;alertness trigger for &quot;..matches[2]..&quot
                 </regexCodeList>
                 <regexCodePropertyList>
                     <integer>1</integer>
-                    <integer>1</integer>
                 </regexCodePropertyList>
             </Trigger>
             <Trigger isActive="no" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
@@ -4041,7 +4040,7 @@ end</script>
                 <name>Load a map</name>
                 <script>local function s(loc)
     if not loadMap(loc) then
-      mmp.echo(&quot;Couldn't save the map :(&quot;)
+      mmp.echo(&quot;Couldn't load the map :(&quot;)
     else
       mmp.lockWormholes(); mmp.lockSewers(); mmp.lockPebble();
       if mmp.settings.waterwalk then mmp.enableWaterWalk() else mmp.disableWaterWalk() end
@@ -4997,7 +4996,7 @@ function mmp.swim()
   -- not going anywhere? don't do anything
   if not mmp.speedWalkDir[speedWalkCounter] then return end
 
-  send(&quot;swim &quot; .. mmp.speedWalkDir[speedWalkCounter], false)
+  send(&quot;swim &quot; .. mmp.speedWalkDir[speedWalkCounter]:gsub(&quot;sprint &quot;, &quot;&quot;):gsub(&quot;dash &quot;, &quot;&quot;):gsub(&quot;gallop &quot;, &quot;&quot;), false)
   if mmp.settings.showcmds then cecho(string.format(&quot;&lt;red&gt;(&lt;maroon&gt;%d - &lt;dark_slate_grey&gt;swim %s&lt;red&gt;)&quot;, #mmp.speedWalkDir - speedWalkCounter + 1, mmp.speedWalkDir[speedWalkCounter])) end
 
   mmp.setmovetimer(2.5)
@@ -5017,7 +5016,7 @@ function mmp.openDoor()
   -- not going anywhere? don't do anything
   if not mmp.speedWalkDir[speedWalkCounter] then return end
 
-  send(&quot;open door &quot; .. mmp.speedWalkDir[speedWalkCounter]:gsub(&quot;sprint &quot;, &quot;&quot;):gsub(&quot;dash &quot;, &quot;&quot;), false)
+  send(&quot;open door &quot; .. mmp.speedWalkDir[speedWalkCounter]:gsub(&quot;sprint &quot;, &quot;&quot;):gsub(&quot;dash &quot;, &quot;&quot;):gsub(&quot;gallop &quot;, &quot;&quot;), false)
   if mmp.settings.showcmds then cecho(string.format(&quot;&lt;red&gt;(&lt;maroon&gt;%d - &lt;dark_slate_grey&gt;open door %s&lt;red&gt;)&quot;, #mmp.speedWalkDir - speedWalkCounter + 1, mmp.speedWalkDir[speedWalkCounter]:gsub(&quot;sprint &quot;, &quot;&quot;):gsub(&quot;dash &quot;, &quot;&quot;))) end
 
   mmp.setmovetimer(getNetworkLatency())
@@ -5027,7 +5026,7 @@ function mmp.unlockDoor()
   -- not going anywhere? don't do anything
   if not mmp.speedWalkDir[speedWalkCounter] then return end
 
-  send(&quot;unlock door &quot; .. mmp.speedWalkDir[speedWalkCounter], false)
+  send(&quot;unlock door &quot; .. mmp.speedWalkDir[speedWalkCounter]:gsub(&quot;sprint &quot;, &quot;&quot;):gsub(&quot;dash &quot;, &quot;&quot;):gsub(&quot;gallop &quot;, &quot;&quot;), false)
   if mmp.settings.showcmds then cecho(string.format(&quot;&lt;red&gt;(&lt;maroon&gt;%d - &lt;dark_slate_grey&gt;unlock door %s&lt;red&gt;)&quot;, #mmp.speedWalkDir - speedWalkCounter, mmp.speedWalkDir[speedWalkCounter])) end
 
   mmp.setmovetimer(getNetworkLatency())
@@ -6741,14 +6740,14 @@ function mmp.cleanroomname(roomname)
   if starts(roomname, &quot;The ruins of &quot;) then
     roomname = string.sub(roomname, -(#roomname-13))
   end
+  if ends(roomname, &quot;.&quot;) then
+    roomname = string.sub(roomname, 1, (#roomname-1))
+  end
   if ends(roomname, &quot; (road)&quot;) then
     roomname = string.sub(roomname, 1, (#roomname-7))
   end
   if ends(roomname, &quot; (indoors)&quot;) then
     roomname = string.sub(roomname, 1, (#roomname-10))
-  end
-  if ends(roomname, &quot;.&quot;) then
-    roomname = string.sub(roomname, 1, (#roomname-1))
   end
   if ends(roomname, &quot; (indoor road)&quot;) then
     roomname = string.sub(roomname, 1, (#roomname-14))
@@ -6864,7 +6863,7 @@ end</script>
       for roomid, roomname in pairs(result) do roomid = tonumber(roomid)
         cecho(string.format(&quot;  &lt;LightSlateGray&gt;%s&lt;DarkSlateGrey&gt; (&lt;blue&gt;&quot;,
           tostring(roomname)))
-        echoLink(roomid, 'mmp.roomLook('..roomid..')', string.format(&quot;View room details for %s (%s)&quot;, roomid, tostring(roomname)))
+        cechoLink(&quot;&lt;&quot;..mmp.echo_colour..&quot;&gt;&quot;..roomid, 'mmp.roomLook('..roomid..')', string.format(&quot;View room details for %s (%s)&quot;, roomid, tostring(roomname)), true)
         cecho(string.format(&quot;&lt;DarkSlateGrey&gt;) in the &lt;LightSlateGray&gt;%s&lt;DarkSlateGrey&gt;.\n&quot;, tostring(mmp.areatabler[getRoomArea(roomid)])))
       end
 
@@ -6872,7 +6871,7 @@ end</script>
       for roomname, roomid in pairs(result) do roomid = tonumber(roomid)
         cecho(string.format(&quot;  &lt;LightSlateGray&gt;%s&lt;DarkSlateGrey&gt; (&lt;blue&gt;&quot;,
           tostring(roomname)))
-        echoLink(roomid, 'mmp.roomLook('..roomid..')', string.format(&quot;View room details for %s (%s)&quot;, roomid, tostring(roomname)))
+        cechoLink(&quot;&lt;&quot;..mmp.echo_colour..&quot;&gt;&quot;..roomid, 'mmp.roomLook('..roomid..')', string.format(&quot;View room details for %s (%s)&quot;, roomid, tostring(roomname)), true)
         cecho(string.format(&quot;&lt;DarkSlateGrey&gt;) in the &lt;LightSlateGray&gt;%s&lt;DarkSlateGrey&gt;.\n&quot;, tostring(mmp.areatabler[getRoomArea(roomid)])))
       end
     end
