@@ -13,7 +13,7 @@ fi
 mainDirectory=`pwd`
 
 cd ..
-git clone --quiet --branch=gh-pages "https://IREMappingBot:${GH_TOKEN}@github.com/IRE-Mudlet-Mapping/ire-mapping-script.git" gh-pages 
+git clone --quiet --branch=gh-pages "https://ire-mudlet-mapping-machine-account:${GH_TOKEN}@github.com/IRE-Mudlet-Mapping/ire-mapping-script.git" gh-pages 
 
 cd gh-pages/downloads
 cp "$mainDirectory/mudlet-mapper.xml" .
@@ -29,8 +29,8 @@ version="$datePart.$versionPart"
 sed -rbe 's/local newversion = &quot;developer&quot;/local newversion = \&quot;'$version'\&quot;/g' mudlet-mapper.xml > mudlet-mapper.xml.tmp && mv mudlet-mapper.xml.tmp mudlet-mapper.xml
 echo "$version" > version
 
-git config user.email "IREMappingBot@travis-ci.org"
-git config user.name "IREMappingBot"
+git config user.email "keneanung+ire-mapping@googlemail.com"
+git config user.name "ire-mudlet-mapping-machine-account"
 
 git commit -m"Release new version" .
 
