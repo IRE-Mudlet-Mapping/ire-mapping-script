@@ -1,1 +1,2 @@
-When releasing a new version of the mapping script, both the [version file](https://github.com/IRE-Mudlet-Mapping/ire-mapping-script/blob/master/version) and the version inside the xml file need to be updated.
+Please use an extra branch for each change you want to submit. This makes it
+easier for us to review the changes.
