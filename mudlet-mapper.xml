@@ -4996,8 +4996,8 @@ function mmp.swim()
   -- not going anywhere? don't do anything
   if not mmp.speedWalkDir[speedWalkCounter] then return end
 
-  send(&quot;swim &quot; .. mmp.speedWalkDir[speedWalkCounter]:gsub(&quot;sprint &quot;, &quot;&quot;):gsub(&quot;dash &quot;, &quot;&quot;):gsub(&quot;gallop &quot;, &quot;&quot;), false)
-  if mmp.settings.showcmds then cecho(string.format(&quot;&lt;red&gt;(&lt;maroon&gt;%d - &lt;dark_slate_grey&gt;swim %s&lt;red&gt;)&quot;, #mmp.speedWalkDir - speedWalkCounter + 1, mmp.speedWalkDir[speedWalkCounter])) end
+  send(&quot;swim &quot; .. mmp.speedWalkDir[speedWalkCounter]:gsub(&quot;sprint &quot;, &quot;&quot;):gsub(&quot;dash &quot;, &quot;&quot;):gsub(&quot;gallop &quot;, &quot;&quot;):gsub(&quot;runaway &quot;, &quot;&quot;), false)
+  if mmp.settings.showcmds then cecho(string.format(&quot;&lt;red&gt;(&lt;maroon&gt;%d - &lt;dark_slate_grey&gt;swim %s&lt;red&gt;)&quot;, #mmp.speedWalkDir - speedWalkCounter + 1, mmp.speedWalkDir[speedWalkCounter]:gsub(&quot;sprint &quot;, &quot;&quot;):gsub(&quot;dash &quot;, &quot;&quot;):gsub(&quot;gallop &quot;, &quot;&quot;):gsub(&quot;runaway &quot;, &quot;&quot;))) end
 
   mmp.setmovetimer(2.5)
 end
@@ -5016,8 +5016,8 @@ function mmp.openDoor()
   -- not going anywhere? don't do anything
   if not mmp.speedWalkDir[speedWalkCounter] then return end
 
-  send(&quot;open door &quot; .. mmp.speedWalkDir[speedWalkCounter]:gsub(&quot;sprint &quot;, &quot;&quot;):gsub(&quot;dash &quot;, &quot;&quot;):gsub(&quot;gallop &quot;, &quot;&quot;), false)
-  if mmp.settings.showcmds then cecho(string.format(&quot;&lt;red&gt;(&lt;maroon&gt;%d - &lt;dark_slate_grey&gt;open door %s&lt;red&gt;)&quot;, #mmp.speedWalkDir - speedWalkCounter + 1, mmp.speedWalkDir[speedWalkCounter]:gsub(&quot;sprint &quot;, &quot;&quot;):gsub(&quot;dash &quot;, &quot;&quot;))) end
+  send(&quot;open door &quot; .. mmp.speedWalkDir[speedWalkCounter]:gsub(&quot;sprint &quot;, &quot;&quot;):gsub(&quot;dash &quot;, &quot;&quot;):gsub(&quot;gallop &quot;, &quot;&quot;):gsub(&quot;runaway &quot;, &quot;&quot;), false)
+  if mmp.settings.showcmds then cecho(string.format(&quot;&lt;red&gt;(&lt;maroon&gt;%d - &lt;dark_slate_grey&gt;open door %s&lt;red&gt;)&quot;, #mmp.speedWalkDir - speedWalkCounter + 1, mmp.speedWalkDir[speedWalkCounter]:gsub(&quot;sprint &quot;, &quot;&quot;):gsub(&quot;dash &quot;, &quot;&quot;):gsub(&quot;gallop &quot;, &quot;&quot;):gsub(&quot;runaway &quot;, &quot;&quot;))) end
 
   mmp.setmovetimer(getNetworkLatency())
 end
@@ -5026,8 +5026,8 @@ function mmp.unlockDoor()
   -- not going anywhere? don't do anything
   if not mmp.speedWalkDir[speedWalkCounter] then return end
 
-  send(&quot;unlock door &quot; .. mmp.speedWalkDir[speedWalkCounter]:gsub(&quot;sprint &quot;, &quot;&quot;):gsub(&quot;dash &quot;, &quot;&quot;):gsub(&quot;gallop &quot;, &quot;&quot;), false)
-  if mmp.settings.showcmds then cecho(string.format(&quot;&lt;red&gt;(&lt;maroon&gt;%d - &lt;dark_slate_grey&gt;unlock door %s&lt;red&gt;)&quot;, #mmp.speedWalkDir - speedWalkCounter, mmp.speedWalkDir[speedWalkCounter])) end
+  send(&quot;unlock door &quot; .. mmp.speedWalkDir[speedWalkCounter]:gsub(&quot;sprint &quot;, &quot;&quot;):gsub(&quot;dash &quot;, &quot;&quot;):gsub(&quot;gallop &quot;, &quot;&quot;):gsub(&quot;runaway &quot;, &quot;&quot;), false)
+  if mmp.settings.showcmds then cecho(string.format(&quot;&lt;red&gt;(&lt;maroon&gt;%d - &lt;dark_slate_grey&gt;unlock door %s&lt;red&gt;)&quot;, #mmp.speedWalkDir - speedWalkCounter, mmp.speedWalkDir[speedWalkCounter]:gsub(&quot;sprint &quot;, &quot;&quot;):gsub(&quot;dash &quot;, &quot;&quot;):gsub(&quot;gallop &quot;, &quot;&quot;):gsub(&quot;runaway &quot;, &quot;&quot;))) end
 
   mmp.setmovetimer(getNetworkLatency())
 end
