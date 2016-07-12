@@ -7563,7 +7563,7 @@ end</script>
   }
 
   mmp.waterenvs = {}
-  local waterids = { &quot;Freshwater&quot;, &quot;Ocean&quot;, &quot;River&quot;, &quot;Deep Ocean&quot;, &quot;Water&quot;, &quot;Reef&quot;, &quot;Ocean floor&quot;, &quot;Vast Oceran&quot; }
+  local waterids = { &quot;Freshwater&quot;, &quot;Ocean&quot;, &quot;River&quot;, &quot;Deep Ocean&quot;, &quot;Water&quot;, &quot;Reef&quot;, &quot;Ocean floor&quot;, &quot;Vast Ocean&quot; }
   for i = 1, #waterids do mmp.waterenvs[mmp.envids[waterids[i]]] = true end
 
   mmp.envidsr = {};
