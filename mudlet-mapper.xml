@@ -6657,18 +6657,38 @@ function mmp.roomexists(num)
   return (s and true or false)
 end
 
+function mmp.getcontinents()
+  local tmp = getRoomUserData(1, &quot;areaContinents&quot;)
+  if tmp == &quot;&quot; then return {} end
+
+  return yajl.to_value(tmp)
+end
+
 -- patches welcome to finish this function.
 function mmp.removecontinent(area, continent)
-  local tmp = getRoomUserData(1, &quot;areaContinents&quot;)
-  local continents = {}
-
-  if tmp ~= &quot;&quot; then
-    continents = yajl.to_value(tmp)
-  end
+  local continents = mmp.getcontinents()
 
   if not next(continents) then return nil, &quot;no continents are known&quot; end
   if not continents[continent] then return nil, &quot;no such continent is recorded&quot; end
 
+  local index = mmp.indexof_valueonly(continents[continent], area)
+  if not index then return nil, &quot;this area is not on that continent&quot; end
+  table.remove(continents[continent], index)
+  local tmp = yajl.to_string(continents)
+  setRoomUserData(1, &quot;areaContinents&quot;, tmp)
+end
+
+function mmp.addcontinent(areaid, continent)
+  local continents = mmp.getcontinents()
+
+  if not next(continents) then return nil, &quot;no continents are known&quot; end
+  if not continents[continent] then continents[continent] = {} end
+
+  local index = mmp.indexof_valueonly(continents[continent], area)
+  if index then return nil, &quot;this area is already on that continent&quot; end
+  continents[continent][#continents[continent] + 1] = areaid
+  local tmp = yajl.to_string(continents)
+  setRoomUserData(1, &quot;areaContinents&quot;, tmp)
 end
 
 function mmp.indexof_valueonly(data, value)
@@ -6681,13 +6701,20 @@ end
 
 -- checks if given area ID is on the given continent. Returns true only if certainly knows
 function mmp.oncontinent(areaid, continent)
-  local tmp = getRoomUserData(1, &quot;areaContinents&quot;)
-  if tmp == &quot;&quot; then return end
-
-  local continents = yajl.to_value(tmp)
-  if not continents[continent] then return end
+  local continents = mmp.getcontinents()
+  if not continents[continent] then return nil, &quot;no such continent is recorded&quot; end
 
   return mmp.indexof_valueonly(continents[continent], areaid)
+end
+
+function mmp.getareacontinents(areaid)
+  local areaContinents = {}
+  for continentName, areas in pairs(mmp.getcontinents()) do
+    if mmp.indexof_valueonly(areas, areaid) then
+      areaContinents[#areaContinents + 1] = continentName
+    end
+  end
+  return areaContinents
 end
 
 -- accepts areaname or ID
