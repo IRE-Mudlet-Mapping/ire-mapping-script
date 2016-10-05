@@ -5073,6 +5073,9 @@ function speedwalking( event, num )
       mmp.inside = true
       raiseEvent(&quot;mmapper went inside&quot;)
     end
+    if #table.n_union(mmp.getareacontinents(getRoomArea(mmp.previousroom)), mmp.getareacontinents(getRoomArea(num))) ~= #mmp.getareacontinents(getRoomArea(num)) then
+      raiseEvent(&quot;mmapper changed continent&quot;)
+    end
     -- the event could cancel speedwalking - in this case quit
     if mmp.ignore_speedwalking then
       mmp.ignore_speedwalking = nil
@@ -7611,6 +7614,7 @@ function mmapper_achaea_went_outside()
 end</script>
                         <eventHandlerList>
                             <string>mmapper went outside</string>
+                            <string>mmapper changed continent</string>
                         </eventHandlerList>
                     </Script>
                 </Script>
