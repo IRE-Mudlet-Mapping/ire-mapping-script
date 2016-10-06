@@ -7569,6 +7569,7 @@ end</script>
 function mmapper_achaea_went_outside()
   if not mmp.autowalking or not (mmp.settings.duanathar or mmp.settings.duanatharan or mmp.settings.duantahar) or mmp.game ~= &quot;achaea&quot; or
     (mmp.currentroom == mmp.speedWalkPath[#mmp.speedWalkPath]) or
+    table.contains(gmcp.Room.Info.details, &quot;indoors&quot;) or
     not mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Prime&quot;) then return end
 
   -- repath, maybe that'll allow us to use wings now.
