@@ -3695,6 +3695,34 @@ end</script>
                     <regex>^ac ([\w']+)(?: (.+))?$</regex>
                 </Alias>
                 <Alias isActive="yes" isFolder="no">
+                    <name>remove area from continent</name>
+                    <script>-- acr continent [optional area]
+
+local continent = matches[2]:title()
+local area
+if not matches[3] then area = getRoomArea(mmp.currentroom)
+elseif tonumber(matches[3]) then
+  area = tonumber(matches[3])
+  if getRoomAreaName(area) == -1 then area = nil end
+else
+  local areas = getAreaTable()
+
+  for karea, id in pairs(areas) do if karea:lower():find(matches[3]:lower(), 1, true) then area = id break end end
+end
+
+if not area then mmp.echo(matches[3]..&quot; isn't a known area. Which one do you want to set?&quot;) return end
+
+local res, error = mmp.removecontinent(area, continent)
+if res then
+  mmp.echo(&quot;Recorded that &quot;..getRoomAreaName(area)..&quot; is not on the &quot;..continent..&quot; continent.&quot;)
+else
+  mmp.echo(error)
+end</script>
+                    <command></command>
+                    <packageName></packageName>
+                    <regex>^acr ([\w']+)(?: (.+))?$</regex>
+                </Alias>
+                <Alias isActive="yes" isFolder="no">
                     <name>Add/remove a ferry room</name>
                     <script>local room = tonumber(matches[2])
 
@@ -6637,7 +6665,7 @@ function mmp.addcontinent(areaid, continent)
   if not next(continents) then return nil, &quot;no continents are known&quot; end
   if not continents[continent] then continents[continent] = {} end
 
-  local index = mmp.indexof_valueonly(continents[continent], area)
+  local index = mmp.indexof_valueonly(continents[continent], areaid)
   if index then return nil, &quot;this area is already on that continent&quot; end
   continents[continent][#continents[continent] + 1] = areaid
   local tmp = yajl.to_string(continents)
