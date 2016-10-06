@@ -4532,21 +4532,39 @@ end</script>
   -- allow mapper 'addons' to link their own exits in
   raiseEvent(&quot;mmp link externals&quot;)
 
-  if mmp.game == &quot;achaea&quot; and (mmp.settings.duanathar or mmp.settings.duanatharan or mmp.settings.duantahar) and gmcp.Room and not table.contains(gmcp.Room.Info.details, &quot;indoors&quot;) and mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Prime&quot;) then
-    if mmp.settings.duanatharan then
-      addSpecialExit(mmp.currentroom, 4882, getcmd(&quot;duanatharan&quot;))
-      addSpecialExit(mmp.currentroom, 3885, getcmd(&quot;duanathar&quot;))
-      mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
-      madeduanatharan = true
-    elseif mmp.settings.duantahar then
-      addSpecialExit(mmp.currentroom, 42319, getcmd(&quot;duanathar&quot;))
-      addSpecialExit(mmp.currentroom, 4882, getcmd(&quot;duanatharan&quot;))
-      mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
-      madeduantahar = true
-    else
-      addSpecialExit(mmp.currentroom, 3885, getcmd(&quot;duanathar&quot;))
-      mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
-      madeduanathar = true
+  if mmp.game == &quot;achaea&quot; and (mmp.settings.duanathar or mmp.settings.duanatharan or mmp.settings.duantahar) and gmcp.Room and not table.contains(gmcp.Room.Info.details, &quot;indoors&quot;) and (mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Prime&quot;) or mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Meropis&quot;)) then
+    if mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Prime&quot;) then
+      if mmp.settings.duanatharan then
+        addSpecialExit(mmp.currentroom, 4882, getcmd(&quot;duanatharan&quot;))
+        addSpecialExit(mmp.currentroom, 3885, getcmd(&quot;duanathar&quot;))
+        mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
+        madeduanatharan = true
+      elseif mmp.settings.duantahar then
+        addSpecialExit(mmp.currentroom, 42319, getcmd(&quot;duanathar&quot;))
+        addSpecialExit(mmp.currentroom, 4882, getcmd(&quot;duanatharan&quot;))
+        mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
+        madeduantahar = true
+      else
+        addSpecialExit(mmp.currentroom, 3885, getcmd(&quot;duanathar&quot;))
+        mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
+        madeduanathar = true
+      end
+    elseif mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Meropis&quot;) then
+      if mmp.settings.duanatharan then
+        addSpecialExit(mmp.currentroom, 51603, getcmd(&quot;duanatharan&quot;))
+        addSpecialExit(mmp.currentroom, 51188, getcmd(&quot;duanathar&quot;))
+        mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
+        madeduanatharan = true
+      elseif mmp.settings.duantahar then
+        addSpecialExit(mmp.currentroom, 51188, getcmd(&quot;duanathar&quot;))
+        addSpecialExit(mmp.currentroom, 51603, getcmd(&quot;duanatharan&quot;))
+        mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
+        madeduantahar = true
+      else
+        addSpecialExit(mmp.currentroom, 51188, getcmd(&quot;duanathar&quot;))
+        mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
+        madeduanathar = true
+      end
     end
   elseif mmp.game == &quot;lusternia&quot; and (mmp.settings.medallion or mmp.settings.fingerblade or mmp.settings.blossom or mmp.settings.mandala or mmp.settings.belt or mmp.settings.cubix or mmp.settings.screwdriver or mmp.settings.wheel or mmp.settings.mud or mmp.settings.snowglobe or mmp.settings.cookie or mmp.settings.head or mmp.settings.icicle or mmp.settings.tibia or mmp.settings.bonecurio or mmp.settings.flowercurio or mmp.settings.torus or mmp.settings.vernalcurio) and gmcp.Room and (not table.contains(gmcp.Room.Info.details,&quot;indoors&quot;) or table.contains(gmcp.Room.Info.details, &quot;an Aetherbubble&quot;)) then
 	if mmp.settings.medallion and mmp.usebix() then
@@ -4721,9 +4739,9 @@ end</script>
     speedWalkCounter = 0
     raiseEvent(&quot;mmapper failed path&quot;)
     if mmp.settings.shackle then expandAlias(&quot;wear shackle&quot;) end
-    if madeduanatharan then mmp.clearspecials{4882, 3885}
-    elseif madeduanathar then mmp.clearspecials{3885}
-    elseif madeduantahar then mmp.clearspecials{42319, 4882}
+    if madeduanatharan then mmp.clearspecials{4882, 3885, 51603, 51188}
+    elseif madeduanathar then mmp.clearspecials{3885, 51188}
+    elseif madeduantahar then mmp.clearspecials{42319, 4882, 51603, 51188}
     end
   	 if mademedallion then mmp.clearspecials{13367} end
   	 if madefingerblade then mmp.clearspecials{18777} end
@@ -7570,7 +7588,9 @@ function mmapper_achaea_went_outside()
   if not mmp.autowalking or not (mmp.settings.duanathar or mmp.settings.duanatharan or mmp.settings.duantahar) or mmp.game ~= &quot;achaea&quot; or
     (mmp.currentroom == mmp.speedWalkPath[#mmp.speedWalkPath]) or
     table.contains(gmcp.Room.Info.details, &quot;indoors&quot;) or
-    not mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Prime&quot;) then return end
+    not (mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Prime&quot;) or
+    mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Meropis&quot;))
+    then return end
 
   -- repath, maybe that'll allow us to use wings now.
   local madeduanatharan, madeduanathar, madeduantahar
@@ -7582,6 +7602,7 @@ function mmapper_achaea_went_outside()
       [[script:send(&quot;say *]]..(mmp.settings.winglanguage)..[[ ]]..word..[[&quot;, false)]]
   end
 
+  if mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Prime&quot;) then
     if mmp.settings.duanatharan then
       addSpecialExit(mmp.currentroom, 4882, getcmd(&quot;duanatharan&quot;))
       addSpecialExit(mmp.currentroom, 3885, getcmd(&quot;duanathar&quot;))
@@ -7597,6 +7618,23 @@ function mmapper_achaea_went_outside()
       --mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
       madeduanathar = true
     end
+  elseif mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Meropis&quot;) then
+    if mmp.settings.duanatharan then
+      addSpecialExit(mmp.currentroom, 51603, getcmd(&quot;duanatharan&quot;))
+      addSpecialExit(mmp.currentroom, 51188, getcmd(&quot;duanathar&quot;))
+      --mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
+      madeduanatharan = true
+    elseif mmp.settings.duantahar then
+      addSpecialExit(mmp.currentroom, 51188, getcmd(&quot;duanathar&quot;))
+      addSpecialExit(mmp.currentroom, 51603, getcmd(&quot;duanatharan&quot;))
+      mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
+      madeduantahar = true
+    else
+      addSpecialExit(mmp.currentroom, 51188, getcmd(&quot;duanathar&quot;))
+      --mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
+      madeduanathar = true
+    end
+  end
 
   mmp.getPath(mmp.currentroom, mmp.speedWalkPath[#mmp.speedWalkPath]) -- don't need to check return value since that fact shouldnt've changed
 
@@ -7608,9 +7646,9 @@ function mmapper_achaea_went_outside()
     mmp.ignore_speedwalking = true
   end
 
-  if madeduanatharan then mmp.clearspecials{4882, 3885}
-  elseif madeduanathar then mmp.clearspecials{3885}
-  elseif madeduantahar then mmp.clearspecials{42319, 4882}
+  if madeduanatharan then mmp.clearspecials{4882, 3885, 51603, 51188}
+  elseif madeduanathar then mmp.clearspecials{3885, 51188}
+  elseif madeduantahar then mmp.clearspecials{42319, 4882, 51603, 51188}
   end
 end</script>
                         <eventHandlerList>
