@@ -4438,7 +4438,7 @@ mmp.speedWalkPath = mmp.speedWalkPath or {}
 mmp.speedWalkDir = mmp.speedWalkDir or {}
 
 
-local newversion = &quot;16.10.1&quot;
+local newversion = &quot;16.10.2&quot;
 if mmp.version and mmp.version ~= newversion then
   if not mmp.game then mmp.echo(&quot;Mapper script updated - Thanks! I don't know what game are you connected to, though - so please reconnect, if you could.&quot;)
   else mmp.echo(&quot;Mapper script updated - thanks! You don't need to restart.&quot;) end
@@ -5166,7 +5166,7 @@ function doSpeedWalk(dashtype)
 
   resetStopWatch(speedWalkWatch)
   startStopWatch(speedWalkWatch)
-  if mmp.settings[&quot;gallop&quot;] or mmp.settings[&quot;dash&quot;] or mmp.settings.sprint or dashtype then
+  if mmp.settings[&quot;gallop&quot;] or mmp.settings[&quot;dash&quot;] or mmp.settings.sprint or mmp.settings.runaway or dashtype then
     mmp.fixPath(mmp.currentroom, mmp.speedWalkPath[#mmp.speedWalkPath],
       (mmp.settings[&quot;gallop&quot;] and &quot;gallop&quot;) or (mmp.settings[&quot;dash&quot;] and &quot;dash&quot;) or (mmp.settings.sprint and &quot;sprint&quot;) or (mmp.settings.runaway and &quot;runaway&quot;) or dashtype)
   end
