@@ -4446,7 +4446,7 @@ end
 mmp.version = newversion
 
 function mmp.startup()
-  if not mmp.firstRun then
+  if mmp.firstRun == false then
     return
   end
 
