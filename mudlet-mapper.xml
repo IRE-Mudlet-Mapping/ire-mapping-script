@@ -1377,6 +1377,67 @@ mmp.locateAndEcho(room)</script>
                         <integer>1</integer>
                     </regexCodePropertyList>
                 </Trigger>
+                <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+                    <name>Shadow preeminence</name>
+                    <script>mmp.pdb_lastupdate = {}</script>
+                    <triggerType>0</triggerType>
+                    <conditonLineDelta>0</conditonLineDelta>
+                    <mStayOpen>100</mStayOpen>
+                    <mCommand></mCommand>
+                    <packageName></packageName>
+                    <mFgColor>#ff0000</mFgColor>
+                    <mBgColor>#ffff00</mBgColor>
+                    <mSoundFile></mSoundFile>
+                    <colorTriggerFgColor>#000000</colorTriggerFgColor>
+                    <colorTriggerBgColor>#000000</colorTriggerBgColor>
+                    <regexCodeList>
+                        <string>You cast your will out across the land, surveying all that stand within shadow's embrace.</string>
+                    </regexCodeList>
+                    <regexCodePropertyList>
+                        <integer>3</integer>
+                    </regexCodePropertyList>
+                    <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+                        <name>Each person</name>
+                        <script>mmp.locateAndEchoSide(matches[3], matches[2])</script>
+                        <triggerType>0</triggerType>
+                        <conditonLineDelta>0</conditonLineDelta>
+                        <mStayOpen>0</mStayOpen>
+                        <mCommand></mCommand>
+                        <packageName></packageName>
+                        <mFgColor>#ff0000</mFgColor>
+                        <mBgColor>#ffff00</mBgColor>
+                        <mSoundFile></mSoundFile>
+                        <colorTriggerFgColor>#000000</colorTriggerFgColor>
+                        <colorTriggerBgColor>#000000</colorTriggerBgColor>
+                        <regexCodeList>
+                            <string>^You sense (\w+) at (.+?)\.$</string>
+                        </regexCodeList>
+                        <regexCodePropertyList>
+                            <integer>1</integer>
+                        </regexCodePropertyList>
+                    </Trigger>
+                    <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+                        <name>prompt</name>
+                        <script>setTriggerStayOpen(&quot;Shadow preeminence&quot;, 0)
+enableTrigger(&quot;Shadow preeminence&quot;)</script>
+                        <triggerType>0</triggerType>
+                        <conditonLineDelta>0</conditonLineDelta>
+                        <mStayOpen>0</mStayOpen>
+                        <mCommand></mCommand>
+                        <packageName></packageName>
+                        <mFgColor>#ff0000</mFgColor>
+                        <mBgColor>#ffff00</mBgColor>
+                        <mSoundFile></mSoundFile>
+                        <colorTriggerFgColor>#000000</colorTriggerFgColor>
+                        <colorTriggerBgColor>#000000</colorTriggerBgColor>
+                        <regexCodeList>
+                            <string>return isPrompt()</string>
+                        </regexCodeList>
+                        <regexCodePropertyList>
+                            <integer>4</integer>
+                        </regexCodePropertyList>
+                    </Trigger>
+                </Trigger>
             </TriggerGroup>
             <TriggerGroup isActive="yes" isFolder="yes" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
                 <name>Aetolia</name>
@@ -3159,7 +3220,7 @@ mmp.settings:setOption(matches[3], val)</script>
                 <packageName></packageName>
                 <regex>^area list$</regex>
             </Alias>
-            <AliasGroup isActive="yes" isFolder="yes">
+            <AliasGroup isActive="no" isFolder="yes">
                 <name>mm Mapping</name>
                 <script></script>
                 <command></command>
