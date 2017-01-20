@@ -1353,6 +1353,91 @@ mmp.locateAndEcho(room)</script>
                         <integer>1</integer>
                     </regexCodePropertyList>
                 </Trigger>
+                <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="yes" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+                    <name>chrono divine</name>
+                    <script>mmp.locateAndEcho(multimatches[3][2], multimatches[2][2])</script>
+                    <triggerType>0</triggerType>
+                    <conditonLineDelta>1</conditonLineDelta>
+                    <mStayOpen>0</mStayOpen>
+                    <mCommand></mCommand>
+                    <packageName></packageName>
+                    <mFgColor>#ff0000</mFgColor>
+                    <mBgColor>#ffff00</mBgColor>
+                    <mSoundFile></mSoundFile>
+                    <colorTriggerFgColor>#000000</colorTriggerFgColor>
+                    <colorTriggerBgColor>#000000</colorTriggerBgColor>
+                    <regexCodeList>
+                        <string>Tapping into the timelines, you trace them to locate</string>
+                        <string>^Tapping into the timelines, you trace them to locate (\w+)\.$</string>
+                        <string>^You determine that s?he is at (.+)\.$</string>
+                    </regexCodeList>
+                    <regexCodePropertyList>
+                        <integer>2</integer>
+                        <integer>1</integer>
+                        <integer>1</integer>
+                    </regexCodePropertyList>
+                </Trigger>
+                <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+                    <name>Shadow preeminence</name>
+                    <script>mmp.pdb_lastupdate = {}</script>
+                    <triggerType>0</triggerType>
+                    <conditonLineDelta>0</conditonLineDelta>
+                    <mStayOpen>100</mStayOpen>
+                    <mCommand></mCommand>
+                    <packageName></packageName>
+                    <mFgColor>#ff0000</mFgColor>
+                    <mBgColor>#ffff00</mBgColor>
+                    <mSoundFile></mSoundFile>
+                    <colorTriggerFgColor>#000000</colorTriggerFgColor>
+                    <colorTriggerBgColor>#000000</colorTriggerBgColor>
+                    <regexCodeList>
+                        <string>You cast your will out across the land, surveying all that stand within shadow's embrace.</string>
+                    </regexCodeList>
+                    <regexCodePropertyList>
+                        <integer>3</integer>
+                    </regexCodePropertyList>
+                    <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+                        <name>Each person</name>
+                        <script>mmp.locateAndEchoSide(matches[3], matches[2])</script>
+                        <triggerType>0</triggerType>
+                        <conditonLineDelta>0</conditonLineDelta>
+                        <mStayOpen>0</mStayOpen>
+                        <mCommand></mCommand>
+                        <packageName></packageName>
+                        <mFgColor>#ff0000</mFgColor>
+                        <mBgColor>#ffff00</mBgColor>
+                        <mSoundFile></mSoundFile>
+                        <colorTriggerFgColor>#000000</colorTriggerFgColor>
+                        <colorTriggerBgColor>#000000</colorTriggerBgColor>
+                        <regexCodeList>
+                            <string>^You sense (\w+) at (.+?)\.$</string>
+                        </regexCodeList>
+                        <regexCodePropertyList>
+                            <integer>1</integer>
+                        </regexCodePropertyList>
+                    </Trigger>
+                    <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+                        <name>prompt</name>
+                        <script>setTriggerStayOpen(&quot;Shadow preeminence&quot;, 0)
+enableTrigger(&quot;Shadow preeminence&quot;)</script>
+                        <triggerType>0</triggerType>
+                        <conditonLineDelta>0</conditonLineDelta>
+                        <mStayOpen>0</mStayOpen>
+                        <mCommand></mCommand>
+                        <packageName></packageName>
+                        <mFgColor>#ff0000</mFgColor>
+                        <mBgColor>#ffff00</mBgColor>
+                        <mSoundFile></mSoundFile>
+                        <colorTriggerFgColor>#000000</colorTriggerFgColor>
+                        <colorTriggerBgColor>#000000</colorTriggerBgColor>
+                        <regexCodeList>
+                            <string>return isPrompt()</string>
+                        </regexCodeList>
+                        <regexCodePropertyList>
+                            <integer>4</integer>
+                        </regexCodePropertyList>
+                    </Trigger>
+                </Trigger>
             </TriggerGroup>
             <TriggerGroup isActive="yes" isFolder="yes" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
                 <name>Aetolia</name>
@@ -3135,7 +3220,7 @@ mmp.settings:setOption(matches[3], val)</script>
                 <packageName></packageName>
                 <regex>^area list$</regex>
             </Alias>
-            <AliasGroup isActive="yes" isFolder="yes">
+            <AliasGroup isActive="no" isFolder="yes">
                 <name>mm Mapping</name>
                 <script></script>
                 <command></command>
@@ -3693,6 +3778,34 @@ end</script>
                     <command></command>
                     <packageName></packageName>
                     <regex>^ac ([\w']+)(?: (.+))?$</regex>
+                </Alias>
+                <Alias isActive="yes" isFolder="no">
+                    <name>remove area from continent</name>
+                    <script>-- acr continent [optional area]
+
+local continent = matches[2]:title()
+local area
+if not matches[3] then area = getRoomArea(mmp.currentroom)
+elseif tonumber(matches[3]) then
+  area = tonumber(matches[3])
+  if getRoomAreaName(area) == -1 then area = nil end
+else
+  local areas = getAreaTable()
+
+  for karea, id in pairs(areas) do if karea:lower():find(matches[3]:lower(), 1, true) then area = id break end end
+end
+
+if not area then mmp.echo(matches[3]..&quot; isn't a known area. Which one do you want to set?&quot;) return end
+
+local res, error = mmp.removecontinent(area, continent)
+if res then
+  mmp.echo(&quot;Recorded that &quot;..getRoomAreaName(area)..&quot; is not on the &quot;..continent..&quot; continent.&quot;)
+else
+  mmp.echo(error)
+end</script>
+                    <command></command>
+                    <packageName></packageName>
+                    <regex>^acr ([\w']+)(?: (.+))?$</regex>
                 </Alias>
                 <Alias isActive="yes" isFolder="no">
                     <name>Add/remove a ferry room</name>
@@ -5139,7 +5252,7 @@ function doSpeedWalk(dashtype)
 
   resetStopWatch(speedWalkWatch)
   startStopWatch(speedWalkWatch)
-  if mmp.settings[&quot;gallop&quot;] or mmp.settings[&quot;dash&quot;] or mmp.settings.sprint or dashtype then
+  if mmp.settings[&quot;gallop&quot;] or mmp.settings[&quot;dash&quot;] or mmp.settings.sprint or mmp.settings.runaway or dashtype then
     mmp.fixPath(mmp.currentroom, mmp.speedWalkPath[#mmp.speedWalkPath],
       (mmp.settings[&quot;gallop&quot;] and &quot;gallop&quot;) or (mmp.settings[&quot;dash&quot;] and &quot;dash&quot;) or (mmp.settings.sprint and &quot;sprint&quot;) or (mmp.settings.runaway and &quot;runaway&quot;) or dashtype)
   end
@@ -6658,7 +6771,7 @@ function mmp.addcontinent(areaid, continent)
   if not next(continents) then return nil, &quot;no continents are known&quot; end
   if not continents[continent] then continents[continent] = {} end
 
-  local index = mmp.indexof_valueonly(continents[continent], area)
+  local index = mmp.indexof_valueonly(continents[continent], areaid)
   if index then return nil, &quot;this area is already on that continent&quot; end
   continents[continent][#continents[continent] + 1] = areaid
   local tmp = yajl.to_string(continents)
