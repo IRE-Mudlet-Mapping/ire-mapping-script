@@ -3735,12 +3735,7 @@ mmp.echo(&quot;Stopped deleting rooms in the '&quot;..areaname..&quot;'. The are
                 </Alias>
                 <Alias isActive="yes" isFolder="no">
                     <name>List continents</name>
-                    <script>local tmp = getRoomUserData(1, &quot;areaContinents&quot;)
-local continents = {}
-
-if tmp ~= &quot;&quot; then
-  continents = yajl.to_value(tmp)
-end
+                    <script>local continents = mmp.getcontinents()
 
 if not next(continents) then mmp.echo(&quot;No continents known.&quot;)
 else
@@ -3774,58 +3769,43 @@ end
 
 if not area then mmp.echo(matches[3]..&quot; isn't a known area. Which one do you want to set?&quot;) return end
 
-local tmp = getRoomUserData(1, &quot;areaContinents&quot;)
-local continents = {}
-
-if tmp ~= &quot;&quot; then
-  continents = yajl.to_value(tmp)
-end
-
-
-if not continents[continent] and mmp.addingcontinent ~= continent then
-  mmp.addingcontinent = continent
-  mmp.echo(&quot;Continent &quot;..continent..&quot; isn't known so far - would you like to make a new one? Do this command again if so.&quot;)
-  return
-end
-
-mmp.addingcontinent = nil
-
-continents[continent] = continents[continent] or {}
-
--- have to use this instead of contains and index_of, because those count keys as well - and we don't want that
-local function index_of(data, areaID)
-  for i = 1, #data do
-    if data[i] == areaID then return i end
-  end
-
-  return -1
-end
-
-if index_of(continents[continent], area) ~= -1 then
-  mmp.echo(getRoomAreaName(area)..&quot; is already known as being on the &quot;..continent..&quot; continent.&quot;)
-  return
-else
-  continents[continent][#continents[continent]+1] = area -- not a key, because yajl will put a ton of null's.
+local res, error = mmp.addcontinent(area, continent)
+if res then
   mmp.echo(&quot;Recorded that &quot;..getRoomAreaName(area)..&quot; is on the &quot;..continent..&quot; continent.&quot;)
-
-  -- remove from other areas if moving
-  for kcontinent, data in pairs(continents) do
-    if kcontinent ~= continent then
-      local i = index_of(continents[kcontinent], area)
-      if i ~= -1 then
-        table.remove(continents[kcontinent], i)
-        if not next(continents[kcontinent]) then continents[kcontinent] = nil end
-        mmp.echo(&quot;De-listed &quot;..getRoomAreaName(area)..&quot; from the &quot;..kcontinent..&quot; continent.&quot;)
-      end
-    end
-  end
-end
-
-local toserialize = yajl.to_string(continents)
-setRoomUserData(1, &quot;areaContinents&quot;, toserialize)</script>
+else
+  mmp.echo(error)
+end</script>
                     <command></command>
                     <packageName></packageName>
                     <regex>^ac ([\w']+)(?: (.+))?$</regex>
+                </Alias>
+                <Alias isActive="yes" isFolder="no">
+                    <name>remove area from continent</name>
+                    <script>-- acr continent [optional area]
+
+local continent = matches[2]:title()
+local area
+if not matches[3] then area = getRoomArea(mmp.currentroom)
+elseif tonumber(matches[3]) then
+  area = tonumber(matches[3])
+  if getRoomAreaName(area) == -1 then area = nil end
+else
+  local areas = getAreaTable()
+
+  for karea, id in pairs(areas) do if karea:lower():find(matches[3]:lower(), 1, true) then area = id break end end
+end
+
+if not area then mmp.echo(matches[3]..&quot; isn't a known area. Which one do you want to set?&quot;) return end
+
+local res, error = mmp.removecontinent(area, continent)
+if res then
+  mmp.echo(&quot;Recorded that &quot;..getRoomAreaName(area)..&quot; is not on the &quot;..continent..&quot; continent.&quot;)
+else
+  mmp.echo(error)
+end</script>
+                    <command></command>
+                    <packageName></packageName>
+                    <regex>^acr ([\w']+)(?: (.+))?$</regex>
                 </Alias>
                 <Alias isActive="yes" isFolder="no">
                     <name>Add/remove a ferry room</name>
@@ -6742,18 +6722,40 @@ function mmp.roomexists(num)
   return (s and true or false)
 end
 
+function mmp.getcontinents()
+  local tmp = getRoomUserData(1, &quot;areaContinents&quot;)
+  if tmp == &quot;&quot; then return {} end
+
+  return yajl.to_value(tmp)
+end
+
 -- patches welcome to finish this function.
 function mmp.removecontinent(area, continent)
-  local tmp = getRoomUserData(1, &quot;areaContinents&quot;)
-  local continents = {}
-
-  if tmp ~= &quot;&quot; then
-    continents = yajl.to_value(tmp)
-  end
+  local continents = mmp.getcontinents()
 
   if not next(continents) then return nil, &quot;no continents are known&quot; end
   if not continents[continent] then return nil, &quot;no such continent is recorded&quot; end
 
+  local index = mmp.indexof_valueonly(continents[continent], area)
+  if not index then return nil, &quot;this area is not on that continent&quot; end
+  table.remove(continents[continent], index)
+  local tmp = yajl.to_string(continents)
+  setRoomUserData(1, &quot;areaContinents&quot;, tmp)
+  return true
+end
+
+function mmp.addcontinent(areaid, continent)
+  local continents = mmp.getcontinents()
+
+  if not next(continents) then return nil, &quot;no continents are known&quot; end
+  if not continents[continent] then continents[continent] = {} end
+
+  local index = mmp.indexof_valueonly(continents[continent], areaid)
+  if index then return nil, &quot;this area is already on that continent&quot; end
+  continents[continent][#continents[continent] + 1] = areaid
+  local tmp = yajl.to_string(continents)
+  setRoomUserData(1, &quot;areaContinents&quot;, tmp)
+  return true
 end
 
 function mmp.indexof_valueonly(data, value)
@@ -6766,13 +6768,20 @@ end
 
 -- checks if given area ID is on the given continent. Returns true only if certainly knows
 function mmp.oncontinent(areaid, continent)
-  local tmp = getRoomUserData(1, &quot;areaContinents&quot;)
-  if tmp == &quot;&quot; then return end
-
-  local continents = yajl.to_value(tmp)
-  if not continents[continent] then return end
+  local continents = mmp.getcontinents()
+  if not continents[continent] then return nil, &quot;no such continent is recorded&quot; end
 
   return mmp.indexof_valueonly(continents[continent], areaid)
+end
+
+function mmp.getareacontinents(areaid)
+  local areaContinents = {}
+  for continentName, areas in pairs(mmp.getcontinents()) do
+    if mmp.indexof_valueonly(areas, areaid) then
+      areaContinents[#areaContinents + 1] = continentName
+    end
+  end
+  return areaContinents
 end
 
 -- accepts areaname or ID
