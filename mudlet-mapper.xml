@@ -6626,7 +6626,7 @@ function mmp.mapLook(roomid, delay)
   mmp.maplooktimer = tempTimer(tonumber(delay) or 4, [[centerview(mmp.currentroom); mmp.maplooktimer = nil]])
 end
 
-function mmp.getnums(roomname, exact)
+function mmp.getnums(roomname, exact, range, from)
   if tonumber(roomname) then return {roomname} end
 
   local t = (not exact and mmp.searchRoom or mmp.searchRoomExact)(roomname)
@@ -6643,6 +6643,21 @@ function mmp.getnums(roomname, exact)
   else
     for _,roomid in pairs(t) do
       if roomid ~= 0 then result[#result+1] = tonumber(roomid) end
+    end
+  end
+
+  local from = from or mmp.currentroom
+  if range and from then
+    if range == &quot;a&quot; or range == &quot;area&quot; then
+      local check = getRoomArea(from)
+      for i = #result, 1, -1 do
+        if getRoomArea(result[i]) ~= check then table.remove(result, i) end
+      end
+    elseif range == &quot;c&quot; or range == &quot;continent&quot; then
+      local check = table.concat(mmp.getareacontinents(getRoomArea(from)))
+      for i = #result, 1, -1 do
+        if table.concat(mmp.getareacontinents(getRoomArea(result[i]))) ~= check then table.remove(result, i) end
+      end
     end
   end
 
