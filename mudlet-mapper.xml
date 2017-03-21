@@ -8768,7 +8768,7 @@ end</script>
                         <string>sys2DMapLoad</string>
                         <string>sys3DMapLoad</string>
                         <string>sysMapDownloadEvent</string>
-			<string>mapOpenEvent</string>
+                        <string>mapOpenEvent</string>
                     </eventHandlerList>
                 </Script>
             </Script>
