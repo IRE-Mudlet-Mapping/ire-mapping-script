@@ -8739,7 +8739,7 @@ end</script>
                         </eventHandlerList>
                     </Script>
                 </Script>
-                <Script isActive="yes" isFolder="no">
+                <Script isActive="no" isFolder="no">
                     <name>mmp_see_dl_errors</name>
                     <packageName></packageName>
                     <script>-- this should be off by default
