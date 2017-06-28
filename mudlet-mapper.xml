@@ -4440,6 +4440,7 @@ function createOptionsTable(defaultTable)
 			local opt = rawget(self[index], option)
 			if opt.onChange  and not silent then opt.onChange(option, value) end
 		end
+		if mmp and mmp.clearpathcache then mmp.clearpathcache() end
 	end
 
 
