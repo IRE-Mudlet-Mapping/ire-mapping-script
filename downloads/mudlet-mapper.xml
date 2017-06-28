@@ -4440,6 +4440,7 @@ function createOptionsTable(defaultTable)
 			local opt = rawget(self[index], option)
 			if opt.onChange  and not silent then opt.onChange(option, value) end
 		end
+		if mmp and mmp.clearpathcache then mmp.clearpathcache() end
 	end
 
 
@@ -4503,7 +4504,7 @@ mmp.speedWalkPath = mmp.speedWalkPath or {}
 mmp.speedWalkDir = mmp.speedWalkDir or {}
 
 
-local newversion = &quot;17.6.1&quot;
+local newversion = &quot;17.6.2&quot;
 if mmp.version and mmp.version ~= newversion then
   if not mmp.game then mmp.echo(&quot;Mapper script updated - Thanks! I don't know what game are you connected to, though - so please reconnect, if you could.&quot;)
   else mmp.echo(&quot;Mapper script updated - thanks! You don't need to restart.&quot;) end
