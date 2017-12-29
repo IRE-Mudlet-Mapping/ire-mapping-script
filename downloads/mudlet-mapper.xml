@@ -3933,14 +3933,16 @@ local c = 0
 for area, areaname in pairs(mmp.areatabler) do
   local rooms = getAreaRooms(area) or {}
   for i = 0, #rooms do
-    local char = getRoomChar(rooms[i] or 0)
-    if char == '$' then
-      local exits = getRoomExits(rooms[i] or 0) -- retrieve after $, more efficient
+    if rooms[i] then
+      local char = getRoomChar(rooms[i])
+      if char == '$' then
+        local exits = getRoomExits(rooms[i]) -- retrieve after $, more efficient
 
-      if exits.down then
-        setExit(rooms[i], -1, 'down')
-        mmp.echo(string.format(&quot;Deleted the stockroom exit at %s (#%d in %s)&quot;, getRoomName(rooms[i]), rooms[i], mmp.areatabler[getRoomArea(rooms[i])]))
-        c = c + 1
+        if exits.down then
+          setExit(rooms[i], -1, 'down')
+          mmp.echo(string.format(&quot;Deleted the stockroom exit at %s (#%d in %s)&quot;, getRoomName(rooms[i]), rooms[i], mmp.areatabler[getRoomArea(rooms[i])]))
+          c = c + 1
+        end
       end
     end
 
@@ -4504,7 +4506,7 @@ mmp.speedWalkPath = mmp.speedWalkPath or {}
 mmp.speedWalkDir = mmp.speedWalkDir or {}
 
 
-local newversion = &quot;17.12.1&quot;
+local newversion = &quot;17.12.2&quot;
 if mmp.version and mmp.version ~= newversion then
   if not mmp.game then mmp.echo(&quot;Mapper script updated - Thanks! I don't know what game are you connected to, though - so please reconnect, if you could.&quot;)
   else mmp.echo(&quot;Mapper script updated - thanks! You don't need to restart.&quot;) end
