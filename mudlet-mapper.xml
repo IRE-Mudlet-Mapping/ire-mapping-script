@@ -3940,7 +3940,7 @@ for area, areaname in pairs(mmp.areatabler) do
 
         if exits.down then
           setExit(rooms[i], -1, 'down')
-          mmp.echo(string.format("Deleted the stockroom exit at %s (#%d in %s)", getRoomName(rooms[i]), rooms[i], mmp.areatabler[getRoomArea(rooms[i])]))
+          mmp.echo(string.format(&quot;Deleted the stockroom exit at %s (#%d in %s)&quot;, getRoomName(rooms[i]), rooms[i], mmp.areatabler[getRoomArea(rooms[i])]))
           c = c + 1
         end
       end
