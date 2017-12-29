@@ -3933,14 +3933,16 @@ local c = 0
 for area, areaname in pairs(mmp.areatabler) do
   local rooms = getAreaRooms(area) or {}
   for i = 0, #rooms do
-    local char = getRoomChar(rooms[i] or 0)
-    if char == '$' then
-      local exits = getRoomExits(rooms[i] or 0) -- retrieve after $, more efficient
+    if rooms[i] then
+      local char = getRoomChar(rooms[i])
+      if char == '$' then
+        local exits = getRoomExits(rooms[i]) -- retrieve after $, more efficient
 
-      if exits.down then
-        setExit(rooms[i], -1, 'down')
-        mmp.echo(string.format(&quot;Deleted the stockroom exit at %s (#%d in %s)&quot;, getRoomName(rooms[i]), rooms[i], mmp.areatabler[getRoomArea(rooms[i])]))
-        c = c + 1
+        if exits.down then
+          setExit(rooms[i], -1, 'down')
+          mmp.echo(string.format("Deleted the stockroom exit at %s (#%d in %s)", getRoomName(rooms[i]), rooms[i], mmp.areatabler[getRoomArea(rooms[i])]))
+          c = c + 1
+        end
       end
     end
 
