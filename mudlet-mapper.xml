@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE MudletPackage>
-<MudletPackage version="1.0">
+<MudletPackage version="1.001">
     <TriggerPackage>
         <TriggerGroup isActive="yes" isFolder="yes" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
             <name>Mudlet Mapper</name>
@@ -36,6 +36,7 @@
                     <string>There's water ahead of you. You'll have to SWIM </string>
                     <string>You'll have to swim to make it through the water in that direction.</string>
                     <string>The water is too deep for you to walk that way, you must swim.</string>
+                    <string>You'll have to SWIM</string>
                 </regexCodeList>
                 <regexCodePropertyList>
                     <integer>3</integer>
@@ -43,6 +44,7 @@
                     <integer>2</integer>
                     <integer>3</integer>
                     <integer>3</integer>
+                    <integer>2</integer>
                 </regexCodePropertyList>
             </Trigger>
             <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
@@ -62,8 +64,12 @@
                     <string>You begin to slowly clamber over the rubble that blocks your way.</string>
                     <string>You begin to slowly clamber over a pile of rubble that blocks your way.</string>
                     <string>You start plodding carefully across the constructed trenches.</string>
+                    <string>You struggle to climb over the snow drift in your way.</string>
+                    <string>You struggle to climb over the sand dune in your way.</string>
                 </regexCodeList>
                 <regexCodePropertyList>
+                    <integer>3</integer>
+                    <integer>3</integer>
                     <integer>3</integer>
                     <integer>3</integer>
                     <integer>3</integer>
@@ -108,9 +114,11 @@ end</script>
                 <colorTriggerBgColor>#000000</colorTriggerBgColor>
                 <regexCodeList>
                     <string>You slowly hobble</string>
+                    <string>The shot in your leg slows you as you hobble away.</string>
                 </regexCodeList>
                 <regexCodePropertyList>
                     <integer>2</integer>
+                    <integer>3</integer>
                 </regexCodePropertyList>
             </Trigger>
             <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
@@ -4043,7 +4051,7 @@ if not next(m) then mmp.echo(&quot;This map has no char marks on it. Do mc on an
 
 for letter, rooms in pairs(m) do
   table.sort(rooms)
-  mmp.echo(&quot;Rooms with the &lt;blue&gt;&quot;..letter..&quot;&lt;reset&gt; character on them:&quot;)
+  mmp.echo(&quot;Rooms with the &lt;&quot;..mmp.echo_colour..&quot;&gt;&quot;..letter..&quot;&lt;reset&gt; character on them:&quot;)
   for i = 1, #rooms do
     if not show_area then
       cecho(string.format(&quot;  &lt;sea_green&gt;%-5s&lt;reset&gt; %s\n&quot;, rooms[i], getRoomName(rooms[i])))
@@ -5490,15 +5498,15 @@ function mmp.roomEcho(query)
 
   if not tonumber(select(2, next(result))) then
     for roomid, roomname in pairs(result) do roomid = tonumber(roomid)
-      cecho(&quot;&lt;DarkSlateGrey&gt; (&lt;blue&gt;&quot;)
-      echoLink(roomid, 'mmp.gotoRoom('..roomid..')', string.format(&quot;Go to %s (%s)&quot;, roomid, tostring(roomname)))
+      cecho(&quot;&lt;DarkSlateGrey&gt; (&quot;)
+      cechoLink(&quot;&lt;&quot;..mmp.echo_colour..&quot;&gt;&quot;..roomid, 'mmp.gotoRoom('..roomid..')', string.format(&quot;Go to %s (%s)&quot;, roomid, tostring(roomname)),true)
       cecho(&quot;&lt;DarkSlateGrey&gt;)&quot;)
     end
 
   else
     for roomname, roomid in pairs(result) do roomid = tonumber(roomid)
-      cecho(&quot;&lt;DarkSlateGrey&gt; (&lt;blue&gt;&quot;)
-      echoLink(roomid, 'mmp.gotoRoom('..roomid..')', string.format(&quot;Go to %s (%s)&quot;, roomid, tostring(roomname)))
+      cecho(&quot;&lt;DarkSlateGrey&gt; (&quot;)
+      cechoLink(&quot;&lt;&quot;..mmp.echo_colour..&quot;&gt;&quot;..roomid, 'mmp.gotoRoom('..roomid..')', string.format(&quot;Go to %s (%s)&quot;, roomid, tostring(roomname)),true)
       cecho(&quot;&lt;DarkSlateGrey&gt;)&quot;)
     end
   end
@@ -5651,7 +5659,7 @@ end</script>
 
   if not tonumber(select(2, next(result))) then -- old style
     for roomid, roomname in pairs(result) do roomid = tonumber(roomid)
-      cecho(string.format(&quot;  &lt;LightSlateGray&gt;%s&lt;DarkSlateGrey&gt; (&lt;blue&gt;&quot;,
+      cecho(string.format(&quot;  &lt;LightSlateGray&gt;%s&lt;DarkSlateGrey&gt; (&quot;,
         tostring(roomname)))
       cechoLink(&quot;&lt;&quot;..mmp.echo_colour..&quot;&gt;&quot;..roomid, 'mmp.gotoRoom('..roomid..')', string.format(&quot;Go to %s (%s)&quot;, roomid, tostring(roomname)), true)
       cecho(string.format(&quot;&lt;DarkSlateGrey&gt;) &lt;white&gt;%s&lt;DarkSlateGrey&gt;.\n&quot;, tostring(mmp.areatabler[getRoomArea(roomid)])))
@@ -5659,7 +5667,7 @@ end</script>
 
   else -- new style
     for roomname, roomid in pairs(result) do roomid = tonumber(roomid)
-      cecho(string.format(&quot;  &lt;LightSlateGray&gt;%s&lt;DarkSlateGrey&gt; (&lt;blue&gt;&quot;,
+      cecho(string.format(&quot;  &lt;LightSlateGray&gt;%s&lt;DarkSlateGrey&gt; (&quot;,
         tostring(roomname)))
       cechoLink(&quot;&lt;&quot;..mmp.echo_colour..&quot;&gt;&quot;..roomid, 'mmp.gotoRoom('..roomid..')', string.format(&quot;Go to %s (%s)&quot;, roomid, tostring(roomname)), true)
       cecho(string.format(&quot;&lt;DarkSlateGrey&gt;) &lt;white&gt;%s&lt;DarkSlateGrey&gt;.\n&quot;, tostring(mmp.areatabler[getRoomArea(roomid)])))
@@ -5684,7 +5692,7 @@ function mmp.roomFind(query)
 
   if not tonumber(select(2, next(result))) then -- old style
     for roomid, roomname in pairs(result) do roomid = tonumber(roomid)
-      cecho(string.format(&quot;  &lt;LightSlateGray&gt;%s&lt;DarkSlateGrey&gt; (&lt;blue&gt;&quot;,
+      cecho(string.format(&quot;  &lt;LightSlateGray&gt;%s&lt;DarkSlateGrey&gt; (&quot;,
         tostring(roomname)))
       cechoLink(&quot;&lt;&quot;..mmp.echo_colour..&quot;&gt;&quot;..roomid, 'mmp.gotoRoom('..roomid..')', string.format(&quot;Go to %s (%s)&quot;, roomid, tostring(roomname)), true)
       cecho(string.format(&quot;&lt;DarkSlateGrey&gt;) in &lt;LightSlateGray&gt;%s%s&lt;DarkSlateGrey&gt;.&quot;, mmp.cleanAreaName(tostring(mmp.areatabler[getRoomArea(roomid)])), showmeropis(roomid)))
@@ -5693,7 +5701,7 @@ function mmp.roomFind(query)
 
   else -- new style
     for roomname, roomid in pairs(result) do roomid = tonumber(roomid)
-      cecho(string.format(&quot;  &lt;LightSlateGray&gt;%s&lt;DarkSlateGrey&gt; (&lt;blue&gt;&quot;,
+      cecho(string.format(&quot;  &lt;LightSlateGray&gt;%s&lt;DarkSlateGrey&gt; (&quot;,
         tostring(roomname)))
       cechoLink(&quot;&lt;&quot;..mmp.echo_colour..&quot;&gt;&quot;..roomid, 'mmp.gotoRoom('..roomid..')', string.format(&quot;Go to %s (%s)&quot;, roomid, tostring(roomname)), true)
       cecho(string.format(&quot;&lt;DarkSlateGrey&gt;) in &lt;LightSlateGray&gt;%s%s&lt;DarkSlateGrey&gt;.&quot;, mmp.cleanAreaName(tostring(mmp.areatabler[getRoomArea(roomid)])), showmeropis(roomid)))
@@ -5765,7 +5773,7 @@ function mmp.echoAreaList()
       &quot;&lt;DarkSlateGrey&gt;List of all areas we know of (click to view room list):\n&quot;))
   local getAreaRooms, cecho, fg, echoLink, format, rep = getAreaRooms, cecho, fg, echoLink, string.format, string.rep
   for _, id in pairs(ids) do
-    cecho(format(&quot;&lt;blue&gt;%s%d &quot;, rep(&quot; &quot;, (7-#tostring(id))), id))
+    cecho(format(&quot;&lt;&quot;..mmp.echo_colour..&quot;&gt;%s%d &quot;, rep(&quot; &quot;, (7-#tostring(id))), id))
     -- +1 because getAreaRooms starts counting at 0
     fg(&quot;DarkSlateGrey&quot;) echoLink(rlist[id]..(&quot; &quot;):rep(40-#rlist[id])..&quot;(&quot;..mmp.comma_value(countrooms(id))..&quot; rooms)&quot;, 'mmp.echoRoomList(&quot;'..rlist[id]..'&quot;, true)', &quot;View the room list for &quot;..rlist[id], true) echo(&quot;\n&quot;)
   end
@@ -6966,7 +6974,7 @@ end</script>
     mmp.echo(&quot;Which room specifically would you like to look up?&quot;)
     if not select(2, next(result)) or not tonumber(select(2, next(result))) then
       for roomid, roomname in pairs(result) do roomid = tonumber(roomid)
-        cecho(string.format(&quot;  &lt;LightSlateGray&gt;%s&lt;DarkSlateGrey&gt; (&lt;blue&gt;&quot;,
+        cecho(string.format(&quot;  &lt;LightSlateGray&gt;%s&lt;DarkSlateGrey&gt; (&quot;,
           tostring(roomname)))
         cechoLink(&quot;&lt;&quot;..mmp.echo_colour..&quot;&gt;&quot;..roomid, 'mmp.roomLook('..roomid..')', string.format(&quot;View room details for %s (%s)&quot;, roomid, tostring(roomname)), true)
         cecho(string.format(&quot;&lt;DarkSlateGrey&gt;) in the &lt;LightSlateGray&gt;%s&lt;DarkSlateGrey&gt;.\n&quot;, tostring(mmp.areatabler[getRoomArea(roomid)])))
@@ -6974,7 +6982,7 @@ end</script>
 
     else
       for roomname, roomid in pairs(result) do roomid = tonumber(roomid)
-        cecho(string.format(&quot;  &lt;LightSlateGray&gt;%s&lt;DarkSlateGrey&gt; (&lt;blue&gt;&quot;,
+        cecho(string.format(&quot;  &lt;LightSlateGray&gt;%s&lt;DarkSlateGrey&gt; (&quot;,
           tostring(roomname)))
         cechoLink(&quot;&lt;&quot;..mmp.echo_colour..&quot;&gt;&quot;..roomid, 'mmp.roomLook('..roomid..')', string.format(&quot;View room details for %s (%s)&quot;, roomid, tostring(roomname)), true)
         cecho(string.format(&quot;&lt;DarkSlateGrey&gt;) in the &lt;LightSlateGray&gt;%s&lt;DarkSlateGrey&gt;.\n&quot;, tostring(mmp.areatabler[getRoomArea(roomid)])))
