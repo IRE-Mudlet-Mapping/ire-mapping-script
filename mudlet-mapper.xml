@@ -3933,14 +3933,16 @@ local c = 0
 for area, areaname in pairs(mmp.areatabler) do
   local rooms = getAreaRooms(area) or {}
   for i = 0, #rooms do
-    local char = getRoomChar(rooms[i] or 0)
-    if char == '$' then
-      local exits = getRoomExits(rooms[i] or 0) -- retrieve after $, more efficient
+    if rooms[i] then
+      local char = getRoomChar(rooms[i])
+      if char == '$' then
+        local exits = getRoomExits(rooms[i]) -- retrieve after $, more efficient
 
-      if exits.down then
-        setExit(rooms[i], -1, 'down')
-        mmp.echo(string.format(&quot;Deleted the stockroom exit at %s (#%d in %s)&quot;, getRoomName(rooms[i]), rooms[i], mmp.areatabler[getRoomArea(rooms[i])]))
-        c = c + 1
+        if exits.down then
+          setExit(rooms[i], -1, 'down')
+          mmp.echo(string.format(&quot;Deleted the stockroom exit at %s (#%d in %s)&quot;, getRoomName(rooms[i]), rooms[i], mmp.areatabler[getRoomArea(rooms[i])]))
+          c = c + 1
+        end
       end
     end
 
@@ -4440,6 +4442,7 @@ function createOptionsTable(defaultTable)
 			local opt = rawget(self[index], option)
 			if opt.onChange  and not silent then opt.onChange(option, value) end
 		end
+		if mmp and mmp.clearpathcache then mmp.clearpathcache() end
 	end
 
 
@@ -4645,8 +4648,8 @@ end</script>
   -- allow mapper 'addons' to link their own exits in
   raiseEvent(&quot;mmp link externals&quot;)
 
-  if mmp.game == &quot;achaea&quot; and (mmp.settings.duanathar or mmp.settings.duanatharan or mmp.settings.duantahar) and gmcp.Room and not table.contains(gmcp.Room.Info.details, &quot;indoors&quot;) and (mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Prime&quot;) or mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Meropis&quot;)) then
-    if mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Prime&quot;) then
+  if mmp.game == &quot;achaea&quot; and (mmp.settings.duanathar or mmp.settings.duanatharan or mmp.settings.duantahar) and gmcp.Room and not table.contains(gmcp.Room.Info.details, &quot;indoors&quot;) and (mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Main&quot;) or mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Meropis&quot;)) then
+    if mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Main&quot;) then
       if mmp.settings.duanatharan then
         addSpecialExit(mmp.currentroom, 4882, getcmd(&quot;duanatharan&quot;))
         addSpecialExit(mmp.currentroom, 3885, getcmd(&quot;duanathar&quot;))
@@ -5694,7 +5697,7 @@ function mmp.roomFind(query)
   local function showmeropis(roomid)
     if mmp.game ~= &quot;achaea&quot; then return '' end
 
-    return mmp.oncontinent(getRoomArea(roomid), &quot;Prime&quot;) and '' or ' (Meropis)'
+    return mmp.oncontinent(getRoomArea(roomid), &quot;Main&quot;) and '' or ' (Meropis)'
   end
 
   if not tonumber(select(2, next(result))) then -- old style
@@ -7640,27 +7643,35 @@ end</script>
 
   mmp.envids =
   {
-    Abstract                    = 37,
-    Catacombs                   = 14,
     [&quot;Constructed underground&quot;] = 2,
+    [&quot;Crimson Sea&quot;]             = 45,
     [&quot;Deep Ocean&quot;]              = 24,
     [&quot;Deep Ocean floor&quot;]        = 30,
     [&quot;Dwarven city&quot;]            = 18,
+    [&quot;Lava Fields&quot;]             = 39,
     [&quot;Magma Caves&quot;]             = 31,
     [&quot;Natural underground&quot;]     = 3,
     [&quot;Ocean floor&quot;]             = 34,
+    [&quot;Planar Highway&quot;]          = 42,
+    [&quot;Sanguine River&quot;]          = 44,
     [&quot;Tsol'aa city&quot;]            = 19,
+    [&quot;Vast Ocean&quot;]              = 40,
+    Abstract                    = 37,
+    Agrarian                    = 48,
+    Ausafoss                    = 47,
     Beach                       = 5,
     Blighted                    = 29,
+    Catacombs                   = 14,
     Chaos                       = 38,
     Desert                      = 6,
+    Earthen                     = 43,
+    Flames                      = 49,
     Forest                      = 4,
     Freshwater                  = 22,
     Garden                      = 21,
     Grasslands                  = 7,
     Hills                       = 9,
     Jungle                      = 17,
-    [&quot;Lava Fields&quot;]   = 39,
     Mountains                   = 14,
     Nothing                     = 0,
     Ocean                       = 20,
@@ -7672,13 +7683,15 @@ end</script>
     Ruins                       = 32,
     Sewer                       = 23,
     Skies                       = 10,
+    Storm                       = 50,
     Swamp                       = 15,
     Trees                       = 28,
     Tundra                      = 16,
     Urban                       = 8,
     Valley                      = 13,
-    [&quot;Vast Ocean&quot;]    = 40,
     Vessel                      = 36,
+    Viscera                     = 46,
+    Wastelands                  = 41,
     Water                       = 30,
   }
 
@@ -7701,9 +7714,9 @@ function mmapper_achaea_went_outside()
   if not mmp.autowalking or not (mmp.settings.duanathar or mmp.settings.duanatharan or mmp.settings.duantahar) or mmp.game ~= &quot;achaea&quot; or
     (mmp.currentroom == mmp.speedWalkPath[#mmp.speedWalkPath]) or
     table.contains(gmcp.Room.Info.details, &quot;indoors&quot;) or
-    not (mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Prime&quot;) or
+    not (mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Main&quot;) or
     mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Meropis&quot;))
-    then return end
+  then return end
 
   -- repath, maybe that'll allow us to use wings now.
   local madeduanatharan, madeduanathar, madeduantahar
@@ -7767,6 +7780,26 @@ end</script>
                         <eventHandlerList>
                             <string>mmapper went outside</string>
                             <string>mmapper changed continent</string>
+                        </eventHandlerList>
+                    </Script>
+                    <Script isActive="yes" isFolder="no">
+                        <name>achaea_gaia_whirlpool_reset</name>
+                        <packageName></packageName>
+                        <script>-------------------------------------------------
+--         Put your Lua functions here.        --
+--                                             --
+-- Note that you can also use external Scripts --
+-------------------------------------------------
+function achaea_gaia_whirlpool_reset(event, game)
+	if game == &quot;Achaea&quot; then
+		mmp.whirlString = 'script: send(&quot;enter whirlpool&quot;) if tempWhirlTrigger then killTrigger(tempWhirlTrigger) tempWhirlTrigger = nil end if tempWhirlTimer then killTimer(killWhirlTimer) tempWhirlTimer = nil end tempWhirlTrigger = tempTrigger(&quot;What do you wish to enter?&quot;, [[if tempWhirlTimer then killTimer(tempWhirlTimer) tempWhirlTimer = nil end mmp.echo(&quot;Whirlpool not found here. Trying another room.&quot;) local x = {45817, 45780, 45903, 45868, 46254, 45866} if tempWhirlTrigger then killTrigger(tempWhirlTrigger) tempWhirlTrigger = nil end clearSpecialExits(]]..mmp.currentroom..[[) local y = table.index_of(x, ]]..mmp.currentroom..[[) + 1 if y &gt; #x then y = 1 end addSpecialExit(x[y], 793, mmp.whirlString) mmp.clearpathcache() mmp.gotoRoom(mmp.speedWalkPath[#mmp.speedWalkPath]) mmp.echo(&quot;Moved whirlpool to &quot;..x[y]..&quot;.&quot;)]]) tempWhirlTimer = tempTimer(1, [[if tempWhirlTrigger then killTrigger(tempWhirlTrigger) tempWhirlTrigger = nil end if tempWhirlTimer then killTimer(tempWhirlTimer) tempWhirlTimer = nil end]])'
+		local x = {45817, 45780, 45903, 45868, 46254, 45866}
+		for i, v in ipairs(x) do clearSpecialExits(v) end
+		addSpecialExit(45868, 793, mmp.whirlString)
+	end
+end</script>
+                        <eventHandlerList>
+                            <string>mmp logged in</string>
                         </eventHandlerList>
                     </Script>
                 </Script>
@@ -8777,7 +8810,7 @@ end</script>
                         </eventHandlerList>
                     </Script>
                 </Script>
-                <Script isActive="yes" isFolder="no">
+                <Script isActive="no" isFolder="no">
                     <name>mmp_see_dl_errors</name>
                     <packageName></packageName>
                     <script>-- this should be off by default
@@ -8806,6 +8839,7 @@ end</script>
                         <string>sys2DMapLoad</string>
                         <string>sys3DMapLoad</string>
                         <string>sysMapDownloadEvent</string>
+                        <string>mapOpenEvent</string>
                     </eventHandlerList>
                 </Script>
             </Script>
