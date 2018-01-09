@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE MudletPackage>
-<MudletPackage version="1.0">
+<MudletPackage version="1.001">
     <TriggerPackage>
         <TriggerGroup isActive="yes" isFolder="yes" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
             <name>Mudlet Mapper</name>
@@ -1530,8 +1530,10 @@ mmp.pdb_lastupdate = {}
                     <regexCodeList>
                         <string>You scent at the air, your skilled nose picking up the faint traces of others in the surrounding area.</string>
                         <string>You snort and snuffle at the air, sensing through a ridiculous pig nose upon your face the faint traces of others in the surrounding area.</string>
+                        <string>A pert little nose takes in a delicate whiff of your surroundings, sensing the faint traces of others in the nearby area.</string>
                     </regexCodeList>
                     <regexCodePropertyList>
+                        <integer>3</integer>
                         <integer>3</integer>
                         <integer>3</integer>
                     </regexCodePropertyList>
@@ -2319,6 +2321,107 @@ cecho(&quot;&lt;orange_red&gt;)&quot;)</script>
                         </regexCodePropertyList>
                     </Trigger>
                 </Trigger>
+                <TriggerGroup isActive="yes" isFolder="yes" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+                    <name>Rifts and Paths</name>
+                    <script></script>
+                    <triggerType>0</triggerType>
+                    <conditonLineDelta>0</conditonLineDelta>
+                    <mStayOpen>0</mStayOpen>
+                    <mCommand></mCommand>
+                    <packageName></packageName>
+                    <mFgColor>#ff0000</mFgColor>
+                    <mBgColor>#ffff00</mBgColor>
+                    <mSoundFile></mSoundFile>
+                    <colorTriggerFgColor>#000000</colorTriggerFgColor>
+                    <colorTriggerBgColor>#000000</colorTriggerBgColor>
+                    <regexCodeList/>
+                    <regexCodePropertyList/>
+                    <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+                        <name>Succesful transverse</name>
+                        <script>if mmp.game~= &quot;lusternia&quot; then return end
+mmp.registerTransverseExit()
+</script>
+                        <triggerType>0</triggerType>
+                        <conditonLineDelta>0</conditonLineDelta>
+                        <mStayOpen>0</mStayOpen>
+                        <mCommand></mCommand>
+                        <packageName></packageName>
+                        <mFgColor>#ff0000</mFgColor>
+                        <mBgColor>#ffff00</mBgColor>
+                        <mSoundFile></mSoundFile>
+                        <colorTriggerFgColor>#000000</colorTriggerFgColor>
+                        <colorTriggerBgColor>#000000</colorTriggerBgColor>
+                        <regexCodeList>
+                            <string>^You place your hands on .+ and find the link to .+\. Pulsating energy flares throughout your field of vision, and you find yourself tumbling through the aether pathways\.$</string>
+                        </regexCodeList>
+                        <regexCodePropertyList>
+                            <integer>1</integer>
+                        </regexCodePropertyList>
+                    </Trigger>
+                    <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+                        <name>Failed transverse</name>
+                        <script>if mmp.game~= &quot;lusternia&quot; then return end
+mmp.clearTransverse()</script>
+                        <triggerType>0</triggerType>
+                        <conditonLineDelta>0</conditonLineDelta>
+                        <mStayOpen>0</mStayOpen>
+                        <mCommand></mCommand>
+                        <packageName></packageName>
+                        <mFgColor>#ff0000</mFgColor>
+                        <mBgColor>#ffff00</mBgColor>
+                        <mSoundFile></mSoundFile>
+                        <colorTriggerFgColor>#000000</colorTriggerFgColor>
+                        <colorTriggerBgColor>#000000</colorTriggerBgColor>
+                        <regexCodeList>
+                            <string>You cannot find a planar gate here.</string>
+                        </regexCodeList>
+                        <regexCodePropertyList>
+                            <integer>3</integer>
+                        </regexCodePropertyList>
+                    </Trigger>
+                    <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+                        <name>Succesful pathfind</name>
+                        <script>if mmp.game~= &quot;lusternia&quot; then return end
+mmp.registerPathfind()</script>
+                        <triggerType>0</triggerType>
+                        <conditonLineDelta>0</conditonLineDelta>
+                        <mStayOpen>0</mStayOpen>
+                        <mCommand></mCommand>
+                        <packageName></packageName>
+                        <mFgColor>#ff0000</mFgColor>
+                        <mBgColor>#ffff00</mBgColor>
+                        <mSoundFile></mSoundFile>
+                        <colorTriggerFgColor>#000000</colorTriggerFgColor>
+                        <colorTriggerBgColor>#000000</colorTriggerBgColor>
+                        <regexCodeList>
+                            <string>You squat down and narrow your eyes, finally finding a mystic pathway that twists and turns in the distance. Before it slips away, you dash forward and rush along its winding tracks.</string>
+                        </regexCodeList>
+                        <regexCodePropertyList>
+                            <integer>3</integer>
+                        </regexCodePropertyList>
+                    </Trigger>
+                    <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+                        <name>failed pathfind</name>
+                        <script>if mmp.game~= &quot;lusternia&quot; then return end
+mmp.clearPathfind()</script>
+                        <triggerType>0</triggerType>
+                        <conditonLineDelta>0</conditonLineDelta>
+                        <mStayOpen>0</mStayOpen>
+                        <mCommand></mCommand>
+                        <packageName></packageName>
+                        <mFgColor>#ff0000</mFgColor>
+                        <mBgColor>#ffff00</mBgColor>
+                        <mSoundFile></mSoundFile>
+                        <colorTriggerFgColor>#000000</colorTriggerFgColor>
+                        <colorTriggerBgColor>#000000</colorTriggerBgColor>
+                        <regexCodeList>
+                            <string>You cannot find a pathway here.</string>
+                        </regexCodeList>
+                        <regexCodePropertyList>
+                            <integer>3</integer>
+                        </regexCodePropertyList>
+                    </Trigger>
+                </TriggerGroup>
             </TriggerGroup>
             <TriggerGroup isActive="yes" isFolder="yes" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
                 <name>Imperian</name>
@@ -4339,6 +4442,90 @@ centerview(from)</script>
                 <packageName></packageName>
                 <regex>^getpath (?:from )?(\d+) (?:to )?(\d+)$</regex>
             </Alias>
+            <AliasGroup isActive="yes" isFolder="yes">
+                <name>Game-specific</name>
+                <script></script>
+                <command></command>
+                <packageName></packageName>
+                <regex></regex>
+                <AliasGroup isActive="yes" isFolder="yes">
+                    <name>Lusternia</name>
+                    <script></script>
+                    <command></command>
+                    <packageName></packageName>
+                    <regex></regex>
+                    <Alias isActive="yes" isFolder="no">
+                        <name>Lock or unlock pathfinding exits</name>
+                        <script>mmp.lockpaths(matches[2]:lower()==&quot;lock&quot;)</script>
+                        <command></command>
+                        <packageName></packageName>
+                        <regex>(?i)^(lock|unlock) paths$</regex>
+                    </Alias>
+                    <Alias isActive="yes" isFolder="no">
+                        <name>Link through manse</name>
+                        <script>local portalRooms = {
+gaudiguch=&quot;19861&quot;,
+glomdoring=&quot;7747&quot;,
+celest=&quot;6834&quot;,
+serenwilde=&quot;6833&quot;,
+hallifax=&quot;19937&quot;,
+magnagora=&quot;6832&quot;,
+aetherplex=&quot;6831&quot;,
+}
+
+if mmp.game ~= &quot;lusternia&quot; then return end
+matches[2]=matches[2]:lower()
+matches[3]=matches[3]:lower()
+local manse, city
+if portalRooms[matches[2]] then
+	city=matches[2]
+	manse=matches[3]
+elseif portalRooms[matches[3]] then
+	city=matches[3]
+	manse=matches[2]
+else
+	mmp.echo(&quot;Invalid city&quot;)
+	return
+end
+if gmcp.Room.Info.area~=&quot;an aether manse&quot; then
+	mmp.echo(&quot;You are not in a manse&quot;)
+else
+	if	searchRoom(gmcp.Room.Info.num):sub(0,11)==&quot;searchRoom:&quot; then
+		addRoom(gmcp.Room.Info.num)
+	end
+	if getRoomArea(gmcp.Room.Info.num)==-1 then
+		setRoomArea(gmcp.Room.Info.num,addAreaName(manse:title()..&quot; Manse&quot;))
+	end
+	setRoomChar(gmcp.Room.Info.num,&quot;A&quot;)
+	addSpecialExit(portalRooms[city],gmcp.Room.Info.num,&quot;Portal enter &quot;..manse)
+	addSpecialExit(portalRooms[&quot;aetherplex&quot;],gmcp.Room.Info.num,&quot;Portal enter &quot;..manse)
+	addSpecialExit(gmcp.Room.Info.num,portalRooms[&quot;aetherplex&quot;],&quot;portal exit aetherplex&quot;)
+	addSpecialExit(gmcp.Room.Info.num,portalRooms[city],&quot;portal exit &quot;..city)
+	mmp.echo(city:title()..&quot; has been linked to the Aetherplex through &quot;..manse:title())
+end</script>
+                        <command></command>
+                        <packageName></packageName>
+                        <regex>(?i)^manselink (\w+) (\w+)$</regex>
+                    </Alias>
+                    <Alias isActive="yes" isFolder="no">
+                        <name>Astral jumping boots</name>
+                        <script>mmp.astroboots(matches[2]:lower()==&quot;on&quot;)
+mmp.echo(&quot;&lt;yellow&gt;Astral jumping &quot;..(matches[2]:lower()==&quot;on&quot; and &quot;enabled&quot; or &quot;disabled&quot;)..&quot;!&quot;)</script>
+                        <command></command>
+                        <packageName></packageName>
+                        <regex>(?i)astroboots (on|off)$</regex>
+                    </Alias>
+                    <Alias isActive="yes" isFolder="no">
+                        <name>Wildnodes toggle</name>
+                        <script>if mmp.game ~= &quot;lusternia&quot; then return end
+mmp.wildnodes(matches[2]:lower()==&quot;on&quot;)
+mmp.echo(&quot;All astral nodes have been &quot;..(matches[2]:lower()==&quot;on&quot; and &quot;&quot; or &quot;un&quot;)..&quot;linked.&quot;)</script>
+                        <command></command>
+                        <packageName></packageName>
+                        <regex>(?i)^nodes (on|off)$</regex>
+                    </Alias>
+                </AliasGroup>
+            </AliasGroup>
         </AliasGroup>
     </AliasPackage>
     <ActionPackage/>
@@ -8154,6 +8341,183 @@ end
                         <eventHandlerList>
                             <string>mmapper went outside</string>
                         </eventHandlerList>
+                    </Script>
+                    <Script isActive="yes" isFolder="no">
+                        <name>Astral utilities</name>
+                        <packageName></packageName>
+                        <script>local astralExits = {
+	{5079,5175,&quot;n&quot;},
+	{4072,5065,&quot;w&quot;},
+	{5088, 5132, &quot;e&quot;},
+	{5145, 5176, &quot;s&quot;},
+	{5138, 5146, &quot;e&quot;},
+	{5158, 5192, &quot;s&quot;},
+	{5152, 5041, &quot;e&quot;},
+	{5031, 5042, &quot;e&quot;},
+	{5022, 5131, &quot;n&quot;},
+	{5116, 5198, &quot;w&quot;},
+	{5130, 5096, &quot;e&quot;},
+	{5089, 5058, &quot;n&quot;},
+	{5102, 5115, &quot;e&quot;},
+	{5111, 5159, &quot;e&quot;},	
+	{5103, 5071, &quot;n&quot;},
+	{5059, 5053, &quot;w&quot;},
+	{5187, 5169, &quot;w&quot;},
+	{5190, 5204, &quot;e&quot;},
+	{5065,5072,&quot;e&quot;},
+}
+local mirrorExits = {
+	n=&quot;s&quot;,
+	ne=&quot;sw&quot;,
+	e=&quot;w&quot;,
+	se=&quot;nw&quot;,
+	s=&quot;n&quot;,
+	sw=&quot;ne&quot;,
+	w=&quot;e&quot;,
+	nw=&quot;se&quot;,
+	u=&quot;d&quot;,
+	d=&quot;u&quot;,
+	out=&quot;in&quot;,
+	[&quot;in&quot;]=&quot;out&quot;,
+}
+function mmp.astroboots(bool)
+	if mmp.game ~= &quot;lusternia&quot; then return end
+	for k, v in pairs(astralExits) do
+		if bool then
+			addSpecialExit(v[1],v[2],&quot;astrojump&quot;)
+			setExitWeight(v[1],&quot;astrojump&quot;,5)
+			addSpecialExit(v[2],v[1],&quot;astrojump&quot;)
+			setExitWeight(v[2],&quot;astrojump&quot;,5)
+		else
+			removeSpecialExit(v[1],&quot;astrojump&quot;)
+			removeSpecialExit(v[2],&quot;astrojump&quot;)
+		end
+	end
+end
+
+function mmp.wildnodes(bool)
+	if mmp.game ~= &quot;lusternia&quot; then return end
+	for k, v in pairs(astralExits) do
+		if bool then
+			setExit(v[1],v[2],v[3])
+			setExit(v[2],v[1],mirrorExits[v[3]])
+		else
+			setExit(v[1],-1,v[3])
+			setExit(v[2],-1,mirrorExits[v[3]])
+		end
+	end
+end</script>
+                        <eventHandlerList/>
+                    </Script>
+                    <Script isActive="yes" isFolder="no">
+                        <name>Transverse and pathfind</name>
+                        <packageName></packageName>
+                        <script>local planes = {
+[&quot;the Prime Material Plane&quot;]=&quot;prime&quot;,
+[&quot;the Ethereal Plane&quot;]=&quot;ethereal&quot;,
+[&quot;the Water Elemental Plane&quot;]=&quot;elemental&quot;,
+[&quot;the Earth Elemental Plane&quot;]=&quot;elemental&quot;,
+[&quot;the Air Elemental Plane&quot;]=&quot;elemental&quot;,
+[&quot;the Fire Elemental Plane&quot;]=&quot;elemental&quot;,
+[&quot;Celestia, Plane of Light&quot;]=&quot;cosmic&quot;,
+[&quot;the Cosmic Plane of Vortex&quot;]=&quot;cosmic&quot;,
+[&quot;the Cosmic Plane of Continuum&quot;]=&quot;cosmic&quot;,
+[&quot;the Tainted Plane of Nil&quot;]=&quot;cosmic&quot;,
+[&quot;the Astral Plane&quot;]=&quot;astral&quot;,
+}
+
+local transverseCMD = transverseCMD
+local transversedFrom = transversedFrom
+local lastPlane = lastPlane
+function testytest()
+	echo(transversedFrom)
+	echo(transverseCMD)
+	echo(lastPlane)
+end
+
+function mmp.transverse(_, command)
+	command = command:lower()
+	if command:sub(0,11)==&quot;transverse &quot; or command==&quot;pathfind&quot; then
+		transverseCMD = command
+		transversedFrom=gmcp.Room.Info.num
+		lastPlane = planes[gmcp.Room.Info.details[1]]
+	end
+end
+registerAnonymousEventHandler(&quot;sysDataSendRequest&quot;,&quot;mmp.transverse&quot;)
+
+function mmp.registerTransverseExit()
+	if transversedFrom~=gmcp.Room.Info.num then
+		addSpecialExit(transversedFrom,gmcp.Room.Info.num,transverseCMD)
+		setExitWeight(transversedFrom,transverseCMD,10)
+		if lastPlane then
+			addSpecialExit(gmcp.Room.Info.num,transversedFrom,&quot;transverse &quot;..lastPlane)
+			setExitWeight(gmcp.Room.Info.num,&quot;transverse &quot;..lastPlane,10)
+		end
+	end
+end
+
+function mmp.clearTransverse()
+	local otherSide = 0
+	for room, command in pairs(getSpecialExits(gmcp.Room.Info.num)) do
+		if next(command)==transverseCMD then
+			otherSide=room
+		end
+	end
+	for room, command in pairs(getSpecialExits(otherSide) or {}) do
+		if room == gmcp.Room.Info.num and string.sub(next(command),0,11)==&quot;transverse &quot; then
+			removeSpecialExit(otherSide,next(command))
+		end
+	end
+	removeSpecialExit(gmcp.Room.Info.num,transverseCMD)
+	if mmp.autowalking then
+		mmp.autowalking = false
+		mmp.gotoRoom(string.split(next(mmp.showpathcache()),&quot;_&quot;)[2])
+	end
+end
+
+function mmp.registerPathfind()
+	addSpecialExit(transversedFrom,gmcp.Room.Info.num,&quot;pathfind&quot;)
+	setExitWeight(transversedFrom,&quot;pathfind&quot;,6)
+	addSpecialExit(gmcp.Room.Info.num,transversedFrom,&quot;pathfind&quot;)
+	setExitWeight(gmcp.Room.Info.num,&quot;pathfind&quot;,6)
+end
+
+function mmp.clearPathfind()
+	local otherSide = 0
+	for room, command in pairs(getSpecialExits(gmcp.Room.Info.num)) do
+		if next(command)==&quot;pathfind&quot; then
+			otherSide=room
+		end
+	end
+	for room, command in pairs(getSpecialExits(otherSide) or {}) do
+		if room == gmcp.Room.Info.num and next(command)==&quot;pathfind&quot; then
+			removeSpecialExit(otherSide,next(command))
+		end
+	end
+	removeSpecialExit(gmcp.Room.Info.num,&quot;pathfind&quot;)
+	if mmp.autowalking then
+		mmp.autowalking = false
+		mmp.gotoRoom(string.split(next(mmp.showpathcache()),&quot;_&quot;)[2])
+	end
+end
+
+function mmp.lockpaths(bool)
+	local count=0
+	for area, areaname in pairs(mmp.areatabler) do
+		local rooms = getAreaRooms(area) or {}
+		for i = 0, #rooms do
+			local exits = getSpecialExits(rooms[i] or 0)
+			for room,command in pairs(exits or {}) do
+				if next(command)==&quot;pathfind&quot; then
+					count = count+1
+					lockSpecialExit(rooms[i],room,&quot;pathfind&quot;,bool)
+				end
+			end
+		end
+	end
+	mmp.echo((bool and &quot;Locked &quot; or &quot;Unlocked &quot;)..count..&quot; pathfinding exits.&quot;)
+end</script>
+                        <eventHandlerList/>
                     </Script>
                 </Script>
                 <Script isActive="yes" isFolder="no">
