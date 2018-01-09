@@ -5961,62 +5961,55 @@ function mmp.roomArea(otherroom, name, exact)
 end
 
 function mmp.getAreaBorders(areaid)
-	if mmp.debug then
-		mmp.getAreaBordersTimer = mmp.getAreaBordersTimer or createStopWatch()
-		startStopWatch(mmp.getAreaBordersTimer)
-	end
-	
-    local roomlist, endresult = getAreaRooms(areaid), {}
-    -- sometimes getAreaRooms can give us no result :(
-    if not roomlist then mmp.echo(&quot;Sorry, seems we can't go there - getAreaRooms(&quot;..areaid..&quot;) didn't give us any results (Mudlet problem - redownloading the map might help fix it)&quot;) return end
+    if mmp.debug then
+        mmp.getAreaBordersTimer = mmp.getAreaBordersTimer or createStopWatch()
+        startStopWatch(mmp.getAreaBordersTimer)
+    end
+    
+  local roomlist, endresult = getAreaRooms(areaid), {}
+  -- sometimes getAreaRooms can give us no result :(
+  if not roomlist then mmp.echo(&quot;Sorry, seems we can't go there - getAreaRooms(&quot;..areaid..&quot;) didn't give us any results (Mudlet problem - redownloading the map might help fix it)&quot;) return end
 
--- add in specific room ids for islands in the harness-able islands -- PapaGuacamole
-		local isla = {
-			[209] = 30222, -- Ageiro, the Isle of
-			[207] = 19219, -- Tuar, the Island of
-			[162] = 21184, -- Tapoa Island
-			[194] = 13373, -- Ilyrean
-			[351]	= 19740, -- Karbaz Isle
-			[206] = 17768, -- Suleil Island
-			[192] = 31215, -- Zanzibaar
-			[191] = 23351, -- Clockwork Island
-			[180] = 19786, -- Colchis, the Island of
-			[181] = 18443, -- Umbrin, the Port of
-		}
-
-	if mmp.game == &quot;achaea&quot; and mmp.settings.harness and table.contains(isla,areaid)then
-	
-		endresult[isla[areaid]] = getRoomName(isla[areaid])
-	else
-
-	local getRoomExits, getRoomName, getSpecialExitsSwap, contains, pairs = getRoomExits, getRoomName, getSpecialExitsSwap, table.contains, pairs
-
-    -- make a key-value list of room IDs
-    local reverselist = {}
-    for i = 0, #roomlist do reverselist[roomlist[i]] = true end
-
-    -- obtain a room list for each of the room IDs we got
-    --for _, id in pairs(roomlist) do
+  -- make a key-value list of room IDs
+  local reverselist = {}
+  for i = 0, #roomlist do reverselist[roomlist[i]] = true end
+  
+  local getRoomName, contains, pairs = getRoomName, table.contains, pairs
+  if getAllRoomEntrances then
     for i = 0, #roomlist do
       local id = roomlist[i]
-      local exits = getRoomExits(id)
-      for _, to in pairs(exits) do
-        if not reverselist[to] then
-          endresult[id] = getRoomName(id)
-        end
-      end
-      local specialexits = getSpecialExitsSwap(id)
-      for _, to in pairs(specialexits) do
-        if not reverselist[to] then
+      local entrancesFrom = getAllRoomEntrances(id)
+      for remoteRoomIndex = 1, #entrancesFrom do
+        if not reverselist[entrancesFrom[remoteRoomIndex]] then
           endresult[id] = getRoomName(id)
         end
       end
     end
-	end
+  else
+    local getRoomExits, getSpecialExitsSwap = getRoomExits, getSpecialExitsSwap
 
-	if mmp.debug then
-		mmp.echo(&quot;mmp.getAreaBordersTimer() on areaid &quot;..areaid..&quot; took &quot;..stopStopWatch(mmp.getAreaBordersTimer)..&quot;s to run. Returned &quot;..table.size(endresult)..&quot; results.&quot;)
-	end
+      -- obtain a room list for each of the room IDs we got
+      --for _, id in pairs(roomlist) do
+      for i = 0, #roomlist do
+        local id = roomlist[i]
+        local exits = getRoomExits(id)
+        for _, to in pairs(exits) do
+          if not reverselist[to] then
+            endresult[id] = getRoomName(id)
+          end
+        end
+        local specialexits = getSpecialExitsSwap(id)
+        for _, to in pairs(specialexits) do
+          if not reverselist[to] then
+            endresult[id] = getRoomName(id)
+          end
+        end
+      end
+  end
+
+    if mmp.debug then
+        mmp.echo(&quot;mmp.getAreaBordersTimer() on areaid &quot;..areaid..&quot; took &quot;..stopStopWatch(mmp.getAreaBordersTimer)..&quot;s to run. Returned &quot;..table.size(endresult)..&quot; results.&quot;)
+    end
 
     return endresult
 end
@@ -7846,7 +7839,7 @@ function mmp.updateIsles()
 	mmp.addcontinent(181,&quot;Eastern_Isles&quot;) -- Umbrin, the Port of
 	mmp.addcontinent(192,&quot;Eastern_Isles&quot;) -- Zanzibaar
 	mmp.addcontinent(194,&quot;Northern_Isles&quot;) --Ilyrean
---	mmp.addcontinent(???,&quot;Northern_Isles&quot;) --Suliel Island
+	mmp.addcontinent(206,&quot;Northern_Isles&quot;) --Suliel Island
 	mmp.addcontinent(351,&quot;Northern_Isles&quot;) --Karbaz
 	mmp.addcontinent(209,&quot;Western_Isles&quot;) -- Ageiro, the Isle of
 	mmp.addcontinent(162,&quot;Western_Isles&quot;) -- Tapoa Island
