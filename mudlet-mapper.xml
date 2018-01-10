@@ -4679,7 +4679,10 @@ end</script>
       madeduanathar = true
     end
 
-	elseif mmp.game == &quot;achaea&quot; and mmp.settings.harness then -- need to add in continent shizzle here -- PapaGuacamole
+	-- Stratospheric Harness support -- PapaGuacamole
+	elseif mmp.game == &quot;achaea&quot; and mmp.settings.harness and not table.contains(gmcp.Room.Info.details, &quot;indoors&quot;)
+	  and (mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Eastern_Isles&quot;) or mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Northern_Isles&quot;) or mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Western_Isles&quot;))
+		then
 			-- eastern isles
 			if mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Eastern_Isles&quot;) then
 				addSpecialExit(mmp.currentroom, 54231, getcmd(&quot;harness&quot;))
@@ -4688,12 +4691,12 @@ end</script>
 			-- northern isles
 			elseif mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Northen_Isles&quot;) then
 				addSpecialExit(mmp.currentroom, 48719, getcmd(&quot;harness&quot;))
-				--mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
+				mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
 				madeNorth = true
 			-- western isles
 			elseif mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Western_Isles&quot;) then
 				addSpecialExit(mmp.currentroom, 54632, getcmd(&quot;harness&quot;))
-				--mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
+				mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
 				madeWest = true
 			end
 
@@ -4994,7 +4997,50 @@ function mmp.gotoArea (where, number, dashtype, exact)
     return
   end
 
-  local getStopWatchTime, tonumber, getPath = getStopWatchTime, tonumber, mmp.getPath
+	-- add in temporary links to clouds / stratospheres to enable pathfinding, auto-repath will occur when moved to outside -- PapaGuacamole
+	local madeEast, madeNorth, madeWest
+	if mmp.game == &quot;achaea&quot; and mmp.settings.harness
+	  and (mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Eastern_Isles&quot;) or mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Northern_Isles&quot;) or mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Western_Isles&quot;))
+		then			 	
+			if mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Eastern_Isles&quot;) then
+				if not table.contains(gmcp.Room.Info.details, &quot;indoors&quot;) then -- make it here
+					addSpecialExit(mmp.currentroom, 54231, [[script:send(&quot;shake harness&quot;,false)]])				
+				elseif getRoomArea(mmp.currentroom) == 192 then -- Zanzibaar
+					addSpecialExit(31215, 54231, [[script:send(&quot;shake harness&quot;,false)]])
+				elseif getRoomArea(mmp.currentroom) == 191 then -- Clockwork Isle
+					addSpecialExit(23351, 54231, [[script:send(&quot;shake harness&quot;,false)]])
+				elseif getRoomArea(mmp.currentroom) == 180 then -- Colchis, the Isle of
+					addSpecialExit(19786, 54231, [[script:send(&quot;shake harness&quot;,false)]])
+				else --if getRoomArea(mmp.currentroom) == 181 then -- Umbrin, the Port of
+					addSpecialExit(18443, 54231, [[script:send(&quot;shake harness&quot;,false)]])
+				end
+				madeEast = true
+			elseif mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Northern_Isles&quot;) then
+				if not table.contains(gmcp.Room.Info.details, &quot;indoors&quot;) then -- make it here
+					addSpecialExit(mmp.currentroom, 48719, [[script:send(&quot;shake harness&quot;,false)]])				
+				elseif getRoomArea(mmp.currentroom) == 194 then -- Ilyrean
+					addSpecialExit(13373, 48719, [[script:send(&quot;shake harness&quot;,false)]])
+				elseif getRoomArea(mmp.currentroom) == 351 then -- Karbaz
+					addSpecialExit(19740, 48719, [[script:send(&quot;shake harness&quot;,false)]])
+				else --if getRoomArea(mmp.currentroom) == 206 or getRoomArea(mmp.currentroom) = 294 then -- Suliel Island / Suliel Island (Barricades)
+					addSpecialExit(17768, 48719, [[script:send(&quot;shake harness&quot;,false)]])
+				end
+				madeNorth = true
+			else --if mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Western_Isles&quot;) then
+				if not table.contains(gmcp.Room.Info.details, &quot;indoors&quot;) then -- make it here
+					addSpecialExit(mmp.currentroom, 54632, [[script:send(&quot;shake harness&quot;,false)]])				
+				elseif getRoomArea(mmp.currentroom) == 162 then --Tapoa
+					addSpecialExit(21184, 54632, [[script:send(&quot;shake harness&quot;,false)]])
+				elseif getRoomArea(mmp.currentroom) == 207 then --Tuar
+					addSpecialExit(19219, 54632, [[script:send(&quot;shake harness&quot;,false)]])
+				else --if getRoomArea(mmp.currenroom) == 209 then --Ageiro
+					addSpecialExit(30222, 54632, [[script:send(&quot;shake harness&quot;,false)]])
+				end
+				madeWest = true
+			end			
+	end
+  
+	local getStopWatchTime, tonumber, getPath = getStopWatchTime, tonumber, mmp.getPath
 
 --mmp.echo(string.format(&quot;Have %s area edge nodes, %ss taken so far...&quot;, table.size(possibleRooms), getStopWatchTime(mmp.computeShortestWatch)))
 
@@ -5029,8 +5075,21 @@ function mmp.gotoArea (where, number, dashtype, exact)
     mmp.speedWalkDir = {}
     speedWalkCounter = 0
     raiseEvent(&quot;mmapper failed path&quot;)
+		if madeEast or madeNorth or madeWest then
+		if madeEast then mmp.clearspecials{54231} end
+		if madeNorth then mmp.clearspecials{48719} end
+		if madeWest then mmp.clearspecials{54632} end
+  	raiseEvent(&quot;mmp clear externals&quot;)
+	end
     return
   end
+
+	if madeEast or madeNorth or madeWest then
+		if madeEast then mmp.clearspecials{54231} end
+		if madeNorth then mmp.clearspecials{48719} end
+		if madeWest then mmp.clearspecials{54632} end
+  	raiseEvent(&quot;mmp clear externals&quot;)
+	end
 
   mmp.gotoRoom(shortestBorder, dashtype)
 end
@@ -7840,6 +7899,7 @@ function mmp.updateIsles()
 	mmp.addcontinent(192,&quot;Eastern_Isles&quot;) -- Zanzibaar
 	mmp.addcontinent(194,&quot;Northern_Isles&quot;) --Ilyrean
 	mmp.addcontinent(206,&quot;Northern_Isles&quot;) --Suliel Island
+	mmp.addcontinent(294,&quot;Northern_Isles&quot;) --Suliel Island (Barricades)
 	mmp.addcontinent(351,&quot;Northern_Isles&quot;) --Karbaz
 	mmp.addcontinent(209,&quot;Western_Isles&quot;) -- Ageiro, the Isle of
 	mmp.addcontinent(162,&quot;Western_Isles&quot;) -- Tapoa Island
@@ -7850,33 +7910,44 @@ function mmp.updateIsles()
 end
 		
 function mmapper_achaea_went_outside_harness()
+
 	local area = mmp.getAreaName(mmp.currentroom)
   if not mmp.autowalking or not mmp.settings.harness or not (mmp.game == &quot;achaea&quot;) or
     (mmp.currentroom == mmp.speedWalkPath[#mmp.speedWalkPath]) or
     table.contains(gmcp.Room.Info.details, &quot;indoors&quot;) or
     (not mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Eastern_Isles&quot;) and not mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Northern_Isles&quot;) and not mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Western_Isles&quot;))
 		then return end
-		
-		local madeEast, madeNorth, madeWest
+
+	local madeEast, madeNorth, madeWest
 			
-		if mmp.settings.harness then --PapaGuacamole			
-			-- eastern isles
-			if mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Eastern_Isles&quot;) then
-				addSpecialExit(mmp.currentroom, 54231, getcmd(&quot;harness&quot;))
-				mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
-				madeEast = true
-			-- northern isles
-			elseif mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Northen_Isles&quot;) then
-				addSpecialExit(mmp.currentroom, 48719, getcmd(&quot;harness&quot;))
-				--mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
-				madeNorth = true
-			-- western isles
-			elseif mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Western_Isles&quot;) then
-				addSpecialExit(mmp.currentroom, 54632, getcmd(&quot;harness&quot;))
-				--mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
-				madeWest = true
-			end
-		end
+	if mmp.settings.harness then --PapaGuacamole			
+  	-- eastern isles
+  	if mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Eastern_Isles&quot;) then
+  		addSpecialExit(mmp.currentroom, 54231, [[script:send(&quot;shake harness&quot;)]])
+  		mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
+  		madeEast = true
+  	-- northern isles
+  	elseif mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Northern_Isles&quot;) then
+  		addSpecialExit(mmp.currentroom, 48719, [[script:send(&quot;shake harness&quot;)]])
+  		mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
+  		madeNorth = true
+  	-- western isles
+  	elseif mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Western_Isles&quot;) then
+  		addSpecialExit(mmp.currentroom, 54632, [[script:send(&quot;shake harness&quot;)]])
+  		mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
+  		madeWest = true
+  	end
+  end
+
+	mmp.getPath(mmp.currentroom, mmp.speedWalkPath[#mmp.speedWalkPath]) -- don't need to check return value since that fact shouldnt've changed
+	-- if our path didn't change, re-instate it as it was (since the new path starts from this room that we checked at)
+	print(speedWalkDir[1])
+	if speedWalkDir[1]:find(&quot;harness&quot;, 1, true) then
+		speedWalkCounter = 0
+		mmp.echo(&quot;We got outside - going to shortcut with harness.&quot;)
+		mmp.gotoRoom(mmp.speedWalkPath[#mmp.speedWalkPath])
+		mmp.ignore_speedwalking = true
+ 	end
 	
   if madeEast then mmp.clearspecials{54231}
   elseif madeNorth then mmp.clearspecials{48719}
