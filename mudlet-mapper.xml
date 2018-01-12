@@ -8380,10 +8380,10 @@ local mirrorExits = {
 	out=&quot;in&quot;,
 	[&quot;in&quot;]=&quot;out&quot;,
 }
-function mmp.astroboots(bool)
+function mmp.astroboots(create)
 	if mmp.game ~= &quot;lusternia&quot; then return end
 	for k, v in pairs(astralExits) do
-		if bool then
+		if create then
 			addSpecialExit(v[1],v[2],&quot;astrojump&quot;)
 			setExitWeight(v[1],&quot;astrojump&quot;,5)
 			addSpecialExit(v[2],v[1],&quot;astrojump&quot;)
@@ -8395,10 +8395,10 @@ function mmp.astroboots(bool)
 	end
 end
 
-function mmp.wildnodes(bool)
+function mmp.wildnodes(create)
 	if mmp.game ~= &quot;lusternia&quot; then return end
 	for k, v in pairs(astralExits) do
-		if bool then
+		if create then
 			setExit(v[1],v[2],v[3])
 			setExit(v[2],v[1],mirrorExits[v[3]])
 		else
@@ -8501,7 +8501,7 @@ function mmp.clearPathfind()
 	end
 end
 
-function mmp.lockpaths(bool)
+function mmp.lockpaths(lock)
 	local count=0
 	for area, areaname in pairs(mmp.areatabler) do
 		local rooms = getAreaRooms(area) or {}
@@ -8510,12 +8510,12 @@ function mmp.lockpaths(bool)
 			for room,command in pairs(exits or {}) do
 				if next(command)==&quot;pathfind&quot; then
 					count = count+1
-					lockSpecialExit(rooms[i],room,&quot;pathfind&quot;,bool)
+					lockSpecialExit(rooms[i],room,&quot;pathfind&quot;,lock)
 				end
 			end
 		end
 	end
-	mmp.echo((bool and &quot;Locked &quot; or &quot;Unlocked &quot;)..count..&quot; pathfinding exits.&quot;)
+	mmp.echo((lock and &quot;Locked &quot; or &quot;Unlocked &quot;)..count..&quot; pathfinding exits.&quot;)
 end</script>
                         <eventHandlerList/>
                     </Script>
