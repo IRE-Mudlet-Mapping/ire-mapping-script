@@ -7738,7 +7738,7 @@ function mmapper_achaea_went_outside()
     if mmp.settings.duanatharan then
       addSpecialExit(mmp.currentroom, 4882, getcmd(&quot;duanatharan&quot;))
       addSpecialExit(mmp.currentroom, 3885, getcmd(&quot;duanathar&quot;))
-      --mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
+      mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
       madeduanatharan = true
     elseif mmp.settings.duantahar then
       addSpecialExit(mmp.currentroom, 42319, getcmd(&quot;duanathar&quot;))
@@ -7747,14 +7747,14 @@ function mmapper_achaea_went_outside()
       madeduantahar = true
     else
       addSpecialExit(mmp.currentroom, 3885, getcmd(&quot;duanathar&quot;))
-      --mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
+      mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
       madeduanathar = true
     end
   elseif mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Meropis&quot;) then
     if mmp.settings.duanatharan then
       addSpecialExit(mmp.currentroom, 51603, getcmd(&quot;duanatharan&quot;))
       addSpecialExit(mmp.currentroom, 51188, getcmd(&quot;duanathar&quot;))
-      --mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
+      mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
       madeduanatharan = true
     elseif mmp.settings.duantahar then
       addSpecialExit(mmp.currentroom, 42319, getcmd(&quot;duanathar&quot;))
@@ -7763,7 +7763,7 @@ function mmapper_achaea_went_outside()
       madeduantahar = true
     else
       addSpecialExit(mmp.currentroom, 51188, getcmd(&quot;duanathar&quot;))
-      --mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
+      mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
       madeduanathar = true
     end
   else
