@@ -7736,7 +7736,7 @@ function mmapper_achaea_went_outside()
       [[script:send(&quot;say *]]..(mmp.settings.winglanguage)..[[ ]]..word..[[&quot;, false)]]
   end
 
-  if mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Prime&quot;) then
+  if mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Main&quot;) then
     if mmp.settings.duanatharan then
       addSpecialExit(mmp.currentroom, 4882, getcmd(&quot;duanatharan&quot;))
       addSpecialExit(mmp.currentroom, 3885, getcmd(&quot;duanathar&quot;))
