@@ -7907,7 +7907,8 @@ end
 		
 function mmapper_achaea_went_outside_harness()
 
-	local areaid = mmp.getAreaName(mmp.currentroom)
+	local area = mmp.getAreaName(mmp.currentroom)
+	local areaid = getRoomArea(mmp.currentroom)
   if not mmp.autowalking or not mmp.settings.harness or not (mmp.game == &quot;achaea&quot;) or
     (mmp.currentroom == mmp.speedWalkPath[#mmp.speedWalkPath]) or
     table.contains(gmcp.Room.Info.details, &quot;indoors&quot;) or
