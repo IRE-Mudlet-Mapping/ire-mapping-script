@@ -4656,7 +4656,7 @@ end</script>
   -- allow mapper 'addons' to link their own exits in
   raiseEvent(&quot;mmp link externals&quot;)
 
-  if mmp.game == &quot;achaea&quot; and (mmp.settings.duanathar or mmp.settings.duanatharan or mmp.settings.duantahar) and gmcp.Room and not table.contains(gmcp.Room.Info.details, &quot;indoors&quot;) and (mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Main&quot;) or mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Meropis&quot;)) then
+  if mmp.game == &quot;achaea&quot; and (mmp.settings.duanathar or mmp.settings.duanatharan or mmp.settings.duantahar) and gmcp.Room and not table.contains(gmcp.Room.Info.details, &quot;indoors&quot;) then
     if mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Main&quot;) then
       if mmp.settings.duanatharan then
         addSpecialExit(mmp.currentroom, 4882, getcmd(&quot;duanatharan&quot;))
@@ -7721,9 +7721,7 @@ end</script>
 function mmapper_achaea_went_outside()
   if not mmp.autowalking or not (mmp.settings.duanathar or mmp.settings.duanatharan or mmp.settings.duantahar) or mmp.game ~= &quot;achaea&quot; or
     (mmp.currentroom == mmp.speedWalkPath[#mmp.speedWalkPath]) or
-    table.contains(gmcp.Room.Info.details, &quot;indoors&quot;) or
-    not (mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Main&quot;) or
-    mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Meropis&quot;))
+    table.contains(gmcp.Room.Info.details, &quot;indoors&quot;)
   then return end
 
   -- repath, maybe that'll allow us to use wings now.
@@ -7768,6 +7766,8 @@ function mmapper_achaea_went_outside()
       --mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
       madeduanathar = true
     end
+  else
+    return
   end
 
   mmp.getPath(mmp.currentroom, mmp.speedWalkPath[#mmp.speedWalkPath]) -- don't need to check return value since that fact shouldnt've changed
