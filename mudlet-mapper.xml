@@ -4785,7 +4785,7 @@ end</script>
             <Script isActive="yes" isFolder="no">
                 <name>Remove other game's options on login</name>
                 <packageName></packageName>
-                <script>local gameMap = {
+                <script>local whatGame = {
 belt={lusternia=true},
 blossom={lusternia=true},
 bonecurio={lusternia=true},
@@ -4796,6 +4796,7 @@ cubix={lusternia=true},
 duanathar={achaea=true},
 duanatharan={achaea=true},
 duantahar={achaea=true},
+duanatharic={achaea=true},
 facecurio={lusternia=true},
 feathercurio={lusternia=true},
 figurecurio={lusternia=true},
@@ -4828,8 +4829,8 @@ function mmp.rebuildOptionsTable(_,game)
 	for index, settings in pairs(mmp.settings) do
 		if type(index)==&quot;table&quot; then
 			for k, v in pairs(settings) do
-				if gameMap[k] then
-					if gameMap[k][game]==nil then
+				if whatGame[k] then
+					if whatGame[k][game]==nil then
 						settings[k]=nil
 					end
 				end
