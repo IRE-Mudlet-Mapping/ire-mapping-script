@@ -464,7 +464,7 @@ mmp.echo(&quot;We're connected to Achaea.&quot;)</script>
                         <colorTriggerBgColor>#000000</colorTriggerBgColor>
                         <regexCodeList>
                             <string>^You see that (\w+) is at (.+)\.$</string>
-                            <string>^You see that (\w+) is located at (.+) in (.+)\.$</string>
+                            <string>^You see that (\w+) is located at (.+) in .+\.$</string>
                         </regexCodeList>
                         <regexCodePropertyList>
                             <integer>1</integer>
