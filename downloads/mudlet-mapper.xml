@@ -4721,7 +4721,7 @@ mmp.speedWalkPath = mmp.speedWalkPath or {}
 mmp.speedWalkDir = mmp.speedWalkDir or {}
 
 
-local newversion = &quot;18.1.4&quot;
+local newversion = &quot;18.1.5&quot;
 if mmp.version and mmp.version ~= newversion then
   if not mmp.game then mmp.echo(&quot;Mapper script updated - Thanks! I don't know what game are you connected to, though - so please reconnect, if you could.&quot;)
   else mmp.echo(&quot;Mapper script updated - thanks! You don't need to restart.&quot;) end
@@ -4809,6 +4809,67 @@ function mmp.startup()
   echoLink(&quot;homepage&quot;,&quot;(openUrl or openURL)'http://wiki.mudlet.org/w/IRE_mapping_script'&quot;, &quot;Clicky clicky to read up on what's this about&quot;)
   echo(&quot;)\n&quot;)
 end</script>
+                <eventHandlerList/>
+            </Script>
+            <Script isActive="yes" isFolder="no">
+                <name>Remove other game's options on login</name>
+                <packageName></packageName>
+                <script>local whatGame = {
+belt={lusternia=true},
+blossom={lusternia=true},
+bonecurio={lusternia=true},
+caravan={imperian=true},
+cookie={lusternia=true},
+crowdmap={achaea=true},
+cubix={lusternia=true},
+dash={achaea=true,imperian=true,aetolia=true},
+duanathar={achaea=true},
+duanatharan={achaea=true},
+duantahar={achaea=true},
+duanatharic={achaea=true},
+facecurio={lusternia=true},
+feathercurio={lusternia=true},
+figurecurio={lusternia=true},
+fingerblade={lusternia=true},
+flowercurio={lusternia=true},
+fluttercurio={lusternia=true},
+head={lusternia=true},
+icicle={lusternia=true},
+lockwormholes={achaea=true},
+mandala={lusternia=true},
+medallion={lusternia=true},
+mud={lusternia=true},
+pebble={achaea=true},
+prism={lusternia=true},
+removewings={achaea=true},
+runaway={achaea=true},
+screwdriver={lusternia=true},
+shackle={achaea=true},
+snowglobe={lusternia=true},
+tibia={lusternia=true},
+toolcurio={lusternia=true},
+torus={lusternia=true},
+toycurio={lusternia=true},
+utensilcurio={lusternia=true},
+vernalcurio={lusternia=true},
+wheel={lusternia=true},
+winglanguage={achaea=true,}
+}
+function mmp.rebuildOptionsTable(_,game)
+	game=game:lower()
+	for index, settings in pairs(mmp.settings) do
+		if type(index)==&quot;table&quot; then
+			for k, v in pairs(settings) do
+				if whatGame[k] then
+					if whatGame[k][game]==nil then
+						settings[k]=nil
+					end
+				end
+			end
+		end
+	end
+end
+registerAnonymousEventHandler(&quot;mmp logged in&quot;,&quot;mmp.rebuildOptionsTable&quot;)</script>
                 <eventHandlerList/>
             </Script>
             <Script isActive="yes" isFolder="no">
