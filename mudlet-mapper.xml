@@ -4339,7 +4339,10 @@ if tmp ~= &quot;&quot; then
 end
 
 local location, markname
-if tonumber(matches[2]) then
+if not matches[3] then
+  markname = matches[2]
+  location = mmp.currentroom
+elseif tonumber(matches[2]) then
   location = matches[2]; markname = matches[3]
 else
   location = matches[3]; markname = matches[2]
@@ -4361,7 +4364,7 @@ setRoomUserData(1, &quot;gotoMapping&quot;, tmp2)
 mmp.echo(string.format(&quot;Room mark for '%s' set to room %s.&quot;, markname, location))</script>
                 <command></command>
                 <packageName></packageName>
-                <regex>^room mark (\w+) (\w+)$</regex>
+                <regex>^room mark (\w+)(?: (\w+))?$</regex>
             </Alias>
             <Alias isActive="yes" isFolder="no">
                 <name>Remove Room Mark</name>
