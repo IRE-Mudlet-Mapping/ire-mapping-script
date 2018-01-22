@@ -4302,7 +4302,7 @@ end
 local location, markname
 if not matches[3] then
   markname = matches[2]
-  location = gmcp.Room.Info.num
+  location = mmp.currentroom
 elseif tonumber(matches[2]) then
   location = matches[2]; markname = matches[3]
 else
