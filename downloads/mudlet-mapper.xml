@@ -1543,8 +1543,7 @@ mmp.game = &quot;lusternia&quot;</script>
                 <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
                     <name>mmp Lusternia Scent</name>
                     <script>mmp.tempscent = {}
-mmp.pdb_lastupdate = {}
-</script>
+mmp.pdb_lastupdate = {}</script>
                     <triggerType>0</triggerType>
                     <conditonLineDelta>99</conditonLineDelta>
                     <mStayOpen>100</mStayOpen>
@@ -1559,8 +1558,18 @@ mmp.pdb_lastupdate = {}
                         <string>You scent at the air, your skilled nose picking up the faint traces of others in the surrounding area.</string>
                         <string>You snort and snuffle at the air, sensing through a ridiculous pig nose upon your face the faint traces of others in the surrounding area.</string>
                         <string>A pert little nose takes in a delicate whiff of your surroundings, sensing the faint traces of others in the nearby area.</string>
+                        <string>You tilt back your head and inhale deeply through your nose, the whiskers of a wolf's snout upon your face twitching as you sense the faint traces of others in the surrounding area.</string>
+                        <string>Your snout twitches and trembles at the air, sensing through a cute little rabbit nose upon your face the faint traces of others in the surrounding area.</string>
+                        <string>You sniff disdainfully at the air with a snobby snoot, wrinkling your nose as you sense the faint traces of others in the nearby area.</string>
+                        <string>Your snout twitches and trembles at the air, sensing through a striped badger nose upon your face the faint traces of others in the surrounding area.</string>
+                        <string>You twitch your snout and scent the air, sensing through a scaled fink nose upon your face the faint traces of others in the surrounding area.</string>
                     </regexCodeList>
                     <regexCodePropertyList>
+                        <integer>3</integer>
+                        <integer>3</integer>
+                        <integer>3</integer>
+                        <integer>3</integer>
+                        <integer>3</integer>
                         <integer>3</integer>
                         <integer>3</integer>
                         <integer>3</integer>
@@ -2279,6 +2288,36 @@ end</script>
                     </regexCodeList>
                     <regexCodePropertyList>
                         <integer>2</integer>
+                        <integer>1</integer>
+                    </regexCodePropertyList>
+                </Trigger>
+                <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+                    <name>Chemwood walk delay</name>
+                    <script>mmp.customwalkdelay(2)</script>
+                    <triggerType>0</triggerType>
+                    <conditonLineDelta>0</conditonLineDelta>
+                    <mStayOpen>0</mStayOpen>
+                    <mCommand></mCommand>
+                    <packageName></packageName>
+                    <mFgColor>#ff0000</mFgColor>
+                    <mBgColor>#ffff00</mBgColor>
+                    <mSoundFile></mSoundFile>
+                    <colorTriggerFgColor>#000000</colorTriggerFgColor>
+                    <colorTriggerBgColor>#000000</colorTriggerBgColor>
+                    <regexCodeList>
+                        <string>^You struggle to push through \w+'s thick, swirling mists\.$</string>
+                        <string>^You struggle to move with \w+'s amplified fields disrupting your muscular impulses, but you stumble determinedly in an effort to leave\.$</string>
+                        <string>^\w+'s whirling leaves harry you as you try to leave, slowing your egress\.$</string>
+                        <string>^You begin moving through the thick, swirling flurries of \w+'s spores\.$</string>
+                        <string>You stumble through the thick smog, coughing and sputtering as you try to find cleaner air.</string>
+                        <string>^You stumble around stupidly as \w+'s mind-dulling effluvia seeps into you, fighting against a strangely dull mind to make your legs take you out of here\.$</string>
+                    </regexCodeList>
+                    <regexCodePropertyList>
+                        <integer>1</integer>
+                        <integer>1</integer>
+                        <integer>1</integer>
+                        <integer>1</integer>
+                        <integer>3</integer>
                         <integer>1</integer>
                     </regexCodePropertyList>
                 </Trigger>
@@ -4721,7 +4760,7 @@ mmp.speedWalkPath = mmp.speedWalkPath or {}
 mmp.speedWalkDir = mmp.speedWalkDir or {}
 
 
-local newversion = &quot;18.1.5&quot;
+local newversion = &quot;18.1.6&quot;
 if mmp.version and mmp.version ~= newversion then
   if not mmp.game then mmp.echo(&quot;Mapper script updated - Thanks! I don't know what game are you connected to, though - so please reconnect, if you could.&quot;)
   else mmp.echo(&quot;Mapper script updated - thanks! You don't need to restart.&quot;) end
