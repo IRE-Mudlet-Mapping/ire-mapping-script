@@ -4949,269 +4949,8 @@ registerAnonymousEventHandler(&quot;mmp logged in&quot;,&quot;mmp.rebuildOptions
    return
   end
 
-  local madeduanathar, madeduanatharan, madeduantahar, mademedallion, madefingerblade, madeblossom, madebelt, madecubix, madeprism, madescrewdriver, madewheel, mademud, madesnowglobe, madecookie, madehead, madeicicle, madetibia, madebonecurio, madeflowercurio, madetorus, madeutensilcurio, madefluttercurio, madetoolcurio, madefacecurio, madetoycurio, madefeathercurio, madefigurecurio, mademandala, madevernalcurio
-	local madeEast,madeNorth,madeWest
-
-  local function getcmd(word)
-		if mmp.game == &quot;achaea&quot; then
-			if word == &quot;harness&quot; then
-				return [[script:send(&quot;shake harness&quot;,false)]]
-			else
-    		return mmp.settings.removewings and
-      			[[script:sendAll(&quot;wear wings&quot;, &quot;say *]]..(mmp.settings.winglanguage)..[[ ]]..word..[[&quot;, &quot;remove wings&quot;, false)]]
-      		or
-      			[[script:send(&quot;say *]]..(mmp.settings.winglanguage)..[[ ]]..word..[[&quot;, false)]]
-			end
-		elseif mmp.game == &quot;lusternia&quot; then
-			if word == &quot;snowglobe&quot; then
-				return [[script:send(&quot;shake snowglobe&quot;,false)]]
-			elseif word == &quot;bonecurio&quot; then
-				return [[script:send(&quot;curio collection activate bone&quot;,false)]]
-			elseif word == &quot;flowercurio&quot; then
-				return [[script:send(&quot;curio collection activate flower&quot;,false)]]
-			elseif word == &quot;utensilcurio&quot; then
-				return [[script:send(&quot;curio collection activate utensil&quot;,false)]]
-			elseif word == &quot;fluttercurio&quot; then
-				return [[script:send(&quot;curio collection activate flutter&quot;,false)]]
-			elseif word == &quot;toolcurio&quot; then
-				return [[script:send(&quot;curio collection activate tool&quot;,false)]]
-			elseif word == &quot;facecurio&quot; then
-				return [[script:send(&quot;curio collection activate face&quot;,false)]]
-			elseif word == &quot;toycurio&quot; then
-				return [[script:send(&quot;curio collection activate toy&quot;,false)]]
-			elseif word == &quot;feathercurio&quot; then
-				return [[script:send(&quot;curio collection activate feather&quot;,false)]]
-			elseif word == &quot;figurecurio&quot; then
-				return [[script:send(&quot;curio collection activate figure&quot;,false)]]
-			elseif word == &quot;vernalcurio&quot; then
-				return [[script:send(&quot;curio collection activate vernal&quot;,false)]]
-			else
-				return [[script:send(&quot;touch ]]..word..[[&quot;, false)]]
-			end
-		end
-  end
-
   -- allow mapper 'addons' to link their own exits in
   raiseEvent(&quot;mmp link externals&quot;)
-
-  if mmp.game == &quot;achaea&quot; and (mmp.settings.duanathar or mmp.settings.duanatharan or mmp.settings.duantahar) and gmcp.Room and not table.contains(gmcp.Room.Info.details, &quot;indoors&quot;) then
-    if mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Main&quot;) then
-      if mmp.settings.duanatharan then
-        addSpecialExit(mmp.currentroom, 4882, getcmd(&quot;duanatharan&quot;))
-        addSpecialExit(mmp.currentroom, 3885, getcmd(&quot;duanathar&quot;))
-        mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
-        madeduanatharan = true
-      elseif mmp.settings.duantahar then
-        addSpecialExit(mmp.currentroom, 42319, getcmd(&quot;duanathar&quot;))
-        addSpecialExit(mmp.currentroom, 4882, getcmd(&quot;duanatharan&quot;))
-        mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
-        madeduantahar = true
-      else
-        addSpecialExit(mmp.currentroom, 3885, getcmd(&quot;duanathar&quot;))
-        mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
-        madeduanathar = true
-      end
-    elseif mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Meropis&quot;) then
-      if mmp.settings.duanatharan then
-        addSpecialExit(mmp.currentroom, 51603, getcmd(&quot;duanatharan&quot;))
-        addSpecialExit(mmp.currentroom, 51188, getcmd(&quot;duanathar&quot;))
-        mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
-        madeduanatharan = true
-      elseif mmp.settings.duantahar then
-        addSpecialExit(mmp.currentroom, 42319, getcmd(&quot;duanathar&quot;))
-        addSpecialExit(mmp.currentroom, 51603, getcmd(&quot;duanatharan&quot;))
-        mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
-        madeduantahar = true
-      else
-        addSpecialExit(mmp.currentroom, 51188, getcmd(&quot;duanathar&quot;))
-        mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
-        madeduanathar = true
-      end
-    end
-
-	-- Stratospheric Harness support -- PapaGuacamole
-	elseif mmp.game == &quot;achaea&quot; and mmp.settings.harness and gmcp.Room and not table.contains(gmcp.Room.Info.details, &quot;indoors&quot;) then
-			-- eastern isles
-			if mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Eastern_Isles&quot;) then
-				addSpecialExit(mmp.currentroom, 54231, getcmd(&quot;harness&quot;))
-				mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
-				madeEast = true
-			-- northern isles
-			elseif mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Northen_Isles&quot;) then
-				addSpecialExit(mmp.currentroom, 48719, getcmd(&quot;harness&quot;))
-				mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
-				madeNorth = true
-			-- western isles
-			elseif mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Western_Isles&quot;) then
-				addSpecialExit(mmp.currentroom, 54632, getcmd(&quot;harness&quot;))
-				mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
-				madeWest = true
-			end
-
-  elseif mmp.game == &quot;lusternia&quot; and (mmp.settings.medallion or mmp.settings.fingerblade or mmp.settings.blossom or mmp.settings.mandala or mmp.settings.belt or mmp.settings.cubix or mmp.settings.screwdriver or mmp.settings.wheel or mmp.settings.mud or mmp.settings.snowglobe or mmp.settings.cookie or mmp.settings.head or mmp.settings.icicle or mmp.settings.tibia or mmp.settings.bonecurio or mmp.settings.flowercurio or mmp.settings.torus or mmp.settings.vernalcurio) and gmcp.Room and (not table.contains(gmcp.Room.Info.details,&quot;indoors&quot;) or table.contains(gmcp.Room.Info.details, &quot;an Aetherbubble&quot;)) then
-	if mmp.settings.medallion and mmp.usebix() then
-      addSpecialExit(mmp.currentroom, 13367, getcmd(&quot;medallion&quot;))
-      mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
-      mademedallion = true
-	end
-	if mmp.settings.fingerblade and mmp.usebix() then
-      addSpecialExit(mmp.currentroom, 18777, getcmd(&quot;fingerblade&quot;))
-      mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
-      madefingerblade = true
-	end
-	if mmp.settings.blossom and mmp.usebix() then
-      addSpecialExit(mmp.currentroom, 18730, getcmd(&quot;blossom&quot;))
-      mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
-      madeblossom = true
-	end
-	if mmp.settings.mandala and mmp.usebix() then
-      addSpecialExit(mmp.currentroom, 19563, getcmd(&quot;mandala&quot;))
-      mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
-      mademandala = true
-	end
-	if mmp.settings.belt and mmp.usebix() then
-      addSpecialExit(mmp.currentroom, 19627, getcmd(&quot;belt&quot;))
-      mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
-      madebelt = true
-	end
-	if mmp.settings.cubix and mmp.usebix() then
-      addSpecialExit(mmp.currentroom, 6184, getcmd(&quot;cubix&quot;))
-      mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
-      madecubix = true
-	end
-	if mmp.settings.screwdriver and mmp.usebubblix() then
-		if gmcp.Room.Info.area == &quot;the Facility&quot; then
-      		addSpecialExit(mmp.currentroom, 6831, getcmd(&quot;screwdriver&quot;))
-		elseif not table.contains(gmcp.Room.Info.details, &quot;an Aetherbubble&quot;) then
-      		addSpecialExit(mmp.currentroom, 10185, getcmd(&quot;screwdriver&quot;))
-		end
-      mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
-      madescrewdriver = true
-	end
-	if mmp.settings.wheel and mmp.usebubblix() then
-		if gmcp.Room.Info.area == &quot;the Dramube Triangle&quot; then
-      		addSpecialExit(mmp.currentroom, 6831, getcmd(&quot;wheel&quot;))
-		elseif not table.contains(gmcp.Room.Info.details, &quot;an Aetherbubble&quot;) then
-      		addSpecialExit(mmp.currentroom, 10509, getcmd(&quot;wheel&quot;))
-		end
-      mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
-      madewheel = true
-	end
-	if mmp.settings.mud and mmp.usebubblix() then
-		if gmcp.Room.Info.area == &quot;Mucklemarsh&quot; then
-      		addSpecialExit(mmp.currentroom, 6831, getcmd(&quot;mud&quot;))
-		elseif not table.contains(gmcp.Room.Info.details, &quot;an Aetherbubble&quot;) then
-      		addSpecialExit(mmp.currentroom, 9985, getcmd(&quot;mud&quot;))
-		end
-      mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
-      mademud = true
-	end
-	if mmp.settings.snowglobe and mmp.usebubblix() then
-		if gmcp.Room.Info.area == &quot;the Great Spirit Tree&quot; then
-      		addSpecialExit(mmp.currentroom, 6831, getcmd(&quot;snowglobe&quot;))
-		elseif not table.contains(gmcp.Room.Info.details, &quot;an Aetherbubble&quot;) then
-      		addSpecialExit(mmp.currentroom, 10992, getcmd(&quot;snowglobe&quot;))
-		end
-      mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
-      madesnowglobe = true
-	end
-	if mmp.settings.cookie and mmp.usebubblix() then
-		if gmcp.Room.Info.area == &quot;Crumkindivia&quot; then
-      		addSpecialExit(mmp.currentroom, 6831, getcmd(&quot;cookie&quot;))
-		elseif not table.contains(gmcp.Room.Info.details, &quot;an Aetherbubble&quot;) then
-      		addSpecialExit(mmp.currentroom, 9888, getcmd(&quot;cookie&quot;))
-		end
-      mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
-      madecookie = true
-	end
-	if mmp.settings.head and mmp.usebubblix() then
-		if gmcp.Room.Info.area == &quot;the Bubble of Bottledowns&quot; then
-      		addSpecialExit(mmp.currentroom, 6831, getcmd(&quot;doll&quot;))
-		elseif not table.contains(gmcp.Room.Info.details, &quot;an Aetherbubble&quot;) then
-      		addSpecialExit(mmp.currentroom, 11811, getcmd(&quot;doll&quot;))
-		end
-      mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
-      madedoll = true
-	end
-	if mmp.settings.icicle and mmp.usebubblix() then
-		if gmcp.Room.Info.area == &quot;Frosticia&quot; then
-      		addSpecialExit(mmp.currentroom, 6831, getcmd(&quot;icicle&quot;))
-		elseif not table.contains(gmcp.Room.Info.details, &quot;an Aetherbubble&quot;) then
-      		addSpecialExit(mmp.currentroom, 10457, getcmd(&quot;icicle&quot;))
-		end
-      mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
-      madeicicle = true
-	end
-	if mmp.settings.tibia and mmp.usebubblix() then
-		if gmcp.Room.Info.area == &quot;the Cankermore Battlegrounds&quot; then
-      		addSpecialExit(mmp.currentroom, 6831, getcmd(&quot;tibia&quot;))
-		elseif not table.contains(gmcp.Room.Info.details, &quot;an Aetherbubble&quot;) then
-      		addSpecialExit(mmp.currentroom, 11600, getcmd(&quot;tibia&quot;))
-		end
-      mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
-      madetibia = true
-	end
-	if mmp.settings.bonecurio and mmp.usebix() then
-      addSpecialExit(mmp.currentroom, 28613, getcmd(&quot;bonecurio&quot;))
-      mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
-      madebonecurio = true
-	end
-	if mmp.settings.flowercurio and mmp.usebix() then
-      addSpecialExit(mmp.currentroom, 28624, getcmd(&quot;flowercurio&quot;))
-      mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
-      madeflowercurio = true
-	end
-	if mmp.settings.torus and mmp.usebix() then
-      addSpecialExit(mmp.currentroom, 28548, getcmd(&quot;torus&quot;))		-- room number will vary for each torus
-      mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
-      madetorus = true
-	end
-	if mmp.settings.utensilcurio and mmp.usebix() then
-      addSpecialExit(mmp.currentroom, 28617, getcmd(&quot;utensilcurio&quot;))
-      mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
-      madeutensilcurio = true
-	end
-	if mmp.settings.fluttercurio and mmp.usebix() then
-      addSpecialExit(mmp.currentroom, 28622, getcmd(&quot;fluttercurio&quot;))
-      mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
-      madefluttercurio = true
-	end
-	if mmp.settings.toolcurio and mmp.usebix() then
-      addSpecialExit(mmp.currentroom, 28586, getcmd(&quot;toolcurio&quot;))
-      mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
-      madetoolcurio = true
-	end
-	if mmp.settings.facecurio and mmp.usebix() then
-      addSpecialExit(mmp.currentroom, 28433, getcmd(&quot;facecurio&quot;))
-      mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
-      madefacecurio = true
-	end
-	if mmp.settings.toycurio and mmp.usebix() then
-      addSpecialExit(mmp.currentroom, 21548, getcmd(&quot;toycurio&quot;))
-      mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
-      madetoycurio = true
-	end
-	if mmp.settings.feathercurio and mmp.usebix() then
-      addSpecialExit(mmp.currentroom, 28591, getcmd(&quot;feathercurio&quot;))
-      mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
-      madefeathercurio = true
-	end
-	if mmp.settings.figurecurio and mmp.usebix() then
-      addSpecialExit(mmp.currentroom, 28312, getcmd(&quot;figurecurio&quot;))
-      mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
-      madefigurecurio = true
-	end
-   if mmp.settings.prism and mmp.useprism() then
-		addSpecialExit(mmp.currentroom, 6182, getcmd(&quot;prism&quot;))
-		mmp.clearpathcache()
-		madeprism = true
-	end
-	if mmp.settings.vernalcurio and mmp.usebix() then
-      addSpecialExit(mmp.currentroom, 29908, getcmd(&quot;vernalcurio&quot;))
-      mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
-      madevernalcurio = true
-	end
-  end
 
   -- if getPath worked, then the dirs and room #'s tables were populated for us
   if not mmp.getPath(mmp.currentroom, tonumber(where)) then
@@ -5221,79 +4960,12 @@ registerAnonymousEventHandler(&quot;mmp logged in&quot;,&quot;mmp.rebuildOptions
     speedWalkCounter = 0
     raiseEvent(&quot;mmapper failed path&quot;)
     if mmp.settings.shackle then expandAlias(&quot;wear shackle&quot;) end
-    if madeduanatharan then mmp.clearspecials{4882, 3885, 51603, 51188}
-    elseif madeduanathar then mmp.clearspecials{3885, 51188}
-    elseif madeduantahar then mmp.clearspecials{42319, 4882, 51603}
-    end
-  	 if mademedallion then mmp.clearspecials{13367} end
-  	 if madefingerblade then mmp.clearspecials{18777} end
-     if madeblossom then mmp.clearspecials{18730} end
-  	 if mademandala then mmp.clearspecials{19563} end
-  	 if madebelt then mmp.clearspecials{19627} end
- 	 if madecubix then mmp.clearspecials{6184} end
-  	 if madescrewdriver then mmp.clearspecials{6831, 10185} end
- 	 if madewheel then mmp.clearspecials{6831, 10509} end
- 	 if mademud then mmp.clearspecials{6831, 9985} end
- 	 if madesnowglobe then mmp.clearspecials{6831, 10992} end
-     if madecookie then mmp.clearspecials{6831, 9888} end
- 	 if madehead then mmp.clearspecials{6831, 11811} end
- 	 if madeicicle then mmp.clearspecials{6831, 10457} end
- 	 if madetibia then mmp.clearspecials{6831, 11600} end
- 	 if madebonecurio then mmp.clearspecials{28613} end
- 	 if madeflowercurio then mmp.clearspecials{28624} end
- 	 if madetorus then mmp.clearspecials{28548} end
- 	 if madeutensilcurio then mmp.clearspecials{28617} end
- 	 if madefluttercurio then mmp.clearspecials{28622} end
- 	 if madetoolcurio then mmp.clearspecials{28586} end
- 	 if madefacecurio then mmp.clearspecials{28433} end
- 	 if madetoycurio then mmp.clearspecials{21548} end
- 	 if madefeathercurio then mmp.clearspecials{28591} end
- 	 if madefigurecurio then mmp.clearspecials{28312} end
-     if madeprism then mmp.clearspecials{6182} end
- 	 if madevernalcurio then mmp.clearspecials{29908} end
-	 if madeEast then mmp.clearspecials{54231} end
-	 if madeNorth then mmp.clearspecials{48719} end
-	 if madeWest then mmp.clearspecials{54632} end
-
     -- allow mapper 'addons' to unlink their special exits
     raiseEvent(&quot;mmp clear externals&quot;)
     return
   end
 
   doSpeedWalk(dashtype)
-    if madeduanatharan then mmp.clearspecials{4882, 3885, 51603, 51188}
-    elseif madeduanathar then mmp.clearspecials{3885, 51188}
-    elseif madeduantahar then mmp.clearspecials{42319, 4882, 51603}
-    end
-  if mademedallion then mmp.clearspecials{13367} end
-  if madefingerblade then mmp.clearspecials{18777} end
-  if madeblossom then mmp.clearspecials{18730} end
-  if mademandala then mmp.clearspecials{19563} end
-  if madebelt then mmp.clearspecials{19627} end
-  if madecubix then mmp.clearspecials{6184} end
-  if madescrewdriver then mmp.clearspecials{6831, 10185} end
-  if madewheel then mmp.clearspecials{6831, 10509} end
-  if mademud then mmp.clearspecials{6831, 9985} end
-  if madesnowglobe then mmp.clearspecials{6831, 10992} end
-  if madecookie then mmp.clearspecials{6831, 9888} end
-  if madehead then mmp.clearspecials{6831, 11811} end
-  if madeicicle then mmp.clearspecials{6831, 10457} end
-  if madetibia then mmp.clearspecials{6831, 11600} end
-  if madebonecurio then mmp.clearspecials{28613} end
-  if madeflowercurio then mmp.clearspecials{28624} end
-  if madetorus then mmp.clearspecials{28548} end
-  if madeutensilcurio then mmp.clearspecials{28617} end
-  if madefluttercurio then mmp.clearspecials{28622} end
-  if madetoolcurio then mmp.clearspecials{28586} end
-  if madefacecurio then mmp.clearspecials{28433} end
-  if madetoycurio then mmp.clearspecials{21548} end
-  if madefeathercurio then mmp.clearspecials{28591} end
-  if madefigurecurio then mmp.clearspecials{28312} end
-  if madeprism then mmp.clearspecials{6182} end
-  if madevernalcurio then mmp.clearspecials{29908} end
-	if madeEast then mmp.clearspecials{54231} end
-	if madeNorth then mmp.clearspecials{48719} end
-	if madeWest then mmp.clearspecials{54632} end
 
   -- allow mapper 'addons' to unlink their special exits
   raiseEvent(&quot;mmp clear externals&quot;)
@@ -5348,6 +5020,7 @@ function mmp.gotoArea (where, number, dashtype, exact)
 	-- add in temporary links to clouds / stratospheres to enable pathfinding, auto-repath will occur when moved to outside -- PapaGuacamole
 	local madeEast, madeNorth, madeWest
 	local currentareaid = getRoomArea(mmp.currentroom)
+	raiseEvent(&quot;mmp link externals&quot;)
 	if mmp.game == &quot;achaea&quot; and mmp.settings.harness then			 	
 			if mmp.oncontinent(currentareaideaid, &quot;Eastern_Isles&quot;) then
 				if not table.contains(gmcp.Room.Info.details, &quot;indoors&quot;) then -- make it here
@@ -5436,6 +5109,7 @@ function mmp.gotoArea (where, number, dashtype, exact)
 			if madeWest then mmp.clearspecials{54632} end
   		raiseEvent(&quot;mmp clear externals&quot;)
 ]]--		
+      raiseEvent(&quot;mmp clear externals&quot;)
 			clearSpecials()
 		end
     return
@@ -5448,6 +5122,7 @@ function mmp.gotoArea (where, number, dashtype, exact)
 		if madeWest then mmp.clearspecials{54632} end
   	raiseEvent(&quot;mmp clear externals&quot;)
 ]]--
+   raiseEvent(&quot;mmp clear externals&quot;)
 		clearSpecials()
 	end
 
@@ -5836,6 +5511,226 @@ end</script>
                     <string>RoomNum</string>
                     <string>gmcp.Room.Info</string>
                 </eventHandlerList>
+            </Script>
+            <Script isActive="yes" isFolder="no">
+                <name>Wings and Bixes</name>
+                <packageName></packageName>
+                <script>local exitsCreated = exitsCreated or {}
+
+local function tempSpecialExit(destination, command)
+  table.insert(exitsCreated, destination)
+  addSpecialExit(mmp.currentroom, destination, command)
+end
+
+function mmp.addWings()
+--Trimmed down version of the original function, meant to only be used for wings. (Where the command varies based on several MCONFIGS)
+  local function getcmd(word)
+    return
+      mmp.settings.removewings and
+      [[script:sendAll(&quot;wear wings&quot;, &quot;say *]] ..
+      (mmp.settings.winglanguage and mmp.settings.winglanguage or &quot;&quot;) ..
+      [[ ]] ..
+      word ..
+      [[&quot;, &quot;remove wings&quot;, false)]] or
+      [[script:send(&quot;say *]] ..
+      (mmp.settings.winglanguage and mmp.settings.winglanguage or &quot;&quot;) ..
+      [[ ]] ..
+      word ..
+      [[&quot;, false)]]
+  end
+
+  --creates a special exit from your current room to a destination, and adds it to a table so it can be easily cleared later.
+  --Achaea stuff!
+  if mmp.game == &quot;achaea&quot; then
+    --WINGS!
+    if
+      (mmp.settings.duanathar or mmp.settings.duanatharan or mmp.settings.duantahar) and
+      gmcp.Room and
+      not table.contains(gmcp.Room.Info.details, &quot;indoors&quot;)
+    then
+      --Sarapis wings.
+      if mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Main&quot;) then
+        if mmp.settings.duanatharan then
+          tempSpecialExit(4882, getcmd(&quot;duanatharan&quot;))
+          tempSpecialExit(3885, getcmd(&quot;duanathar&quot;))
+        elseif mmp.settings.duantahar then
+          tempSpecialExit(42319, getcmd(&quot;duanathar&quot;))
+          tempSpecialExit(4882, getcmd(&quot;duanatharan&quot;))
+        else
+          prepSpecialExit(3885, getcmd(&quot;duanathar&quot;))
+        end
+        --Meropis Wings
+      elseif mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Meropis&quot;) then
+        if mmp.settings.duanatharan then
+          tempSpecialExit(51603, getcmd(&quot;duanatharan&quot;))
+          tempSpecialExit(51188, getcmd(&quot;duanathar&quot;))
+        elseif mmp.settings.duantahar then
+          tempSpecialExit(42319, getcmd(&quot;duanathar&quot;))
+          tempSpecialExit(51603, getcmd(&quot;duanatharan&quot;))
+        else
+          tempSpecialExit(51188, getcmd(&quot;duanathar&quot;))
+        end
+      end
+    end
+    -- Stratospheric Harness support -- PapaGuacamole
+    if
+      mmp.settings.harness and gmcp.Room and not table.contains(gmcp.Room.Info.details, &quot;indoors&quot;)
+    then
+      -- eastern isles
+      if mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Eastern_Isles&quot;) then
+        tempSpecialExit(54231, &quot;Shake Harness&quot;)
+        -- northern isles
+      elseif mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Northen_Isles&quot;) then
+        tempSpecialExit(48719, &quot;Shake Harness&quot;)
+        -- western isles
+      elseif mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Western_Isles&quot;) then
+        tempSpecialExit(54632, &quot;Shake Harness&quot;)
+      end
+    end
+  elseif mmp.game == &quot;lusternia&quot; then
+    --that dorky prism
+    if mmp.useprism() then
+      if mmp.settings.prism then
+        tempSpecialExit(6182, &quot;touch prism&quot;)
+      end
+    end
+    --items that use standard bix rules
+    if mmp.usebix() then
+      --cubix and things
+      if mmp.settings.medallion then
+        tempSpecialExit(13367, &quot;touch medallion&quot;)
+      end
+      if mmp.settings.cubix then
+        tempSpecialExit(6184, &quot;touch cubix&quot;)
+      end
+      if mmp.settings.torus and mmp.usebix() then
+        tempSpecialExit(28548, &quot;touch torus&quot;)
+      end
+      --epic quest items
+      if mmp.settings.fingerblade then
+        tempSpecialExit(18777, &quot;touch fingerblade&quot;)
+      end
+      if mmp.settings.blossom then
+        tempSpecialExit(18730, &quot;touch blossom&quot;)
+      end
+      if mmp.settings.mandala then
+        tempSpecialExit(19563, &quot;touch mandala&quot;)
+      end
+      if mmp.settings.belt then
+        tempSpecialExit(19627, &quot;touch enlightened&quot;)
+      end
+      if mmp.settings.mantle then
+        tempSpecialExit(18762, &quot;touch starlight&quot;)
+      end
+      if mmp.settings.key then
+        tempSpecialExit(18732, &quot;touch key&quot;)
+      end
+      --curio collections!
+      if mmp.settings.bonecurio then
+        tempSpecialExit(28613, &quot;curio collection activate bone&quot;)
+      end
+      if mmp.settings.flowercurio then
+        tempSpecialExit(28624, &quot;curio collection activate flower&quot;)
+      end
+      if mmp.settings.utensilcurio then
+        tempSpecialExit(28617, &quot;curio collection activate utensil&quot;)
+      end
+      if mmp.settings.fluttercurio then
+        tempSpecialExit(28622, &quot;curio collection activate flutter&quot;)
+      end
+      if mmp.settings.toolcurio then
+        tempSpecialExit(28586, &quot;curio collection activate tool&quot;)
+      end
+      if mmp.settings.facecurio then
+        tempSpecialExit(28433, &quot;curio collection activate face&quot;)
+      end
+      if mmp.settings.toycurio then
+        tempSpecialExit(21548, &quot;curio collection activate toy&quot;)
+      end
+      if mmp.settings.feathercurio then
+        tempSpecialExit(28591, &quot;curio collection activate feather&quot;)
+      end
+      if mmp.settings.figurecurio then
+        tempSpecialExit(28312, &quot;curio collection activate figure&quot;)
+      end
+      if mmp.settings.vernalcurio then
+        tempSpecialExit(29908, &quot;curio collection activate vernal&quot;)
+      end
+    end
+    --all the bubblixes!
+    if mmp.usebubblix() then
+      if mmp.settings.screwdriver then
+        if gmcp.Room.Info.area == &quot;the Facility&quot; then
+          tempSpecialExit(6831, &quot;touch screwdriver&quot;)
+        elseif not table.contains(gmcp.Room.Info.details, &quot;an Aetherbubble&quot;) then
+          tempSpecialExit(10185, &quot;touch screwdriver&quot;)
+        end
+      end
+      if mmp.settings.wheel then
+        if gmcp.Room.Info.area == &quot;the Dramube Triangle&quot; then
+          tempSpecialExit(6831, &quot;touch wheel&quot;)
+        elseif not table.contains(gmcp.Room.Info.details, &quot;an Aetherbubble&quot;) then
+          tempSpecialExit(10509, &quot;touch wheel&quot;)
+        end
+      end
+      if mmp.settings.mud then
+        if gmcp.Room.Info.area == &quot;Mucklemarsh&quot; then
+          tempSpecialExit(6831, &quot;touch mud&quot;)
+        elseif not table.contains(gmcp.Room.Info.details, &quot;an Aetherbubble&quot;) then
+          tempSpecialExit(9985, &quot;touch mud&quot;)
+        end
+      end
+      if mmp.settings.snowglobe then
+        if gmcp.Room.Info.area == &quot;the Great Spirit Tree&quot; then
+          tempSpecialExit(6831, &quot;shake snowglobe&quot;)
+        elseif not table.contains(gmcp.Room.Info.details, &quot;an Aetherbubble&quot;) then
+          tempSpecialExit(10992, &quot;shake snowglobe&quot;)
+        end
+      end
+      if mmp.settings.cookie then
+        if gmcp.Room.Info.area == &quot;Crumkindivia&quot; then
+          tempSpecialExit(6831, &quot;touch cookie&quot;)
+        elseif not table.contains(gmcp.Room.Info.details, &quot;an Aetherbubble&quot;) then
+          tempSpecialExit(9888, &quot;touch cookie&quot;)
+        end
+      end
+      if mmp.settings.head then
+        if gmcp.Room.Info.area == &quot;the Bubble of Bottledowns&quot; then
+          tempSpecialExit(6831, &quot;touch doll&quot;)
+        elseif not table.contains(gmcp.Room.Info.details, &quot;an Aetherbubble&quot;) then
+          tempSpecialExit(11811, &quot;touch doll&quot;)
+        end
+      end
+      if mmp.settings.icicle then
+        if gmcp.Room.Info.area == &quot;Frosticia&quot; then
+          tempSpecialExit(6831, &quot;touch icicle&quot;)
+        elseif not table.contains(gmcp.Room.Info.details, &quot;an Aetherbubble&quot;) then
+          tempSpecialExit(10457, &quot;touch icicle&quot;)
+        end
+      end
+      if mmp.settings.tibia then
+        if gmcp.Room.Info.area == &quot;the Cankermore Battlegrounds&quot; then
+          tempSpecialExit(6831, &quot;touch tibia&quot;)
+        elseif not table.contains(gmcp.Room.Info.details, &quot;an Aetherbubble&quot;) then
+          tempSpecialExit(11600, &quot;touch tibia&quot;)
+        end
+      end
+    end
+  end
+	--if any exits were created, clears the path cache so it calculates a new route.
+	if #exitsCreated&gt;0 then
+		mmp.clearpathcache()
+	end
+end
+registerAnonymousEventHandler(&quot;mmp link externals&quot;,&quot;mmp.addWings&quot;)
+
+function mmp.removeWings()
+	--remove all special exits that were created by addWings, then resets the table.
+	mmp.clearspecials(exitsCreated)
+	exitsCreated={}
+end
+registerAnonymousEventHandler(&quot;mmp clear externals&quot;,&quot;mmp.removeWings&quot;)</script>
+                <eventHandlerList/>
             </Script>
             <Script isActive="yes" isFolder="no">
                 <name>Utilities</name>
@@ -8191,65 +8086,18 @@ function mmapper_achaea_went_outside()
   then return end
 
   -- repath, maybe that'll allow us to use wings now.
-  local madeduanatharan, madeduanathar, madeduantahar
-
-  local function getcmd(word)
-    return mmp.settings.removewings and
-      [[script:sendAll(&quot;wear wings&quot;, &quot;say *]]..(mmp.settings.winglanguage)..[[ ]]..word..[[&quot;, &quot;remove wings&quot;, false)]]
-      or
-      [[script:send(&quot;say *]]..(mmp.settings.winglanguage)..[[ ]]..word..[[&quot;, false)]]
-  end
-
-  if mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Main&quot;) then
-    if mmp.settings.duanatharan then
-      addSpecialExit(mmp.currentroom, 4882, getcmd(&quot;duanatharan&quot;))
-      addSpecialExit(mmp.currentroom, 3885, getcmd(&quot;duanathar&quot;))
-      mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
-      madeduanatharan = true
-    elseif mmp.settings.duantahar then
-      addSpecialExit(mmp.currentroom, 42319, getcmd(&quot;duanathar&quot;))
-      addSpecialExit(mmp.currentroom, 4882, getcmd(&quot;duanatharan&quot;))
-      mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
-      madeduantahar = true
-    else
-      addSpecialExit(mmp.currentroom, 3885, getcmd(&quot;duanathar&quot;))
-      mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
-      madeduanathar = true
-    end
-  elseif mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Meropis&quot;) then
-    if mmp.settings.duanatharan then
-      addSpecialExit(mmp.currentroom, 51603, getcmd(&quot;duanatharan&quot;))
-      addSpecialExit(mmp.currentroom, 51188, getcmd(&quot;duanathar&quot;))
-      mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
-      madeduanatharan = true
-    elseif mmp.settings.duantahar then
-      addSpecialExit(mmp.currentroom, 42319, getcmd(&quot;duanathar&quot;))
-      addSpecialExit(mmp.currentroom, 51603, getcmd(&quot;duanatharan&quot;))
-      mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
-      madeduantahar = true
-    else
-      addSpecialExit(mmp.currentroom, 51188, getcmd(&quot;duanathar&quot;))
-      mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
-      madeduanathar = true
-    end
-  else
-    return
-  end
-
+  raiseEvent(&quot;mmp link externals&quot;)
+	local previousDirection = mmp.speedWalkDir[speedWalkCounter]
   mmp.getPath(mmp.currentroom, mmp.speedWalkPath[#mmp.speedWalkPath]) -- don't need to check return value since that fact shouldnt've changed
 
   -- if our path didn't change, re-instate it as it was (since the new path starts from this room that we checked at)
-  if speedWalkDir[1]:find(&quot;duanathar&quot;, 1, true) then
+  if speedWalkDir[1]~=previousDirection then
     speedWalkCounter = 0
     mmp.echo(&quot;We got outside - going to shortcut with wings.&quot;)
     mmp.gotoRoom(mmp.speedWalkPath[#mmp.speedWalkPath])
     mmp.ignore_speedwalking = true
   end
-
-  if madeduanatharan then mmp.clearspecials{4882, 3885, 51603, 51188}
-  elseif madeduanathar then mmp.clearspecials{3885, 51188}
-  elseif madeduantahar then mmp.clearspecials{42319, 4882, 51603}
-  end
+	raiseEvent(&quot;mmp clear externals&quot;)
 end</script>
                         <eventHandlerList>
                             <string>mmapper went outside</string>
@@ -8505,241 +8353,29 @@ end</script>
                         <packageName></packageName>
                         <script>function mmapper_lusternia_went_outside()
   -- track whenever we need to use items when we get outside!
-  if not mmp.autowalking or not (mmp.settings.medallion or mmp.settings.fingerblade or mmp.settings.blossom or mmp.settings.belt or mmp.settings.cubix or mmp.settings.screwdriver or mmp.settings.wheel or mmp.settings.mud or mmp.settings.snowglobe or mmp.settings.cookie or mmp.settings.head or mmp.settings.icicle or mmp.settings.tibia or mmp.settings.bonecurio or mmp.settings.flowercurio or mmp.settings.torus or mmp.settings.utensilcurio or mmp.settings.fluttercurio or mmp.settings.toolcurio or mmp.settings.facecurio or mmp.settings.toycurio or mmp.settings.mandala or mmp.settings.feathercurio or mmp.settings.figurecurio or mmp.settings.vernalcurio) or mmp.game ~= &quot;lusternia&quot; or
-    (mmp.currentroom == mmp.speedWalkPath[#mmp.speedWalkPath]) then return end
-
-  -- repath, maybe that'll allow us to use wings now.
-  local mademedallion, madefingerblade, madeblossom, madebelt, madeprism, madecubix, madescrewdriver, madewheel, mademud, madesnowglobe, madehead, madecookie, madeicicle, madetibia, madebonecurio, madeflowercurio, madetorus, madeutensilcurio, madefluttercurio, madetoolcurio, madefacecurio, madetoycurio, madefeathercurio, madefigurecurio, mademandala, madevernalcurio
-
-  local function getcmd(item)
-		if item == &quot;snowglobe&quot; then
-			return [[script:send(&quot;shake snowglobe&quot;,false)]]
-		elseif word == &quot;bonecurio&quot; then
-			return [[script:send(&quot;curio collection activate bone&quot;,false)]]
-		elseif word == &quot;flowercurio&quot; then
-			return [[script:send(&quot;curio collection activate flower&quot;,false)]]
-		elseif word == &quot;utensilcurio&quot; then
-			return [[script:send(&quot;curio collection activate utensil&quot;,false)]]
-		elseif word == &quot;fluttercurio&quot; then
-			return [[script:send(&quot;curio collection activate flutter&quot;,false)]]
-		elseif word == &quot;toolcurio&quot; then
-			return [[script:send(&quot;curio collection activate tool&quot;,false)]]
-		elseif word == &quot;facecurio&quot; then
-			return [[script:send(&quot;curio collection activate face&quot;,false)]]
-		elseif word == &quot;toycurio&quot; then
-			return [[script:send(&quot;curio collection activate toy&quot;,false)]]
-		elseif word == &quot;feathercurio&quot; then
-			return [[script:send(&quot;curio collection activate feather&quot;,false)]]
-		elseif word == &quot;figurecurio&quot; then
-			return [[script:send(&quot;curio collection activate figure&quot;,false)]]
-		elseif word == &quot;vernalcurio&quot; then
-			return [[script:send(&quot;curio collection activate vernal&quot;,false)]]
-		else
-			return [[script:send(&quot;touch ]]..(item)..[[&quot;, false)]]
-		end
+  if
+    not mmp.autowalking or
+    mmp.game ~= &quot;lusternia&quot; or
+    (mmp.currentroom == mmp.speedWalkPath[#mmp.speedWalkPath])
+  then
+    return
   end
-
-    if mmp.settings.medallion and mmp.usebix() then
-      addSpecialExit(mmp.currentroom, 13367, getcmd(&quot;medallion&quot;))
-      mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
-      mademedallion = true
-	end
-	if mmp.settings.fingerblade and mmp.usebix() then
-      addSpecialExit(mmp.currentroom, 18777, getcmd(&quot;fingerblade&quot;))
-      mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
-      madefingerblade = true
-	end
-	if mmp.settings.blossom and mmp.usebix() then
-      addSpecialExit(mmp.currentroom, 18730, getcmd(&quot;blossom&quot;))
-      mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
-      madeblossom = true
-	end
-	if mmp.settings.mandala and mmp.usebix() then
-      addSpecialExit(mmp.currentroom, 19563, getcmd(&quot;mandala&quot;))
-      mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
-      mademandala = true
-	end
-	if mmp.settings.belt and mmp.usebix() then
-      addSpecialExit(mmp.currentroom, 19627, getcmd(&quot;belt&quot;))
-      mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
-      madebelt = true
-	end
-	if mmp.settings.cubix and mmp.usebix() then
-      addSpecialExit(mmp.currentroom, 6184, getcmd(&quot;cubix&quot;))
-      mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
-      madecubix = true
-	end
-	if mmp.settings.screwdriver and mmp.usebubblix() then
-		if gmcp.Room.Info.area == &quot;the Facility&quot; then
-      		addSpecialExit(mmp.currentroom, 6831, getcmd(&quot;screwdriver&quot;))
-		elseif not table.contains(gmcp.Room.Info.details, &quot;an Aetherbubble&quot;) then
-      		addSpecialExit(mmp.currentroom, 10185, getcmd(&quot;screwdriver&quot;))
-		end
-      mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
-      madescrewdriver = true
-	end
-	if mmp.settings.wheel and mmp.usebubblix() then
-		if gmcp.Room.Info.area == &quot;the Dramube Triangle&quot; then
-      		addSpecialExit(mmp.currentroom, 6831, getcmd(&quot;wheel&quot;))
-		elseif not table.contains(gmcp.Room.Info.details, &quot;an Aetherbubble&quot;) then
-      		addSpecialExit(mmp.currentroom, 10509, getcmd(&quot;wheel&quot;))
-		end
-      mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
-      madewheel = true
-	end
-	if mmp.settings.mud and mmp.usebubblix() then
-		if gmcp.Room.Info.area == &quot;Mucklemarsh&quot; then
-      		addSpecialExit(mmp.currentroom, 6831, getcmd(&quot;mud&quot;))
-		elseif not table.contains(gmcp.Room.Info.details, &quot;an Aetherbubble&quot;) then
-      		addSpecialExit(mmp.currentroom, 9985, getcmd(&quot;mud&quot;))
-		end
-      mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
-      mademud = true
-	end
-	if mmp.settings.snowglobe and mmp.usebubblix() then
-		if gmcp.Room.Info.area == &quot;the Great Spirit Tree&quot; then
-      		addSpecialExit(mmp.currentroom, 6831, getcmd(&quot;snowglobe&quot;))
-		elseif not table.contains(gmcp.Room.Info.details, &quot;an Aetherbubble&quot;) then
-      		addSpecialExit(mmp.currentroom, 10992, getcmd(&quot;snowglobe&quot;))
-		end
-      mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
-      madesnowglobe = true
-	end
-	if mmp.settings.cookie and mmp.usebubblix() then
-		if gmcp.Room.Info.area == &quot;Crumkindivia&quot; then
-      		addSpecialExit(mmp.currentroom, 6831, getcmd(&quot;cookie&quot;))
-		elseif not table.contains(gmcp.Room.Info.details, &quot;an Aetherbubble&quot;) then
-      		addSpecialExit(mmp.currentroom, 9888, getcmd(&quot;cookie&quot;))
-		end
-      mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
-      madecookie = true
-	end
-	if mmp.settings.head and mmp.usebubblix() then
-		if gmcp.Room.Info.area == &quot;the Bubble of Bottledowns&quot; then
-      		addSpecialExit(mmp.currentroom, 6831, getcmd(&quot;doll&quot;))
-		elseif not table.contains(gmcp.Room.Info.details, &quot;an Aetherbubble&quot;) then
-      		addSpecialExit(mmp.currentroom, 11811, getcmd(&quot;doll&quot;))
-		end
-      mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
-      madedoll = true
-	end
-	if mmp.settings.icicle and mmp.usebubblix() then
-		if gmcp.Room.Info.area == &quot;Frosticia&quot; then
-      		addSpecialExit(mmp.currentroom, 6831, getcmd(&quot;icicle&quot;))
-		elseif not table.contains(gmcp.Room.Info.details, &quot;an Aetherbubble&quot;) then
-      		addSpecialExit(mmp.currentroom, 10457, getcmd(&quot;icicle&quot;))
-		end
-      mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
-      madeicicle = true
-	end
-	if mmp.settings.tibia and mmp.usebubblix() then
-		if gmcp.Room.Info.area == &quot;the Cankermore Battlegrounds&quot; then
-      		addSpecialExit(mmp.currentroom, 6831, getcmd(&quot;tibia&quot;))
-		elseif not table.contains(gmcp.Room.Info.details, &quot;an Aetherbubble&quot;) then
-      		addSpecialExit(mmp.currentroom, 11600, getcmd(&quot;tibia&quot;))
-		end
-      mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
-      madetibia = true
-	end
-   if mmp.settings.bonecurio and mmp.usebix() then
-      addSpecialExit(mmp.currentroom, 28613, getcmd(&quot;bonecurio&quot;))
-      mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
-      madebonecurio = true
-	end
-	if mmp.settings.flowercurio and mmp.usebix() then
-      addSpecialExit(mmp.currentroom, 28624, getcmd(&quot;flowercurio&quot;))
-      mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
-      madeflowercurio = true
-	end
-	if mmp.settings.torus and mmp.usebix() then
-      addSpecialExit(mmp.currentroom, 25848, getcmd(&quot;torus&quot;))
-      mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
-      madetorus = true
-	end
-	if mmp.settings.utensilcurio and mmp.usebix() then
-      addSpecialExit(mmp.currentroom, 28617, getcmd(&quot;utensilcurio&quot;))
-      mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
-      madeutensilcurio = true
-	end
-	if mmp.settings.fluttercurio and mmp.usebix() then
-      addSpecialExit(mmp.currentroom, 28622, getcmd(&quot;fluttercurio&quot;))
-      mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
-      madefluttercurio = true
-	end
-	if mmp.settings.toolcurio and mmp.usebix() then
-      addSpecialExit(mmp.currentroom, 28586, getcmd(&quot;toolcurio&quot;))
-      mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
-      madetoolcurio = true
-	end
-	if mmp.settings.facecurio and mmp.usebix() then
-      addSpecialExit(mmp.currentroom, 28433, getcmd(&quot;facecurio&quot;))
-      mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
-      madefacecurio = true
-	end
-	if mmp.settings.toycurio and mmp.usebix() then
-      addSpecialExit(mmp.currentroom, 21548, getcmd(&quot;toycurio&quot;))
-      mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
-      madetoycurio = true
-	end
-	if mmp.settings.feathercurio and mmp.usebix() then
-      addSpecialExit(mmp.currentroom, 28591, getcmd(&quot;feathercurio&quot;))
-      mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
-      madefeathercurio = true
-	end
-	if mmp.settings.figurecurio and mmp.usebix() then
-      addSpecialExit(mmp.currentroom, 28312, getcmd(&quot;figurecurio&quot;))
-      mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
-      madefigurecurio = true
-	end
-   if mmp.settings.prism and mmp.useprism() then
-		addSpecialExit(mmp.currentroom, 6182, getcmd(&quot;prism&quot;))
-		mmp.clearpathcache()
-		madeprism = true
-	end
-	if mmp.settings.vernalcurio and mmp.usebix() then
-      addSpecialExit(mmp.currentroom, 29908, getcmd(&quot;vernalcurio&quot;))
-      mmp.clearpathcache() -- clear cache so mmp.getPath accounts for the new way
-      madevernalcurio = true
-	end
-
-  mmp.getPath(mmp.currentroom, mmp.speedWalkPath[#mmp.speedWalkPath]) -- don't need to check return value since that fact shouldnt've changed
-
+  -- repath, maybe that'll allow us to use wings now.
+  raiseEvent(&quot;mmp link externals&quot;)
+	local previousDirection = mmp.speedWalkDir[speedWalkCounter]
+  mmp.getPath(mmp.currentroom, mmp.speedWalkPath[#mmp.speedWalkPath])
+  -- don't need to check return value since that fact shouldnt've changed
   -- if our path didn't change, re-instate it as it was (since the new path starts from this room that we checked at)
-  if speedWalkDir[1]:find(&quot;medallion&quot;,1,true) or speedWalkDir[1]:find(&quot;fingerblade&quot;,1,true) or speedWalkDir[1]:find(&quot;blossom&quot;,1,true) or speedWalkDir[1]:find(&quot;belt&quot;) or speedWalkDir[1]:find(&quot;cubix&quot;) or speedWalkDir[1]:find(&quot;bonecurio&quot;,1,true) or speedWalkDir[1]:find(&quot;flowercurio&quot;,1,true) or speedWalkDir[1]:find(&quot;torus&quot;,1,true) or speedWalkDir[1]:find(&quot;utensilcurio&quot;,1,true) or speedWalkDir[1]:find(&quot;fluttercurio&quot;,1,true) or speedWalkDir[1]:find(&quot;toolcurio&quot;,1,true) or speedWalkDir[1]:find(&quot;facecurio&quot;,1,true) or speedWalkDir[1]:find(&quot;toycurio&quot;,1,true) or speedWalkDir[1]:find(&quot;feathercurio&quot;,1,true) or speedWalkDir[1]:find(&quot;mandala&quot;,1,true) or speedWalkDir[1]:find(&quot;figurecurio&quot;,1,true) or speedWalkDir[1]:find(&quot;prism&quot;,1,true) or speedWalkDir[1]:find(&quot;vernalcurio&quot;,1,true) then
+  if
+    speedWalkDir[1]~=previousDirection
+  then
     speedWalkCounter = 0
     mmp.echo(&quot;We got outside - going to shortcut with 'bix device.&quot;)
     mmp.gotoRoom(mmp.speedWalkPath[#mmp.speedWalkPath])
     mmp.ignore_speedwalking = true
   end
-
-  if mademedallion then mmp.clearspecials{13367} end
-  if madefingerblade then mmp.clearspecials{18777} end
-  if madeblossom then mmp.clearspecials{18730} end
-  if madebelt then mmp.clearspecials{19627} end
-  if madecubix then mmp.clearspecials{6184} end
-  if madescrewdriver then mmp.clearspecials{6831, 10185} end
-  if madewheel then mmp.clearspecials{6831, 10509} end
-  if mademud then mmp.clearspecials{6831, 9985} end
-  if madesnowglobe then mmp.clearspecials{6831, 10992} end
-  if madecookie then mmp.clearspecials{6831, 9888} end
-  if madehead then mmp.clearspecials{6831, 11811} end
-  if madeicicle then mmp.clearspecials{6831, 10457} end
-  if madetibia then mmp.clearspecials{6831, 11600} end
-  if madebonecurio then mmp.clearspecials{28613} end
-  if madeflowercurio then mmp.clearspecials{28624} end
-  if madetorus then mmp.clearspecials{25848} end
-  if madeutensilcurio then mmp.clearspecials{28617} end
-  if madefluttercurio then mmp.clearspecials{28622} end
-  if madetoolcurio then mmp.clearspecials{28586} end
-  if madefacecurio then mmp.clearspecials{28433} end
-  if madetoycurio then mmp.clearspecials{21548} end
-  if madefeathercurio then mmp.clearspecials{28591} end
-  if madefigurecurio then mmp.clearspecials{28312} end
-  if madeprism then mmp.clearspecials{6182} end
-  if madevernalcurio then mmp.clearspecials{29908} end
-  if mademandala then mmp.clearspecials{19563} end
-end
-</script>
+  raiseEvent(&quot;mmp clear externals&quot;)
+end</script>
                         <eventHandlerList>
                             <string>mmapper went outside</string>
                         </eventHandlerList>
