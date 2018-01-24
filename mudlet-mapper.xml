@@ -4832,6 +4832,7 @@ function mmp.startup()
   private_settings[&quot;vernalcurio&quot;]   = createOption(false, mmp.setVernalcurio, { &quot;boolean&quot; }, &quot;Make use of your Vernal curios in Lusternia?&quot;)
   private_settings[&quot;utensilcurio&quot;]  = createOption(false, mmp.setUtensilcurio, { &quot;boolean&quot; }, &quot;Make use of your Utensil curios in Lusternia?&quot;)
   private_settings[&quot;toycurio&quot;]      = createOption(false, mmp.setToycurio, { &quot;boolean&quot; }, &quot;Make use of your Toy curios in Lusternia?&quot;)
+  private_settings[&quot;soullesscurio&quot;] = createOption(false, mmp.setSoullesscurio, { &quot;boolean&quot; }, &quot;Make use of your Soulless curios in Lusternia?&quot;)
 
 --Lusternia epic
   private_settings[&quot;fingerblade&quot;]   = createOption(false, mmp.setFingerblade, { &quot;boolean&quot; }, &quot;Make use of your Fingerblade in Lusternia?&quot;)
@@ -4917,6 +4918,8 @@ toycurio={lusternia=true},
 utensilcurio={lusternia=true},
 vernalcurio={lusternia=true},
 wheel={lusternia=true},
+mantle={lusternia=true},
+key={lusternia=true},
 winglanguage={achaea=true,}
 }
 function mmp.rebuildOptionsTable(_,game)
@@ -5557,7 +5560,7 @@ function mmp.addWings()
           tempSpecialExit(42319, getcmd(&quot;duanathar&quot;))
           tempSpecialExit(4882, getcmd(&quot;duanatharan&quot;))
         else
-          prepSpecialExit(3885, getcmd(&quot;duanathar&quot;))
+          tempSpecialExit(3885, getcmd(&quot;duanathar&quot;))
         end
         --Meropis Wings
       elseif mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Meropis&quot;) then
@@ -5656,6 +5659,9 @@ function mmp.addWings()
       if mmp.settings.vernalcurio then
         tempSpecialExit(29908, &quot;curio collection activate vernal&quot;)
       end
+		if mmp.settings.soullesscurio then
+			tempSpecialExit(29909, &quot;curio collection activate soulless&quot;)
+		end
     end
     --all the bubblixes!
     if mmp.usebubblix() then
@@ -6945,6 +6951,12 @@ function mmp.setVernalcurio()
 
   if mmp.settings.vernalcurio then mmp.echo(&quot;Okay, will see about using Vernal Curio collection whenever it's quicker&quot;)
   else mmp.echo(&quot;Won't use Vernal Curio collection anymore.&quot;) end
+end
+function mmp.setSoullesscurio()
+  mmp.clearpathcache() -- clear the cache so it'll use wings or will stop using wings
+
+  if mmp.settings.soullesscurio then mmp.echo(&quot;Okay, will see about using Soulless Curio collection whenever it's quicker&quot;)
+  else mmp.echo(&quot;Won't use Soulless Curio collection anymore.&quot;) end
 end
 
 function mmp.setHarness() --PapaGuacamole
