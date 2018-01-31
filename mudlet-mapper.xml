@@ -1466,6 +1466,59 @@ enableTrigger(&quot;Shadow preeminence&quot;)</script>
                         </regexCodePropertyList>
                     </Trigger>
                 </Trigger>
+                <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="yes" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+                    <name>Directory - Catch shop entry</name>
+                    <script></script>
+                    <triggerType>0</triggerType>
+                    <conditonLineDelta>0</conditonLineDelta>
+                    <mStayOpen>0</mStayOpen>
+                    <mCommand></mCommand>
+                    <packageName></packageName>
+                    <mFgColor>#ff0000</mFgColor>
+                    <mBgColor>#ffff00</mBgColor>
+                    <mSoundFile></mSoundFile>
+                    <colorTriggerFgColor>#000000</colorTriggerFgColor>
+                    <colorTriggerBgColor>#000000</colorTriggerBgColor>
+                    <regexCodeList>
+                        <string>^((?:\d+)(?:mc|gp|cr).+)$</string>
+                    </regexCodeList>
+                    <regexCodePropertyList>
+                        <integer>1</integer>
+                    </regexCodePropertyList>
+                    <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+                        <name>Make shop name clickable</name>
+                        <script>selectCaptureGroup(2)
+replace(&quot;&quot;)
+rooms = mmp.searchRoomExact(matches[2])
+local roomnum=next(rooms,nil)
+if roomnum == nil or next(rooms, roomnum) then
+  cecho(&quot;&lt;white&gt;(&lt;sky_blue&gt;&quot; .. matches[2] .. &quot;&lt;white&gt;)&quot;)
+else
+  local r, g, b = unpack(color_table[&quot;cyan&quot;])
+  cecho(&quot;&lt;white&gt;(&quot;)
+  setTextFormat(&quot;&quot;, 0, 0, 0, r, g, b, false, true, false)
+  echoLink(matches[2], [[mmp.gotoRoom(]] .. roomnum .. [[)]], &quot;Walk to &quot; .. matches[2] .. &quot;.&quot;, true)
+  cecho(&quot;&lt;white&gt;)&quot;)
+  resetFormat()
+end</script>
+                        <triggerType>0</triggerType>
+                        <conditonLineDelta>0</conditonLineDelta>
+                        <mStayOpen>0</mStayOpen>
+                        <mCommand></mCommand>
+                        <packageName></packageName>
+                        <mFgColor>#ff0000</mFgColor>
+                        <mBgColor>#ffff00</mBgColor>
+                        <mSoundFile></mSoundFile>
+                        <colorTriggerFgColor>#000000</colorTriggerFgColor>
+                        <colorTriggerBgColor>#000000</colorTriggerBgColor>
+                        <regexCodeList>
+                            <string>^.{45} (.+)$</string>
+                        </regexCodeList>
+                        <regexCodePropertyList>
+                            <integer>1</integer>
+                        </regexCodePropertyList>
+                    </Trigger>
+                </Trigger>
             </TriggerGroup>
             <TriggerGroup isActive="yes" isFolder="yes" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
                 <name>Aetolia</name>
