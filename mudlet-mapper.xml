@@ -5618,10 +5618,8 @@ function mmp.addWingsAchaea()
       mmp.tempSpecialExit(54632, &quot;Shake Harness&quot;)
     end
   end
-  --if any exits were created, clears the path cache so it calculates a new route.
-  if #exitsCreated &gt; 0 then
+  --clears the path cache so it calculates a new route.
     mmp.clearpathcache()
-  end
 end</script>
                     <eventHandlerList/>
                 </Script>
@@ -5764,9 +5762,7 @@ function mmp.addWingsLusternia()
       end
     end
   end
-	if #exitsCreated &gt; 0 then
-    mmp.clearpathcache()
-  end
+  mmp.clearpathcache()
 end</script>
                     <eventHandlerList/>
                 </Script>
