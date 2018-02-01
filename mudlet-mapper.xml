@@ -5641,7 +5641,7 @@ function mmp.addWingsAchaea()
         mmp.tempSpecialExit(42319, getcmd(&quot;duanathar&quot;))
         mmp.tempSpecialExit(4882, getcmd(&quot;duanatharan&quot;))
       else
-        tempSpecialExit(3885, getcmd(&quot;duanathar&quot;))
+        mmp.tempSpecialExit(3885, getcmd(&quot;duanathar&quot;))
       end
       --Meropis Wings
     elseif mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Meropis&quot;) then
@@ -5652,7 +5652,7 @@ function mmp.addWingsAchaea()
         mmp.tempSpecialExit(42319, getcmd(&quot;duanathar&quot;))
         mmp.tempSpecialExit(51603, getcmd(&quot;duanatharan&quot;))
       else
-        tempSpecialExit(51188, getcmd(&quot;duanathar&quot;))
+        mmp.tempSpecialExit(51188, getcmd(&quot;duanathar&quot;))
       end
     end
   end
