@@ -4829,7 +4829,7 @@ function mmp.startup()
 
   local private_settings = {}
 --General settings
-  private_settings[&quot;echocolour&quot;]    = createOption(&quot;MediumBlue&quot;, mmp.changeEchoColour, { &quot;string&quot; }, &quot;Set the color for room number echos?&quot;)
+  private_settings[&quot;echocolour&quot;]    = createOption(&quot;cyan&quot;, mmp.changeEchoColour, { &quot;string&quot; }, &quot;Set the color for room number echos?&quot;)
   private_settings[&quot;crowdmap&quot;]      = createOption(false, mmp.chageMapSource, { &quot;boolean&quot; }, &quot;Use a crowd-sourced map instead of IREs default?&quot;)
   private_settings[&quot;showcmds&quot;]      = createOption(true, mmp.changeBoolFunc, { &quot;boolean&quot; }, &quot;Show walking commands?&quot;)
   private_settings[&quot;slowwalk&quot;]      = createOption(false, mmp.setSlowWalk, { &quot;boolean&quot; }, &quot;Walk slowly instead of as quick as possible?&quot;)
@@ -6741,10 +6741,11 @@ end
 
 function mmp.changeEchoColour()
   if color_table[mmp.settings.echocolour] then
-    mmp.echo(&quot;Echo colour is now &quot;..mmp.settings.echocolour)
+    mmp.echo(&quot;Now displaying echos in &lt;&quot;..mmp.settings.echocolour..&quot;&gt;&quot;..mmp.settings.echocolour )
+    mmp.oldcolour=mmp.settings.echocolour
   else
-    mmp.echo(&quot;Not a valid cecho color - Setting to default&quot;)
-    mmp.settings:setOption(&quot;echocolour&quot;, &quot;MediumBlue&quot;)
+    mmp.echo(mmp.settings.echocolour..&quot; is not a valid cecho color&quot;)
+    mmp.settings:setOption(&quot;echocolour&quot;, mmp.oldcolour,true)
   end
 end
 
@@ -8063,6 +8064,7 @@ end</script>
 			mmp.settings:setOption(k, v, true)
 		end
 	end
+   mmp.oldcolour=mmp.settings.echocolour
 end
 
 function mmp_load_locks()
