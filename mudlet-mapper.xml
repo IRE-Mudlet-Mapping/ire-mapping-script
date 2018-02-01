@@ -4917,6 +4917,7 @@ torus={lusternia=true},
 toycurio={lusternia=true},
 utensilcurio={lusternia=true},
 vernalcurio={lusternia=true},
+soullesscurio={lusternia=true},
 wheel={lusternia=true},
 mantle={lusternia=true},
 key={lusternia=true},
@@ -5515,229 +5516,261 @@ end</script>
                     <string>gmcp.Room.Info</string>
                 </eventHandlerList>
             </Script>
-            <Script isActive="yes" isFolder="no">
-                <name>Wings and Bixes</name>
+            <ScriptGroup isActive="yes" isFolder="yes">
+                <name>Wings and other fast travel</name>
                 <packageName></packageName>
-                <script>local exitsCreated = exitsCreated or {}
+                <script>-------------------------------------------------
+--         Put your Lua functions here.        --
+--                                             --
+-- Note that you can also use external Scripts --
+-------------------------------------------------
+</script>
+                <eventHandlerList/>
+                <Script isActive="yes" isFolder="no">
+                    <name>Wings functions</name>
+                    <packageName></packageName>
+                    <script>local exitsCreated = exitsCreated or {}
 
-local function tempSpecialExit(destination, command)
+function mmp.tempSpecialExit(destination, command)
   table.insert(exitsCreated, destination)
   addSpecialExit(mmp.currentroom, destination, command)
 end
-
-function mmp.addWings()
---Trimmed down version of the original function, meant to only be used for wings. (Where the command varies based on several MCONFIGS)
-  local function getcmd(word)
-    return
-      mmp.settings.removewings and
-      [[script:sendAll(&quot;wear wings&quot;, &quot;say *]] ..
-      (mmp.settings.winglanguage and mmp.settings.winglanguage or &quot;&quot;) ..
-      [[ ]] ..
-      word ..
-      [[&quot;, &quot;remove wings&quot;, false)]] or
-      [[script:send(&quot;say *]] ..
-      (mmp.settings.winglanguage and mmp.settings.winglanguage or &quot;&quot;) ..
-      [[ ]] ..
-      word ..
-      [[&quot;, false)]]
-  end
-
-  --creates a special exit from your current room to a destination, and adds it to a table so it can be easily cleared later.
-  --Achaea stuff!
-  if mmp.game == &quot;achaea&quot; then
-    --WINGS!
-    if
-      (mmp.settings.duanathar or mmp.settings.duanatharan or mmp.settings.duantahar) and
-      gmcp.Room and
-      not table.contains(gmcp.Room.Info.details, &quot;indoors&quot;)
-    then
-      --Sarapis wings.
-      if mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Main&quot;) then
-        if mmp.settings.duanatharan then
-          tempSpecialExit(4882, getcmd(&quot;duanatharan&quot;))
-          tempSpecialExit(3885, getcmd(&quot;duanathar&quot;))
-        elseif mmp.settings.duantahar then
-          tempSpecialExit(42319, getcmd(&quot;duanathar&quot;))
-          tempSpecialExit(4882, getcmd(&quot;duanatharan&quot;))
-        else
-          tempSpecialExit(3885, getcmd(&quot;duanathar&quot;))
-        end
-        --Meropis Wings
-      elseif mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Meropis&quot;) then
-        if mmp.settings.duanatharan then
-          tempSpecialExit(51603, getcmd(&quot;duanatharan&quot;))
-          tempSpecialExit(51188, getcmd(&quot;duanathar&quot;))
-        elseif mmp.settings.duantahar then
-          tempSpecialExit(42319, getcmd(&quot;duanathar&quot;))
-          tempSpecialExit(51603, getcmd(&quot;duanatharan&quot;))
-        else
-          tempSpecialExit(51188, getcmd(&quot;duanathar&quot;))
-        end
-      end
-    end
-    -- Stratospheric Harness support -- PapaGuacamole
-    if
-      mmp.settings.harness and gmcp.Room and not table.contains(gmcp.Room.Info.details, &quot;indoors&quot;)
-    then
-      -- eastern isles
-      if mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Eastern_Isles&quot;) then
-        tempSpecialExit(54231, &quot;Shake Harness&quot;)
-        -- northern isles
-      elseif mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Northen_Isles&quot;) then
-        tempSpecialExit(48719, &quot;Shake Harness&quot;)
-        -- western isles
-      elseif mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Western_Isles&quot;) then
-        tempSpecialExit(54632, &quot;Shake Harness&quot;)
-      end
-    end
-  elseif mmp.game == &quot;lusternia&quot; then
-    --that dorky prism
-    if mmp.useprism() then
-      if mmp.settings.prism then
-        tempSpecialExit(6182, &quot;touch prism&quot;)
-      end
-    end
-    --items that use standard bix rules
-    if mmp.usebix() then
-      --cubix and things
-      if mmp.settings.medallion then
-        tempSpecialExit(13367, &quot;touch medallion&quot;)
-      end
-      if mmp.settings.cubix then
-        tempSpecialExit(6184, &quot;touch cubix&quot;)
-      end
-      if mmp.settings.torus and mmp.usebix() then
-        tempSpecialExit(28548, &quot;touch torus&quot;)
-      end
-      --epic quest items
-      if mmp.settings.fingerblade then
-        tempSpecialExit(18777, &quot;touch fingerblade&quot;)
-      end
-      if mmp.settings.blossom then
-        tempSpecialExit(18730, &quot;touch blossom&quot;)
-      end
-      if mmp.settings.mandala then
-        tempSpecialExit(19563, &quot;touch mandala&quot;)
-      end
-      if mmp.settings.belt then
-        tempSpecialExit(19627, &quot;touch enlightened&quot;)
-      end
-      if mmp.settings.mantle then
-        tempSpecialExit(18762, &quot;touch starlight&quot;)
-      end
-      if mmp.settings.key then
-        tempSpecialExit(18732, &quot;touch key&quot;)
-      end
-      --curio collections!
-      if mmp.settings.bonecurio then
-        tempSpecialExit(28613, &quot;curio collection activate bone&quot;)
-      end
-      if mmp.settings.flowercurio then
-        tempSpecialExit(28624, &quot;curio collection activate flower&quot;)
-      end
-      if mmp.settings.utensilcurio then
-        tempSpecialExit(28617, &quot;curio collection activate utensil&quot;)
-      end
-      if mmp.settings.fluttercurio then
-        tempSpecialExit(28622, &quot;curio collection activate flutter&quot;)
-      end
-      if mmp.settings.toolcurio then
-        tempSpecialExit(28586, &quot;curio collection activate tool&quot;)
-      end
-      if mmp.settings.facecurio then
-        tempSpecialExit(28433, &quot;curio collection activate face&quot;)
-      end
-      if mmp.settings.toycurio then
-        tempSpecialExit(21548, &quot;curio collection activate toy&quot;)
-      end
-      if mmp.settings.feathercurio then
-        tempSpecialExit(28591, &quot;curio collection activate feather&quot;)
-      end
-      if mmp.settings.figurecurio then
-        tempSpecialExit(28312, &quot;curio collection activate figure&quot;)
-      end
-      if mmp.settings.vernalcurio then
-        tempSpecialExit(29908, &quot;curio collection activate vernal&quot;)
-      end
-		if mmp.settings.soullesscurio then
-			tempSpecialExit(29909, &quot;curio collection activate soulless&quot;)
-		end
-    end
-    --all the bubblixes!
-    if mmp.usebubblix() then
-      if mmp.settings.screwdriver then
-        if gmcp.Room.Info.area == &quot;the Facility&quot; then
-          tempSpecialExit(6831, &quot;touch screwdriver&quot;)
-        elseif not table.contains(gmcp.Room.Info.details, &quot;an Aetherbubble&quot;) then
-          tempSpecialExit(10185, &quot;touch screwdriver&quot;)
-        end
-      end
-      if mmp.settings.wheel then
-        if gmcp.Room.Info.area == &quot;the Dramube Triangle&quot; then
-          tempSpecialExit(6831, &quot;touch wheel&quot;)
-        elseif not table.contains(gmcp.Room.Info.details, &quot;an Aetherbubble&quot;) then
-          tempSpecialExit(10509, &quot;touch wheel&quot;)
-        end
-      end
-      if mmp.settings.mud then
-        if gmcp.Room.Info.area == &quot;Mucklemarsh&quot; then
-          tempSpecialExit(6831, &quot;touch mud&quot;)
-        elseif not table.contains(gmcp.Room.Info.details, &quot;an Aetherbubble&quot;) then
-          tempSpecialExit(9985, &quot;touch mud&quot;)
-        end
-      end
-      if mmp.settings.snowglobe then
-        if gmcp.Room.Info.area == &quot;the Great Spirit Tree&quot; then
-          tempSpecialExit(6831, &quot;shake snowglobe&quot;)
-        elseif not table.contains(gmcp.Room.Info.details, &quot;an Aetherbubble&quot;) then
-          tempSpecialExit(10992, &quot;shake snowglobe&quot;)
-        end
-      end
-      if mmp.settings.cookie then
-        if gmcp.Room.Info.area == &quot;Crumkindivia&quot; then
-          tempSpecialExit(6831, &quot;touch cookie&quot;)
-        elseif not table.contains(gmcp.Room.Info.details, &quot;an Aetherbubble&quot;) then
-          tempSpecialExit(9888, &quot;touch cookie&quot;)
-        end
-      end
-      if mmp.settings.head then
-        if gmcp.Room.Info.area == &quot;the Bubble of Bottledowns&quot; then
-          tempSpecialExit(6831, &quot;touch doll&quot;)
-        elseif not table.contains(gmcp.Room.Info.details, &quot;an Aetherbubble&quot;) then
-          tempSpecialExit(11811, &quot;touch doll&quot;)
-        end
-      end
-      if mmp.settings.icicle then
-        if gmcp.Room.Info.area == &quot;Frosticia&quot; then
-          tempSpecialExit(6831, &quot;touch icicle&quot;)
-        elseif not table.contains(gmcp.Room.Info.details, &quot;an Aetherbubble&quot;) then
-          tempSpecialExit(10457, &quot;touch icicle&quot;)
-        end
-      end
-      if mmp.settings.tibia then
-        if gmcp.Room.Info.area == &quot;the Cankermore Battlegrounds&quot; then
-          tempSpecialExit(6831, &quot;touch tibia&quot;)
-        elseif not table.contains(gmcp.Room.Info.details, &quot;an Aetherbubble&quot;) then
-          tempSpecialExit(11600, &quot;touch tibia&quot;)
-        end
-      end
-    end
-  end
-	--if any exits were created, clears the path cache so it calculates a new route.
-	if #exitsCreated&gt;0 then
-		mmp.clearpathcache()
-	end
-end
-registerAnonymousEventHandler(&quot;mmp link externals&quot;,&quot;mmp.addWings&quot;)
 
 function mmp.removeWings()
 	--remove all special exits that were created by addWings, then resets the table.
 	mmp.clearspecials(exitsCreated)
 	exitsCreated={}
 end
+
 registerAnonymousEventHandler(&quot;mmp clear externals&quot;,&quot;mmp.removeWings&quot;)</script>
-                <eventHandlerList/>
-            </Script>
+                    <eventHandlerList/>
+                </Script>
+                <Script isActive="yes" isFolder="no">
+                    <name>Achaea</name>
+                    <packageName></packageName>
+                    <script>registerAnonymousEventHandler(&quot;mmp link externals&quot;, &quot;mmp.addWingsAchaea&quot;)
+
+function mmp.addWingsAchaea()
+  --Trimmed down version of the original function, meant to only be used for wings. (Where the command varies based on several MCONFIGS)
+
+  local function getcmd(word)
+    return
+      mmp.settings.removewings and
+      string.format(
+			  [[script:sendAll(&quot;wear wings&quot;, &quot;say *%s %s&quot;, &quot;remove wings&quot;, false)]],
+        (mmp.settings.winglanguage and mmp.settings.winglanguage or &quot;&quot;),
+        word
+      ) or
+      string.format(
+        [[script:send(&quot;say *%s %s&quot;, false)]],
+        (mmp.settings.winglanguage and mmp.settings.winglanguage or &quot;&quot;),
+        word
+      )
+  end
+
+  --creates a special exit from your current room to a destination, and adds it to a table so it can be easily cleared later.
+  --Achaea stuff!
+  if mmp.game ~= &quot;achaea&quot; then
+    return
+  end
+  --WINGS!
+  if
+    (mmp.settings.duanathar or mmp.settings.duanatharan or mmp.settings.duantahar) and
+    gmcp.Room and
+    not table.contains(gmcp.Room.Info.details, &quot;indoors&quot;)
+  then
+    --Sarapis wings.
+    if mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Main&quot;) then
+      if mmp.settings.duanatharan then
+        mmp.tempSpecialExit(4882, getcmd(&quot;duanatharan&quot;))
+        mmp.tempSpecialExit(3885, getcmd(&quot;duanathar&quot;))
+      elseif mmp.settings.duantahar then
+        mmp.tempSpecialExit(42319, getcmd(&quot;duanathar&quot;))
+        mmp.tempSpecialExit(4882, getcmd(&quot;duanatharan&quot;))
+      else
+        tempSpecialExit(3885, getcmd(&quot;duanathar&quot;))
+      end
+      --Meropis Wings
+    elseif mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Meropis&quot;) then
+      if mmp.settings.duanatharan then
+        mmp.tempSpecialExit(51603, getcmd(&quot;duanatharan&quot;))
+        mmp.tempSpecialExit(51188, getcmd(&quot;duanathar&quot;))
+      elseif mmp.settings.duantahar then
+        mmp.tempSpecialExit(42319, getcmd(&quot;duanathar&quot;))
+        mmp.tempSpecialExit(51603, getcmd(&quot;duanatharan&quot;))
+      else
+        tempSpecialExit(51188, getcmd(&quot;duanathar&quot;))
+      end
+    end
+  end
+  -- Stratospheric Harness support -- PapaGuacamole
+  if
+    mmp.settings.harness and gmcp.Room and not table.contains(gmcp.Room.Info.details, &quot;indoors&quot;)
+  then
+    -- eastern isles
+    if mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Eastern_Isles&quot;) then
+      mmp.tempSpecialExit(54231, &quot;Shake Harness&quot;)
+      -- northern isles
+    elseif mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Northen_Isles&quot;) then
+      mmp.tempSpecialExit(48719, &quot;Shake Harness&quot;)
+      -- western isles
+    elseif mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Western_Isles&quot;) then
+      mmp.tempSpecialExit(54632, &quot;Shake Harness&quot;)
+    end
+  end
+  --if any exits were created, clears the path cache so it calculates a new route.
+  if #exitsCreated &gt; 0 then
+    mmp.clearpathcache()
+  end
+end</script>
+                    <eventHandlerList/>
+                </Script>
+                <Script isActive="yes" isFolder="no">
+                    <name>Lusternia</name>
+                    <packageName></packageName>
+                    <script>registerAnonymousEventHandler(&quot;mmp link externals&quot;, &quot;mmp.addWingsLusternia&quot;)
+function mmp.addWingsLusternia()
+  if mmp.game ~= &quot;lusternia&quot; then
+    return
+  end
+  --that dorky prism
+  if mmp.useprism() then
+    if mmp.settings.prism then
+      mmp.tempSpecialExit(6182, &quot;touch prism&quot;)
+    end
+  end
+  --items that use standard bix rules
+  if mmp.usebix() then
+    --cubix and things
+    if mmp.settings.medallion then
+      mmp.tempSpecialExit(13367, &quot;touch medallion&quot;)
+    end
+    if mmp.settings.cubix then
+      mmp.tempSpecialExit(6184, &quot;touch cubix&quot;)
+    end
+    if mmp.settings.torus and mmp.usebix() then
+      mmp.tempSpecialExit(28548, &quot;touch torus&quot;)
+    end
+    --epic quest items
+    if mmp.settings.fingerblade then
+      mmp.tempSpecialExit(18777, &quot;touch fingerblade&quot;)
+    end
+    if mmp.settings.blossom then
+      mmp.tempSpecialExit(18730, &quot;touch blossom&quot;)
+    end
+    if mmp.settings.mandala then
+      mmp.tempSpecialExit(19563, &quot;touch mandala&quot;)
+    end
+    if mmp.settings.belt then
+      mmp.tempSpecialExit(19627, &quot;touch enlightened&quot;)
+    end
+    if mmp.settings.mantle then
+      mmp.tempSpecialExit(18762, &quot;touch starlight&quot;)
+    end
+    if mmp.settings.key then
+      mmp.tempSpecialExit(18732, &quot;touch key&quot;)
+    end
+    --curio collections!
+    if mmp.settings.bonecurio then
+      mmp.tempSpecialExit(28613, &quot;curio collection activate bone&quot;)
+    end
+    if mmp.settings.flowercurio then
+      mmp.tempSpecialExit(28624, &quot;curio collection activate flower&quot;)
+    end
+    if mmp.settings.utensilcurio then
+      mmp.tempSpecialExit(28617, &quot;curio collection activate utensil&quot;)
+    end
+    if mmp.settings.fluttercurio then
+      mmp.tempSpecialExit(28622, &quot;curio collection activate flutter&quot;)
+    end
+    if mmp.settings.toolcurio then
+      mmp.tempSpecialExit(28586, &quot;curio collection activate tool&quot;)
+    end
+    if mmp.settings.facecurio then
+      mmp.tempSpecialExit(28433, &quot;curio collection activate face&quot;)
+    end
+    if mmp.settings.toycurio then
+      mmp.tempSpecialExit(21548, &quot;curio collection activate toy&quot;)
+    end
+    if mmp.settings.feathercurio then
+      mmp.tempSpecialExit(28591, &quot;curio collection activate feather&quot;)
+    end
+    if mmp.settings.figurecurio then
+      mmp.tempSpecialExit(28312, &quot;curio collection activate figure&quot;)
+    end
+    if mmp.settings.vernalcurio then
+      mmp.tempSpecialExit(29908, &quot;curio collection activate vernal&quot;)
+    end
+    if mmp.settings.soullesscurio then
+      mmp.tempSpecialExit(29909, &quot;curio collection activate soulless&quot;)
+    end
+  end
+  --all the bubblixes!
+  if mmp.usebubblix() then
+    if mmp.settings.screwdriver then
+      if gmcp.Room.Info.area == &quot;the Facility&quot; then
+        mmp.tempSpecialExit(6831, &quot;touch screwdriver&quot;)
+      elseif not table.contains(gmcp.Room.Info.details, &quot;an Aetherbubble&quot;) then
+        mmp.tempSpecialExit(10185, &quot;touch screwdriver&quot;)
+      end
+    end
+    if mmp.settings.wheel then
+      if gmcp.Room.Info.area == &quot;the Dramube Triangle&quot; then
+        mmp.tempSpecialExit(6831, &quot;touch wheel&quot;)
+      elseif not table.contains(gmcp.Room.Info.details, &quot;an Aetherbubble&quot;) then
+        mmp.tempSpecialExit(10509, &quot;touch wheel&quot;)
+      end
+    end
+    if mmp.settings.mud then
+      if gmcp.Room.Info.area == &quot;Mucklemarsh&quot; then
+        mmp.tempSpecialExit(6831, &quot;touch mud&quot;)
+      elseif not table.contains(gmcp.Room.Info.details, &quot;an Aetherbubble&quot;) then
+        mmp.tempSpecialExit(9985, &quot;touch mud&quot;)
+      end
+    end
+    if mmp.settings.snowglobe then
+      if gmcp.Room.Info.area == &quot;the Great Spirit Tree&quot; then
+        mmp.tempSpecialExit(6831, &quot;shake snowglobe&quot;)
+      elseif not table.contains(gmcp.Room.Info.details, &quot;an Aetherbubble&quot;) then
+        mmp.tempSpecialExit(10992, &quot;shake snowglobe&quot;)
+      end
+    end
+    if mmp.settings.cookie then
+      if gmcp.Room.Info.area == &quot;Crumkindivia&quot; then
+        mmp.tempSpecialExit(6831, &quot;touch cookie&quot;)
+      elseif not table.contains(gmcp.Room.Info.details, &quot;an Aetherbubble&quot;) then
+        mmp.tempSpecialExit(9888, &quot;touch cookie&quot;)
+      end
+    end
+    if mmp.settings.head then
+      if gmcp.Room.Info.area == &quot;the Bubble of Bottledowns&quot; then
+        mmp.tempSpecialExit(6831, &quot;touch doll&quot;)
+      elseif not table.contains(gmcp.Room.Info.details, &quot;an Aetherbubble&quot;) then
+        mmp.tempSpecialExit(11811, &quot;touch doll&quot;)
+      end
+    end
+    if mmp.settings.icicle then
+      if gmcp.Room.Info.area == &quot;Frosticia&quot; then
+        mmp.tempSpecialExit(6831, &quot;touch icicle&quot;)
+      elseif not table.contains(gmcp.Room.Info.details, &quot;an Aetherbubble&quot;) then
+        mmp.tempSpecialExit(10457, &quot;touch icicle&quot;)
+      end
+    end
+    if mmp.settings.tibia then
+      if gmcp.Room.Info.area == &quot;the Cankermore Battlegrounds&quot; then
+        mmp.tempSpecialExit(6831, &quot;touch tibia&quot;)
+      elseif not table.contains(gmcp.Room.Info.details, &quot;an Aetherbubble&quot;) then
+        mmp.tempSpecialExit(11600, &quot;touch tibia&quot;)
+      end
+    end
+  end
+	if #exitsCreated &gt; 0 then
+    mmp.clearpathcache()
+  end
+end</script>
+                    <eventHandlerList/>
+                </Script>
+            </ScriptGroup>
             <Script isActive="yes" isFolder="no">
                 <name>Utilities</name>
                 <packageName></packageName>
