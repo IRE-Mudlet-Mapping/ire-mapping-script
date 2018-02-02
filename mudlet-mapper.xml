@@ -4857,6 +4857,7 @@ function mmp.startup()
   private_settings[&quot;duanatharan&quot;]   = createOption(false, mmp.setDuanatharan, { &quot;boolean&quot; }, &quot;Use Atavian Wings in Achaea?&quot;)
   private_settings[&quot;duanathar&quot;]     = createOption(false, mmp.setDuanathar, { &quot;boolean&quot; }, &quot;Use Eagle Wings in Achaea?&quot;)
   private_settings[&quot;shackle&quot;]       = createOption(false, mmp.changeBoolFunc, { &quot;boolean&quot; }, &quot;Take off shackle?&quot;)
+  private_settings[&quot;universe&quot;]      = createOption(false, mmp.setUniverse, {&quot;boolean&quot; }, &quot;Use Universe Tarot in Achaea?&quot;)
 
 --Lusternia bixes
   private_settings[&quot;torus&quot;]         = createOption(false, mmp.setTorus, { &quot;boolean&quot; }, &quot;Make use of your Torus in Lusternia?&quot;)
@@ -4975,6 +4976,7 @@ wheel={lusternia=true},
 mantle={lusternia=true},
 key={lusternia=true},
 winglanguage={achaea=true,}
+universe={achaea=true},
 }
 function mmp.rebuildOptionsTable(_,game)
 	game=game:lower()
@@ -5584,9 +5586,12 @@ end</script>
                     <packageName></packageName>
                     <script>local exitsCreated = exitsCreated or {}
 
-function mmp.tempSpecialExit(destination, command)
+function mmp.tempSpecialExit(destination, command, weight)
   table.insert(exitsCreated, destination)
   addSpecialExit(mmp.currentroom, destination, command)
+	if weight then
+	  setExitWeight(mmp.currentroom,command,weight)
+	end
 end
 
 function mmp.removeWings()
@@ -5669,6 +5674,40 @@ function mmp.addWingsAchaea()
       -- western isles
     elseif mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Western_Isles&quot;) then
       mmp.tempSpecialExit(54632, &quot;Shake Harness&quot;)
+    end
+  end
+  --universe tarot
+  if
+    mmp.settings.universe and
+    mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Main&quot;)
+  then
+    local tarotLocations =
+      {
+        azdun = 1772,
+        blackrock = 10573,
+        bitterfork = 25093,
+        genji = 10091,
+        manusha = 8730,
+        newthera = 20386,
+        caerwitrin = 17678,
+        shastaan = 2855,
+        mannaseh = 1745,
+        manara = 9124,
+        brasslantern = 30383,
+        mhojave = 39103,
+        thraasi = 35703,
+        newhope = 25581,
+      }
+    for village, roomnum in pairs(tarotLocations) do
+      mmp.tempSpecialExit(
+        roomnum,
+        [=[script:
+        mmp.customwalkdelay(4.5)
+        send(&quot;fling universe at ground&quot;,false)
+        tempTimer(4,[[send(&quot;touch ]=] .. village .. [=[&quot;,false)]])
+        ]=],
+        10
+      )
     end
   end
   --clears the path cache so it calculates a new route.
@@ -6787,6 +6826,14 @@ function mmp.setDuantahar()
 
   if mmp.settings.duantahar then mmp.echo(&quot;Okay, will see about using Chenubian wings (duanathar, duanatharan, and duantahar) when you goto somewhere while outside!&quot;)
   else mmp.echo(&quot;Won't use Chenubian wings anymore.&quot;) end
+end
+
+function mmp.setUniverse()
+  mmp.clearpathcache()
+	
+	if mmp.settings.universe then mmp.echo(&quot;Okay, will see about using the Universe tarot whenever it's faster.&quot;)
+	else mmp.echo(&quot;Won't use Universe tarot anymore.&quot;) end
+
 end
 
 function mmp.chageMapSource()
