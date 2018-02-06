@@ -5058,6 +5058,10 @@ function mmp.gotoArea (where, number, dashtype, exact)
 
   local areaid, msg, multiples = mmp.findAreaID(where, exact)
   if areaid then
+    if areaid==getRoomArea(mmp.currentroom) then
+      mmp.echo(&quot;We're already in &quot;..msg..&quot;!&quot;)
+      return
+    end
      possibleRooms = mmp.getAreaBorders(areaid)
 
   elseif not areaid and #multiples &gt; 0 then
