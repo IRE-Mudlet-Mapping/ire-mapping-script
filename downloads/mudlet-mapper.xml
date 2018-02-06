@@ -4266,7 +4266,7 @@ if not next(m) then mmp.echo(&quot;This map has no char marks on it. Do mc on an
 
 for letter, rooms in pairs(m) do
   table.sort(rooms)
-  mmp.echo(&quot;Rooms with the &lt;&quot;..mmp.echo_colour..&quot;&gt;&quot;..letter..&quot;&lt;reset&gt; character on them:&quot;)
+  mmp.echo(&quot;Rooms with the &lt;&quot;..mmp.settings.echocolour..&quot;&gt;&quot;..letter..&quot;&lt;reset&gt; character on them:&quot;)
   for i = 1, #rooms do
     if not show_area then
       cecho(string.format(&quot;  &lt;sea_green&gt;%-5s&lt;reset&gt; %s\n&quot;, rooms[i], getRoomName(rooms[i])))
@@ -4667,7 +4667,7 @@ mmp.echo(&quot;All astral nodes have been &quot;..(matches[2]:lower()==&quot;on&
 -- Note that you can also use external Scripts --
 -------------------------------------------------
 
-function createOption(startingValue, onChangeFunc, allowedVarTypes, use)
+function createOption(startingValue, onChangeFunc, allowedVarTypes, use, checkOption)
 	if allowedVarTypes then -- make sure our starting Value follows type rules
 		if not table.contains(allowedVarTypes, type(startingValue)) then
 			echo(&quot;Starting type is not of allowed type!\n&quot;)
@@ -4681,7 +4681,9 @@ function createOption(startingValue, onChangeFunc, allowedVarTypes, use)
 		value = startingValue,
 		onChange = onChangeFunc,
 		allowedVarTypes = allowedVarTypes,
-		use = use or &quot;&quot;
+		use = use or &quot;&quot;,
+		checkOption = checkOption or function() return true end
+      
 	}
 
 	return option
@@ -4735,7 +4737,7 @@ function createOptionsTable(defaultTable)
 
 		-- otherwise, set the option
 		if self[&quot;_customOptions&quot;][option] then
-			if not table.contains(self[&quot;_customOptions&quot;][option].allowedVarTypes, type(value)) then
+			if not (table.contains(self[&quot;_customOptions&quot;][option].allowedVarTypes, type(value)) and self[&quot;_customOptions&quot;][option].checkOption(value)) then
 				proxyTable.disp(&quot;You can't set '&quot; .. option .. &quot;' to that!\n&quot;)
 				return
 			end
@@ -4744,7 +4746,7 @@ function createOptionsTable(defaultTable)
 				self[&quot;_customOptions&quot;][option].onChange(option, value)
 			end
 		else
-			if not table.contains(self[index][option].allowedVarTypes, type(value)) then
+			if not (table.contains(self[index][option].allowedVarTypes, type(value)) and self[index][option].checkOption(value)) then
 				proxyTable.disp(&quot;You can't set '&quot; .. option .. &quot;' to that!\n&quot;)
 				return
 			end
@@ -4801,7 +4803,6 @@ mmp = mmp or {
   firstRun = true,
   specials = {},
   ferry_rooms = {},
-  echo_colour = &quot;MediumBlue&quot;
 }
 
 speedWalkWatch = createStopWatch()
@@ -4816,7 +4817,7 @@ mmp.speedWalkPath = mmp.speedWalkPath or {}
 mmp.speedWalkDir = mmp.speedWalkDir or {}
 
 
-local newversion = &quot;18.2.3&quot;
+local newversion = &quot;18.2.4&quot;
 if mmp.version and mmp.version ~= newversion then
   if not mmp.game then mmp.echo(&quot;Mapper script updated - Thanks! I don't know what game are you connected to, though - so please reconnect, if you could.&quot;)
   else mmp.echo(&quot;Mapper script updated - thanks! You don't need to restart.&quot;) end
@@ -4830,6 +4831,7 @@ function mmp.startup()
 
   local private_settings = {}
 --General settings
+  private_settings[&quot;echocolour&quot;]    = createOption(&quot;cyan&quot;, mmp.changeEchoColour, { &quot;string&quot; }, &quot;Set the color for room number echos?&quot;,function(newSetting) return color_table[newSetting]~=nil end)
   private_settings[&quot;crowdmap&quot;]      = createOption(false, mmp.chageMapSource, { &quot;boolean&quot; }, &quot;Use a crowd-sourced map instead of IREs default?&quot;)
   private_settings[&quot;showcmds&quot;]      = createOption(true, mmp.changeBoolFunc, { &quot;boolean&quot; }, &quot;Show walking commands?&quot;)
   private_settings[&quot;slowwalk&quot;]      = createOption(false, mmp.setSlowWalk, { &quot;boolean&quot; }, &quot;Walk slowly instead of as quick as possible?&quot;)
@@ -4850,50 +4852,51 @@ function mmp.startup()
 
 --Achaea wings and things
   private_settings[&quot;winglanguage&quot;]  = createOption(&quot;&quot;, mmp.setWingsLanguage, { &quot;string&quot; }, &quot;Speak non-default language for wings:&quot;)
-  private_settings[&quot;pebble&quot;]        = createOption(false, mmp.lockPebble, { &quot;boolean&quot; }, &quot;Make use of your enchanted pebble in Achaea?&quot;)
+  private_settings[&quot;pebble&quot;]        = createOption(false, mmp.lockPebble, { &quot;boolean&quot; }, &quot;Make use of your enchanted pebble?&quot;)
   private_settings[&quot;removewings&quot;]   = createOption(true, mmp.setWingsRemoval, { &quot;boolean&quot; }, &quot;Remove Wings after using them?&quot;)
-  private_settings[&quot;harness&quot;]				= createOption(false, mmp.setHarness, { &quot;boolean&quot; }, &quot;Use Stratospheric Harness in Achaea?&quot;) --PapaGuacamole
-  private_settings[&quot;duantahar&quot;]     = createOption(false, mmp.setDuantahar, { &quot;boolean&quot; }, &quot;Use Chenubian Wings in Achaea?&quot;)
-  private_settings[&quot;duanatharan&quot;]   = createOption(false, mmp.setDuanatharan, { &quot;boolean&quot; }, &quot;Use Atavian Wings in Achaea?&quot;)
-  private_settings[&quot;duanathar&quot;]     = createOption(false, mmp.setDuanathar, { &quot;boolean&quot; }, &quot;Use Eagle Wings in Achaea?&quot;)
+  private_settings[&quot;harness&quot;]				= createOption(false, mmp.setHarness, { &quot;boolean&quot; }, &quot;Use Stratospheric Harness?&quot;) --PapaGuacamole
+  private_settings[&quot;duantahar&quot;]     = createOption(false, mmp.setDuantahar, { &quot;boolean&quot; }, &quot;Use Chenubian Wings?&quot;)
+  private_settings[&quot;duanatharan&quot;]   = createOption(false, mmp.setDuanatharan, { &quot;boolean&quot; }, &quot;Use Atavian Wings?&quot;)
+  private_settings[&quot;duanathar&quot;]     = createOption(false, mmp.setDuanathar, { &quot;boolean&quot; }, &quot;Use Eagle Wings?&quot;)
   private_settings[&quot;shackle&quot;]       = createOption(false, mmp.changeBoolFunc, { &quot;boolean&quot; }, &quot;Take off shackle?&quot;)
+  private_settings[&quot;universe&quot;]      = createOption(false, mmp.setUniverse, {&quot;boolean&quot; }, &quot;Use Universe Tarot?&quot;)
 
 --Lusternia bixes
-  private_settings[&quot;torus&quot;]         = createOption(false, mmp.setTorus, { &quot;boolean&quot; }, &quot;Make use of your Torus in Lusternia?&quot;)
-  private_settings[&quot;prism&quot;]         = createOption(false, mmp.setPrism, {&quot;boolean&quot;}, &quot;Make use of your transplanar prism in Lusternia&quot;)
-  private_settings[&quot;cubix&quot;]         = createOption(false, mmp.setCubix, { &quot;boolean&quot; }, &quot;Make use of your Cubix in Lusternia?&quot;)
-  private_settings[&quot;medallion&quot;]     = createOption(false, mmp.setMedallion, { &quot;boolean&quot; }, &quot;Make use of your Medallion in Lusternia?&quot;)
+  private_settings[&quot;torus&quot;]         = createOption(false, mmp.setTorus, { &quot;boolean&quot; }, &quot;Make use of your Torus?&quot;)
+  private_settings[&quot;prism&quot;]         = createOption(false, mmp.setPrism, {&quot;boolean&quot;}, &quot;Make use of your transplanar prism?&quot;)
+  private_settings[&quot;cubix&quot;]         = createOption(false, mmp.setCubix, { &quot;boolean&quot; }, &quot;Make use of your Cubix?&quot;)
+  private_settings[&quot;medallion&quot;]     = createOption(false, mmp.setMedallion, { &quot;boolean&quot; }, &quot;Make use of your Medallion?&quot;)
 
 --Lusternia Bubblixes
-  private_settings[&quot;tibia&quot;]         = createOption(false, mmp.setTibia, { &quot;boolean&quot; }, &quot;Make use of your Tibia in Lusternia?&quot;)
-  private_settings[&quot;mud&quot;]           = createOption(false, mmp.setMud, { &quot;boolean&quot; }, &quot;Make use of your Mud in Lusternia?&quot;)
-  private_settings[&quot;cookie&quot;]        = createOption(false, mmp.setCookie, { &quot;boolean&quot; }, &quot;Make use of your Cookie in Lusternia?&quot;)
-  private_settings[&quot;icicle&quot;]        = createOption(false, mmp.setIcicle, { &quot;boolean&quot; }, &quot;Make use of your Icicle in Lusternia?&quot;)
-  private_settings[&quot;screwdriver&quot;]   = createOption(false, mmp.setScrewdriver, { &quot;boolean&quot; }, &quot;Make use of your Screwdriver in Lusternia?&quot;)
-  private_settings[&quot;snowglobe&quot;]     = createOption(false, mmp.setSnowglobe, { &quot;boolean&quot; }, &quot;Make use of your Snowglobe in Lusternia?&quot;)
-  private_settings[&quot;head&quot;]          = createOption(false, mmp.setHead, { &quot;boolean&quot; }, &quot;Make use of your Doll's Head in Lusternia?&quot;)
-  private_settings[&quot;wheel&quot;]         = createOption(false, mmp.setWheel, { &quot;boolean&quot; }, &quot;Make use of your Wheel in Lusternia?&quot;)
+  private_settings[&quot;tibia&quot;]         = createOption(false, mmp.setTibia, { &quot;boolean&quot; }, &quot;Make use of your Tibia?&quot;)
+  private_settings[&quot;mud&quot;]           = createOption(false, mmp.setMud, { &quot;boolean&quot; }, &quot;Make use of your Mud?&quot;)
+  private_settings[&quot;cookie&quot;]        = createOption(false, mmp.setCookie, { &quot;boolean&quot; }, &quot;Make use of your Cookie?&quot;)
+  private_settings[&quot;icicle&quot;]        = createOption(false, mmp.setIcicle, { &quot;boolean&quot; }, &quot;Make use of your Icicle?&quot;)
+  private_settings[&quot;screwdriver&quot;]   = createOption(false, mmp.setScrewdriver, { &quot;boolean&quot; }, &quot;Make use of your Screwdriver?&quot;)
+  private_settings[&quot;snowglobe&quot;]     = createOption(false, mmp.setSnowglobe, { &quot;boolean&quot; }, &quot;Make use of your Snowglobe?&quot;)
+  private_settings[&quot;head&quot;]          = createOption(false, mmp.setHead, { &quot;boolean&quot; }, &quot;Make use of your Doll's Head?&quot;)
+  private_settings[&quot;wheel&quot;]         = createOption(false, mmp.setWheel, { &quot;boolean&quot; }, &quot;Make use of your Quartz Wheel?&quot;)
 
 --Lusternia Curio collections
-  private_settings[&quot;bonecurio&quot;]     = createOption(false, mmp.setBonecurio, { &quot;boolean&quot; }, &quot;Make use of your Bone curios in Lusternia?&quot;)
-  private_settings[&quot;facecurio&quot;]     = createOption(false, mmp.setFacecurio, { &quot;boolean&quot; }, &quot;Make use of your Face curios in Lusternia?&quot;)
-  private_settings[&quot;feathercurio&quot;]  = createOption(false, mmp.setFeathercurio, { &quot;boolean&quot; }, &quot;Make use of your Feather curios in Lusternia?&quot;)
-  private_settings[&quot;figurecurio&quot;]   = createOption(false, mmp.setFigurecurio, { &quot;boolean&quot; }, &quot;Make use of your Figure curios in Lusternia?&quot;)
-  private_settings[&quot;flowercurio&quot;]   = createOption(false, mmp.setFlowercurio, { &quot;boolean&quot; }, &quot;Make use of your Flower curios in Lusternia?&quot;)
-  private_settings[&quot;fluttercurio&quot;]  = createOption(false, mmp.setFluttercurio, { &quot;boolean&quot; }, &quot;Make use of your Flutter curios in Lusternia?&quot;)
-  private_settings[&quot;toolcurio&quot;]     = createOption(false, mmp.setToolcurio, { &quot;boolean&quot; }, &quot;Make use of your Tool curios in Lusternia?&quot;)
-  private_settings[&quot;vernalcurio&quot;]   = createOption(false, mmp.setVernalcurio, { &quot;boolean&quot; }, &quot;Make use of your Vernal curios in Lusternia?&quot;)
-  private_settings[&quot;utensilcurio&quot;]  = createOption(false, mmp.setUtensilcurio, { &quot;boolean&quot; }, &quot;Make use of your Utensil curios in Lusternia?&quot;)
-  private_settings[&quot;toycurio&quot;]      = createOption(false, mmp.setToycurio, { &quot;boolean&quot; }, &quot;Make use of your Toy curios in Lusternia?&quot;)
-  private_settings[&quot;soullesscurio&quot;] = createOption(false, mmp.setSoullesscurio, { &quot;boolean&quot; }, &quot;Make use of your Soulless curios in Lusternia?&quot;)
+  private_settings[&quot;bonecurio&quot;]     = createOption(false, mmp.setBonecurio, { &quot;boolean&quot; }, &quot;Make use of your Bone curios?&quot;)
+  private_settings[&quot;facecurio&quot;]     = createOption(false, mmp.setFacecurio, { &quot;boolean&quot; }, &quot;Make use of your Face curios?&quot;)
+  private_settings[&quot;feathercurio&quot;]  = createOption(false, mmp.setFeathercurio, { &quot;boolean&quot; }, &quot;Make use of your Feather curios?&quot;)
+  private_settings[&quot;figurecurio&quot;]   = createOption(false, mmp.setFigurecurio, { &quot;boolean&quot; }, &quot;Make use of your Figure curios?&quot;)
+  private_settings[&quot;flowercurio&quot;]   = createOption(false, mmp.setFlowercurio, { &quot;boolean&quot; }, &quot;Make use of your Flower curios?&quot;)
+  private_settings[&quot;fluttercurio&quot;]  = createOption(false, mmp.setFluttercurio, { &quot;boolean&quot; }, &quot;Make use of your Flutter curios?&quot;)
+  private_settings[&quot;toolcurio&quot;]     = createOption(false, mmp.setToolcurio, { &quot;boolean&quot; }, &quot;Make use of your Tool curios]?&quot;)
+  private_settings[&quot;vernalcurio&quot;]   = createOption(false, mmp.setVernalcurio, { &quot;boolean&quot; }, &quot;Make use of your Vernal curios?&quot;)
+  private_settings[&quot;utensilcurio&quot;]  = createOption(false, mmp.setUtensilcurio, { &quot;boolean&quot; }, &quot;Make use of your Utensil curios?&quot;)
+  private_settings[&quot;toycurio&quot;]      = createOption(false, mmp.setToycurio, { &quot;boolean&quot; }, &quot;Make use of your Toy curios?&quot;)
+  private_settings[&quot;soullesscurio&quot;] = createOption(false, mmp.setSoullesscurio, { &quot;boolean&quot; }, &quot;Make use of your Soulless curios?&quot;)
 
 --Lusternia epic
-  private_settings[&quot;fingerblade&quot;]   = createOption(false, mmp.setFingerblade, { &quot;boolean&quot; }, &quot;Make use of your Fingerblade in Lusternia?&quot;)
-  private_settings[&quot;blossom&quot;]       = createOption(false, mmp.setBlossom, { &quot;boolean&quot; }, &quot;Make use of your Flame of dae'Seren in Lusternia?&quot;)
-  private_settings[&quot;belt&quot;]          = createOption(false, mmp.setBelt, { &quot;boolean&quot; }, &quot;Make use of your Belt in Lusternia?&quot;)
-  private_settings[&quot;mandala&quot;]       = createOption(false, mmp.setMandala, { &quot;boolean&quot; }, &quot;Make use of your Mandala in Lusternia?&quot;)
-  private_settings[&quot;mantle&quot;]        = createOption(false, mmp.setMantle, { &quot;boolean&quot; }, &quot;Make use of your Mantle in Lusternia?&quot;)
-  private_settings[&quot;key&quot;]           = createOption(false, mmp.setKey, { &quot;boolean&quot; }, &quot;Make use of your Key in Lusternia?&quot;)
+  private_settings[&quot;fingerblade&quot;]   = createOption(false, mmp.setFingerblade, { &quot;boolean&quot; }, &quot;Make use of your Fingerblade?&quot;)
+  private_settings[&quot;blossom&quot;]       = createOption(false, mmp.setBlossom, { &quot;boolean&quot; }, &quot;Make use of your Flame of dae'Seren?&quot;)
+  private_settings[&quot;belt&quot;]          = createOption(false, mmp.setBelt, { &quot;boolean&quot; }, &quot;Make use of your Belt?&quot;)
+  private_settings[&quot;mandala&quot;]       = createOption(false, mmp.setMandala, { &quot;boolean&quot; }, &quot;Make use of your Mandala?&quot;)
+  private_settings[&quot;mantle&quot;]        = createOption(false, mmp.setMantle, { &quot;boolean&quot; }, &quot;Make use of your Mantle?&quot;)
+  private_settings[&quot;key&quot;]           = createOption(false, mmp.setKey, { &quot;boolean&quot; }, &quot;Make use of your Key?&quot;)
 
 --misc
   private_settings[&quot;caravan&quot;]       = createOption(false, mmp.changeBoolFunc,{ &quot;boolean&quot; }, &quot;Walk caravans?&quot;)
@@ -4974,7 +4977,8 @@ soullesscurio={lusternia=true},
 wheel={lusternia=true},
 mantle={lusternia=true},
 key={lusternia=true},
-winglanguage={achaea=true,}
+winglanguage={achaea=true},
+universe={achaea=true},
 }
 function mmp.rebuildOptionsTable(_,game)
 	game=game:lower()
@@ -5584,9 +5588,12 @@ end</script>
                     <packageName></packageName>
                     <script>local exitsCreated = exitsCreated or {}
 
-function mmp.tempSpecialExit(destination, command)
+function mmp.tempSpecialExit(destination, command, weight)
   table.insert(exitsCreated, destination)
   addSpecialExit(mmp.currentroom, destination, command)
+	if weight then
+	  setExitWeight(mmp.currentroom,command,weight)
+	end
 end
 
 function mmp.removeWings()
@@ -5669,6 +5676,40 @@ function mmp.addWingsAchaea()
       -- western isles
     elseif mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Western_Isles&quot;) then
       mmp.tempSpecialExit(54632, &quot;Shake Harness&quot;)
+    end
+  end
+  --universe tarot
+  if
+    mmp.settings.universe and
+    mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Main&quot;)
+  then
+    local tarotLocations =
+      {
+        azdun = 1772,
+        blackrock = 10573,
+        bitterfork = 25093,
+        genji = 10091,
+        manusha = 8730,
+        newthera = 20386,
+        caerwitrin = 17678,
+        shastaan = 2855,
+        mannaseh = 1745,
+        manara = 9124,
+        brasslantern = 30383,
+        mhojave = 39103,
+        thraasi = 35703,
+        newhope = 25581,
+      }
+    for village, roomnum in pairs(tarotLocations) do
+      mmp.tempSpecialExit(
+        roomnum,
+        [=[script:
+        mmp.customwalkdelay(4.5)
+        send(&quot;fling universe at ground&quot;,false)
+        tempTimer(4,[[send(&quot;touch ]=] .. village .. [=[&quot;,false)]])
+        ]=],
+        10
+      )
     end
   end
   --clears the path cache so it calculates a new route.
@@ -5912,15 +5953,15 @@ function mmp.echonums(roomname)
   if not dt[1] then echo &quot;?---&quot; return end
 
   -- display first three ids. Can't really nicely table.concat them.
-  cechoLink(&quot;&lt;&quot;..mmp.echo_colour..&quot;&gt;&quot;..dt[1].id, 'mmp.gotoRoom('..dt[1].id..')', string.format(&quot;Go to %s (%s)&quot;, dt[1].id, dt[1].name), true)
+  cechoLink(&quot;&lt;&quot;..mmp.settings.echocolour..&quot;&gt;&quot;..dt[1].id, 'mmp.gotoRoom('..dt[1].id..')', string.format(&quot;Go to %s (%s)&quot;, dt[1].id, dt[1].name), true)
   if not dt[2] then return end
 
   echo&quot;, &quot;
-  cechoLink(&quot;&lt;&quot;..mmp.echo_colour..&quot;&gt;&quot;..dt[2].id, 'mmp.gotoRoom('..dt[2].id..')', string.format(&quot;Go to %s (%s)&quot;, dt[2].id, dt[2].name), true)
+  cechoLink(&quot;&lt;&quot;..mmp.settings.echocolour..&quot;&gt;&quot;..dt[2].id, 'mmp.gotoRoom('..dt[2].id..')', string.format(&quot;Go to %s (%s)&quot;, dt[2].id, dt[2].name), true)
   if not dt[3] then return end
 
   echo&quot;, &quot;
-  cechoLink(&quot;&lt;&quot;..mmp.echo_colour..&quot;&gt;&quot;..dt[3].id, 'mmp.gotoRoom('..dt[3].id..')', string.format(&quot;Go to %s (%s)&quot;, dt[3].id, dt[3].name), true)
+  cechoLink(&quot;&lt;&quot;..mmp.settings.echocolour..&quot;&gt;&quot;..dt[3].id, 'mmp.gotoRoom('..dt[3].id..')', string.format(&quot;Go to %s (%s)&quot;, dt[3].id, dt[3].name), true)
   if not dt[4] then return end
 
   echo&quot;, ...&quot;
@@ -5932,14 +5973,14 @@ function mmp.roomEcho(query)
   if not tonumber(select(2, next(result))) then
     for roomid, roomname in pairs(result) do roomid = tonumber(roomid)
       cecho(&quot;&lt;DarkSlateGrey&gt; (&quot;)
-      cechoLink(&quot;&lt;&quot;..mmp.echo_colour..&quot;&gt;&quot;..roomid, 'mmp.gotoRoom('..roomid..')', string.format(&quot;Go to %s (%s)&quot;, roomid, tostring(roomname)),true)
+      cechoLink(&quot;&lt;&quot;..mmp.settings.echocolour..&quot;&gt;&quot;..roomid, 'mmp.gotoRoom('..roomid..')', string.format(&quot;Go to %s (%s)&quot;, roomid, tostring(roomname)),true)
       cecho(&quot;&lt;DarkSlateGrey&gt;)&quot;)
     end
 
   else
     for roomname, roomid in pairs(result) do roomid = tonumber(roomid)
       cecho(&quot;&lt;DarkSlateGrey&gt; (&quot;)
-      cechoLink(&quot;&lt;&quot;..mmp.echo_colour..&quot;&gt;&quot;..roomid, 'mmp.gotoRoom('..roomid..')', string.format(&quot;Go to %s (%s)&quot;, roomid, tostring(roomname)),true)
+      cechoLink(&quot;&lt;&quot;..mmp.settings.echocolour..&quot;&gt;&quot;..roomid, 'mmp.gotoRoom('..roomid..')', string.format(&quot;Go to %s (%s)&quot;, roomid, tostring(roomname)),true)
       cecho(&quot;&lt;DarkSlateGrey&gt;)&quot;)
     end
   end
@@ -6094,7 +6135,7 @@ end</script>
     for roomid, roomname in pairs(result) do roomid = tonumber(roomid)
       cecho(string.format(&quot;  &lt;LightSlateGray&gt;%s&lt;DarkSlateGrey&gt; (&quot;,
         tostring(roomname)))
-      cechoLink(&quot;&lt;&quot;..mmp.echo_colour..&quot;&gt;&quot;..roomid, 'mmp.gotoRoom('..roomid..')', string.format(&quot;Go to %s (%s)&quot;, roomid, tostring(roomname)), true)
+      cechoLink(&quot;&lt;&quot;..mmp.settings.echocolour..&quot;&gt;&quot;..roomid, 'mmp.gotoRoom('..roomid..')', string.format(&quot;Go to %s (%s)&quot;, roomid, tostring(roomname)), true)
       cecho(string.format(&quot;&lt;DarkSlateGrey&gt;) &lt;white&gt;%s&lt;DarkSlateGrey&gt;.\n&quot;, tostring(mmp.areatabler[getRoomArea(roomid)])))
     end
 
@@ -6102,7 +6143,7 @@ end</script>
     for roomname, roomid in pairs(result) do roomid = tonumber(roomid)
       cecho(string.format(&quot;  &lt;LightSlateGray&gt;%s&lt;DarkSlateGrey&gt; (&quot;,
         tostring(roomname)))
-      cechoLink(&quot;&lt;&quot;..mmp.echo_colour..&quot;&gt;&quot;..roomid, 'mmp.gotoRoom('..roomid..')', string.format(&quot;Go to %s (%s)&quot;, roomid, tostring(roomname)), true)
+      cechoLink(&quot;&lt;&quot;..mmp.settings.echocolour..&quot;&gt;&quot;..roomid, 'mmp.gotoRoom('..roomid..')', string.format(&quot;Go to %s (%s)&quot;, roomid, tostring(roomname)), true)
       cecho(string.format(&quot;&lt;DarkSlateGrey&gt;) &lt;white&gt;%s&lt;DarkSlateGrey&gt;.\n&quot;, tostring(mmp.areatabler[getRoomArea(roomid)])))
     end
   end
@@ -6127,7 +6168,7 @@ function mmp.roomFind(query)
     for roomid, roomname in pairs(result) do roomid = tonumber(roomid)
       cecho(string.format(&quot;  &lt;LightSlateGray&gt;%s&lt;DarkSlateGrey&gt; (&quot;,
         tostring(roomname)))
-      cechoLink(&quot;&lt;&quot;..mmp.echo_colour..&quot;&gt;&quot;..roomid, 'mmp.gotoRoom('..roomid..')', string.format(&quot;Go to %s (%s)&quot;, roomid, tostring(roomname)), true)
+      cechoLink(&quot;&lt;&quot;..mmp.settings.echocolour..&quot;&gt;&quot;..roomid, 'mmp.gotoRoom('..roomid..')', string.format(&quot;Go to %s (%s)&quot;, roomid, tostring(roomname)), true)
       cecho(string.format(&quot;&lt;DarkSlateGrey&gt;) in &lt;LightSlateGray&gt;%s%s&lt;DarkSlateGrey&gt;.&quot;, mmp.cleanAreaName(tostring(mmp.areatabler[getRoomArea(roomid)])), showmeropis(roomid)))
       fg(&quot;DarkSlateGrey&quot;) echoLink(&quot; &gt; Show path\n&quot;, [[mmp.echoPath(mmp.currentroom, ]]..roomid..[[)]], &quot;Display directions from here to &quot;..roomname, true) resetFormat()
     end
@@ -6136,7 +6177,7 @@ function mmp.roomFind(query)
     for roomname, roomid in pairs(result) do roomid = tonumber(roomid)
       cecho(string.format(&quot;  &lt;LightSlateGray&gt;%s&lt;DarkSlateGrey&gt; (&quot;,
         tostring(roomname)))
-      cechoLink(&quot;&lt;&quot;..mmp.echo_colour..&quot;&gt;&quot;..roomid, 'mmp.gotoRoom('..roomid..')', string.format(&quot;Go to %s (%s)&quot;, roomid, tostring(roomname)), true)
+      cechoLink(&quot;&lt;&quot;..mmp.settings.echocolour..&quot;&gt;&quot;..roomid, 'mmp.gotoRoom('..roomid..')', string.format(&quot;Go to %s (%s)&quot;, roomid, tostring(roomname)), true)
       cecho(string.format(&quot;&lt;DarkSlateGrey&gt;) in &lt;LightSlateGray&gt;%s%s&lt;DarkSlateGrey&gt;.&quot;, mmp.cleanAreaName(tostring(mmp.areatabler[getRoomArea(roomid)])), showmeropis(roomid)))
       fg(&quot;DarkSlateGrey&quot;) echoLink(&quot; &gt; Show path\n&quot;, [[mmp.echoPath(mmp.currentroom, ]]..roomid..[[)]], &quot;Display directions from here to &quot;..roomname, true) resetFormat()
     end
@@ -6166,7 +6207,7 @@ function mmp.echoRoomList(areaname, exact)
     -- use pairs, as we can have gaps between room IDs
     for _, roomid in pairs(roomlist) do
       local roomname = endresult[roomid]
-      fg(&quot;blue&quot;) cechoLink(&quot;&lt;&quot;..mmp.echo_colour..&quot;&gt;&quot;..sformat(&quot;%6s&quot;, roomid), 'mmp.gotoRoom('..roomid..')', string.format(&quot;Go to %s (%s)&quot;, roomid, tostring(roomname)), true)
+      fg(&quot;blue&quot;) cechoLink(&quot;&lt;&quot;..mmp.settings.echocolour..&quot;&gt;&quot;..sformat(&quot;%6s&quot;, roomid), 'mmp.gotoRoom('..roomid..')', string.format(&quot;Go to %s (%s)&quot;, roomid, tostring(roomname)), true)
        cecho(string.format(&quot;&lt;DarkSlateGrey&gt;: &lt;LightSlateGray&gt;%s&lt;DarkSlateGrey&gt;.\n&quot;, roomname))
     end
 
@@ -6206,7 +6247,7 @@ function mmp.echoAreaList()
       &quot;&lt;DarkSlateGrey&gt;List of all areas we know of (click to view room list):\n&quot;))
   local getAreaRooms, cecho, fg, echoLink, format, rep = getAreaRooms, cecho, fg, echoLink, string.format, string.rep
   for _, id in pairs(ids) do
-    cecho(format(&quot;&lt;&quot;..mmp.echo_colour..&quot;&gt;%s%d &quot;, rep(&quot; &quot;, (7-#tostring(id))), id))
+    cecho(format(&quot;&lt;&quot;..mmp.settings.echocolour..&quot;&gt;%s%d &quot;, rep(&quot; &quot;, (7-#tostring(id))), id))
     -- +1 because getAreaRooms starts counting at 0
     fg(&quot;DarkSlateGrey&quot;) echoLink(rlist[id]..(&quot; &quot;):rep(40-#rlist[id])..&quot;(&quot;..mmp.comma_value(countrooms(id))..&quot; rooms)&quot;, 'mmp.echoRoomList(&quot;'..rlist[id]..'&quot;, true)', &quot;View the room list for &quot;..rlist[id], true) echo(&quot;\n&quot;)
   end
@@ -6739,6 +6780,10 @@ end
   return c
 end
 
+function mmp.changeEchoColour()
+    mmp.echo(&quot;Now displaying echos in &lt;&quot;..mmp.settings.echocolour..&quot;&gt;&quot;..mmp.settings.echocolour )
+end
+
 function mmp.lockPathways()
   local lock = mmp.settings.lockpathways and true or false
   mmp.doLock(&quot;pathways&quot;, lock, &quot;pathfind&quot;)
@@ -6787,6 +6832,14 @@ function mmp.setDuantahar()
 
   if mmp.settings.duantahar then mmp.echo(&quot;Okay, will see about using Chenubian wings (duanathar, duanatharan, and duantahar) when you goto somewhere while outside!&quot;)
   else mmp.echo(&quot;Won't use Chenubian wings anymore.&quot;) end
+end
+
+function mmp.setUniverse()
+  mmp.clearpathcache()
+	
+	if mmp.settings.universe then mmp.echo(&quot;Okay, will see about using the Universe tarot whenever it's faster.&quot;)
+	else mmp.echo(&quot;Won't use Universe tarot anymore.&quot;) end
+
 end
 
 function mmp.chageMapSource()
@@ -7449,7 +7502,7 @@ end</script>
       for roomid, roomname in pairs(result) do roomid = tonumber(roomid)
         cecho(string.format(&quot;  &lt;LightSlateGray&gt;%s&lt;DarkSlateGrey&gt; (&quot;,
           tostring(roomname)))
-        cechoLink(&quot;&lt;&quot;..mmp.echo_colour..&quot;&gt;&quot;..roomid, 'mmp.roomLook('..roomid..')', string.format(&quot;View room details for %s (%s)&quot;, roomid, tostring(roomname)), true)
+        cechoLink(&quot;&lt;&quot;..mmp.settings.echocolour..&quot;&gt;&quot;..roomid, 'mmp.roomLook('..roomid..')', string.format(&quot;View room details for %s (%s)&quot;, roomid, tostring(roomname)), true)
         cecho(string.format(&quot;&lt;DarkSlateGrey&gt;) in the &lt;LightSlateGray&gt;%s&lt;DarkSlateGrey&gt;.\n&quot;, tostring(mmp.areatabler[getRoomArea(roomid)])))
       end
 
@@ -7457,7 +7510,7 @@ end</script>
       for roomname, roomid in pairs(result) do roomid = tonumber(roomid)
         cecho(string.format(&quot;  &lt;LightSlateGray&gt;%s&lt;DarkSlateGrey&gt; (&quot;,
           tostring(roomname)))
-        cechoLink(&quot;&lt;&quot;..mmp.echo_colour..&quot;&gt;&quot;..roomid, 'mmp.roomLook('..roomid..')', string.format(&quot;View room details for %s (%s)&quot;, roomid, tostring(roomname)), true)
+        cechoLink(&quot;&lt;&quot;..mmp.settings.echocolour..&quot;&gt;&quot;..roomid, 'mmp.roomLook('..roomid..')', string.format(&quot;View room details for %s (%s)&quot;, roomid, tostring(roomname)), true)
         cecho(string.format(&quot;&lt;DarkSlateGrey&gt;) in the &lt;LightSlateGray&gt;%s&lt;DarkSlateGrey&gt;.\n&quot;, tostring(mmp.areatabler[getRoomArea(roomid)])))
       end
     end
