@@ -4682,7 +4682,7 @@ function createOption(startingValue, onChangeFunc, allowedVarTypes, use, checkOp
 		onChange = onChangeFunc,
 		allowedVarTypes = allowedVarTypes,
 		use = use or &quot;&quot;,
-      checkOption = checkOption or function() return true end
+		checkOption = checkOption or function() return true end
       
 	}
 
