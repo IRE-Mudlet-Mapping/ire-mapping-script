@@ -3443,7 +3443,7 @@ mmp.settings:setOption(matches[3], val)</script>
                 <packageName></packageName>
                 <regex>^area list$</regex>
             </Alias>
-            <AliasGroup isActive="no" isFolder="yes">
+            <AliasGroup isActive="yes" isFolder="yes">
                 <name>mm Mapping</name>
                 <script></script>
                 <command></command>
@@ -4817,7 +4817,7 @@ mmp.speedWalkPath = mmp.speedWalkPath or {}
 mmp.speedWalkDir = mmp.speedWalkDir or {}
 
 
-local newversion = &quot;developer&quot;
+local newversion = &quot;18.2.5&quot;
 if mmp.version and mmp.version ~= newversion then
   if not mmp.game then mmp.echo(&quot;Mapper script updated - Thanks! I don't know what game are you connected to, though - so please reconnect, if you could.&quot;)
   else mmp.echo(&quot;Mapper script updated - thanks! You don't need to restart.&quot;) end
@@ -4858,7 +4858,8 @@ function mmp.startup()
   private_settings[&quot;duantahar&quot;]     = createOption(false, mmp.setDuantahar, { &quot;boolean&quot; }, &quot;Use Chenubian Wings?&quot;)
   private_settings[&quot;duanatharan&quot;]   = createOption(false, mmp.setDuanatharan, { &quot;boolean&quot; }, &quot;Use Atavian Wings?&quot;)
   private_settings[&quot;duanathar&quot;]     = createOption(false, mmp.setDuanathar, { &quot;boolean&quot; }, &quot;Use Eagle Wings?&quot;)
-  private_settings[&quot;shackle&quot;]       = createOption(false, mmp.changeBoolFunc, { &quot;boolean&quot; }, &quot;Take off shackle?&quot;)
+	private_settings[&quot;duanatharic&quot;]   = createOption(false, mmp.setDuanatharic, { &quot;boolean&quot; }, &quot;Use Island Wings?&quot;)
+	private_settings[&quot;shackle&quot;]       = createOption(false, mmp.changeBoolFunc, { &quot;boolean&quot; }, &quot;Take off shackle?&quot;)
   private_settings[&quot;universe&quot;]      = createOption(false, mmp.setUniverse, {&quot;boolean&quot; }, &quot;Use Universe Tarot?&quot;)
 
 --Lusternia bixes
@@ -5634,7 +5635,7 @@ function mmp.addWingsAchaea()
     return
   end
   --WINGS!
-  if
+	if
     (mmp.settings.duanathar or mmp.settings.duanatharan or mmp.settings.duantahar) and
     gmcp.Room and
     not table.contains(gmcp.Room.Info.details, &quot;indoors&quot;)
@@ -5662,6 +5663,18 @@ function mmp.addWingsAchaea()
         mmp.tempSpecialExit(51188, getcmd(&quot;duanathar&quot;))
       end
     end
+		if
+    	mmp.settings.duanatharic and
+    	gmcp.Room and
+    	not table.contains(gmcp.Room.Info.details, &quot;indoors&quot;)
+  	then
+	  	--Island wings.
+    	if mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Main&quot;) or mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Meropis&quot;) or mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Island&quot;) or mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;North&quot;) then
+      	if mmp.settings.duanatharic then
+        	mmp.tempSpecialExit(47571, getcmd(&quot;duanatharic&quot;))
+      	end
+			end
+		end
   end
   -- Stratospheric Harness support -- PapaGuacamole
   if
@@ -6825,6 +6838,13 @@ function mmp.setDuanatharan()
 
   if mmp.settings.duanatharan then mmp.echo(&quot;Okay, will see about using Atavian wings (both duanathar and duanatharan) when you goto somewhere while outside!&quot;)
   else mmp.echo(&quot;Won't use Atavian wings anymore.&quot;) end
+end
+
+function mmp.setDuanatharic()
+  mmp.clearpathcache() -- clear the cache so it'll use wings or will stop using wings
+
+  if mmp.settings.duanatharic then mmp.echo(&quot;Okay, will see about using Island wings when you goto somewhere while outside!&quot;)
+  else mmp.echo(&quot;Won't use Island wings anymore.&quot;) end
 end
 
 function mmp.setDuantahar()
@@ -8227,7 +8247,7 @@ end</script>
                         <packageName></packageName>
                         <script>-- track whenever we need to use wings when we get outside!
 function mmapper_achaea_went_outside()
-  if not mmp.autowalking or not (mmp.settings.duanathar or mmp.settings.duanatharan or mmp.settings.duantahar) or mmp.game ~= &quot;achaea&quot; or
+  if not mmp.autowalking or not (mmp.settings.duanathar or mmp.settings.duanatharan or mmp.settings.duantahar or mmp.settings.duanatharic) or mmp.game ~= &quot;achaea&quot; or
     (mmp.currentroom == mmp.speedWalkPath[#mmp.speedWalkPath]) or
     table.contains(gmcp.Room.Info.details, &quot;indoors&quot;)
   then return end
