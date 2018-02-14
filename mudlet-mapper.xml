@@ -4861,6 +4861,7 @@ function mmp.startup()
 	private_settings[&quot;duanatharic&quot;]   = createOption(false, mmp.setDuanatharic, { &quot;boolean&quot; }, &quot;Use Island Wings?&quot;)
 	private_settings[&quot;shackle&quot;]       = createOption(false, mmp.changeBoolFunc, { &quot;boolean&quot; }, &quot;Take off shackle?&quot;)
   private_settings[&quot;universe&quot;]      = createOption(false, mmp.setUniverse, {&quot;boolean&quot; }, &quot;Use Universe Tarot?&quot;)
+  private_settings[&quot;gare&quot;]      		= createOption(false, mmp.setGare, {&quot;boolean&quot; }, &quot;Use Gare?&quot;)
 
 --Lusternia bixes
   private_settings[&quot;torus&quot;]         = createOption(false, mmp.setTorus, { &quot;boolean&quot; }, &quot;Make use of your Torus?&quot;)
@@ -5720,6 +5721,23 @@ function mmp.addWingsAchaea()
         mmp.customwalkdelay(4.5)
         send(&quot;fling universe at ground&quot;,false)
         tempTimer(4,[[send(&quot;touch ]=] .. village .. [=[&quot;,false)]])
+        ]=],
+        10
+      )
+    end
+  end
+  --gare
+  if
+    mmp.settings.gare and
+		gmcp.Room and
+    string.match(gmcp.Char.Status.race, &quot;Dragon&quot;)
+  then
+		if mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Main&quot;) or mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Meropis&quot;) or mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Island&quot;) or mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;North&quot;) then
+      mmp.tempSpecialExit(
+        12695,
+        [=[script:
+        mmp.customwalkdelay(4.5)
+        send(&quot;pierce the veil&quot;,false)
         ]=],
         10
       )
@@ -6860,6 +6878,13 @@ function mmp.setUniverse()
 	if mmp.settings.universe then mmp.echo(&quot;Okay, will see about using the Universe tarot whenever it's faster.&quot;)
 	else mmp.echo(&quot;Won't use Universe tarot anymore.&quot;) end
 
+end
+
+function mmp.setGare()
+  mmp.clearpathcache() -- clear the cache so it'll use gare or stop using gare
+
+  if mmp.settings.gare then mmp.echo(&quot;Okay, will see about using Gare when in Dragon form!&quot;)
+  else mmp.echo(&quot;Won't use Gare anymore.&quot;) end
 end
 
 function mmp.chageMapSource()
