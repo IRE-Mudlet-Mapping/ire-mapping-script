@@ -5670,7 +5670,7 @@ function mmp.addWingsAchaea()
     	not table.contains(gmcp.Room.Info.details, &quot;indoors&quot;)
   	then
 	  	--Island wings.
-    	if mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Main&quot;) or mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Meropis&quot;) or mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Island&quot;) or mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;North&quot;) then
+    	if mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Main&quot;) or mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Arcadia&quot;) or mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Outer&quot;) or mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Meropis&quot;) or mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Island&quot;) or mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;North&quot;) then
       	if mmp.settings.duanatharic then
         	mmp.tempSpecialExit(47571, getcmd(&quot;duanatharic&quot;))
       	end
@@ -5732,7 +5732,7 @@ function mmp.addWingsAchaea()
 		gmcp.Room and
     string.match(gmcp.Char.Status.race, &quot;Dragon&quot;)
   then
-		if mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Main&quot;) or mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Meropis&quot;) or mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Island&quot;) or mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;North&quot;) then
+		if mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Main&quot;) or mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Meropis&quot;) or mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Island&quot;) or mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;North&quot;) or mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Arcadia&quot;) then
       mmp.tempSpecialExit(
         12695,
         [=[script:
