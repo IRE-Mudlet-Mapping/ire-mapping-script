@@ -5690,6 +5690,8 @@ function mmp.addWingsAchaea()
 			if not mmp.settings.duanatharan and not mmp.settings.duanathar and not mmp.settings.duantahar then
         mmp.tempSpecialExit(4882, &quot;aero soar high&quot;) -- duanatharan
         mmp.tempSpecialExit(3885, &quot;aero soar low&quot;) -- duanathar
+			elseif mmp.settings.duanathar then
+				mmp.tempSpecialExit(4882, &quot;aero soar high&quot;) -- duanatharan
 			end
 				mmp.tempSpecialExit(54173, &quot;aero soar stratosphere&quot;) -- Stratosphere!
     --Meropis soar
@@ -5697,6 +5699,8 @@ function mmp.addWingsAchaea()
       if not mmp.settings.duanatharan and not mmp.settings.duanathar and not mmp.settings.duantahar then
         mmp.tempSpecialExit(51603, &quot;aero soar high&quot;) -- duanatharan
         mmp.tempSpecialExit(51188, &quot;aero soar low&quot;) -- duanathar
+			elseif mmp.settings.duanathar then
+				mmp.tempSpecialExit(51603, &quot;aero soar high&quot;) -- duanatharan
 			end
     		mmp.tempSpecialExit(54173, &quot;aero soar stratosphere&quot;) -- Stratosphere!
     end
