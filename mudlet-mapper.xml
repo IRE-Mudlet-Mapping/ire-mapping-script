@@ -3443,7 +3443,7 @@ mmp.settings:setOption(matches[3], val)</script>
                 <packageName></packageName>
                 <regex>^area list$</regex>
             </Alias>
-            <AliasGroup isActive="no" isFolder="yes">
+            <AliasGroup isActive="yes" isFolder="yes">
                 <name>mm Mapping</name>
                 <script></script>
                 <command></command>
@@ -5672,9 +5672,7 @@ function mmp.addWingsAchaea()
   	then
 	  	--Island wings.
     	if mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Main&quot;) or mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Arcadia&quot;) or mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Outer&quot;) or mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Meropis&quot;) or mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Island&quot;) or mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;North&quot;) then
-      	if mmp.settings.duanatharic then
         	mmp.tempSpecialExit(47571, getcmd(&quot;duanatharic&quot;))
-      	end
 			end
 		end
   end
@@ -5730,7 +5728,7 @@ function mmp.addWingsAchaea()
   --gare
   if
     mmp.settings.gare and
-		gmcp.Room and
+		gmcp.Char and
     string.match(gmcp.Char.Status.race, &quot;Dragon&quot;)
   then
 		if mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Main&quot;) or mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Meropis&quot;) or mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Island&quot;) or mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;North&quot;) or mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Arcadia&quot;) then
