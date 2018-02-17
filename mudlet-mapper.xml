@@ -5740,7 +5740,7 @@ function mmp.addWingsAchaea()
         mmp.customwalkdelay(4.5)
         send(&quot;pierce the veil&quot;,false)
         ]=],
-        10
+        20
       )
     end
   end
