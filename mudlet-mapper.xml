@@ -4817,7 +4817,7 @@ mmp.speedWalkPath = mmp.speedWalkPath or {}
 mmp.speedWalkDir = mmp.speedWalkDir or {}
 
 
-local newversion = &quot;18.2.5&quot;
+local newversion = &quot;developer&quot;
 if mmp.version and mmp.version ~= newversion then
   if not mmp.game then mmp.echo(&quot;Mapper script updated - Thanks! I don't know what game are you connected to, though - so please reconnect, if you could.&quot;)
   else mmp.echo(&quot;Mapper script updated - thanks! You don't need to restart.&quot;) end
@@ -5687,22 +5687,14 @@ function mmp.addWingsAchaea()
   then
     --Sarapis soar.
     if mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Main&quot;) then
-			if not mmp.settings.duanatharan and not mmp.settings.duanathar and not mmp.settings.duantahar then
-        mmp.tempSpecialExit(4882, &quot;aero soar high&quot;) -- duanatharan
-        mmp.tempSpecialExit(3885, &quot;aero soar low&quot;) -- duanathar
-			elseif mmp.settings.duanathar then
-				mmp.tempSpecialExit(4882, &quot;aero soar high&quot;) -- duanatharan
-			end
-				mmp.tempSpecialExit(54173, &quot;aero soar stratosphere&quot;) -- Stratosphere!
-    --Meropis soar
+    	mmp.tempSpecialExit(4882, &quot;aero soar high&quot;, 10) -- duanatharan
+     	mmp.tempSpecialExit(3885, &quot;aero soar low&quot;, 10) -- duanathar
+			mmp.tempSpecialExit(54173, &quot;aero soar stratosphere&quot;, 10) -- Stratosphere!
+		--Meropis soar
     elseif mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Meropis&quot;) then
-      if not mmp.settings.duanatharan and not mmp.settings.duanathar and not mmp.settings.duantahar then
-        mmp.tempSpecialExit(51603, &quot;aero soar high&quot;) -- duanatharan
-        mmp.tempSpecialExit(51188, &quot;aero soar low&quot;) -- duanathar
-			elseif mmp.settings.duanathar then
-				mmp.tempSpecialExit(51603, &quot;aero soar high&quot;) -- duanatharan
-			end
-    		mmp.tempSpecialExit(54173, &quot;aero soar stratosphere&quot;) -- Stratosphere!
+    	mmp.tempSpecialExit(51603, &quot;aero soar high&quot;, 10) -- duanatharan
+    	mmp.tempSpecialExit(51188, &quot;aero soar low&quot;, 10) -- duanathar
+    	mmp.tempSpecialExit(54173, &quot;aero soar stratosphere&quot;, 10) -- Stratosphere!
     end
   end
 	
