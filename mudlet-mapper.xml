@@ -4858,8 +4858,10 @@ function mmp.startup()
   private_settings[&quot;duantahar&quot;]     = createOption(false, mmp.setDuantahar, { &quot;boolean&quot; }, &quot;Use Chenubian Wings?&quot;)
   private_settings[&quot;duanatharan&quot;]   = createOption(false, mmp.setDuanatharan, { &quot;boolean&quot; }, &quot;Use Atavian Wings?&quot;)
   private_settings[&quot;duanathar&quot;]     = createOption(false, mmp.setDuanathar, { &quot;boolean&quot; }, &quot;Use Eagle Wings?&quot;)
-  private_settings[&quot;shackle&quot;]       = createOption(false, mmp.changeBoolFunc, { &quot;boolean&quot; }, &quot;Take off shackle?&quot;)
+	private_settings[&quot;duanatharic&quot;]   = createOption(false, mmp.setDuanatharic, { &quot;boolean&quot; }, &quot;Use Island Wings?&quot;)
+	private_settings[&quot;shackle&quot;]       = createOption(false, mmp.changeBoolFunc, { &quot;boolean&quot; }, &quot;Take off shackle?&quot;)
   private_settings[&quot;universe&quot;]      = createOption(false, mmp.setUniverse, {&quot;boolean&quot; }, &quot;Use Universe Tarot?&quot;)
+  private_settings[&quot;gare&quot;]      		= createOption(false, mmp.setGare, {&quot;boolean&quot; }, &quot;Use Gare?&quot;)
 
 --Lusternia bixes
   private_settings[&quot;torus&quot;]         = createOption(false, mmp.setTorus, { &quot;boolean&quot; }, &quot;Make use of your Torus?&quot;)
@@ -4948,6 +4950,7 @@ duanathar={achaea=true},
 duanatharan={achaea=true},
 duantahar={achaea=true},
 duanatharic={achaea=true},
+gare={achaea=true},
 facecurio={lusternia=true},
 feathercurio={lusternia=true},
 figurecurio={lusternia=true},
@@ -5634,7 +5637,7 @@ function mmp.addWingsAchaea()
     return
   end
   --WINGS!
-  if
+	if
     (mmp.settings.duanathar or mmp.settings.duanatharan or mmp.settings.duantahar) and
     gmcp.Room and
     not table.contains(gmcp.Room.Info.details, &quot;indoors&quot;)
@@ -5662,6 +5665,16 @@ function mmp.addWingsAchaea()
         mmp.tempSpecialExit(51188, getcmd(&quot;duanathar&quot;))
       end
     end
+		if
+    	mmp.settings.duanatharic and
+    	gmcp.Room and
+    	not table.contains(gmcp.Room.Info.details, &quot;indoors&quot;)
+  	then
+	  	--Island wings.
+    	if mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Main&quot;) or mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Arcadia&quot;) or mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Outer&quot;) or mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Meropis&quot;) or mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Island&quot;) or mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;North&quot;) then
+        	mmp.tempSpecialExit(47571, getcmd(&quot;duanatharic&quot;))
+			end
+		end
   end
   -- Stratospheric Harness support -- PapaGuacamole
   if
@@ -5709,6 +5722,23 @@ function mmp.addWingsAchaea()
         tempTimer(4,[[send(&quot;touch ]=] .. village .. [=[&quot;,false)]])
         ]=],
         10
+      )
+    end
+  end
+  --gare
+  if
+    mmp.settings.gare and
+		gmcp.Char and
+    string.match(gmcp.Char.Status.race, &quot;Dragon&quot;)
+  then
+		if mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Main&quot;) or mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Meropis&quot;) or mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Island&quot;) or mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;North&quot;) or mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Arcadia&quot;) then
+      mmp.tempSpecialExit(
+        12695,
+        [=[script:
+        mmp.customwalkdelay(4.5)
+        send(&quot;pierce the veil&quot;,false)
+        ]=],
+        20
       )
     end
   end
@@ -6827,6 +6857,13 @@ function mmp.setDuanatharan()
   else mmp.echo(&quot;Won't use Atavian wings anymore.&quot;) end
 end
 
+function mmp.setDuanatharic()
+  mmp.clearpathcache() -- clear the cache so it'll use wings or will stop using wings
+
+  if mmp.settings.duanatharic then mmp.echo(&quot;Okay, will see about using Island wings when you goto somewhere while outside!&quot;)
+  else mmp.echo(&quot;Won't use Island wings anymore.&quot;) end
+end
+
 function mmp.setDuantahar()
   mmp.clearpathcache() -- clear the cache so it'll use wings or will stop using wings
 
@@ -6840,6 +6877,13 @@ function mmp.setUniverse()
 	if mmp.settings.universe then mmp.echo(&quot;Okay, will see about using the Universe tarot whenever it's faster.&quot;)
 	else mmp.echo(&quot;Won't use Universe tarot anymore.&quot;) end
 
+end
+
+function mmp.setGare()
+  mmp.clearpathcache() -- clear the cache so it'll use gare or stop using gare
+
+  if mmp.settings.gare then mmp.echo(&quot;Okay, will see about using Gare when in Dragon form!&quot;)
+  else mmp.echo(&quot;Won't use Gare anymore.&quot;) end
 end
 
 function mmp.chageMapSource()
@@ -8227,7 +8271,7 @@ end</script>
                         <packageName></packageName>
                         <script>-- track whenever we need to use wings when we get outside!
 function mmapper_achaea_went_outside()
-  if not mmp.autowalking or not (mmp.settings.duanathar or mmp.settings.duanatharan or mmp.settings.duantahar) or mmp.game ~= &quot;achaea&quot; or
+  if not mmp.autowalking or not (mmp.settings.duanathar or mmp.settings.duanatharan or mmp.settings.duantahar or mmp.settings.duanatharic) or mmp.game ~= &quot;achaea&quot; or
     (mmp.currentroom == mmp.speedWalkPath[#mmp.speedWalkPath]) or
     table.contains(gmcp.Room.Info.details, &quot;indoors&quot;)
   then return end
