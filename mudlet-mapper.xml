@@ -5687,14 +5687,14 @@ function mmp.addWingsAchaea()
   then
     --Sarapis soar.
     if mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Main&quot;) then
-			if gmcp.Char.Status.race == &quot;Elemental Lord&quot; then
+			if gmcp.Char.Status.class == &quot;air Elemental Lord&quot; or gmcp.Char.Status.class == &quot;air Elemental Lady&quot; then
       	mmp.tempSpecialExit(4882, &quot;aero soar high&quot;, 10) -- duanatharan
        	mmp.tempSpecialExit(3885, &quot;aero soar low&quot;, 10) -- duanathar
   			mmp.tempSpecialExit(54173, &quot;aero soar stratosphere&quot;, 10) -- Stratosphere!
 			end
 		--Meropis soar
     elseif mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Meropis&quot;) then
-			if gmcp.Char.Status.race == &quot;Elemental Lord&quot; then
+			if gmcp.Char.Status.class == &quot;air Elemental Lord&quot; or gmcp.Char.Status.class == &quot;air Elemental Lady&quot; then
       	mmp.tempSpecialExit(51603, &quot;aero soar high&quot;, 10) -- duanatharan
       	mmp.tempSpecialExit(51188, &quot;aero soar low&quot;, 10) -- duanathar
     		mmp.tempSpecialExit(54173, &quot;aero soar stratosphere&quot;, 10) -- Stratosphere!
