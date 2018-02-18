@@ -6191,7 +6191,17 @@ function mmp.roomFind(query)
   local function showmeropis(roomid)
     if mmp.game ~= &quot;achaea&quot; then return '' end
 
-    return mmp.oncontinent(getRoomArea(roomid), &quot;Main&quot;) and '' or ' (Meropis)'
+    local function whatcontinent(areaid)
+      local continents = mmp.getcontinents()
+      for continent,_ in pairs(continents) do
+        if table.contains(continents[continent], areaid) then
+          return (continent==&quot;Off&quot;) and &quot;Off Plane&quot; or continent
+        end
+      end
+      return &quot;Unknown&quot;
+    end
+    continent=whatcontinent(getRoomArea(roomid))
+    return (continent== &quot;Main&quot;) and '' or ' ('..continent..')'
   end
 
   if not tonumber(select(2, next(result))) then -- old style
