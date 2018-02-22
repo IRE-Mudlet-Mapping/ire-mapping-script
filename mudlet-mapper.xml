@@ -4803,6 +4803,7 @@ mmp = mmp or {
   firstRun = true,
   specials = {},
   ferry_rooms = {},
+	density = false,
 }
 
 speedWalkWatch = createStopWatch()
@@ -4817,7 +4818,7 @@ mmp.speedWalkPath = mmp.speedWalkPath or {}
 mmp.speedWalkDir = mmp.speedWalkDir or {}
 
 
-local newversion = &quot;developer&quot;
+local newversion = &quot;18.2.5&quot;
 if mmp.version and mmp.version ~= newversion then
   if not mmp.game then mmp.echo(&quot;Mapper script updated - Thanks! I don't know what game are you connected to, though - so please reconnect, if you could.&quot;)
   else mmp.echo(&quot;Mapper script updated - thanks! You don't need to restart.&quot;) end
@@ -4855,11 +4856,10 @@ function mmp.startup()
   private_settings[&quot;pebble&quot;]        = createOption(false, mmp.lockPebble, { &quot;boolean&quot; }, &quot;Make use of your enchanted pebble?&quot;)
   private_settings[&quot;removewings&quot;]   = createOption(true, mmp.setWingsRemoval, { &quot;boolean&quot; }, &quot;Remove Wings after using them?&quot;)
   private_settings[&quot;harness&quot;]				= createOption(false, mmp.setHarness, { &quot;boolean&quot; }, &quot;Use Stratospheric Harness?&quot;) --PapaGuacamole
-	private_settings[&quot;duantahar&quot;]     = createOption(false, mmp.setDuantahar, { &quot;boolean&quot; }, &quot;Use Chenubian Wings?&quot;)
+  private_settings[&quot;duantahar&quot;]     = createOption(false, mmp.setDuantahar, { &quot;boolean&quot; }, &quot;Use Chenubian Wings?&quot;)
   private_settings[&quot;duanatharan&quot;]   = createOption(false, mmp.setDuanatharan, { &quot;boolean&quot; }, &quot;Use Atavian Wings?&quot;)
   private_settings[&quot;duanathar&quot;]     = createOption(false, mmp.setDuanathar, { &quot;boolean&quot; }, &quot;Use Eagle Wings?&quot;)
-  private_settings[&quot;duanatharic&quot;]   = createOption(false, mmp.setDuanatharic, { &quot;boolean&quot; }, &quot;Use Island Wings?&quot;)
-  private_settings[&quot;soar&quot;]          = createOption(false, mmp.setSoar, { &quot;boolean&quot; }, &quot;Use Aero Soar?&quot;)
+	private_settings[&quot;duanatharic&quot;]   = createOption(false, mmp.setDuanatharic, { &quot;boolean&quot; }, &quot;Use Island Wings?&quot;)
 	private_settings[&quot;shackle&quot;]       = createOption(false, mmp.changeBoolFunc, { &quot;boolean&quot; }, &quot;Take off shackle?&quot;)
   private_settings[&quot;universe&quot;]      = createOption(false, mmp.setUniverse, {&quot;boolean&quot; }, &quot;Use Universe Tarot?&quot;)
   private_settings[&quot;gare&quot;]      		= createOption(false, mmp.setGare, {&quot;boolean&quot; }, &quot;Use Gare?&quot;)
@@ -4951,7 +4951,6 @@ duanathar={achaea=true},
 duanatharan={achaea=true},
 duantahar={achaea=true},
 duanatharic={achaea=true},
-gare={achaea=true},
 facecurio={lusternia=true},
 feathercurio={lusternia=true},
 figurecurio={lusternia=true},
@@ -5024,7 +5023,9 @@ registerAnonymousEventHandler(&quot;mmp logged in&quot;,&quot;mmp.rebuildOptions
     mmp.speedWalkDir = {}
     speedWalkCounter = 0
     raiseEvent(&quot;mmapper failed path&quot;)
-    if mmp.settings.shackle then expandAlias(&quot;wear shackle&quot;) end
+    if mmp.settings.shackle and mmp.density then 
+			expandAlias(&quot;wear shackle&quot;) 
+		end
     -- allow mapper 'addons' to unlink their special exits
     raiseEvent(&quot;mmp clear externals&quot;)
     return
@@ -5323,7 +5324,9 @@ function mmp.stop()
 
   mmp.echo(&quot;Stopped walking.&quot;)
   raiseEvent(&quot;mmapper stopped&quot;)
-  if mmp.settings.shackle then expandAlias(&quot;wear shackle&quot;) end
+  if mmp.settings.shackle and mmp.density then 
+		expandAlias(&quot;wear shackle&quot;) 
+	end
 end
 
 -- Aetolia and Lusternia support showing balances in GMCP. This is easy to support, so we do!
@@ -5406,7 +5409,9 @@ function speedwalking( event, num )
     local walktime = stopStopWatch(speedWalkWatch)
     mmp.echo(string.format(&quot;We've arrived! Took us %.1fs.\n&quot;, walktime))
     raiseEvent(&quot;mmapper arrived&quot;)
-    if mmp.settings.shackle then expandAlias(&quot;wear shackle&quot;) end
+    if mmp.settings.shackle and mmp.density then 
+			expandAlias(&quot;wear shackle&quot;) 
+		end
     mmp.speedWalkPath = {}
     mmp.speedWalkDir = {}
     speedWalkCounter = 0
@@ -5446,7 +5451,9 @@ function doSpeedWalk(dashtype)
     mmp.autowalking = false
     mmp.echo(&quot;Couldn't find a path to the destination :(&quot;)
     raiseEvent(&quot;mmapper failed path&quot;)
-    if mmp.settings.shackle then expandAlias(&quot;wear shackle&quot;) end
+    if mmp.settings.shackle and mmp.density then 
+			expandAlias(&quot;wear shackle&quot;) 
+		end
     return
   end
 
@@ -5459,7 +5466,12 @@ function doSpeedWalk(dashtype)
   mmp.autowalking = true
   raiseEvent(&quot;s&quot;)
 
-  if mmp.settings.shackle then expandAlias(&quot;remove shackle&quot;) end
+  if mmp.settings.shackle and mmp.defs.current.density then 
+		mmp.density = true
+		expandAlias(&quot;remove shackle&quot;)
+	elseif not mmp.defs.current.density then
+		mmp.density = false 
+	end
   if not mmp.paused then
     mmp.echon(&quot;Starting speedwalk from &quot;..(atcp.RoomNum or gmcp.Room.Info.num)..&quot; to &quot;) echoLink(mmp.speedWalkPath[#mmp.speedWalkPath], 'mmp.gotoRoom &quot;' .. mmp.speedWalkPath[#mmp.speedWalkPath].. '&quot;', 'Go to ' .. mmp.speedWalkPath[#mmp.speedWalkPath]) echo(&quot;: &quot;)
     speedWalkCounter = 1
@@ -5477,7 +5489,9 @@ function mmp.failpath()
 
   mmp.autowalking = false
 
-  if mmp.settings.shackle then expandAlias(&quot;wear shackle&quot;) end
+  if mmp.settings.shackle and mmp.density then
+		expandAlias(&quot;wear shackle&quot;) 
+	end
   mmp.speedWalkPath = {}
   mmp.speedWalkDir = {}
   speedWalkCounter = 0
@@ -5673,11 +5687,12 @@ function mmp.addWingsAchaea()
   	then
 	  	--Island wings.
     	if mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Main&quot;) or mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Arcadia&quot;) or mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Outer&quot;) or mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Meropis&quot;) or mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Island&quot;) or mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;North&quot;) then
+      	if mmp.settings.duanatharic then
         	mmp.tempSpecialExit(47571, getcmd(&quot;duanatharic&quot;))
+      	end
 			end
 		end
   end
-
   -- Stratospheric Harness support -- PapaGuacamole
   if
     mmp.settings.harness and gmcp.Room and not table.contains(gmcp.Room.Info.details, &quot;indoors&quot;)
@@ -5693,28 +5708,6 @@ function mmp.addWingsAchaea()
       mmp.tempSpecialExit(54632, &quot;Shake Harness&quot;)
     end
   end
-		
-	-- Air Elemental Aero Soar
-	  if
-			mmp.settings.soar and gmcp.Room and not table.contains(gmcp.Room.Info.details, &quot;indoors&quot;)
-  then
-    --Sarapis soar.
-    if mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Main&quot;) then
-			if gmcp.Char.Status.class == &quot;air Elemental Lord&quot; or gmcp.Char.Status.class == &quot;air Elemental Lady&quot; then
-      	mmp.tempSpecialExit(4882, &quot;aero soar high&quot;, 10) -- duanatharan
-       	mmp.tempSpecialExit(3885, &quot;aero soar low&quot;, 10) -- duanathar
-  			mmp.tempSpecialExit(54173, &quot;aero soar stratosphere&quot;, 10) -- Stratosphere!
-			end
-		--Meropis soar
-    elseif mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Meropis&quot;) then
-			if gmcp.Char.Status.class == &quot;air Elemental Lord&quot; or gmcp.Char.Status.class == &quot;air Elemental Lady&quot; then
-      	mmp.tempSpecialExit(51603, &quot;aero soar high&quot;, 10) -- duanatharan
-      	mmp.tempSpecialExit(51188, &quot;aero soar low&quot;, 10) -- duanathar
-    		mmp.tempSpecialExit(54173, &quot;aero soar stratosphere&quot;, 10) -- Stratosphere!
-			end
-    end
-  end
-	
   --universe tarot
   if
     mmp.settings.universe and
@@ -5752,7 +5745,7 @@ function mmp.addWingsAchaea()
   --gare
   if
     mmp.settings.gare and
-		gmcp.Char and
+		gmcp.Room and
     string.match(gmcp.Char.Status.race, &quot;Dragon&quot;)
   then
 		if mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Main&quot;) or mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Meropis&quot;) or mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Island&quot;) or mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;North&quot;) or mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Arcadia&quot;) then
@@ -5762,7 +5755,7 @@ function mmp.addWingsAchaea()
         mmp.customwalkdelay(4.5)
         send(&quot;pierce the veil&quot;,false)
         ]=],
-        20
+        10
       )
     end
   end
@@ -6895,13 +6888,6 @@ function mmp.setDuantahar()
   else mmp.echo(&quot;Won't use Chenubian wings anymore.&quot;) end
 end
 
-function mmp.setSoar()
-  mmp.clearpathcache() -- clear the cache so it'll use soar or will stop using soar
-
-  if mmp.settings.soar then mmp.echo(&quot;Okay, will see about using Aero Soar when you goto somewhere while outside!&quot;)
-  else mmp.echo(&quot;Won't use Aero Soar anymore.&quot;) end
-end
-
 function mmp.setUniverse()
   mmp.clearpathcache()
 	
@@ -7827,6 +7813,59 @@ end</script>
 end</script>
                     <eventHandlerList/>
                 </Script>
+                <Script isActive="yes" isFolder="no">
+                    <name>Defense tracking</name>
+                    <packageName></packageName>
+                    <script>mmp.defs = {
+  current = {}
+}
+mmp.defs.add = function()
+	local def = gmcp.Char.Defences.Add.name
+	if not mmp.defs.current[def] then
+		mmp.defs.current[def] = true
+		raiseEvent(&quot;mmp got def&quot;, def)
+	end
+end
+
+
+mmp.defs.remove = function()
+	for _, def in ipairs(gmcp.Char.Defences.Remove) do
+		mmp.defs.current[def] = nil
+		raiseEvent(&quot;mmp lost def&quot;, def)
+	end
+end
+
+
+mmp.defs.list = function()
+  	local newDefs = {}
+	local addedDefs, lostDefs = {}, {}
+	for _, v in ipairs(gmcp.Char.Defences.List) do
+		newDefs[v.name] = true
+		if not mmp.defs.current[v.name] then
+			addedDefs[#addedDefs + 1] = v.name
+		end
+	end
+	for def in pairs(mmp.defs.current) do
+		if not newDefs[def] then
+			lostDefs[#lostDefs + 1] = def
+		end
+	end
+	mmp.defs.current = newDefs
+	for _,def in pairs(lostDefs) do
+		raiseEvent(&quot;mmp lost def&quot;, def)
+	end
+	for _,def in ipairs(addedDefs) do
+		raiseEvent(&quot;mmp got def&quot;, def)
+	end
+end
+
+
+-- EVENT HANDLERS
+registerAnonymousEventHandler(&quot;gmcp.Char.Defences.Add&quot;, &quot;mmp.defs.add&quot;)
+registerAnonymousEventHandler(&quot;gmcp.Char.Defences.Remove&quot;, &quot;mmp.defs.remove&quot;)
+registerAnonymousEventHandler(&quot;gmcp.Char.Defences.List&quot;, &quot;mmp.defs.list&quot;)</script>
+                    <eventHandlerList/>
+                </Script>
             </Script>
             <Script isActive="yes" isFolder="no">
                 <name>Person tracking</name>
@@ -8300,9 +8339,9 @@ end</script>
                     <Script isActive="yes" isFolder="no">
                         <name>mmapper_achaea_went_outside</name>
                         <packageName></packageName>
-                        <script>-- track whenever we need to use wings or aero soar when we get outside!
+                        <script>-- track whenever we need to use wings when we get outside!
 function mmapper_achaea_went_outside()
-  if not mmp.autowalking or not (mmp.settings.duanathar or mmp.settings.duanatharan or mmp.settings.duantahar or mmp.settings.duanatharic or mmp.settings.soar) or mmp.game ~= &quot;achaea&quot; or
+  if not mmp.autowalking or not (mmp.settings.duanathar or mmp.settings.duanatharan or mmp.settings.duantahar or mmp.settings.duanatharic) or mmp.game ~= &quot;achaea&quot; or
     (mmp.currentroom == mmp.speedWalkPath[#mmp.speedWalkPath]) or
     table.contains(gmcp.Room.Info.details, &quot;indoors&quot;)
   then return end
