@@ -10,9 +10,13 @@ if [ "$TRAVIS_REPO_SLUG" != "IRE-Mudlet-Mapping/ire-mapping-script" ]; then
   exit 0
 fi
 
-wget -O "/usr/tmp/mudlet-mapper.xml" http://ire-mudlet-mapping.github.io/ire-mapping-script/downloads/mudlet-mapper.xml
+TEMPDIR="${HOME}/tmp/"
 
-currentScriptSha1=$(grep -v "local newversion = " /usr/tmp/mudlet-mapper.xml | sha1sum | cut -d " " -f1)
+mkdir -p "${TEMPDIR}"
+
+wget -O "${TEMPDIR}/mudlet-mapper.xml" http://ire-mudlet-mapping.github.io/ire-mapping-script/downloads/mudlet-mapper.xml
+
+currentScriptSha1=$(grep -v "local newversion = " "${TEMPDIR}/mudlet-mapper.xml" | sha1sum | cut -d " " -f1)
 newScriptSha1=$(grep -v "local newversion = " mudlet-mapper.xml | sha1sum | cut -d " " -f1)
 
 if [ "${currentScriptSha1}" = "${newScriptSha1}" ]; then
