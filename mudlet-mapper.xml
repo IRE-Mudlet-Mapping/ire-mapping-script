@@ -7843,12 +7843,6 @@ end</script>
 end</script>
                     <eventHandlerList/>
                 </Script>
-                <Script isActive="yes" isFolder="no">
-                    <name>Defense tracking</name>
-                    <packageName></packageName>
-                    <script></script>
-                    <eventHandlerList/>
-                </Script>
             </Script>
             <Script isActive="yes" isFolder="no">
                 <name>Person tracking</name>
