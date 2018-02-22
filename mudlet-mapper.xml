@@ -4855,10 +4855,11 @@ function mmp.startup()
   private_settings[&quot;pebble&quot;]        = createOption(false, mmp.lockPebble, { &quot;boolean&quot; }, &quot;Make use of your enchanted pebble?&quot;)
   private_settings[&quot;removewings&quot;]   = createOption(true, mmp.setWingsRemoval, { &quot;boolean&quot; }, &quot;Remove Wings after using them?&quot;)
   private_settings[&quot;harness&quot;]				= createOption(false, mmp.setHarness, { &quot;boolean&quot; }, &quot;Use Stratospheric Harness?&quot;) --PapaGuacamole
-  private_settings[&quot;duantahar&quot;]     = createOption(false, mmp.setDuantahar, { &quot;boolean&quot; }, &quot;Use Chenubian Wings?&quot;)
+	private_settings[&quot;duantahar&quot;]     = createOption(false, mmp.setDuantahar, { &quot;boolean&quot; }, &quot;Use Chenubian Wings?&quot;)
   private_settings[&quot;duanatharan&quot;]   = createOption(false, mmp.setDuanatharan, { &quot;boolean&quot; }, &quot;Use Atavian Wings?&quot;)
   private_settings[&quot;duanathar&quot;]     = createOption(false, mmp.setDuanathar, { &quot;boolean&quot; }, &quot;Use Eagle Wings?&quot;)
-	private_settings[&quot;duanatharic&quot;]   = createOption(false, mmp.setDuanatharic, { &quot;boolean&quot; }, &quot;Use Island Wings?&quot;)
+  private_settings[&quot;duanatharic&quot;]   = createOption(false, mmp.setDuanatharic, { &quot;boolean&quot; }, &quot;Use Island Wings?&quot;)
+  private_settings[&quot;soar&quot;]          = createOption(false, mmp.setSoar, { &quot;boolean&quot; }, &quot;Use Aero Soar?&quot;)
 	private_settings[&quot;shackle&quot;]       = createOption(false, mmp.changeBoolFunc, { &quot;boolean&quot; }, &quot;Take off shackle?&quot;)
   private_settings[&quot;universe&quot;]      = createOption(false, mmp.setUniverse, {&quot;boolean&quot; }, &quot;Use Universe Tarot?&quot;)
   private_settings[&quot;gare&quot;]      		= createOption(false, mmp.setGare, {&quot;boolean&quot; }, &quot;Use Gare?&quot;)
@@ -5676,6 +5677,7 @@ function mmp.addWingsAchaea()
 			end
 		end
   end
+
   -- Stratospheric Harness support -- PapaGuacamole
   if
     mmp.settings.harness and gmcp.Room and not table.contains(gmcp.Room.Info.details, &quot;indoors&quot;)
@@ -5691,6 +5693,28 @@ function mmp.addWingsAchaea()
       mmp.tempSpecialExit(54632, &quot;Shake Harness&quot;)
     end
   end
+		
+	-- Air Elemental Aero Soar
+	  if
+			mmp.settings.soar and gmcp.Room and not table.contains(gmcp.Room.Info.details, &quot;indoors&quot;)
+  then
+    --Sarapis soar.
+    if mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Main&quot;) then
+			if gmcp.Char.Status.class == &quot;air Elemental Lord&quot; or gmcp.Char.Status.class == &quot;air Elemental Lady&quot; then
+      	mmp.tempSpecialExit(4882, &quot;aero soar high&quot;, 10) -- duanatharan
+       	mmp.tempSpecialExit(3885, &quot;aero soar low&quot;, 10) -- duanathar
+  			mmp.tempSpecialExit(54173, &quot;aero soar stratosphere&quot;, 10) -- Stratosphere!
+			end
+		--Meropis soar
+    elseif mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Meropis&quot;) then
+			if gmcp.Char.Status.class == &quot;air Elemental Lord&quot; or gmcp.Char.Status.class == &quot;air Elemental Lady&quot; then
+      	mmp.tempSpecialExit(51603, &quot;aero soar high&quot;, 10) -- duanatharan
+      	mmp.tempSpecialExit(51188, &quot;aero soar low&quot;, 10) -- duanathar
+    		mmp.tempSpecialExit(54173, &quot;aero soar stratosphere&quot;, 10) -- Stratosphere!
+			end
+    end
+  end
+	
   --universe tarot
   if
     mmp.settings.universe and
@@ -6869,6 +6893,13 @@ function mmp.setDuantahar()
 
   if mmp.settings.duantahar then mmp.echo(&quot;Okay, will see about using Chenubian wings (duanathar, duanatharan, and duantahar) when you goto somewhere while outside!&quot;)
   else mmp.echo(&quot;Won't use Chenubian wings anymore.&quot;) end
+end
+
+function mmp.setSoar()
+  mmp.clearpathcache() -- clear the cache so it'll use soar or will stop using soar
+
+  if mmp.settings.soar then mmp.echo(&quot;Okay, will see about using Aero Soar when you goto somewhere while outside!&quot;)
+  else mmp.echo(&quot;Won't use Aero Soar anymore.&quot;) end
 end
 
 function mmp.setUniverse()
@@ -8269,9 +8300,9 @@ end</script>
                     <Script isActive="yes" isFolder="no">
                         <name>mmapper_achaea_went_outside</name>
                         <packageName></packageName>
-                        <script>-- track whenever we need to use wings when we get outside!
+                        <script>-- track whenever we need to use wings or aero soar when we get outside!
 function mmapper_achaea_went_outside()
-  if not mmp.autowalking or not (mmp.settings.duanathar or mmp.settings.duanatharan or mmp.settings.duantahar or mmp.settings.duanatharic) or mmp.game ~= &quot;achaea&quot; or
+  if not mmp.autowalking or not (mmp.settings.duanathar or mmp.settings.duanatharan or mmp.settings.duantahar or mmp.settings.duanatharic or mmp.settings.soar) or mmp.game ~= &quot;achaea&quot; or
     (mmp.currentroom == mmp.speedWalkPath[#mmp.speedWalkPath]) or
     table.contains(gmcp.Room.Info.details, &quot;indoors&quot;)
   then return end
