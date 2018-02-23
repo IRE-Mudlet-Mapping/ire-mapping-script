@@ -5453,6 +5453,7 @@ function doSpeedWalk(dashtype)
   end
 
   mmp.autowalking = true
+	raiseEvent(&quot;started speedwalk&quot;)
   raiseEvent(&quot;s&quot;)
 
 
@@ -8278,7 +8279,7 @@ end</script>
                     <Script isActive="yes" isFolder="no">
                         <name>register_achaeas_envdata</name>
                         <packageName></packageName>
-                        <script>function register_achaeas_envdata(_, game)
+                        <script>function register_achaeas_envdata(game)
   if game ~= &quot;Achaea&quot; then return end
 
   mmp.envids =
@@ -8475,28 +8476,29 @@ if not alreadyRun then mmp.updateIsles() end</script>
                     <Script isActive="yes" isFolder="no">
                         <name>Shackle handling</name>
                         <packageName></packageName>
-                        <script>local mmp = mmp or {density = false}
+                        <script>local shackle = shackle or {density = false}
 --Wear shackle function
-mmpWearShackle =
-  function()
-    if mmp.settings.shackle and mmp.density then
-      send(&quot;wear shackle&quot;)
-    end
+
+function mmpWearShackle()
+  if mmp.settings.shackle and shackle.density then
+    send(&quot;wear shackle&quot;)
   end
-mmpUnwearShackle =
-  function()
-    if mmp.settings.shackle and mmp.defs.current.density then
-      mmp.density = true
-      send(&quot;remove shackle&quot;)
-    elseif not mmp.defs.current.density then
-      mmp.density = false
-    end
+end
+
+function mmpUnwearShackle()
+  if mmp.settings.shackle and mmp.defs.current.density then
+    shackle.density = true
+    send(&quot;remove shackle&quot;)
+  elseif not mmp.defs.current.density then
+    shackle.density = false
   end
+end
+
 --Event Handlers
 registerAnonymousEventHandler(&quot;mmapper failed path&quot;, &quot;mmpWearShackle&quot;)
 registerAnonymousEventHandler(&quot;mmapper stopped&quot;, &quot;mmpWearShackle&quot;)
 registerAnonymousEventHandler(&quot;mmapper arrived&quot;, &quot;mmpWearShackle&quot;)
-registerAnonymousEventHandler(&quot;s&quot;, &quot;mmpUnwearShackle&quot;)</script>
+registerAnonymousEventHandler(&quot;started speedwalk&quot;, &quot;mmpUnwearShackle&quot;)</script>
                         <eventHandlerList/>
                     </Script>
                 </Script>
