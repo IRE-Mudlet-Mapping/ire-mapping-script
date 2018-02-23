@@ -8229,7 +8229,7 @@ end</script>
                     <Script isActive="yes" isFolder="no">
                         <name>register_achaeas_envdata</name>
                         <packageName></packageName>
-                        <script>function register_achaeas_envdata(_, game)
+                        <script>function register_achaeas_envdata(game)
   if game ~= &quot;Achaea&quot; then return end
 
   mmp.envids =
@@ -8437,7 +8437,7 @@ if not alreadyRun then mmp.updateIsles() end</script>
                     <Script isActive="yes" isFolder="no">
                         <name>register_aetolias_envdata</name>
                         <packageName></packageName>
-                        <script>function register_aetolias_envdata(_, game)
+                        <script>function register_aetolias_envdata(game)
   if game ~= &quot;Aetolia&quot; then return end
 
   mmp.envids =
@@ -8515,7 +8515,7 @@ end</script>
                     <Script isActive="yes" isFolder="no">
                         <name>register_lusternias_envdata</name>
                         <packageName></packageName>
-                        <script>function register_lusternias_envdata(_, game)
+                        <script>function register_lusternias_envdata(game)
   if game ~= &quot;Lusternia&quot; then return end
 
   mmp.envids =
@@ -8793,7 +8793,7 @@ end</script>
                     <Script isActive="yes" isFolder="no">
                         <name>register_imperians_envdata</name>
                         <packageName></packageName>
-                        <script>function register_imperians_envdata(_, game)
+                        <script>function register_imperians_envdata(game)
   if game ~= &quot;Imperian&quot; then return end
   mmp.envids =
   {
@@ -8894,7 +8894,7 @@ end</script>
                     <Script isActive="yes" isFolder="no">
                         <name>register_midkemias_envdata</name>
                         <packageName></packageName>
-                        <script>function register_midkemias_envdata(_, game)
+                        <script>function register_midkemias_envdata(game)
   if game ~= &quot;Midkemia Online&quot; then return end
   mmp.envids =
   {
@@ -8954,7 +8954,7 @@ end</script>
                     <Script isActive="yes" isFolder="no">
                         <name>register_lithmerias_envdata</name>
                         <packageName></packageName>
-                        <script>function register_lithmerias_envdata(_, game)
+                        <script>function register_lithmerias_envdata(game)
   if game ~= &quot;Lithmeria&quot; then return end
 
   mmp.envids =
