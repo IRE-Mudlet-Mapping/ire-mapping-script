@@ -450,7 +450,7 @@ mmp.echo(&quot;We're connected to Achaea.&quot;)</script>
                         <integer>2</integer>
                     </regexCodePropertyList>
                     <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
-                        <name>Local and veil farsee</name>
+                        <name>Local farsee</name>
                         <script>mmp.locateAndEcho(matches[3], matches[2])</script>
                         <triggerType>0</triggerType>
                         <conditonLineDelta>0</conditonLineDelta>
@@ -464,10 +464,28 @@ mmp.echo(&quot;We're connected to Achaea.&quot;)</script>
                         <colorTriggerBgColor>#000000</colorTriggerBgColor>
                         <regexCodeList>
                             <string>^You see that (\w+) is at (.+)\.$</string>
-                            <string>^You see that (\w+) is located at (.+) in .+\.$</string>
                         </regexCodeList>
                         <regexCodePropertyList>
                             <integer>1</integer>
+                        </regexCodePropertyList>
+                    </Trigger>
+                    <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+                        <name>Veil farsee</name>
+                        <script>mmp.locateAndEcho(matches[3], matches[2], matches[4])</script>
+                        <triggerType>0</triggerType>
+                        <conditonLineDelta>0</conditonLineDelta>
+                        <mStayOpen>0</mStayOpen>
+                        <mCommand></mCommand>
+                        <packageName></packageName>
+                        <mFgColor>#ff0000</mFgColor>
+                        <mBgColor>#ffff00</mBgColor>
+                        <mSoundFile></mSoundFile>
+                        <colorTriggerFgColor>#000000</colorTriggerFgColor>
+                        <colorTriggerBgColor>#000000</colorTriggerBgColor>
+                        <regexCodeList>
+                            <string>^You see that (\w+) is located at (.+) in (.+)\.$</string>
+                        </regexCodeList>
+                        <regexCodePropertyList>
                             <integer>1</integer>
                         </regexCodePropertyList>
                     </Trigger>
@@ -670,7 +688,7 @@ raiseEvent(&quot;mmapper updated pdb&quot;)</script>
                 </Trigger>
                 <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="yes" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
                     <name>Dragonsense</name>
-                    <script>mmp.locateAndEchoSide(multimatches[2][3], multimatches[2][2])</script>
+                    <script>mmp.locateAndEcho(multimatches[2][3], multimatches[2][2], multimatches[2][4])</script>
                     <triggerType>0</triggerType>
                     <conditonLineDelta>1</conditonLineDelta>
                     <mStayOpen>0</mStayOpen>
@@ -683,7 +701,7 @@ raiseEvent(&quot;mmapper updated pdb&quot;)</script>
                     <colorTriggerBgColor>#000000</colorTriggerBgColor>
                     <regexCodeList>
                         <string>Tapping into the unfathomable depths of your power, you sense that</string>
-                        <string>Tapping into the unfathomable depths of your power, you sense that (\w+) is at (.+?), in (.+)\.$</string>
+                        <string>Tapping into the unfathomable depths of your power, you sense that (\w+) is at (.+), in (.+)\.$</string>
                     </regexCodeList>
                     <regexCodePropertyList>
                         <integer>2</integer>
@@ -931,7 +949,7 @@ enableTrigger(&quot;Angel sense&quot;)</script>
                 </Trigger>
                 <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="yes" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
                     <name>Scrying bowl</name>
-                    <script>mmp.locateAndEcho(multimatches[3][2], multimatches[2][2])</script>
+                    <script>mmp.locateAndEcho(multimatches[3][3], multimatches[2][2], multimatches[3][2])</script>
                     <triggerType>0</triggerType>
                     <conditonLineDelta>1</conditonLineDelta>
                     <mStayOpen>0</mStayOpen>
@@ -945,7 +963,7 @@ enableTrigger(&quot;Angel sense&quot;)</script>
                     <regexCodeList>
                         <string>You dip your fingers into the cool water of the bowl, willing it to reveal the location of</string>
                         <string>^You dip your fingers into the cool water of the bowl, willing it to reveal the location of (\w+)\.$</string>
-                        <string>^An image of .+? appears reflected within the bowl, shifting with the rippling water to display (.+)\.$</string>
+                        <string>^An image of (.+) appears reflected within the bowl, shifting with the rippling water to display (.+)\.$</string>
                     </regexCodeList>
                     <regexCodePropertyList>
                         <integer>2</integer>
@@ -1034,7 +1052,7 @@ enableTrigger(&quot;Angel sense&quot;)</script>
                     </regexCodePropertyList>
                     <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
                         <name>regex (party locate)</name>
-                        <script>mmp.locateAndEcho(matches[3], matches[2])</script>
+                        <script>mmp.locateAndEcho(matches[3], matches[2], matches[4])</script>
                         <triggerType>0</triggerType>
                         <conditonLineDelta>0</conditonLineDelta>
                         <mStayOpen>0</mStayOpen>
@@ -1047,11 +1065,11 @@ enableTrigger(&quot;Angel sense&quot;)</script>
                         <colorTriggerBgColor>#000000</colorTriggerBgColor>
                         <regexCodeList>
                             <string>^\(Party\): \w+ says, &quot;(\w+) moved to (.+)\.&quot;$</string>
-                            <string>^\(Party\): \w+ says, &quot;(\w+) is at (.+), in .+\.&quot;</string>
+                            <string>^\(Party\): \w+ says, &quot;(\w+) is at (.+), in (.+)\.&quot;</string>
                             <string>^\(Party\): \w+ says, &quot;Trace: (\w+) moved to (.+)\.&quot;</string>
-                            <string>^\(Party\): \w+ says, &quot;(\w+) - (.+), in .+\.&quot;$</string>
+                            <string>^\(Party\): \w+ says, &quot;(\w+) - (.+), in (.+)\.&quot;$</string>
                             <string>^\(Party\): \w+ says, &quot;(\w+) is at (.+) \(.+\)\.&quot;</string>
-                            <string>^\(Party\): \w+ says, &quot;Trace: (\w+) entered (.+) in .+\.&quot;</string>
+                            <string>^\(Party\): \w+ says, &quot;Trace: (\w+) entered (.+) in (.+)\.&quot;</string>
                             <string>^\(Party\): \w+ says, &quot;Trace: (\w+) entered (.+)\.&quot;</string>
                         </regexCodeList>
                         <regexCodePropertyList>
@@ -5024,6 +5042,7 @@ registerAnonymousEventHandler(&quot;mmp logged in&quot;,&quot;mmp.rebuildOptions
     mmp.speedWalkDir = {}
     speedWalkCounter = 0
     raiseEvent(&quot;mmapper failed path&quot;)
+    if mmp.settings.shackle then expandAlias(&quot;wear shackle&quot;) end
     -- allow mapper 'addons' to unlink their special exits
     raiseEvent(&quot;mmp clear externals&quot;)
     return
@@ -5322,6 +5341,7 @@ function mmp.stop()
 
   mmp.echo(&quot;Stopped walking.&quot;)
   raiseEvent(&quot;mmapper stopped&quot;)
+  if mmp.settings.shackle then expandAlias(&quot;wear shackle&quot;) end
 end
 
 -- Aetolia and Lusternia support showing balances in GMCP. This is easy to support, so we do!
@@ -5404,6 +5424,7 @@ function speedwalking( event, num )
     local walktime = stopStopWatch(speedWalkWatch)
     mmp.echo(string.format(&quot;We've arrived! Took us %.1fs.\n&quot;, walktime))
     raiseEvent(&quot;mmapper arrived&quot;)
+    if mmp.settings.shackle then expandAlias(&quot;wear shackle&quot;) end
     mmp.speedWalkPath = {}
     mmp.speedWalkDir = {}
     speedWalkCounter = 0
@@ -5443,6 +5464,7 @@ function doSpeedWalk(dashtype)
     mmp.autowalking = false
     mmp.echo(&quot;Couldn't find a path to the destination :(&quot;)
     raiseEvent(&quot;mmapper failed path&quot;)
+    if mmp.settings.shackle then expandAlias(&quot;wear shackle&quot;) end
     return
   end
 
@@ -5453,10 +5475,9 @@ function doSpeedWalk(dashtype)
   end
 
   mmp.autowalking = true
-	raiseEvent(&quot;started speedwalk&quot;)
   raiseEvent(&quot;s&quot;)
 
-
+  if mmp.settings.shackle then expandAlias(&quot;remove shackle&quot;) end
   if not mmp.paused then
     mmp.echon(&quot;Starting speedwalk from &quot;..(atcp.RoomNum or gmcp.Room.Info.num)..&quot; to &quot;) echoLink(mmp.speedWalkPath[#mmp.speedWalkPath], 'mmp.gotoRoom &quot;' .. mmp.speedWalkPath[#mmp.speedWalkPath].. '&quot;', 'Go to ' .. mmp.speedWalkPath[#mmp.speedWalkPath]) echo(&quot;: &quot;)
     speedWalkCounter = 1
@@ -5474,7 +5495,7 @@ function mmp.failpath()
 
   mmp.autowalking = false
 
-
+  if mmp.settings.shackle then expandAlias(&quot;wear shackle&quot;) end
   mmp.speedWalkPath = {}
   mmp.speedWalkDir = {}
   speedWalkCounter = 0
@@ -5986,10 +6007,25 @@ end</script>
                 <Script isActive="yes" isFolder="no">
                     <name>Locating &amp; echoing functions</name>
                     <packageName></packageName>
-                    <script>-- for a given room name, we'll echo all the vnums
-function mmp.echonums(roomname)
+                    <script>local function filterRooms(rooms,area)
+  local unassignedRooms = {}
+	local areaRooms = {}
+  for roomnum,roomname in pairs(rooms) do
+	  local roomarea = getRoomUserData(roomnum, &quot;Game Area&quot;)
+		if roomarea==&quot;&quot; then
+		unassignedRooms[roomnum]=roomname
+		elseif roomarea==area then
+		areaRooms[roomnum]=roomname
+		end
+	end
+	return next(areaRooms) and areaRooms or unassignedRooms
+end
+-- for a given room name, we'll echo all the vnums
+function mmp.echonums(roomname,area)
   local t = mmp.searchRoomExact(roomname)
-
+  if area then
+    t = filterRooms(t,area)
+  end 
   if not next(t) then
     echo &quot;?&quot; return nil end
 
@@ -6037,11 +6073,13 @@ function mmp.roomEcho(query)
   end
 end
 
-function mmp.locateAndEcho(room, person)
+function mmp.locateAndEcho(room, person,area)
     local t = mmp.searchRoomExact(room)
-
+    if area then
+      t = filterRooms(t,area)
+    end
     echo &quot;  (&quot;
-    mmp.echonums(room, true)
+    mmp.echonums(room, area)
     echo &quot;)&quot;
 
 	-- lowercase results
@@ -7824,59 +7862,6 @@ end</script>
 end</script>
                     <eventHandlerList/>
                 </Script>
-                <Script isActive="yes" isFolder="no">
-                    <name>Defense tracking</name>
-                    <packageName></packageName>
-                    <script>mmp.defs = {
-  current = {}
-}
-mmp.defs.add = function()
-	local def = gmcp.Char.Defences.Add.name
-	if not mmp.defs.current[def] then
-		mmp.defs.current[def] = true
-		raiseEvent(&quot;mmp got def&quot;, def)
-	end
-end
-
-
-mmp.defs.remove = function()
-	for _, def in ipairs(gmcp.Char.Defences.Remove) do
-		mmp.defs.current[def] = nil
-		raiseEvent(&quot;mmp lost def&quot;, def)
-	end
-end
-
-
-mmp.defs.list = function()
-  	local newDefs = {}
-	local addedDefs, lostDefs = {}, {}
-	for _, v in ipairs(gmcp.Char.Defences.List) do
-		newDefs[v.name] = true
-		if not mmp.defs.current[v.name] then
-			addedDefs[#addedDefs + 1] = v.name
-		end
-	end
-	for def in pairs(mmp.defs.current) do
-		if not newDefs[def] then
-			lostDefs[#lostDefs + 1] = def
-		end
-	end
-	mmp.defs.current = newDefs
-	for _,def in pairs(lostDefs) do
-		raiseEvent(&quot;mmp lost def&quot;, def)
-	end
-	for _,def in ipairs(addedDefs) do
-		raiseEvent(&quot;mmp got def&quot;, def)
-	end
-end
-
-
--- EVENT HANDLERS
-registerAnonymousEventHandler(&quot;gmcp.Char.Defences.Add&quot;, &quot;mmp.defs.add&quot;)
-registerAnonymousEventHandler(&quot;gmcp.Char.Defences.Remove&quot;, &quot;mmp.defs.remove&quot;)
-registerAnonymousEventHandler(&quot;gmcp.Char.Defences.List&quot;, &quot;mmp.defs.list&quot;)</script>
-                    <eventHandlerList/>
-                </Script>
             </Script>
             <Script isActive="yes" isFolder="no">
                 <name>Person tracking</name>
@@ -8182,6 +8167,15 @@ local s,m = xpcall(function ()
       setRoomUserData(num, &quot;indoors&quot;, &quot;&quot;)
       s = s .. (#s &gt; 0 and &quot; &quot; or &quot;&quot;) .. &quot;Updated room to be outdoors.&quot;
     end
+		
+		    -- check server area name (Achaea only for now)
+    if mmp.game == &quot;achaea&quot; then
+			local serverArea = gmcp.Room.Info.area
+    	if serverArea ~= getRoomUserData(num, &quot;Game Area&quot;) then
+      	setRoomUserData(num, &quot;Game Area&quot;, serverArea)
+      	s = s .. (#s &gt; 0 and &quot; &quot; or &quot;&quot;) .. &quot;Updated game area to &quot;..serverArea..&quot;.&quot;
+    	end
+		end
 
     -- check for wilderness exits
     if getRoomChar(num) ~= &quot;W&quot; and table.contains(gmcp.Room.Info.details, &quot;wilderness&quot;) then
@@ -8196,8 +8190,7 @@ end, function (error)
   echo&quot;  &quot; echoLink(&quot;view steps&quot;, 'echo[['..debug.traceback()..']]', &quot;View steps of code that led up to it&quot;)
 end)
 if not s then mmp.echo(m) end
-end
-</script>
+end</script>
                     <eventHandlerList>
                         <string>gmcp.Room.Info</string>
                         <string>RoomNum</string>
@@ -8279,7 +8272,7 @@ end</script>
                     <Script isActive="yes" isFolder="no">
                         <name>register_achaeas_envdata</name>
                         <packageName></packageName>
-                        <script>function register_achaeas_envdata(game)
+                        <script>function register_achaeas_envdata(_, game)
   if game ~= &quot;Achaea&quot; then return end
 
   mmp.envids =
@@ -8472,34 +8465,6 @@ if not alreadyRun then mmp.updateIsles() end</script>
                             <string>mmapper went outside</string>
                             <string>mmapper changed continent</string>
                         </eventHandlerList>
-                    </Script>
-                    <Script isActive="yes" isFolder="no">
-                        <name>Shackle handling</name>
-                        <packageName></packageName>
-                        <script>local shackle = shackle or {density = false}
---Wear shackle function
-
-function mmpWearShackle()
-  if mmp.settings.shackle and shackle.density then
-    send(&quot;wear shackle&quot;)
-  end
-end
-
-function mmpUnwearShackle()
-  if mmp.settings.shackle and mmp.defs.current.density then
-    shackle.density = true
-    send(&quot;remove shackle&quot;)
-  elseif not mmp.defs.current.density then
-    shackle.density = false
-  end
-end
-
---Event Handlers
-registerAnonymousEventHandler(&quot;mmapper failed path&quot;, &quot;mmpWearShackle&quot;)
-registerAnonymousEventHandler(&quot;mmapper stopped&quot;, &quot;mmpWearShackle&quot;)
-registerAnonymousEventHandler(&quot;mmapper arrived&quot;, &quot;mmpWearShackle&quot;)
-registerAnonymousEventHandler(&quot;started speedwalk&quot;, &quot;mmpUnwearShackle&quot;)</script>
-                        <eventHandlerList/>
                     </Script>
                 </Script>
                 <Script isActive="yes" isFolder="no">
