@@ -5006,19 +5006,20 @@ registerAnonymousEventHandler(&quot;mmp logged in&quot;,&quot;mmp.rebuildOptions
                 <packageName></packageName>
                 <script>function mmp.gotoRoom(where, dashtype)
   if not where or not tonumber(where) then
-    mmp.echo(&quot;Where do you want to go to?&quot;)
-    return
-  end
+    mmp.echo(&quot;Where do you want to go to?&quot;) return end
+
   if tonumber(where) == mmp.currentroom then
-    mmp.echo(&quot;We're already at &quot; .. where .. &quot;!&quot;)
-    raiseEvent(&quot;mmapper arrived&quot;)
-    return
+    mmp.echo(&quot;We're already at &quot;..where..&quot;!&quot;)
+   raiseEvent(&quot;mmapper arrived&quot;)
+   return
   end
+
   -- allow mapper 'addons' to link their own exits in
   raiseEvent(&quot;mmp link externals&quot;)
+
   -- if getPath worked, then the dirs and room #'s tables were populated for us
   if not mmp.getPath(mmp.currentroom, tonumber(where)) then
-    mmp.echo(&quot;Don't know how to get there (&quot; .. tostring(where) .. &quot;) from here :(&quot;)
+    mmp.echo(&quot;Don't know how to get there (&quot;..tostring(where)..&quot;) from here :(&quot;)
     mmp.speedWalkPath = {}
     mmp.speedWalkDir = {}
     speedWalkCounter = 0
@@ -5027,9 +5028,546 @@ registerAnonymousEventHandler(&quot;mmp logged in&quot;,&quot;mmp.rebuildOptions
     raiseEvent(&quot;mmp clear externals&quot;)
     return
   end
+
   doSpeedWalk(dashtype)
+
   -- allow mapper 'addons' to unlink their special exits
   raiseEvent(&quot;mmp clear externals&quot;)
+end
+
+function mmp.gotoArea (where, number, dashtype, exact)
+  if not where or type(where) ~= &quot;string&quot; then
+    mmp.echo(&quot;Where do you want to go to?&quot;) return end
+
+  local where = where:lower()
+
+  number = tonumber(number)
+  local tmp = getRoomUserData(1, &quot;gotoMapping&quot;)
+  if not tmp or tmp == '' then tmp = &quot;[]&quot; end
+
+  local temp, maptable = yajl.to_value(tmp), {}
+  for k,v in pairs(temp) do maptable[k:lower()] = v end
+
+  local goto = maptable[where]
+  if goto then
+  	mmp.gotoRoom(goto, dashtype)
+  	return
+  end
+
+  local possibleRooms, shortestPath, shortestBorder = {}, {}, 0
+
+  mmp.computeShortestWatch = mmp.computeShortestWatch or createStopWatch()
+  startStopWatch(mmp.computeShortestWatch)
+
+  local areaid, msg, multiples = mmp.findAreaID(where, exact)
+  if areaid then
+     possibleRooms = mmp.getAreaBorders(areaid)
+
+  elseif not areaid and #multiples &gt; 0 then
+    if number and number&lt;=#multiples then
+        mmp.gotoArea(multiples[number], nil, dashtype, true)
+        return
+    end
+    mmp.echo(&quot;Which area would you like to go to?&quot;)
+    fg(&quot;DimGrey&quot;)
+    for key, areaname in ipairs(multiples) do
+      echo&quot;  &quot;; echoLink(key .. &quot;) &quot;, 'mmp.gotoArea(&quot;'..areaname..'&quot;, nil, '..(dashtype and '&quot;'..dashtype..'&quot;' or &quot;nil&quot;)..', true)', &quot;Click to go to &quot;..areaname, true)
+        setUnderline(true) echoLink(areaname, 'mmp.gotoArea(&quot;'..areaname..'&quot;, nil, '..(dashtype and '&quot;'..dashtype..'&quot;' or &quot;nil&quot;)..', true)', &quot;Click to go to &quot;..areaname, true) setUnderline(false) echo&quot;\n&quot;
+    end
+    resetFormat()
+    return
+  else
+    mmp.echo(string.format(&quot;Don't know of any area named '%s'.&quot;, where))
+    return
+  end
+
+	-- add in temporary links to clouds / stratospheres to enable pathfinding, auto-repath will occur when moved to outside -- PapaGuacamole
+	local madeEast, madeNorth, madeWest
+	local currentareaid = getRoomArea(mmp.currentroom)
+	raiseEvent(&quot;mmp link externals&quot;)
+	if mmp.game == &quot;achaea&quot; and mmp.settings.harness then			 	
+			if mmp.oncontinent(currentareaideaid, &quot;Eastern_Isles&quot;) then
+				if not table.contains(gmcp.Room.Info.details, &quot;indoors&quot;) then -- make it here
+					addSpecialExit(mmp.currentroom, 54231, [[script:send(&quot;shake harness&quot;,false)]])				
+				elseif currentareaid == 192 then -- Zanzibaar
+					addSpecialExit(31215, 54231, [[script:send(&quot;shake harness&quot;,false)]])
+				elseif currentareaid == 191 then -- Clockwork Isle
+					addSpecialExit(23351, 54231, [[script:send(&quot;shake harness&quot;,false)]])
+				elseif currentareaid == 180 then -- Colchis, the Isle of
+					addSpecialExit(19786, 54231, [[script:send(&quot;shake harness&quot;,false)]])
+				else --if currentareaid == 181 then -- Umbrin, the Port of
+					addSpecialExit(18443, 54231, [[script:send(&quot;shake harness&quot;,false)]])
+				end
+				madeEast = true
+			elseif mmp.oncontinent(currentareaid, &quot;Northern_Isles&quot;) then
+				if not table.contains(gmcp.Room.Info.details, &quot;indoors&quot;) then -- make it here
+					addSpecialExit(mmp.currentroom, 48719, [[script:send(&quot;shake harness&quot;,false)]])				
+				elseif currentareaid == 194 then -- Ilyrean
+					addSpecialExit(13373, 48719, [[script:send(&quot;shake harness&quot;,false)]])
+				elseif currentareaid == 351 then -- Karbaz
+					addSpecialExit(19740, 48719, [[script:send(&quot;shake harness&quot;,false)]])
+				else --if currentareaid == 206 or getRoomArea(mmp.currentroom) = 294 then -- Suliel Island / Suliel Island (Barricades)
+					addSpecialExit(17768, 48719, [[script:send(&quot;shake harness&quot;,false)]])
+				end
+				madeNorth = true
+			else --if mmp.oncontinent(areaid, &quot;Western_Isles&quot;) then
+				if not table.contains(gmcp.Room.Info.details, &quot;indoors&quot;) then -- make it here
+					addSpecialExit(mmp.currentroom, 54632, [[script:send(&quot;shake harness&quot;,false)]])				
+				elseif currentareaid == 162 then --Tapoa
+					addSpecialExit(21184, 54632, [[script:send(&quot;shake harness&quot;,false)]])
+				elseif currentareaid == 207 then --Tuar
+					addSpecialExit(19219, 54632, [[script:send(&quot;shake harness&quot;,false)]])
+				else --if currentareaid == 209 then --Ageiro
+					addSpecialExit(30222, 54632, [[script:send(&quot;shake harness&quot;,false)]])
+				end
+				madeWest = true
+			end			
+	end
+  
+	local function clearSpecials()
+		if madeEast then mmp.clearspecials{54231} end
+		if madeNorth then mmp.clearspecials{48719} end
+		if madeWest then mmp.clearspecials{54632} end
+  	raiseEvent(&quot;mmp clear externals&quot;)
+	end
+	
+	local getStopWatchTime, tonumber, getPath = getStopWatchTime, tonumber, mmp.getPath
+
+--mmp.echo(string.format(&quot;Have %s area edge nodes, %ss taken so far...&quot;, table.size(possibleRooms), getStopWatchTime(mmp.computeShortestWatch)))
+
+  -- allocate only 500ms to finding the shortest path, or more if we failed to find anything
+  local checkedsofar, outoftime = 0
+  for id, _ in pairs(possibleRooms) do
+    if mmp.getPath(mmp.currentroom, tonumber(id)) then
+      if shortestBorder==0 or #shortestPath &gt; #speedWalkPath then
+        shortestPath = speedWalkPath
+        shortestBorder = tonumber(id)
+      end
+    end
+    checkedsofar = checkedsofar + 1
+
+    if (getStopWatchTime(mmp.computeShortestWatch) &gt;= .5) then outoftime = true break end
+   -- mmp.echo(string.format(&quot;pathed from %s to %s, running time so far: %s&quot;, mmp.currentroom, id, getStopWatchTime(mmp.computeShortestWatch)))
+  end
+
+  --mmp.echo(string.format(&quot;total time took: %s&quot;, getStopWatchTime(mmp.computeShortestWatch)))
+  stopStopWatch(mmp.computeShortestWatch)
+
+  if shortestBorder == 0 then
+    if outoftime then
+      mmp.echo(string.format(
+        &quot;I checked %d of the %d possible exits \&quot;%s\&quot; has, but none of the ways there worked and it was taking too long :( try doing this again?&quot;,
+        checkedsofar, table.size(possibleRooms), where
+      ))
+    else
+      mmp.echo(&quot;Checked &quot;..table.size(possibleRooms)..&quot; exits in that area, and none of them worked :( I Don't know how to get you there.&quot;)
+    end
+    mmp.speedWalkPath = {}
+    mmp.speedWalkDir = {}
+    speedWalkCounter = 0
+    raiseEvent(&quot;mmapper failed path&quot;)
+		if madeEast or madeNorth or madeWest then
+--[[	
+			if madeEast then mmp.clearspecials{54231} end
+			if madeNorth then mmp.clearspecials{48719} end
+			if madeWest then mmp.clearspecials{54632} end
+  		raiseEvent(&quot;mmp clear externals&quot;)
+]]--		
+      raiseEvent(&quot;mmp clear externals&quot;)
+			clearSpecials()
+		end
+    return
+  end
+
+	if madeEast or madeNorth or madeWest then
+--[[	
+		if madeEast then mmp.clearspecials{54231} end
+		if madeNorth then mmp.clearspecials{48719} end
+		if madeWest then mmp.clearspecials{54632} end
+  	raiseEvent(&quot;mmp clear externals&quot;)
+]]--
+   raiseEvent(&quot;mmp clear externals&quot;)
+		clearSpecials()
+	end
+
+  mmp.gotoRoom(shortestBorder, dashtype)
+end
+
+--- DOES NOT ACCOUNT FOR CHANGING THE MAP YET (within a profile load), because we don't know when it happens
+local getpathcache = {}
+--setmetatable(getpathcache, {__mode = &quot;kv&quot;}) -- weak keys/values = it'll periodically get cleaned up by gc
+
+function mmp.getPath(from, to)
+  assert(tonumber(from) and tonumber(to), &quot;mmp.getPath: both from and to have to be room IDs&quot;)
+
+  local key = string.format(&quot;%s_%s&quot;, from, to)
+  local resulttbl = getpathcache[key]
+
+  -- not in cache?
+  if not resulttbl then
+    mmp.computeGetPath = mmp.computeGetPath or createStopWatch()
+    startStopWatch(mmp.computeGetPath)
+    local boolean = getPath(from, to)
+    if mmp.debug then mmp.echo(&quot;a new getPath() from &quot;..from..&quot; to &quot;..to..&quot; took &quot;..stopStopWatch(mmp.computeGetPath)..&quot;s.&quot;) end
+    -- save it into the cache &amp; send away
+    getpathcache[key] = {boolean, speedWalkDir, speedWalkPath}
+    return boolean
+  end
+
+  -- or if it is, retrieve &amp; send away
+  speedWalkDir = resulttbl[2]
+  speedWalkPath = resulttbl[3]
+  return resulttbl[1]
+end
+
+function mmp.clearpathcache()
+  if mmp.debug then mmp.echo(&quot;path cache cleared&quot;) end
+  getpathcache = {}
+end
+function mmp.showpathcache() return getpathcache end
+
+function mmp.setmovetimer(time)
+  if mmp.movetimer then killTimer(mmp.movetimer) end
+  if mmp.settings.slowwalk then return end
+
+  mmp.movetimer = tempTimer(getNetworkLatency()+(time or 0.5), function ()
+    mmp.movetimer = false
+    mmp.move()
+  end)
+end
+
+-- moves to the next room we need to.
+function mmp.move()
+  if mmp.paused or not mmp.autowalking or mmp.movetimer or not mmp.canmove() then return end
+  -- sometimes it's 0 - default to 1
+  if speedWalkCounter == 0 then speedWalkCounter = 1 end
+
+  local cmd
+  if mmp.settings[&quot;caravan&quot;] then cmd = &quot;lead caravan &quot;..mmp.speedWalkDir[speedWalkCounter]
+  else
+    cmd = mmp.speedWalkDir[speedWalkCounter]
+  end
+
+  cmd = cmd or ''
+
+  -- timeout before loadstring, so it can set its own if it would like to.
+  mmp.setmovetimer()
+
+  if string.starts(cmd, &quot;script:&quot;) then
+    cmd = string.gsub( cmd, &quot;script:&quot;, &quot;&quot; ) loadstring(cmd)()
+    if mmp.settings.showcmds then cecho(string.format(&quot;&lt;red&gt;(&lt;maroon&gt;%d - &lt;dark_slate_grey&gt;%s&lt;red&gt;)&quot;, #mmp.speedWalkDir - speedWalkCounter + 1, &quot;&lt;script&gt;&quot;)) end
+  else
+    send(cmd, false)
+    if mmp.settings.showcmds then cecho(string.format(&quot;&lt;red&gt;(&lt;maroon&gt;%d - &lt;dark_slate_grey&gt;%s&lt;red&gt;)&quot;, #mmp.speedWalkDir - speedWalkCounter + 1, cmd)) end
+  end
+end
+
+function mmp.swim()
+  -- not going anywhere? don't do anything
+  if not mmp.speedWalkDir[speedWalkCounter] then return end
+
+  send(&quot;swim &quot; .. mmp.speedWalkDir[speedWalkCounter]:gsub(&quot;sprint &quot;, &quot;&quot;):gsub(&quot;dash &quot;, &quot;&quot;):gsub(&quot;gallop &quot;, &quot;&quot;):gsub(&quot;runaway &quot;, &quot;&quot;), false)
+  if mmp.settings.showcmds then cecho(string.format(&quot;&lt;red&gt;(&lt;maroon&gt;%d - &lt;dark_slate_grey&gt;swim %s&lt;red&gt;)&quot;, #mmp.speedWalkDir - speedWalkCounter + 1, mmp.speedWalkDir[speedWalkCounter]:gsub(&quot;sprint &quot;, &quot;&quot;):gsub(&quot;dash &quot;, &quot;&quot;):gsub(&quot;gallop &quot;, &quot;&quot;):gsub(&quot;runaway &quot;, &quot;&quot;))) end
+
+  mmp.setmovetimer(2.5)
+end
+
+function mmp.enterGrate()
+  -- not going anywhere? don't do anything
+  if not mmp.speedWalkDir[speedWalkCounter] then return end
+
+  send(&quot;enter grate &quot; .. mmp.speedWalkDir[speedWalkCounter], false)
+  if mmp.settings.showcmds then cecho(string.format(&quot;&lt;red&gt;(&lt;maroon&gt;%d - &lt;dark_slate_grey&gt;enter grate %s&lt;red&gt;)&quot;, #mmp.speedWalkDir - speedWalkCounter + 1, mmp.speedWalkDir[speedWalkCounter])) end
+
+  mmp.setmovetimer(2.5)
+end
+
+function mmp.openDoor()
+  -- not going anywhere? don't do anything
+  if not mmp.speedWalkDir[speedWalkCounter] then return end
+
+  send(&quot;open door &quot; .. mmp.speedWalkDir[speedWalkCounter]:gsub(&quot;sprint &quot;, &quot;&quot;):gsub(&quot;dash &quot;, &quot;&quot;):gsub(&quot;gallop &quot;, &quot;&quot;):gsub(&quot;runaway &quot;, &quot;&quot;), false)
+  if mmp.settings.showcmds then cecho(string.format(&quot;&lt;red&gt;(&lt;maroon&gt;%d - &lt;dark_slate_grey&gt;open door %s&lt;red&gt;)&quot;, #mmp.speedWalkDir - speedWalkCounter + 1, mmp.speedWalkDir[speedWalkCounter]:gsub(&quot;sprint &quot;, &quot;&quot;):gsub(&quot;dash &quot;, &quot;&quot;):gsub(&quot;gallop &quot;, &quot;&quot;):gsub(&quot;runaway &quot;, &quot;&quot;))) end
+
+  mmp.setmovetimer(getNetworkLatency())
+end
+
+function mmp.unlockDoor()
+  -- not going anywhere? don't do anything
+  if not mmp.speedWalkDir[speedWalkCounter] then return end
+
+  send(&quot;unlock door &quot; .. mmp.speedWalkDir[speedWalkCounter]:gsub(&quot;sprint &quot;, &quot;&quot;):gsub(&quot;dash &quot;, &quot;&quot;):gsub(&quot;gallop &quot;, &quot;&quot;):gsub(&quot;runaway &quot;, &quot;&quot;), false)
+  if mmp.settings.showcmds then cecho(string.format(&quot;&lt;red&gt;(&lt;maroon&gt;%d - &lt;dark_slate_grey&gt;unlock door %s&lt;red&gt;)&quot;, #mmp.speedWalkDir - speedWalkCounter, mmp.speedWalkDir[speedWalkCounter]:gsub(&quot;sprint &quot;, &quot;&quot;):gsub(&quot;dash &quot;, &quot;&quot;):gsub(&quot;gallop &quot;, &quot;&quot;):gsub(&quot;runaway &quot;, &quot;&quot;))) end
+
+  mmp.setmovetimer(getNetworkLatency())
+end
+
+function mmp.customwalkdelay(delay)
+  mmp.setmovetimer(getNetworkLatency()+delay)
+end
+
+function mmp.stop()
+  mmp.speedWalkPath = {}
+  mmp.speedWalkDir = {}
+  speedWalkCounter = 0
+  stopStopWatch(speedWalkWatch)
+  --if mmp.movetimer then killTimer( mmp.movetimer ) end
+  mmp.autowalking = false
+
+  -- clear all the temps we've got
+  for trigger, ID in pairs(mmp.specials) do
+    killTrigger(ID)
+  end
+  mmp.specials = {}
+
+  mmp.echo(&quot;Stopped walking.&quot;)
+  raiseEvent(&quot;mmapper stopped&quot;)
+end
+
+-- Aetolia and Lusternia support showing balances in GMCP. This is easy to support, so we do!
+-- if we can't move, setup a polling timer to prompt walking when we can again.
+-- popular systems that expose balance &amp; equilibrium values can be added here as well, perhaps though a similarly-named function.
+function mmp.canmove(fromtimer)
+  if mapper_can_move and mapper_can_move() then
+	if fromtimer then
+      mmp.move()
+    else return true end
+  elseif mapper_can_move then
+    tempTimer(0.2, [[mmp.canmove(true)]])
+    return false
+  end
+
+  if not gmcp.Char then return true end
+
+  if (gmcp.Char and
+    -- Achaea
+    (not gmcp.Char.Vitals.bal or gmcp.Char.Vitals.bal == &quot;1&quot;) and
+    (not gmcp.Char.Vitals.eq or gmcp.Char.Vitals.eq == &quot;1&quot;) and
+    -- Lusternia
+    (not gmcp.Char.Vitals.balance or gmcp.Char.Vitals.balance == &quot;1&quot;) and
+    (not gmcp.Char.Vitals.equilibrium or gmcp.Char.Vitals.equilibrium == &quot;1&quot;) and
+    (not gmcp.Char.Vitals.right_arm or gmcp.Char.Vitals.right_arm == &quot;1&quot;) and
+    (not gmcp.Char.Vitals.left_arm or gmcp.Char.Vitals.left_arm == &quot;1&quot;) and
+    (not gmcp.Char.Vitals.right_leg or gmcp.Char.Vitals.right_leg == &quot;1&quot;) and
+    (not gmcp.Char.Vitals.left_leg or gmcp.Char.Vitals.left_leg == &quot;1&quot;) and
+    (not gmcp.Char.Vitals.psisuper or gmcp.Char.Vitals.psisuper ~= &quot;0&quot;) and
+    (not gmcp.Char.Vitals.psisub or gmcp.Char.Vitals.psisub ~= &quot;0&quot;) and
+    (not gmcp.Char.Vitals.psiid or gmcp.Char.Vitals.psiid ~= &quot;0&quot;) and
+    (not gmcp.Char.Balance or gmcp.Char.Balance.List.balance == &quot;1&quot;) and
+    (not gmcp.Char.Balance or gmcp.Char.Balance.List.equilibrium == &quot;1&quot;) and
+    (not gmcp.Char.Balance or gmcp.Char.Balance.List.rarm == &quot;1&quot;) and
+    (not gmcp.Char.Balance or gmcp.Char.Balance.List.larm == &quot;1&quot;) and
+    (not gmcp.Char.Balance or gmcp.Char.Balance.List.legs == &quot;1&quot;) and
+    (not gmcp.Char.Vitals.prone or (gmcp.Char.Vitals.prone == &quot;0&quot; or gmcp.Char.Vitals.prone == 0))
+  ) then
+	if fromtimer then
+      mmp.move()
+    else return true end
+  else
+    tempTimer(0.2, [[mmp.canmove(true)]])
+    return false
+  end
+end
+
+local oldnum
+function speedwalking( event, num )
+  local num = tonumber(num) or tonumber(gmcp.Room.Info.num)
+  if num ~= mmp.currentroom then mmp.previousroom = mmp.currentroom end
+  mmp.currentroom = num
+  mmp.currentroomname = getRoomName(num)
+
+  -- track if we're inside or outside, if possible
+  if gmcp.Room then
+    if mmp.inside and not table.contains(gmcp.Room.Info.details, &quot;indoors&quot;) then
+      mmp.inside = false
+      raiseEvent(&quot;mmapper went outside&quot;)
+    elseif not mmp.inside and table.contains(gmcp.Room.Info.details, &quot;indoors&quot;) then
+      mmp.inside = true
+      raiseEvent(&quot;mmapper went inside&quot;)
+    end
+    if #table.n_union(mmp.getareacontinents(getRoomArea(mmp.previousroom)), mmp.getareacontinents(getRoomArea(num))) ~= #mmp.getareacontinents(getRoomArea(num)) then
+      raiseEvent(&quot;mmapper changed continent&quot;)
+    end
+    -- the event could cancel speedwalking - in this case quit
+    if mmp.ignore_speedwalking then
+      mmp.ignore_speedwalking = nil
+      return
+    end
+  end
+  if oldnum == num then return else oldnum = num end
+
+  if not mmp.autowalking then return end
+
+  if mmp.movetimer then killTimer(mmp.movetimer); mmp.movetimer = false end
+
+  if num == mmp.speedWalkPath[#mmp.speedWalkPath] then
+    local walktime = stopStopWatch(speedWalkWatch)
+    mmp.echo(string.format(&quot;We've arrived! Took us %.1fs.\n&quot;, walktime))
+    raiseEvent(&quot;mmapper arrived&quot;)
+    mmp.speedWalkPath = {}
+    mmp.speedWalkDir = {}
+    speedWalkCounter = 0
+    mmp.autowalking = false
+  elseif mmp.speedWalkPath[speedWalkCounter] == num then
+    speedWalkCounter = speedWalkCounter + 1
+    mmp.move()
+  elseif #mmp.speedWalkPath&gt; 0 and not mmp.ferry_rooms[num] and not (gmcp.Room.Info.details and table.contains(gmcp.Room.Info.details, &quot;ferry&quot;)) then -- ended up somewhere we didn't want to be, and this isn't a ferry room?
+    speedWalkMoved = false
+    -- re-calculate path then
+    mmp.echo(&quot;Ended up off the path, recalculating a new path...&quot;)
+    local destination = mmp.speedWalkPath[#mmp.speedWalkPath]
+    if not mmp.getPath(num, destination) then
+      mmp.echo(string.format(&quot;Don't know how to get to %d (%s) anymore :( Move into a room we know of to continue&quot;,
+        destination, getRoomName(destination)))
+    else
+      mmp.gotoRoom (destination)
+    end
+  end
+end
+
+function doSpeedWalk(dashtype)
+  mmp.speedWalkDir = mmp.deepcopy(speedWalkDir)
+  mmp.speedWalkPath = mmp.deepcopy(speedWalkPath)
+  speedWalkDir, speedWalkPath = {}, {}
+
+  resetStopWatch(speedWalkWatch)
+  startStopWatch(speedWalkWatch)
+  if mmp.settings[&quot;gallop&quot;] or mmp.settings[&quot;dash&quot;] or mmp.settings.sprint or mmp.settings.runaway or dashtype then
+    mmp.fixPath(mmp.currentroom, mmp.speedWalkPath[#mmp.speedWalkPath],
+      (mmp.settings[&quot;gallop&quot;] and &quot;gallop&quot;) or (mmp.settings[&quot;dash&quot;] and &quot;dash&quot;) or (mmp.settings.sprint and &quot;sprint&quot;) or (mmp.settings.runaway and &quot;runaway&quot;) or dashtype)
+  end
+
+  mmp.fixSpecialExits(mmp.speedWalkDir)
+
+  if #mmp.speedWalkPath == 0 then
+    mmp.autowalking = false
+    mmp.echo(&quot;Couldn't find a path to the destination :(&quot;)
+    raiseEvent(&quot;mmapper failed path&quot;)
+    return
+  end
+
+
+  -- this is a fix: convert nums to actual numbers
+  for i = 1, #mmp.speedWalkPath do
+    mmp.speedWalkPath[i] = tonumber(mmp.speedWalkPath[i])
+  end
+
+  mmp.autowalking = true
+	raiseEvent(&quot;started speedwalk&quot;)
+  raiseEvent(&quot;s&quot;)
+
+
+  if not mmp.paused then
+    mmp.echon(&quot;Starting speedwalk from &quot;..(atcp.RoomNum or gmcp.Room.Info.num)..&quot; to &quot;) echoLink(mmp.speedWalkPath[#mmp.speedWalkPath], 'mmp.gotoRoom &quot;' .. mmp.speedWalkPath[#mmp.speedWalkPath].. '&quot;', 'Go to ' .. mmp.speedWalkPath[#mmp.speedWalkPath]) echo(&quot;: &quot;)
+    speedWalkCounter = 1
+    if mmp.canmove() then mmp.move() else echo(&quot;(when we get balance back / aren't hindered)&quot;) end
+  else
+    mmp.echo(&quot;Will go to &quot;..mmp.speedWalkPath[#mmp.speedWalkPath]..&quot; as soon as the mapper is unpaused.&quot;)
+  end
+end
+
+function mmp.failpath()
+  if mmp.movetimer then
+    local walktime = stopStopWatch(speedWalkWatch)
+    mmp.echo(string.format(&quot;Can't continue further! Took us %.1fs to get here.\n&quot;, walktime))
+  end
+
+  mmp.autowalking = false
+
+
+  mmp.speedWalkPath = {}
+  mmp.speedWalkDir = {}
+  speedWalkCounter = 0
+  if mmp.movetimer then killTimer( mmp.movetimer ); mmp.movetimer = nil end
+  raiseEvent(&quot;mmapper failed path&quot;)
+end
+
+function mmp.changeBoolFunc(name, option)
+  local en
+  if option then en = &quot;will now use&quot; else en = &quot;will no longer use&quot; end
+  mmp.echo(&quot;&lt;green&gt;Okay, the mapper &quot; .. en .. &quot; &lt;white&gt;&quot; .. name .. &quot;&lt;green&gt;!&quot;)
+end
+
+function mmp.fixPath(rFrom,rTo,dashtype)
+  local currentPath, currentIds = {}, {}
+  local dRef = {[&quot;n&quot;] = &quot;north&quot;, [&quot;e&quot;] = &quot;east&quot;, [&quot;s&quot;] = &quot;south&quot;, [&quot;w&quot;] = &quot;west&quot;}
+  if not getPath(rFrom,rTo) then return false end
+
+  -- Logic: Look for a direction repeated at least two times.
+  -- count the number of times it repeats, then look that many rooms ahead.
+  -- if that room also contains the direction we're headed, just travel that many directions.
+  -- otherwise, dash.
+
+  local repCount = 1
+  local index = 1
+  local dashExaust = false
+  while mmp.speedWalkDir[index] do
+    dashExaust = false
+    repCount = 1
+    while mmp.speedWalkDir[index+repCount] == mmp.speedWalkDir[index] do
+      repCount = repCount + 1
+      if repCount == 11 then
+        dashExaust = true
+        break
+      end
+    end
+    if repCount &gt; 1 then
+      -- Found direction repitition. Calculate dash path.
+      local exits = getRoomExits(mmp.speedWalkPath[index+(repCount-1)])
+      local pname = &quot;&quot;
+      for word in mmp.speedWalkDir[index]:gmatch(&quot;%w&quot;) do pname = pname .. (dRef[word] or word) end
+      if not exits[pname] or dashExaust then
+        -- Final room in this direction does not continue, dash!
+        table.insert(currentPath,string.format(&quot;%s %s&quot;,dashtype,mmp.speedWalkDir[index]))
+        currentIds[#currentIds+1] = mmp.speedWalkPath[index+repCount-1]
+      else
+        -- Final room in this direction continues onwards, don't dash unless on achaea
+        if mmp.game == &quot;achaea&quot; then
+          table.insert(currentPath,string.format(&quot;%s %s %s&quot;,dashtype,mmp.speedWalkDir[index],repCount))
+          currentIds[#currentIds+1] = mmp.speedWalkPath[index+repCount-1]
+        else
+          for i = 1,repCount do
+            table.insert(currentPath,mmp.speedWalkDir[index])
+            currentIds[#currentIds+1] = mmp.speedWalkPath[index+i-1]
+          end
+        end
+      end
+      index = index + repCount
+    else
+      -- No repetition, just add the direction.
+      table.insert(currentPath,mmp.speedWalkDir[index])
+      currentIds[#currentIds+1] = mmp.speedWalkPath[index]
+      index = index + 1
+    end
+  end
+
+  mmp.speedWalkDir = currentPath
+  mmp.speedWalkPath = currentIds
+  return true
+end
+
+-- a certain version of the mapper gave us special exits prepended with 0 or 1 in the command
+-- depending on if it was locked. Need to remove these before we can use them
+function mmp.fixSpecialExits(directions)
+  for i = 1, #directions do
+    if directions[i]:match(&quot;^%d&quot;) then directions[i] = directions[i]:sub(2) end
+  end
+end
+
+-- cleanup function to remove the temp special exit we made - only way to remove specials in Mudlet atm is by clearing them all
+function mmp.clearspecials(ignorerooms)
+  local t = getSpecialExits(mmp.currentroom)
+  clearSpecialExits(mmp.currentroom)
+
+  for connectingroom, exits in pairs(t) do
+    if not table.contains(ignorerooms,connectingroom) then -- don't re-add this one back as it's our temp
+      for command, locked in pairs(exits) do
+        --debug echo: mmp.echo(&quot;need to re-link this room to &quot;..connectingroom..&quot; with &quot;..command..&quot; that is &quot;..(locked == &quot;1&quot; and &quot;locked&quot; or &quot;unlocked&quot;)..&quot;.&quot;)
+        addSpecialExit(mmp.currentroom, connectingroom, command)
+        if locked == &quot;1&quot; then lockSpecialExit(mmp.currentroom, connectingroom, command, true) end
+      end
+    end
+  end
 end</script>
                 <eventHandlerList>
                     <string>RoomNum</string>
