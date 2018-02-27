@@ -8279,7 +8279,7 @@ end</script>
                     <Script isActive="yes" isFolder="no">
                         <name>register_achaeas_envdata</name>
                         <packageName></packageName>
-                        <script>function register_achaeas_envdata(game)
+                        <script>function register_achaeas_envdata(_, game)
   if game ~= &quot;Achaea&quot; then return end
 
   mmp.envids =
@@ -8476,16 +8476,16 @@ if not alreadyRun then mmp.updateIsles() end</script>
                     <Script isActive="yes" isFolder="no">
                         <name>Shackle handling</name>
                         <packageName></packageName>
-                        <script>local shackle = shackle or {density = false}
+                        <script>local shackle = {density = false}
 --Wear shackle function
 
-function mmpWearShackle()
+function mmp.WearShackle()
   if mmp.settings.shackle and shackle.density then
     send(&quot;wear shackle&quot;)
   end
 end
 
-function mmpUnwearShackle()
+function mmp.UnwearShackle()
   if mmp.settings.shackle and mmp.defs.current.density then
     shackle.density = true
     send(&quot;remove shackle&quot;)
@@ -8495,10 +8495,10 @@ function mmpUnwearShackle()
 end
 
 --Event Handlers
-registerAnonymousEventHandler(&quot;mmapper failed path&quot;, &quot;mmpWearShackle&quot;)
-registerAnonymousEventHandler(&quot;mmapper stopped&quot;, &quot;mmpWearShackle&quot;)
-registerAnonymousEventHandler(&quot;mmapper arrived&quot;, &quot;mmpWearShackle&quot;)
-registerAnonymousEventHandler(&quot;started speedwalk&quot;, &quot;mmpUnwearShackle&quot;)</script>
+registerAnonymousEventHandler(&quot;mmapper failed path&quot;, &quot;mmp.WearShackle&quot;)
+registerAnonymousEventHandler(&quot;mmapper stopped&quot;, &quot;mmp.WearShackle&quot;)
+registerAnonymousEventHandler(&quot;mmapper arrived&quot;, &quot;mmp.WearShackle&quot;)
+registerAnonymousEventHandler(&quot;started speedwalk&quot;, &quot;mmp.UnwearShackle&quot;)</script>
                         <eventHandlerList/>
                     </Script>
                 </Script>
