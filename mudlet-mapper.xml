@@ -8471,21 +8471,21 @@ if not alreadyRun then mmp.updateIsles() end</script>
                     <Script isActive="yes" isFolder="no">
                         <name>Shackle handling</name>
                         <packageName></packageName>
-                        <script>local shackle = {density = false}
+                        <script>local density = false
 --Wear shackle function
 
 function mmp.WearShackle()
-  if mmp.settings.shackle and shackle.density then
+  if mmp.settings.shackle and density then
     send(&quot;wear shackle&quot;)
   end
 end
 
 function mmp.UnwearShackle()
   if mmp.settings.shackle and mmp.defs.current.density then
-    shackle.density = true
+    density = true
     send(&quot;remove shackle&quot;)
   elseif not mmp.defs.current.density then
-    shackle.density = false
+    density = false
   end
 end
 
