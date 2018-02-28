@@ -7918,6 +7918,54 @@ end</script>
 end</script>
                     <eventHandlerList/>
                 </Script>
+                <Script isActive="yes" isFolder="no">
+                    <name>Defense tracking</name>
+                    <packageName></packageName>
+                    <script>mmp.defs = {current = {}}
+mmp.defs.add =
+  function()
+    local def = gmcp.Char.Defences.Add.name
+    if not mmp.defs.current[def] then
+      mmp.defs.current[def] = true
+      raiseEvent(&quot;mmp got def&quot;, def)
+    end
+  end
+mmp.defs.remove =
+  function()
+    for _, def in ipairs(gmcp.Char.Defences.Remove) do
+      mmp.defs.current[def] = nil
+      raiseEvent(&quot;mmp lost def&quot;, def)
+    end
+  end
+mmp.defs.list =
+  function()
+    local newDefs = {}
+    local addedDefs, lostDefs = {}, {}
+    for _, v in ipairs(gmcp.Char.Defences.List) do
+      newDefs[v.name] = true
+      if not mmp.defs.current[v.name] then
+        addedDefs[#addedDefs + 1] = v.name
+      end
+    end
+    for def in pairs(mmp.defs.current) do
+      if not newDefs[def] then
+        lostDefs[#lostDefs + 1] = def
+      end
+    end
+    mmp.defs.current = newDefs
+    for _, def in pairs(lostDefs) do
+      raiseEvent(&quot;mmp lost def&quot;, def)
+    end
+    for _, def in ipairs(addedDefs) do
+      raiseEvent(&quot;mmp got def&quot;, def)
+    end
+  end
+-- EVENT HANDLERS
+registerAnonymousEventHandler(&quot;gmcp.Char.Defences.Add&quot;, &quot;mmp.defs.add&quot;)
+registerAnonymousEventHandler(&quot;gmcp.Char.Defences.Remove&quot;, &quot;mmp.defs.remove&quot;)
+registerAnonymousEventHandler(&quot;gmcp.Char.Defences.List&quot;, &quot;mmp.defs.list&quot;)</script>
+                    <eventHandlerList/>
+                </Script>
             </Script>
             <Script isActive="yes" isFolder="no">
                 <name>Person tracking</name>
@@ -8628,6 +8676,34 @@ if not alreadyRun then mmp.updateIsles() end</script>
                             <string>mmapper went outside</string>
                             <string>mmapper changed continent</string>
                         </eventHandlerList>
+                    </Script>
+                    <Script isActive="yes" isFolder="no">
+                        <name>Shackle handling</name>
+                        <packageName></packageName>
+                        <script>local density = false
+--Wear shackle function
+
+function mmp.WearShackle()
+  if mmp.settings.shackle and density then
+    send(&quot;wear shackle&quot;)
+  end
+end
+
+function mmp.UnwearShackle()
+  if mmp.settings.shackle and mmp.defs.current.density then
+    density = true
+    send(&quot;remove shackle&quot;)
+  elseif not mmp.defs.current.density then
+    density = false
+  end
+end
+
+--Event Handlers
+registerAnonymousEventHandler(&quot;mmapper failed path&quot;, &quot;mmp.WearShackle&quot;)
+registerAnonymousEventHandler(&quot;mmapper stopped&quot;, &quot;mmp.WearShackle&quot;)
+registerAnonymousEventHandler(&quot;mmapper arrived&quot;, &quot;mmp.WearShackle&quot;)
+registerAnonymousEventHandler(&quot;started speedwalk&quot;, &quot;mmp.UnwearShackle&quot;)</script>
+                        <eventHandlerList/>
                     </Script>
                 </Script>
                 <Script isActive="yes" isFolder="no">
