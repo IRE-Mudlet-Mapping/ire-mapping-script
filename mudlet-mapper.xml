@@ -5024,7 +5024,6 @@ registerAnonymousEventHandler(&quot;mmp logged in&quot;,&quot;mmp.rebuildOptions
     mmp.speedWalkDir = {}
     speedWalkCounter = 0
     raiseEvent(&quot;mmapper failed path&quot;)
-    if mmp.settings.shackle then expandAlias(&quot;wear shackle&quot;) end
     -- allow mapper 'addons' to unlink their special exits
     raiseEvent(&quot;mmp clear externals&quot;)
     return
@@ -5323,7 +5322,6 @@ function mmp.stop()
 
   mmp.echo(&quot;Stopped walking.&quot;)
   raiseEvent(&quot;mmapper stopped&quot;)
-  if mmp.settings.shackle then expandAlias(&quot;wear shackle&quot;) end
 end
 
 -- Aetolia and Lusternia support showing balances in GMCP. This is easy to support, so we do!
@@ -5406,7 +5404,6 @@ function speedwalking( event, num )
     local walktime = stopStopWatch(speedWalkWatch)
     mmp.echo(string.format(&quot;We've arrived! Took us %.1fs.\n&quot;, walktime))
     raiseEvent(&quot;mmapper arrived&quot;)
-    if mmp.settings.shackle then expandAlias(&quot;wear shackle&quot;) end
     mmp.speedWalkPath = {}
     mmp.speedWalkDir = {}
     speedWalkCounter = 0
@@ -5446,7 +5443,6 @@ function doSpeedWalk(dashtype)
     mmp.autowalking = false
     mmp.echo(&quot;Couldn't find a path to the destination :(&quot;)
     raiseEvent(&quot;mmapper failed path&quot;)
-    if mmp.settings.shackle then expandAlias(&quot;wear shackle&quot;) end
     return
   end
 
@@ -5457,9 +5453,10 @@ function doSpeedWalk(dashtype)
   end
 
   mmp.autowalking = true
+	raiseEvent(&quot;started speedwalk&quot;)
   raiseEvent(&quot;s&quot;)
 
-  if mmp.settings.shackle then expandAlias(&quot;remove shackle&quot;) end
+
   if not mmp.paused then
     mmp.echon(&quot;Starting speedwalk from &quot;..(atcp.RoomNum or gmcp.Room.Info.num)..&quot; to &quot;) echoLink(mmp.speedWalkPath[#mmp.speedWalkPath], 'mmp.gotoRoom &quot;' .. mmp.speedWalkPath[#mmp.speedWalkPath].. '&quot;', 'Go to ' .. mmp.speedWalkPath[#mmp.speedWalkPath]) echo(&quot;: &quot;)
     speedWalkCounter = 1
@@ -5477,7 +5474,7 @@ function mmp.failpath()
 
   mmp.autowalking = false
 
-  if mmp.settings.shackle then expandAlias(&quot;wear shackle&quot;) end
+
   mmp.speedWalkPath = {}
   mmp.speedWalkDir = {}
   speedWalkCounter = 0
@@ -7827,6 +7824,54 @@ end</script>
 end</script>
                     <eventHandlerList/>
                 </Script>
+                <Script isActive="yes" isFolder="no">
+                    <name>Defense tracking</name>
+                    <packageName></packageName>
+                    <script>mmp.defs = {current = {}}
+mmp.defs.add =
+  function()
+    local def = gmcp.Char.Defences.Add.name
+    if not mmp.defs.current[def] then
+      mmp.defs.current[def] = true
+      raiseEvent(&quot;mmp got def&quot;, def)
+    end
+  end
+mmp.defs.remove =
+  function()
+    for _, def in ipairs(gmcp.Char.Defences.Remove) do
+      mmp.defs.current[def] = nil
+      raiseEvent(&quot;mmp lost def&quot;, def)
+    end
+  end
+mmp.defs.list =
+  function()
+    local newDefs = {}
+    local addedDefs, lostDefs = {}, {}
+    for _, v in ipairs(gmcp.Char.Defences.List) do
+      newDefs[v.name] = true
+      if not mmp.defs.current[v.name] then
+        addedDefs[#addedDefs + 1] = v.name
+      end
+    end
+    for def in pairs(mmp.defs.current) do
+      if not newDefs[def] then
+        lostDefs[#lostDefs + 1] = def
+      end
+    end
+    mmp.defs.current = newDefs
+    for _, def in pairs(lostDefs) do
+      raiseEvent(&quot;mmp lost def&quot;, def)
+    end
+    for _, def in ipairs(addedDefs) do
+      raiseEvent(&quot;mmp got def&quot;, def)
+    end
+  end
+-- EVENT HANDLERS
+registerAnonymousEventHandler(&quot;gmcp.Char.Defences.Add&quot;, &quot;mmp.defs.add&quot;)
+registerAnonymousEventHandler(&quot;gmcp.Char.Defences.Remove&quot;, &quot;mmp.defs.remove&quot;)
+registerAnonymousEventHandler(&quot;gmcp.Char.Defences.List&quot;, &quot;mmp.defs.list&quot;)</script>
+                    <eventHandlerList/>
+                </Script>
             </Script>
             <Script isActive="yes" isFolder="no">
                 <name>Person tracking</name>
@@ -8422,6 +8467,34 @@ if not alreadyRun then mmp.updateIsles() end</script>
                             <string>mmapper went outside</string>
                             <string>mmapper changed continent</string>
                         </eventHandlerList>
+                    </Script>
+                    <Script isActive="yes" isFolder="no">
+                        <name>Shackle handling</name>
+                        <packageName></packageName>
+                        <script>local density = false
+--Wear shackle function
+
+function mmp.WearShackle()
+  if mmp.settings.shackle and density then
+    send(&quot;wear shackle&quot;)
+  end
+end
+
+function mmp.UnwearShackle()
+  if mmp.settings.shackle and mmp.defs.current.density then
+    density = true
+    send(&quot;remove shackle&quot;)
+  elseif not mmp.defs.current.density then
+    density = false
+  end
+end
+
+--Event Handlers
+registerAnonymousEventHandler(&quot;mmapper failed path&quot;, &quot;mmp.WearShackle&quot;)
+registerAnonymousEventHandler(&quot;mmapper stopped&quot;, &quot;mmp.WearShackle&quot;)
+registerAnonymousEventHandler(&quot;mmapper arrived&quot;, &quot;mmp.WearShackle&quot;)
+registerAnonymousEventHandler(&quot;started speedwalk&quot;, &quot;mmp.UnwearShackle&quot;)</script>
+                        <eventHandlerList/>
                     </Script>
                 </Script>
                 <Script isActive="yes" isFolder="no">
