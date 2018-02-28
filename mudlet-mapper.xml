@@ -450,7 +450,7 @@ mmp.echo(&quot;We're connected to Achaea.&quot;)</script>
                         <integer>2</integer>
                     </regexCodePropertyList>
                     <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
-                        <name>Local and veil farsee</name>
+                        <name>Local farsee</name>
                         <script>mmp.locateAndEcho(matches[3], matches[2])</script>
                         <triggerType>0</triggerType>
                         <conditonLineDelta>0</conditonLineDelta>
@@ -464,10 +464,28 @@ mmp.echo(&quot;We're connected to Achaea.&quot;)</script>
                         <colorTriggerBgColor>#000000</colorTriggerBgColor>
                         <regexCodeList>
                             <string>^You see that (\w+) is at (.+)\.$</string>
-                            <string>^You see that (\w+) is located at (.+) in .+\.$</string>
                         </regexCodeList>
                         <regexCodePropertyList>
                             <integer>1</integer>
+                        </regexCodePropertyList>
+                    </Trigger>
+                    <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+                        <name>Veil farsee</name>
+                        <script>mmp.locateAndEcho(matches[3], matches[2], matches[4])</script>
+                        <triggerType>0</triggerType>
+                        <conditonLineDelta>0</conditonLineDelta>
+                        <mStayOpen>0</mStayOpen>
+                        <mCommand></mCommand>
+                        <packageName></packageName>
+                        <mFgColor>#ff0000</mFgColor>
+                        <mBgColor>#ffff00</mBgColor>
+                        <mSoundFile></mSoundFile>
+                        <colorTriggerFgColor>#000000</colorTriggerFgColor>
+                        <colorTriggerBgColor>#000000</colorTriggerBgColor>
+                        <regexCodeList>
+                            <string>^You see that (\w+) is located at (.+) in (.+)\.$</string>
+                        </regexCodeList>
+                        <regexCodePropertyList>
                             <integer>1</integer>
                         </regexCodePropertyList>
                     </Trigger>
@@ -670,7 +688,7 @@ raiseEvent(&quot;mmapper updated pdb&quot;)</script>
                 </Trigger>
                 <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="yes" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
                     <name>Dragonsense</name>
-                    <script>mmp.locateAndEchoSide(multimatches[2][3], multimatches[2][2])</script>
+                    <script>mmp.locateAndEcho(multimatches[2][3], multimatches[2][2], multimatches[2][4])</script>
                     <triggerType>0</triggerType>
                     <conditonLineDelta>1</conditonLineDelta>
                     <mStayOpen>0</mStayOpen>
@@ -683,7 +701,7 @@ raiseEvent(&quot;mmapper updated pdb&quot;)</script>
                     <colorTriggerBgColor>#000000</colorTriggerBgColor>
                     <regexCodeList>
                         <string>Tapping into the unfathomable depths of your power, you sense that</string>
-                        <string>Tapping into the unfathomable depths of your power, you sense that (\w+) is at (.+?), in (.+)\.$</string>
+                        <string>Tapping into the unfathomable depths of your power, you sense that (\w+) is at (.+), in (.+)\.$</string>
                     </regexCodeList>
                     <regexCodePropertyList>
                         <integer>2</integer>
@@ -931,7 +949,7 @@ enableTrigger(&quot;Angel sense&quot;)</script>
                 </Trigger>
                 <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="yes" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
                     <name>Scrying bowl</name>
-                    <script>mmp.locateAndEcho(multimatches[3][2], multimatches[2][2])</script>
+                    <script>mmp.locateAndEcho(multimatches[3][3], multimatches[2][2], multimatches[3][2])</script>
                     <triggerType>0</triggerType>
                     <conditonLineDelta>1</conditonLineDelta>
                     <mStayOpen>0</mStayOpen>
@@ -945,7 +963,7 @@ enableTrigger(&quot;Angel sense&quot;)</script>
                     <regexCodeList>
                         <string>You dip your fingers into the cool water of the bowl, willing it to reveal the location of</string>
                         <string>^You dip your fingers into the cool water of the bowl, willing it to reveal the location of (\w+)\.$</string>
-                        <string>^An image of .+? appears reflected within the bowl, shifting with the rippling water to display (.+)\.$</string>
+                        <string>^An image of (.+) appears reflected within the bowl, shifting with the rippling water to display (.+)\.$</string>
                     </regexCodeList>
                     <regexCodePropertyList>
                         <integer>2</integer>
@@ -1034,7 +1052,7 @@ enableTrigger(&quot;Angel sense&quot;)</script>
                     </regexCodePropertyList>
                     <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
                         <name>regex (party locate)</name>
-                        <script>mmp.locateAndEcho(matches[3], matches[2])</script>
+                        <script>mmp.locateAndEcho(matches[3], matches[2], matches[4])</script>
                         <triggerType>0</triggerType>
                         <conditonLineDelta>0</conditonLineDelta>
                         <mStayOpen>0</mStayOpen>
@@ -1047,11 +1065,11 @@ enableTrigger(&quot;Angel sense&quot;)</script>
                         <colorTriggerBgColor>#000000</colorTriggerBgColor>
                         <regexCodeList>
                             <string>^\(Party\): \w+ says, &quot;(\w+) moved to (.+)\.&quot;$</string>
-                            <string>^\(Party\): \w+ says, &quot;(\w+) is at (.+), in .+\.&quot;</string>
+                            <string>^\(Party\): \w+ says, &quot;(\w+) is at (.+), in (.+)\.&quot;</string>
                             <string>^\(Party\): \w+ says, &quot;Trace: (\w+) moved to (.+)\.&quot;</string>
-                            <string>^\(Party\): \w+ says, &quot;(\w+) - (.+), in .+\.&quot;$</string>
+                            <string>^\(Party\): \w+ says, &quot;(\w+) - (.+), in (.+)\.&quot;$</string>
                             <string>^\(Party\): \w+ says, &quot;(\w+) is at (.+) \(.+\)\.&quot;</string>
-                            <string>^\(Party\): \w+ says, &quot;Trace: (\w+) entered (.+) in .+\.&quot;</string>
+                            <string>^\(Party\): \w+ says, &quot;Trace: (\w+) entered (.+) in (.+)\.&quot;</string>
                             <string>^\(Party\): \w+ says, &quot;Trace: (\w+) entered (.+)\.&quot;</string>
                         </regexCodeList>
                         <regexCodePropertyList>
@@ -5024,6 +5042,7 @@ registerAnonymousEventHandler(&quot;mmp logged in&quot;,&quot;mmp.rebuildOptions
     mmp.speedWalkDir = {}
     speedWalkCounter = 0
     raiseEvent(&quot;mmapper failed path&quot;)
+    if mmp.settings.shackle then expandAlias(&quot;wear shackle&quot;) end
     -- allow mapper 'addons' to unlink their special exits
     raiseEvent(&quot;mmp clear externals&quot;)
     return
@@ -5322,6 +5341,7 @@ function mmp.stop()
 
   mmp.echo(&quot;Stopped walking.&quot;)
   raiseEvent(&quot;mmapper stopped&quot;)
+  if mmp.settings.shackle then expandAlias(&quot;wear shackle&quot;) end
 end
 
 -- Aetolia and Lusternia support showing balances in GMCP. This is easy to support, so we do!
@@ -5404,6 +5424,7 @@ function speedwalking( event, num )
     local walktime = stopStopWatch(speedWalkWatch)
     mmp.echo(string.format(&quot;We've arrived! Took us %.1fs.\n&quot;, walktime))
     raiseEvent(&quot;mmapper arrived&quot;)
+    if mmp.settings.shackle then expandAlias(&quot;wear shackle&quot;) end
     mmp.speedWalkPath = {}
     mmp.speedWalkDir = {}
     speedWalkCounter = 0
@@ -5443,6 +5464,7 @@ function doSpeedWalk(dashtype)
     mmp.autowalking = false
     mmp.echo(&quot;Couldn't find a path to the destination :(&quot;)
     raiseEvent(&quot;mmapper failed path&quot;)
+    if mmp.settings.shackle then expandAlias(&quot;wear shackle&quot;) end
     return
   end
 
@@ -5453,10 +5475,9 @@ function doSpeedWalk(dashtype)
   end
 
   mmp.autowalking = true
-	raiseEvent(&quot;started speedwalk&quot;)
   raiseEvent(&quot;s&quot;)
 
-
+  if mmp.settings.shackle then expandAlias(&quot;remove shackle&quot;) end
   if not mmp.paused then
     mmp.echon(&quot;Starting speedwalk from &quot;..(atcp.RoomNum or gmcp.Room.Info.num)..&quot; to &quot;) echoLink(mmp.speedWalkPath[#mmp.speedWalkPath], 'mmp.gotoRoom &quot;' .. mmp.speedWalkPath[#mmp.speedWalkPath].. '&quot;', 'Go to ' .. mmp.speedWalkPath[#mmp.speedWalkPath]) echo(&quot;: &quot;)
     speedWalkCounter = 1
@@ -5474,7 +5495,7 @@ function mmp.failpath()
 
   mmp.autowalking = false
 
-
+  if mmp.settings.shackle then expandAlias(&quot;wear shackle&quot;) end
   mmp.speedWalkPath = {}
   mmp.speedWalkDir = {}
   speedWalkCounter = 0
@@ -5986,189 +6007,262 @@ end</script>
                 <Script isActive="yes" isFolder="no">
                     <name>Locating &amp; echoing functions</name>
                     <packageName></packageName>
-                    <script>-- for a given room name, we'll echo all the vnums
-function mmp.echonums(roomname)
-  local t = mmp.searchRoomExact(roomname)
-
-  if not next(t) then
-    echo &quot;?&quot; return nil end
-
-  -- transform the kv table into a table of tables for cleaner code.
-    -- + perhaps Mudlet in future will give this us anyway, sorted by relevancy
-  local dt = {}
-  for roomid,room in pairs(t) do
-    dt[#dt+1] = {name = room, id = roomid}
+                    <script>local function filterRooms(rooms, area)
+  local unassignedRooms = {}
+  local areaRooms = {}
+  for roomnum, roomname in pairs(rooms) do
+    local roomarea = getRoomUserData(roomnum, &quot;Game Area&quot;)
+    if roomarea == &quot;&quot; then
+      unassignedRooms[roomnum] = roomname
+    elseif roomarea == area then
+      areaRooms[roomnum] = roomname
+    end
   end
+  return next(areaRooms) and areaRooms or unassignedRooms
+end
 
+-- for a given room name, we'll echo all the vnums
+
+function mmp.echonums(roomname, area)
+  local t = mmp.searchRoomExact(roomname)
+  if area then
+    t = filterRooms(t, area)
+  end
+  if not next(t) then
+    echo(&quot;?&quot;)
+    return nil
+  end
+  -- transform the kv table into a table of tables for cleaner code.
+  -- + perhaps Mudlet in future will give this us anyway, sorted by relevancy
+  local dt = {}
+  for roomid, room in pairs(t) do
+    dt[#dt + 1] = {name = room, id = roomid}
+  end
   -- we can have nothing if we asked for exact match
-  if not dt[1] then echo &quot;?---&quot; return end
-
+  if not dt[1] then
+    echo(&quot;?---&quot;)
+    return
+  end
   -- display first three ids. Can't really nicely table.concat them.
-  cechoLink(&quot;&lt;&quot;..mmp.settings.echocolour..&quot;&gt;&quot;..dt[1].id, 'mmp.gotoRoom('..dt[1].id..')', string.format(&quot;Go to %s (%s)&quot;, dt[1].id, dt[1].name), true)
-  if not dt[2] then return end
-
-  echo&quot;, &quot;
-  cechoLink(&quot;&lt;&quot;..mmp.settings.echocolour..&quot;&gt;&quot;..dt[2].id, 'mmp.gotoRoom('..dt[2].id..')', string.format(&quot;Go to %s (%s)&quot;, dt[2].id, dt[2].name), true)
-  if not dt[3] then return end
-
-  echo&quot;, &quot;
-  cechoLink(&quot;&lt;&quot;..mmp.settings.echocolour..&quot;&gt;&quot;..dt[3].id, 'mmp.gotoRoom('..dt[3].id..')', string.format(&quot;Go to %s (%s)&quot;, dt[3].id, dt[3].name), true)
-  if not dt[4] then return end
-
-  echo&quot;, ...&quot;
+  cechoLink(
+    &quot;&lt;&quot; .. mmp.settings.echocolour .. &quot;&gt;&quot; .. dt[1].id,
+    'mmp.gotoRoom(' .. dt[1].id .. ')',
+    string.format(&quot;Go to %s (%s)&quot;, dt[1].id, dt[1].name),
+    true
+  )
+  if not dt[2] then
+    return
+  end
+  echo(&quot;, &quot;)
+  cechoLink(
+    &quot;&lt;&quot; .. mmp.settings.echocolour .. &quot;&gt;&quot; .. dt[2].id,
+    'mmp.gotoRoom(' .. dt[2].id .. ')',
+    string.format(&quot;Go to %s (%s)&quot;, dt[2].id, dt[2].name),
+    true
+  )
+  if not dt[3] then
+    return
+  end
+  echo(&quot;, &quot;)
+  cechoLink(
+    &quot;&lt;&quot; .. mmp.settings.echocolour .. &quot;&gt;&quot; .. dt[3].id,
+    'mmp.gotoRoom(' .. dt[3].id .. ')',
+    string.format(&quot;Go to %s (%s)&quot;, dt[3].id, dt[3].name),
+    true
+  )
+  if not dt[4] then
+    return
+  end
+  echo(&quot;, ...&quot;)
 end
 
 function mmp.roomEcho(query)
   local result = mmp.searchRoom(query)
-
   if not tonumber(select(2, next(result))) then
-    for roomid, roomname in pairs(result) do roomid = tonumber(roomid)
+    for roomid, roomname in pairs(result) do
+      roomid = tonumber(roomid)
       cecho(&quot;&lt;DarkSlateGrey&gt; (&quot;)
-      cechoLink(&quot;&lt;&quot;..mmp.settings.echocolour..&quot;&gt;&quot;..roomid, 'mmp.gotoRoom('..roomid..')', string.format(&quot;Go to %s (%s)&quot;, roomid, tostring(roomname)),true)
+      cechoLink(
+        &quot;&lt;&quot; .. mmp.settings.echocolour .. &quot;&gt;&quot; .. roomid,
+        'mmp.gotoRoom(' .. roomid .. ')',
+        string.format(&quot;Go to %s (%s)&quot;, roomid, tostring(roomname)),
+        true
+      )
       cecho(&quot;&lt;DarkSlateGrey&gt;)&quot;)
     end
-
   else
-    for roomname, roomid in pairs(result) do roomid = tonumber(roomid)
+    for roomname, roomid in pairs(result) do
+      roomid = tonumber(roomid)
       cecho(&quot;&lt;DarkSlateGrey&gt; (&quot;)
-      cechoLink(&quot;&lt;&quot;..mmp.settings.echocolour..&quot;&gt;&quot;..roomid, 'mmp.gotoRoom('..roomid..')', string.format(&quot;Go to %s (%s)&quot;, roomid, tostring(roomname)),true)
+      cechoLink(
+        &quot;&lt;&quot; .. mmp.settings.echocolour .. &quot;&gt;&quot; .. roomid,
+        'mmp.gotoRoom(' .. roomid .. ')',
+        string.format(&quot;Go to %s (%s)&quot;, roomid, tostring(roomname)),
+        true
+      )
       cecho(&quot;&lt;DarkSlateGrey&gt;)&quot;)
     end
   end
 end
 
-function mmp.locateAndEcho(room, person)
-    local t = mmp.searchRoomExact(room)
-
-    echo &quot;  (&quot;
-    mmp.echonums(room, true)
-    echo &quot;)&quot;
-
-	-- lowercase results
-	for k,v in pairs(t) do if tonumber(k) then t[k] = v:lower() else t[k:lower()] = v end end
-
-    if not (t[room:lower()] or table.contains(t, room:lower())) then return end
-
-    echo&quot;\n&quot;
-    if table.size(t) == 1 then
-      local k,v = next(t)
-      cecho(&quot;&lt;red&gt;From your knowledge, that room is in &lt;orange_red&gt;&quot;..mmp.cleanAreaName(mmp.areatabler[getRoomArea(type(k) == &quot;number&quot; and k or v)] or &quot;?&quot;)..&quot;&lt;red&gt;.&quot;)
+function mmp.locateAndEcho(room, person, area)
+  local t = mmp.searchRoomExact(room)
+  if area then
+    t = filterRooms(t, area)
+  end
+  echo(&quot;  (&quot;)
+  mmp.echonums(room, area)
+  echo(&quot;)&quot;)
+  -- lowercase results
+  for k, v in pairs(t) do
+    if tonumber(k) then
+      t[k] = v:lower()
     else
-      local k,v = next(t)
-    local areas = {}
-      if type(k) == &quot;number&quot; then
-        for k, _ in pairs(t) do
-          areas[mmp.areatabler[getRoomArea(k)] or &quot;?&quot;] = true
-        end
-      else
-        for _, k in pairs(t) do
-          areas[mmp.areatabler[getRoomArea(k)] or &quot;?&quot;] = true
-        end
-      end
-
-      local flattened_areas = {}
-      for k, _ in pairs(areas) do
-        if k ~= &quot;&quot; then flattened_areas[#flattened_areas+1] = mmp.cleanAreaName(k) end
-      end
-
-      cecho(&quot;&lt;red&gt;From your knowledge, that room might be in &lt;orange_red&gt;&quot;..table.concat(flattened_areas, &quot;, or &quot;)..&quot;&lt;red&gt;.&quot;)
+      t[k:lower()] = v
     end
-
-   if person then
-      mmp.pdb[person] = room
-      mmp.pdb_lastupdate[person] = true
-      raiseEvent(&quot;mmapper updated pdb&quot;)
-   end
+  end
+  if not (t[room:lower()] or table.contains(t, room:lower())) then
+    return
+  end
+  echo(&quot;\n&quot;)
+  if table.size(t) == 1 then
+    local k, v = next(t)
+    cecho(
+      &quot;&lt;red&gt;From your knowledge, that room is in &lt;orange_red&gt;&quot; ..
+      mmp.cleanAreaName(mmp.areatabler[getRoomArea(type(k) == &quot;number&quot; and k or v)] or &quot;?&quot;) ..
+      &quot;&lt;red&gt;.&quot;
+    )
+  else
+    local k, v = next(t)
+    local areas = {}
+    if type(k) == &quot;number&quot; then
+      for k, _ in pairs(t) do
+        areas[mmp.areatabler[getRoomArea(k)] or &quot;?&quot;] = true
+      end
+    else
+      for _, k in pairs(t) do
+        areas[mmp.areatabler[getRoomArea(k)] or &quot;?&quot;] = true
+      end
+    end
+    local flattened_areas = {}
+    for k, _ in pairs(areas) do
+      if k ~= &quot;&quot; then
+        flattened_areas[#flattened_areas + 1] = mmp.cleanAreaName(k)
+      end
+    end
+    cecho(
+      &quot;&lt;red&gt;From your knowledge, that room might be in &lt;orange_red&gt;&quot; ..
+      table.concat(flattened_areas, &quot;, or &quot;) ..
+      &quot;&lt;red&gt;.&quot;
+    )
+  end
+  if person then
+    mmp.pdb[person] = room
+    mmp.pdb_lastupdate[person] = true
+    raiseEvent(&quot;mmapper updated pdb&quot;)
+  end
 end
 
 function mmp.locateAndEchoSide(room, person)
-    local t = mmp.searchRoomExact(room)
-
-    echo &quot;  (&quot;
-    mmp.echonums(room, true)
-    echo &quot;)&quot;
-
-	-- lowercase results
-	for k,v in pairs(t) do if tonumber(k) then t[k] = v:lower() else t[k:lower()] = v end end
-
-    if not (t[room:lower()] or table.contains(t, room:lower())) then return end
-
-    --echo&quot;\n&quot;
-    if table.size(t) == 1 then
-      local k,v = next(t)
-      cecho(&quot;&lt;red&gt;  (&quot;..mmp.cleanAreaName(mmp.areatabler[getRoomArea(type(k) == &quot;number&quot; and k or v)] or &quot;?&quot;)..&quot;)&quot;)
+  local t = mmp.searchRoomExact(room)
+  echo(&quot;  (&quot;)
+  mmp.echonums(room, true)
+  echo(&quot;)&quot;)
+  -- lowercase results
+  for k, v in pairs(t) do
+    if tonumber(k) then
+      t[k] = v:lower()
     else
-      local k,v = next(t)
-    local areas = {}
-      if type(k) == &quot;number&quot; then
-        for k, _ in pairs(t) do
-          areas[mmp.areatabler[getRoomArea(k)] or &quot;?&quot;] = true
-        end
-      else
-        for _, k in pairs(t) do
-          areas[mmp.areatabler[getRoomArea(k)] or &quot;?&quot;] = true
-        end
-      end
-
-      local flattened_areas = {}
-      for k, _ in pairs(areas) do
-        if k ~= &quot;&quot; then flattened_areas[#flattened_areas+1] = mmp.cleanAreaName(k) end
-      end
-
-      cecho(&quot;&lt;red&gt; (&quot;..table.concat(flattened_areas, &quot;, &quot;)..&quot;)&quot;)
+      t[k:lower()] = v
     end
-
-   if person then
-      mmp.pdb[person] = room
-      mmp.pdb_lastupdate[person] = true
-      raiseEvent(&quot;mmapper updated pdb&quot;)
-   end
+  end
+  if not (t[room:lower()] or table.contains(t, room:lower())) then
+    return
+  end
+  --echo&quot;\n&quot;
+  if table.size(t) == 1 then
+    local k, v = next(t)
+    cecho(
+      &quot;&lt;red&gt;  (&quot; ..
+      mmp.cleanAreaName(mmp.areatabler[getRoomArea(type(k) == &quot;number&quot; and k or v)] or &quot;?&quot;) ..
+      &quot;)&quot;
+    )
+  else
+    local k, v = next(t)
+    local areas = {}
+    if type(k) == &quot;number&quot; then
+      for k, _ in pairs(t) do
+        areas[mmp.areatabler[getRoomArea(k)] or &quot;?&quot;] = true
+      end
+    else
+      for _, k in pairs(t) do
+        areas[mmp.areatabler[getRoomArea(k)] or &quot;?&quot;] = true
+      end
+    end
+    local flattened_areas = {}
+    for k, _ in pairs(areas) do
+      if k ~= &quot;&quot; then
+        flattened_areas[#flattened_areas + 1] = mmp.cleanAreaName(k)
+      end
+    end
+    cecho(&quot;&lt;red&gt; (&quot; .. table.concat(flattened_areas, &quot;, &quot;) .. &quot;)&quot;)
+  end
+  if person then
+    mmp.pdb[person] = room
+    mmp.pdb_lastupdate[person] = true
+    raiseEvent(&quot;mmapper updated pdb&quot;)
+  end
 end
 
 function mmp.locateAndEchoInternal(room, person)
-    local t = mmp.searchRoomExact(room)
-
-
-
-	-- lowercase results
-	for k,v in pairs(t) do if tonumber(k) then t[k] = v:lower() else t[k:lower()] = v end end
-
-    if not (t[room:lower()] or table.contains(t, room:lower())) then return end
-
-    --echo&quot;\n&quot;
-    if table.size(t) == 1 then
-      local k,v = next(t)
-      cecho(&quot;&lt;red&gt; in &quot;..mmp.cleanAreaName(mmp.areatabler[getRoomArea(type(k) == &quot;number&quot; and k or v)] or &quot;?&quot;)..&quot;.&quot;)
+  local t = mmp.searchRoomExact(room)
+  -- lowercase results
+  for k, v in pairs(t) do
+    if tonumber(k) then
+      t[k] = v:lower()
     else
-      local k,v = next(t)
-    local areas = {}
-      if type(k) == &quot;number&quot; then
-        for k, _ in pairs(t) do
-          areas[mmp.areatabler[getRoomArea(k)] or &quot;?&quot;] = true
-        end
-      else
-        for _, k in pairs(t) do
-          areas[mmp.areatabler[getRoomArea(k)] or &quot;?&quot;] = true
-        end
-      end
-
-      local flattened_areas = {}
-      for k, _ in pairs(areas) do
-        if k ~= &quot;&quot; then flattened_areas[#flattened_areas+1] = mmp.cleanAreaName(k) end
-      end
-
-      cecho(&quot;&lt;red&gt; in &quot;..table.concat(flattened_areas, &quot;, &quot;)..&quot;.&quot;)
+      t[k:lower()] = v
     end
-
-	echo &quot;  (&quot;
-    mmp.echonums(room, true)
-    echo &quot;)&quot;
-
-   if person then
-      mmp.pdb[person] = room
-      mmp.pdb_lastupdate[person] = true
-      raiseEvent(&quot;mmapper updated pdb&quot;)
-   end
+  end
+  if not (t[room:lower()] or table.contains(t, room:lower())) then
+    return
+  end
+  --echo&quot;\n&quot;
+  if table.size(t) == 1 then
+    local k, v = next(t)
+    cecho(
+      &quot;&lt;red&gt; in &quot; ..
+      mmp.cleanAreaName(mmp.areatabler[getRoomArea(type(k) == &quot;number&quot; and k or v)] or &quot;?&quot;) ..
+      &quot;.&quot;
+    )
+  else
+    local k, v = next(t)
+    local areas = {}
+    if type(k) == &quot;number&quot; then
+      for k, _ in pairs(t) do
+        areas[mmp.areatabler[getRoomArea(k)] or &quot;?&quot;] = true
+      end
+    else
+      for _, k in pairs(t) do
+        areas[mmp.areatabler[getRoomArea(k)] or &quot;?&quot;] = true
+      end
+    end
+    local flattened_areas = {}
+    for k, _ in pairs(areas) do
+      if k ~= &quot;&quot; then
+        flattened_areas[#flattened_areas + 1] = mmp.cleanAreaName(k)
+      end
+    end
+    cecho(&quot;&lt;red&gt; in &quot; .. table.concat(flattened_areas, &quot;, &quot;) .. &quot;.&quot;)
+  end
+  echo(&quot;  (&quot;)
+  mmp.echonums(room, true)
+  echo(&quot;)&quot;)
+  if person then
+    mmp.pdb[person] = room
+    mmp.pdb_lastupdate[person] = true
+    raiseEvent(&quot;mmapper updated pdb&quot;)
+  end
 end</script>
                     <eventHandlerList/>
                 </Script>
@@ -7989,210 +8083,325 @@ end</script>
                     <name>mmp_mapping_newroom</name>
                     <packageName></packageName>
                     <script>--mmp_mapping_newroom
-local function makeroom(oldid, newid, x,y,z)
+
+local function makeroom(oldid, newid, x, y, z)
   assert(x and y and z, &quot;makeroom: need all 3 coordinates&quot;)
   addRoom(newid)
   setRoomCoordinates(newid, x, y, z)
   setRoomArea(newid, getRoomArea(oldid))
-
-  local fgr,fgg,fgb = unpack(color_table.red)
-  local bgr,bgg,bgb = unpack(color_table.blue)
-  highlightRoom(newid, fgr,fgg,fgb,bgr,bgg,bgb, 1, 100, 100)
-
+  local fgr, fgg, fgb = unpack(color_table.red)
+  local bgr, bgg, bgb = unpack(color_table.blue)
+  highlightRoom(newid, fgr, fgg, fgb, bgr, bgg, bgb, 1, 100, 100)
   if mmp.envids[gmcp.Room.Info.environment] then
     setRoomEnv(newid, mmp.envids[gmcp.Room.Info.environment])
-  else setRoomEnv(newid, getRoomEnv(oldid)) end
-
-  return string.format(&quot;Created new room %d at %dx,%dy,%dz.&quot;, newid, x,y,z)
+  else
+    setRoomEnv(newid, getRoomEnv(oldid))
+  end
+  return string.format(&quot;Created new room %d at %dx,%dy,%dz.&quot;, newid, x, y, z)
 end
 
 -- gives the reverse shifted coordinates, ie asking for the sw exit + coords will give the coords at ne
-local function getshiftedcoords(original,ox,oy,oz)
-  local x,y,z
-  local has = table.contains
 
+local function getshiftedcoords(original, ox, oy, oz)
+  local x, y, z
+  local has = table.contains
   -- reverse the exit
   w = mmp.ranytolong(original)
-
   if has({&quot;west&quot;, &quot;left&quot;, &quot;w&quot;, &quot;l&quot;}, w) then
-    x = (x or ox) - 1; y = (y or oy); z = (z or oz)
+    x = (x or ox) - 1
+    y = (y or oy)
+    z = (z or oz)
   elseif has({&quot;east&quot;, &quot;right&quot;, &quot;e&quot;, &quot;r&quot;}, w) then
-    x = (x or ox) + 1; y = (y or oy); z = (z or oz)
+    x = (x or ox) + 1
+    y = (y or oy)
+    z = (z or oz)
   elseif has({&quot;north&quot;, &quot;top&quot;, &quot;n&quot;, &quot;t&quot;}, w) then
-    x = (x or ox); y = (y or oy) + 1; z = (z or oz)
+    x = (x or ox)
+    y = (y or oy) + 1
+    z = (z or oz)
   elseif has({&quot;south&quot;, &quot;bottom&quot;, &quot;s&quot;, &quot;b&quot;}, w) then
-    x = (x or ox); y = (y or oy) - 1; z = (z or oz)
+    x = (x or ox)
+    y = (y or oy) - 1
+    z = (z or oz)
   elseif has({&quot;northwest&quot;, &quot;topleft&quot;, &quot;nw&quot;, &quot;tl&quot;}, w) then
-    x = (x or ox) - 1; y = (y or oy) + 1; z = (z or oz)
+    x = (x or ox) - 1
+    y = (y or oy) + 1
+    z = (z or oz)
   elseif has({&quot;northeast&quot;, &quot;topright&quot;, &quot;ne&quot;, &quot;tr&quot;}, w) then
-    x = (x or ox) + 1; y = (y or oy) + 1; z = (z or oz)
+    x = (x or ox) + 1
+    y = (y or oy) + 1
+    z = (z or oz)
   elseif has({&quot;southeast&quot;, &quot;bottomright&quot;, &quot;se&quot;, &quot;br&quot;}, w) then
-    x = (x or ox) + 1; y = (y or oy) - 1; z = (z or oz)
+    x = (x or ox) + 1
+    y = (y or oy) - 1
+    z = (z or oz)
   elseif has({&quot;southwest&quot;, &quot;bottomleft&quot;, &quot;sw&quot;, &quot;bl&quot;}, w) then
-    x = (x or ox) - 1; y = (y or oy) - 1; z = (z or oz)
+    x = (x or ox) - 1
+    y = (y or oy) - 1
+    z = (z or oz)
   elseif has({&quot;up&quot;, &quot;u&quot;}, w) then
-    x = (x or ox); y = (y or oy); z = (z or oz) + 1
+    x = (x or ox)
+    y = (y or oy)
+    z = (z or oz) + 1
   elseif has({&quot;down&quot;, &quot;d&quot;}, w) then
-    x = (x or ox); y = (y or oy); z = (z or oz) - 1
+    x = (x or ox)
+    y = (y or oy)
+    z = (z or oz) - 1
   elseif has({&quot;in&quot;, &quot;i&quot;}, w) then
-    x = (x or ox); y = (y or oy); z = (z or oz) - 1
+    x = (x or ox)
+    y = (y or oy)
+    z = (z or oz) - 1
   elseif has({&quot;out&quot;, &quot;o&quot;}, w) then
-    x = (x or ox); y = (y or oy); z = (z or oz) + 1
+    x = (x or ox)
+    y = (y or oy)
+    z = (z or oz) + 1
   else
-    mmp.echo(&quot;Don't know where to shift the coordinates for a &quot;..tostring(w)..&quot; (&quot;..tostring(original)..&quot;) exit.&quot;)
+    mmp.echo(
+      &quot;Don't know where to shift the coordinates for a &quot; ..
+      tostring(w) ..
+      &quot; (&quot; ..
+      tostring(original) ..
+      &quot;) exit.&quot;
+    )
   end
-
-  return x,y,z
+  return x, y, z
 end
 
 function mmp_mapping_newroom(_, num)
-local s,m = xpcall(function ()
-  if not mmp.editing then return end
-  if not gmcp.Room then
-    mmp.echo(&quot;You need to have GMCP turned on (see preferences on a recent Mudlet) for mapping stuff.&quot;)
-    return
-  end
-
-  -- wilderness mapping right now is UNFINISHED! It does not handle the grid breakup. So, please don't try it, and please won't whine about it.
-  local function inwilderness()
-    return (gmcp.Room.Info.coords == &quot;&quot; and gmcp.Room.Info.area == &quot;&quot;)
-  end
-
-  local getRoomName, getRoomCoordinates, getRoomsByPosition = getRoomName, getRoomCoordinates, getRoomsByPosition
-
-  local num = tonumber(num) or tonumber(gmcp.Room.Info.num)
-  local currentexits = gmcp.Room.Info.exits
-  local s = &quot;&quot;
-
-  if not mmp.roomexists(num) then
-    -- see if we can create and link this room with an existing one
-    -- wilderness and non-wilderness rooms require different methods of calculating relative coordinates
-    if not inwilderness() then
-      for exit, id in pairs(currentexits) do
-        if mmp.roomexists(id) then
-          s = makeroom(id, num, getshiftedcoords(exit, getRoomCoordinates(id)))
+  local s, m =
+    xpcall(
+      function()
+        if not mmp.editing then
+          return
         end
-      end
-    else
-      local x,y = tostring(num):match(&quot;.-(%d%d%d)(%d%d%d)$&quot;)
-      -- Achaea's coordinates seem to be in the 4th quadrant, while Mudlets 0,0 is in the middle of the map. Invert y so going north-south looks alright
-      s = makeroom(mmp.previousroom, num, x,y*-1,0)
-    end
-  end
+        if not gmcp.Room then
+          mmp.echo(
+            &quot;You need to have GMCP turned on (see preferences on a recent Mudlet) for mapping stuff.&quot;
+          )
+          return
+        end
+        -- wilderness mapping right now is UNFINISHED! It does not handle the grid breakup. So, please don't try it, and please won't whine about it.
 
-  -- if we created it, and some data could be filled in
-  if mmp.roomexists(num) then
-    -- cleanup the room name
-    local rootroomname = mmp.cleanroomname(gmcp.Room.Info.name)
+        local function inwilderness()
+          return (gmcp.Room.Info.coords == &quot;&quot; and gmcp.Room.Info.area == &quot;&quot;)
+        end
 
-    -- match exact case, so mappers alertness' works properly
-    if getRoomName(num) ~= rootroomname then
-      setRoomName(num, rootroomname)
-      unHighlightRoom(num)
-      s = s .. (#s &gt; 0 and &quot; &quot; or &quot;&quot;) .. &quot;Updated room name to '&quot;..rootroomname..&quot;'.&quot;
-    end
-
-    -- autolink exits
-    if not inwilderness() then
-      local x = getRoomExits(num) or {}
-      -- check for missing exits
-      for exit, id in pairs(currentexits) do
-        if id == 0 then
-          s = s .. (#s &gt; 0 and &quot; &quot; or &quot;&quot;) .. &quot;Can't link to the &quot;..exit..&quot;, it leads to a room with ID 0 (and that's not supported yet).&quot;
-        else
-          if not x[mmp.anytolong(exit)] then
-            if not mmp.roomexists(id) then
-              s = makeroom(num, id, getshiftedcoords(mmp.ranytolong(exit), getRoomCoordinates(num)))
+        local getRoomName, getRoomCoordinates, getRoomsByPosition =
+          getRoomName, getRoomCoordinates, getRoomsByPosition
+        local num = tonumber(num) or tonumber(gmcp.Room.Info.num)
+        local currentexits = gmcp.Room.Info.exits
+        local s = &quot;&quot;
+        if not mmp.roomexists(num) then
+          -- see if we can create and link this room with an existing one
+          -- wilderness and non-wilderness rooms require different methods of calculating relative coordinates
+          if not inwilderness() then
+            for exit, id in pairs(currentexits) do
+              if mmp.roomexists(id) then
+                s = makeroom(id, num, getshiftedcoords(exit, getRoomCoordinates(id)))
+              end
             end
-            if setExit(num, id, exit) then
-              s = s .. (#s &gt; 0 and &quot; &quot; or &quot;&quot;) .. &quot;Added missing exit &quot;..exit..&quot; to &quot;..(getRoomName(id) ~= &quot;&quot; and getRoomName(id) or &quot;''&quot;)..&quot; (&quot;..id..&quot;).&quot;
-            else
-              s = s .. (#s &gt; 0 and &quot; &quot; or &quot;&quot;) .. string.format(&quot;Failed to link %d withh %d via %s exit for some reason :/&quot;, num, id, exit)
-            end
+          else
+            local x, y = tostring(num):match(&quot;.-(%d%d%d)(%d%d%d)$&quot;)
+            -- Achaea's coordinates seem to be in the 4th quadrant, while Mudlets 0,0 is in the middle of the map. Invert y so going north-south looks alright
+            s = makeroom(mmp.previousroom, num, x, y * -1, 0)
           end
         end
-      end
-    else
-      local function getshiftedcoords(direction, ox, oy, oz)
-        if direction == 'n' then return ox, oy+1, oz
-        elseif direction == 'e' then return ox+1, oy, oz
-        elseif direction == 's' then return ox, oy-1, oz
-        elseif direction == 'w' then return ox-1, oy, oz
-        elseif direction == 'ne' then return ox+1, oy+1, oz
-        elseif direction == 'se' then return ox+1, oy-1, oz
-        elseif direction == 'sw' then return ox-1, oy-1, oz
-        elseif direction == 'nw' then return ox-1, oy+1, oz
-        else error(&quot;getshiftedcoords: direction &quot;..direction..&quot; isn't supported yet.&quot;)
-        end
-      end
-
-      local x,y,z = getRoomCoordinates(num)
-      local currentexits = getRoomExits(num) or {}
-      for _, exit in ipairs{'n', 'e', 's', 'w', 'ne', 'se', 'sw', 'nw'} do
-        local roomatdir = getRoomsByPosition(getRoomArea(num), getshiftedcoords(exit, x,y,z))
-
-        if roomatdir[0] then
-          local id = roomatdir[0]
-
-          if not currentexits[mmp.anytolong(exit)] then
-            if setExit(num, id, exit) then
-              s = s .. (#s &gt; 0 and &quot; &quot; or &quot;&quot;) .. &quot;Added missing exit &quot;..exit..&quot; to &quot;..(getRoomName(id) ~= &quot;&quot; and getRoomName(id) or &quot;''&quot;)..&quot; (&quot;..id..&quot;).&quot;
-            else
-              s = s .. (#s &gt; 0 and &quot; &quot; or &quot;&quot;) .. string.format(&quot;Failed to link %d withh %d via %s exit for some reason :/&quot;, num, id, exit)
+        -- if we created it, and some data could be filled in
+        if mmp.roomexists(num) then
+          -- cleanup the room name
+          local rootroomname = mmp.cleanroomname(gmcp.Room.Info.name)
+          -- match exact case, so mappers alertness' works properly
+          if getRoomName(num) ~= rootroomname then
+            setRoomName(num, rootroomname)
+            unHighlightRoom(num)
+            s = s .. (#s &gt; 0 and &quot; &quot; or &quot;&quot;) .. &quot;Updated room name to '&quot; .. rootroomname .. &quot;'.&quot;
+          end
+          -- autolink exits
+          if not inwilderness() then
+            local x = getRoomExits(num) or {}
+            -- check for missing exits
+            for exit, id in pairs(currentexits) do
+              if id == 0 then
+                s =
+                  s ..
+                  (#s &gt; 0 and &quot; &quot; or &quot;&quot;) ..
+                  &quot;Can't link to the &quot; ..
+                  exit ..
+                  &quot;, it leads to a room with ID 0 (and that's not supported yet).&quot;
+              else
+                if not x[mmp.anytolong(exit)] then
+                  if not mmp.roomexists(id) then
+                    s =
+                      makeroom(
+                        num, id, getshiftedcoords(mmp.ranytolong(exit), getRoomCoordinates(num))
+                      )
+                  end
+                  if setExit(num, id, exit) then
+                    s =
+                      s ..
+                      (#s &gt; 0 and &quot; &quot; or &quot;&quot;) ..
+                      &quot;Added missing exit &quot; ..
+                      exit ..
+                      &quot; to &quot; ..
+                      (getRoomName(id) ~= &quot;&quot; and getRoomName(id) or &quot;''&quot;) ..
+                      &quot; (&quot; ..
+                      id ..
+                      &quot;).&quot;
+                  else
+                    s =
+                      s ..
+                      (#s &gt; 0 and &quot; &quot; or &quot;&quot;) ..
+                      string.format(
+                        &quot;Failed to link %d withh %d via %s exit for some reason :/&quot;, num, id, exit
+                      )
+                  end
+                end
+              end
+            end
+          else
+            local function getshiftedcoords(direction, ox, oy, oz)
+              if direction == 'n' then
+                return ox, oy + 1, oz
+              elseif direction == 'e' then
+                return ox + 1, oy, oz
+              elseif direction == 's' then
+                return ox, oy - 1, oz
+              elseif direction == 'w' then
+                return ox - 1, oy, oz
+              elseif direction == 'ne' then
+                return ox + 1, oy + 1, oz
+              elseif direction == 'se' then
+                return ox + 1, oy - 1, oz
+              elseif direction == 'sw' then
+                return ox - 1, oy - 1, oz
+              elseif direction == 'nw' then
+                return ox - 1, oy + 1, oz
+              else
+                error(&quot;getshiftedcoords: direction &quot; .. direction .. &quot; isn't supported yet.&quot;)
+              end
             end
 
-            local exit = mmp.anytoshort(mmp.ranytolong(exit))
-            if setExit(id, num, exit) then
-              s = s .. (#s &gt; 0 and &quot; &quot; or &quot;&quot;) .. &quot;Added missing exit &quot;..exit..&quot; to &quot;..(getRoomName(id) ~= &quot;&quot; and getRoomName(id) or &quot;''&quot;)..&quot; (&quot;..id..&quot;).&quot;
-            else
-              s = s .. (#s &gt; 0 and &quot; &quot; or &quot;&quot;) .. string.format(&quot;Failed to link %d withh %d via %s exit for some reason :/&quot;, num, id, exit)
+            local x, y, z = getRoomCoordinates(num)
+            local currentexits = getRoomExits(num) or {}
+            for _, exit in ipairs({'n', 'e', 's', 'w', 'ne', 'se', 'sw', 'nw'}) do
+              local roomatdir =
+                getRoomsByPosition(getRoomArea(num), getshiftedcoords(exit, x, y, z))
+              if roomatdir[0] then
+                local id = roomatdir[0]
+                if not currentexits[mmp.anytolong(exit)] then
+                  if setExit(num, id, exit) then
+                    s =
+                      s ..
+                      (#s &gt; 0 and &quot; &quot; or &quot;&quot;) ..
+                      &quot;Added missing exit &quot; ..
+                      exit ..
+                      &quot; to &quot; ..
+                      (getRoomName(id) ~= &quot;&quot; and getRoomName(id) or &quot;''&quot;) ..
+                      &quot; (&quot; ..
+                      id ..
+                      &quot;).&quot;
+                  else
+                    s =
+                      s ..
+                      (#s &gt; 0 and &quot; &quot; or &quot;&quot;) ..
+                      string.format(
+                        &quot;Failed to link %d withh %d via %s exit for some reason :/&quot;, num, id, exit
+                      )
+                  end
+                  local exit = mmp.anytoshort(mmp.ranytolong(exit))
+                  if setExit(id, num, exit) then
+                    s =
+                      s ..
+                      (#s &gt; 0 and &quot; &quot; or &quot;&quot;) ..
+                      &quot;Added missing exit &quot; ..
+                      exit ..
+                      &quot; to &quot; ..
+                      (getRoomName(id) ~= &quot;&quot; and getRoomName(id) or &quot;''&quot;) ..
+                      &quot; (&quot; ..
+                      id ..
+                      &quot;).&quot;
+                  else
+                    s =
+                      s ..
+                      (#s &gt; 0 and &quot; &quot; or &quot;&quot;) ..
+                      string.format(
+                        &quot;Failed to link %d withh %d via %s exit for some reason :/&quot;, num, id, exit
+                      )
+                  end
+                end
+              end
             end
           end
+          -- check for unexisting exits
+          if mmp.settings[&quot;autoclear&quot;] then
+            for exit, id in pairs(getRoomExits(num)) do
+              if not currentexits[mmp.anytoshort(exit)] then
+                setExit(num, -1, exit)
+                s =
+                  s ..
+                  (#s &gt; 0 and &quot; &quot; or &quot;&quot;) ..
+                  exit ..
+                  &quot; exit to &quot; ..
+                  id ..
+                  &quot; doesn't actually exist, removed it.&quot;
+              end
+            end
+          end
+          -- check for environment update, if we have environments mapped out
+          if
+            mmp.envids[gmcp.Room.Info.environment] and
+            mmp.envids[gmcp.Room.Info.environment] ~= getRoomEnv(num)
+          then
+            setRoomEnv(num, mmp.envids[gmcp.Room.Info.environment])
+            s =
+              s ..
+              (#s &gt; 0 and &quot; &quot; or &quot;&quot;) ..
+              &quot;Updated environment name to &quot; ..
+              gmcp.Room.Info.environment ..
+              &quot;.&quot;
+          end
+          -- check indoors status
+          local indoors = table.contains(gmcp.Room.Info.details, &quot;indoors&quot;)
+          if indoors and getRoomUserData(num, &quot;indoors&quot;) == '' then
+            setRoomUserData(num, &quot;indoors&quot;, &quot;y&quot;)
+            s = s .. (#s &gt; 0 and &quot; &quot; or &quot;&quot;) .. &quot;Updated room to be indoors.&quot;
+          elseif not indoors and getRoomUserData(num, &quot;indoors&quot;) ~= '' then
+            setRoomUserData(num, &quot;indoors&quot;, &quot;&quot;)
+            s = s .. (#s &gt; 0 and &quot; &quot; or &quot;&quot;) .. &quot;Updated room to be outdoors.&quot;
+          end
+          -- check server area name (Achaea only for now)
+          if mmp.game == &quot;achaea&quot; then
+            local serverArea = gmcp.Room.Info.area
+            if serverArea ~= getRoomUserData(num, &quot;Game Area&quot;) then
+              setRoomUserData(num, &quot;Game Area&quot;, serverArea)
+              s = s .. (#s &gt; 0 and &quot; &quot; or &quot;&quot;) .. &quot;Updated game area to &quot; .. serverArea .. &quot;.&quot;
+            end
+          end
+          -- check for wilderness exits
+          if getRoomChar(num) ~= &quot;W&quot; and table.contains(gmcp.Room.Info.details, &quot;wilderness&quot;) then
+            setRoomChar(num, &quot;W&quot;)
+            s = s .. (#s &gt; 0 and &quot; &quot; or &quot;&quot;) .. &quot;Added the wilderness mark.&quot;
+          end
         end
-      end
-    end
-
-    -- check for unexisting exits
-    if mmp.settings[&quot;autoclear&quot;] then
-      for exit, id in pairs(getRoomExits(num)) do
-        if not currentexits[mmp.anytoshort(exit)] then
-          setExit(num, -1, exit)
-          s = s .. (#s &gt; 0 and &quot; &quot; or &quot;&quot;) .. exit .. &quot; exit to &quot;..id..&quot; doesn't actually exist, removed it.&quot;
+        if #s &gt; 0 then
+          mmp.echo(s)
+          centerview(mmp.currentroom)
         end
+      end,
+      function(error)
+        mmp.echo(&quot;Oops! Has a small problem (&quot; .. error .. &quot;).&quot;)
+        echo(&quot;  &quot;)
+        echoLink(
+          &quot;view steps&quot;,
+          'echo[[' .. debug.traceback() .. ']]',
+          &quot;View steps of code that led up to it&quot;
+        )
       end
-    end
-
-    -- check for environment update, if we have environments mapped out
-    if mmp.envids[gmcp.Room.Info.environment] and mmp.envids[gmcp.Room.Info.environment] ~= getRoomEnv(num) then
-      setRoomEnv(num, mmp.envids[gmcp.Room.Info.environment])
-      s = s .. (#s &gt; 0 and &quot; &quot; or &quot;&quot;) .. &quot;Updated environment name to &quot;..gmcp.Room.Info.environment..&quot;.&quot;
-    end
-
-    -- check indoors status
-    local indoors = table.contains(gmcp.Room.Info.details, &quot;indoors&quot;)
-    if indoors and getRoomUserData(num, &quot;indoors&quot;) == '' then
-      setRoomUserData(num, &quot;indoors&quot;, &quot;y&quot;)
-      s = s .. (#s &gt; 0 and &quot; &quot; or &quot;&quot;) .. &quot;Updated room to be indoors.&quot;
-    elseif not indoors and getRoomUserData(num, &quot;indoors&quot;) ~= '' then
-      setRoomUserData(num, &quot;indoors&quot;, &quot;&quot;)
-      s = s .. (#s &gt; 0 and &quot; &quot; or &quot;&quot;) .. &quot;Updated room to be outdoors.&quot;
-    end
-
-    -- check for wilderness exits
-    if getRoomChar(num) ~= &quot;W&quot; and table.contains(gmcp.Room.Info.details, &quot;wilderness&quot;) then
-      setRoomChar(num, &quot;W&quot;)
-      s = s .. (#s &gt; 0 and &quot; &quot; or &quot;&quot;) .. &quot;Added the wilderness mark.&quot;
-    end
+    )
+  if not s then
+    mmp.echo(m)
   end
-
-  if #s &gt; 0 then mmp.echo(s); centerview(mmp.currentroom) end
-end, function (error)
-  mmp.echo(&quot;Oops! Has a small problem (&quot;..error..&quot;).&quot;)
-  echo&quot;  &quot; echoLink(&quot;view steps&quot;, 'echo[['..debug.traceback()..']]', &quot;View steps of code that led up to it&quot;)
-end)
-if not s then mmp.echo(m) end
-end
-</script>
+end</script>
                     <eventHandlerList>
                         <string>gmcp.Room.Info</string>
                         <string>RoomNum</string>
