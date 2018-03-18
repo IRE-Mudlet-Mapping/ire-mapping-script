@@ -4883,8 +4883,8 @@ function mmp.startup()
   private_settings[&quot;gare&quot;]      		= createOption(false, mmp.setGare, {&quot;boolean&quot; }, &quot;Use Gare?&quot;)
 
 --Imperian wings
-	private_settings[&quot;shekinah&quot;]			= createOption(false, mmp.setShekinah, { &quot;boolean&quot; }, &quot;Use Seraphim Wings?&quot;)
-	private_settings[&quot;suriel&quot;]				= createOption(false, mmp.setSuriel, { &quot;boolean&quot; }, &quot;Use Orphanim Wings?&quot;)
+  private_settings[&quot;shekinah&quot;]      = createOption(false, mmp.setShekinah, { &quot;boolean&quot; }, &quot;Use Seraphim Wings?&quot;)
+  private_settings[&quot;suriel&quot;]        = createOption(false, mmp.setSuriel, { &quot;boolean&quot; }, &quot;Use Orphanim Wings?&quot;)
 	
 --Lusternia bixes
   private_settings[&quot;torus&quot;]         = createOption(false, mmp.setTorus, { &quot;boolean&quot; }, &quot;Make use of your Torus?&quot;)
@@ -5967,24 +5967,26 @@ end</script>
                     <name>Imperian</name>
                     <packageName></packageName>
                     <script>registerAnonymousEventHandler(&quot;mmp link externals&quot;, &quot;mmp.addWingsImperian&quot;)
+mmp.imperian = mmp.imperian or {}
 
 function mmp.addWingsImperian()
   local function getcmd(word)
-      return
-        mmp.settings.removewings and
-        [[script:if mmp.flying then sendAll(&quot;queue eqbal wear wings&quot;,&quot;queue eqbal say ]] ..
-        word ..
-        [[&quot;,&quot;queue eqbal remove wings&quot;,false) else sendAll(&quot;wear wings&quot;,&quot;fly&quot;,false) end]] or
-        [[script:if mmp.flying then sendAll(&quot;queue eqbal say ]] ..
-        word ..
-        [[&quot;,false) else sendAll(&quot;fly&quot;,false) end]]
-     end
+    return
+      mmp.settings.removewings and
+      [[script:if mmp.flying then sendAll(&quot;queue eqbal wear wings&quot;,&quot;queue eqbal say ]] ..
+      word ..
+      [[&quot;,&quot;queue eqbal remove wings&quot;,false) else sendAll(&quot;wear wings&quot;,&quot;fly&quot;,false) end]] or
+      [[script:if mmp.flying then sendAll(&quot;queue eqbal say ]] ..
+      word ..
+      [[&quot;,false) else sendAll(&quot;fly&quot;,false) end]]
+  end
 
   if
     (mmp.settings.shekinah or mmp.settings.suriel) and
     gmcp.Room and
     not table.contains(gmcp.Room.Info.details, &quot;indoors&quot;) and
-    not table.contains(gmcp.Room.Info.details, &quot;considered indoors&quot;)
+    not table.contains(gmcp.Room.Info.details, &quot;considered indoors&quot;) and
+    not table.contains(mmp.imperian.wingAbleAreas, getRoomArea(mmp.currentroom))
   then
     if mmp.settings.shekinah then
       -- Seraphim wings - &quot;Say shekinah&quot;
@@ -6006,7 +6008,7 @@ function mmp.addWingsImperian()
   mmp.clearpathcache()
 end
 
-wingAbleAreas =
+mmp.imperian.wingAbleAreas =
   {
     45,
     35,
@@ -9477,7 +9479,7 @@ end</script>
     (mmp.currentroom == mmp.speedWalkPath[#mmp.speedWalkPath]) or
     table.contains(gmcp.Room.Info.details, &quot;indoors&quot;) or
     table.contains(gmcp.Room.Info.details, &quot;considered indoors&quot;) or
-    not table.contains(wingAbleAreas, getRoomArea(mmp.currentroom))
+    not table.contains(mmp.imperian.wingAbleAreas, getRoomArea(mmp.currentroom))
   then
     return
   end
