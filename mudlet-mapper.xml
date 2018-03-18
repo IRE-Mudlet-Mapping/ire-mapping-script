@@ -4835,7 +4835,7 @@ mmp.speedWalkPath = mmp.speedWalkPath or {}
 mmp.speedWalkDir = mmp.speedWalkDir or {}
 
 
-local newversion = &quot;developer&quot;
+local newversion = &quot;18.3.1&quot;
 if mmp.version and mmp.version ~= newversion then
   if not mmp.game then mmp.echo(&quot;Mapper script updated - Thanks! I don't know what game are you connected to, though - so please reconnect, if you could.&quot;)
   else mmp.echo(&quot;Mapper script updated - thanks! You don't need to restart.&quot;) end
@@ -4882,6 +4882,10 @@ function mmp.startup()
   private_settings[&quot;universe&quot;]      = createOption(false, mmp.setUniverse, {&quot;boolean&quot; }, &quot;Use Universe Tarot?&quot;)
   private_settings[&quot;gare&quot;]      		= createOption(false, mmp.setGare, {&quot;boolean&quot; }, &quot;Use Gare?&quot;)
 
+--Imperian wings
+	private_settings[&quot;shekinah&quot;]     	= createOption(false, mmp.setShekinah, { &quot;boolean&quot; }, &quot;Use Seraphim Wings?&quot;)
+	private_settings[&quot;suriel&quot;]     		= createOption(false, mmp.setSuriel, { &quot;boolean&quot; }, &quot;Use Orphanim Wings?&quot;)
+	
 --Lusternia bixes
   private_settings[&quot;torus&quot;]         = createOption(false, mmp.setTorus, { &quot;boolean&quot; }, &quot;Make use of your Torus?&quot;)
   private_settings[&quot;prism&quot;]         = createOption(false, mmp.setPrism, {&quot;boolean&quot;}, &quot;Make use of your transplanar prism?&quot;)
@@ -4984,11 +4988,13 @@ medallion={lusternia=true},
 mud={lusternia=true},
 pebble={achaea=true},
 prism={lusternia=true},
-removewings={achaea=true},
+removewings={achaea=true,imperian=true},
 runaway={achaea=true},
 screwdriver={lusternia=true},
 shackle={achaea=true},
+shekinah={imperian=true},
 snowglobe={lusternia=true},
+suriel={imperian=true},
 tibia={lusternia=true},
 toolcurio={lusternia=true},
 torus={lusternia=true},
@@ -5395,13 +5401,35 @@ function speedwalking( event, num )
   if num ~= mmp.currentroom then mmp.previousroom = mmp.currentroom end
   mmp.currentroom = num
   mmp.currentroomname = getRoomName(num)
+	
+	-- Try to track if we're flying or not, for Imperian wings
+	-- This is to avoid being &quot;off path&quot; if we FLY due to wings.
+	local madeflight=false
+	if gmcp.Char then
+		local flying=false
+		if string.find(gmcp.Room.Info.name, &quot;^flying above&quot;) then
+			flying=true
+		end
+		if mmp.flying and not flying then
+		-- We were flying, and now we are not. Gravity!
+		mmp.flying=false
+		elseif not mmp.flying and flying then
+		-- We were not flying and now we are.
+		madeflight=true
+		mmp.flying=true
+		elseif not flying then
+		mmp.flying=false
+		end
+	else 
+		mmp.flying=false
+	end
 
   -- track if we're inside or outside, if possible
   if gmcp.Room then
-    if mmp.inside and not table.contains(gmcp.Room.Info.details, &quot;indoors&quot;) then
+    if mmp.inside and not (table.contains(gmcp.Room.Info.details, &quot;indoors&quot;) or table.contains(gmcp.Room.Info.details, &quot;considered indoors&quot;)) then
       mmp.inside = false
       raiseEvent(&quot;mmapper went outside&quot;)
-    elseif not mmp.inside and table.contains(gmcp.Room.Info.details, &quot;indoors&quot;) then
+    elseif not mmp.inside and (table.contains(gmcp.Room.Info.details, &quot;indoors&quot;) or table.contains(gmcp.Room.Info.details, &quot;considered indoors&quot;)) then
       mmp.inside = true
       raiseEvent(&quot;mmapper went inside&quot;)
     end
@@ -5432,6 +5460,9 @@ function speedwalking( event, num )
   elseif mmp.speedWalkPath[speedWalkCounter] == num then
     speedWalkCounter = speedWalkCounter + 1
     mmp.move()
+	elseif mmp.game==&quot;imperian&quot; and madeflight then
+	mmp.echo(&quot;We began flying!&quot;)
+		mmp.move()
   elseif #mmp.speedWalkPath&gt; 0 and not mmp.ferry_rooms[num] and not (gmcp.Room.Info.details and table.contains(gmcp.Room.Info.details, &quot;ferry&quot;)) then -- ended up somewhere we didn't want to be, and this isn't a ferry room?
     speedWalkMoved = false
     -- re-calculate path then
@@ -5930,6 +5961,279 @@ function mmp.addWingsLusternia()
   end
   mmp.clearpathcache()
 end</script>
+                    <eventHandlerList/>
+                </Script>
+                <Script isActive="yes" isFolder="no">
+                    <name>Imperian</name>
+                    <packageName></packageName>
+                    <script>registerAnonymousEventHandler(&quot;mmp link externals&quot;, &quot;mmp.addWingsImperian&quot;)
+
+function mmp.addWingsImperian()
+  local function getcmd(word)
+      return
+        mmp.settings.removewings and
+        [[script:if mmp.flying then sendAll(&quot;queue eqbal wear wings&quot;,&quot;queue eqbal say ]] ..
+        word ..
+        [[&quot;,&quot;queue eqbal remove wings&quot;,false) else sendAll(&quot;wear wings&quot;,&quot;fly&quot;,false) end]] or
+        [[script:if mmp.flying then sendAll(&quot;queue eqbal say ]] ..
+        word ..
+        [[&quot;,false) else sendAll(&quot;fly&quot;,false) end]]
+     end
+
+  if
+    (mmp.settings.shekinah or mmp.settings.suriel) and
+    gmcp.Room and
+    not table.contains(gmcp.Room.Info.details, &quot;indoors&quot;) and
+    not table.contains(gmcp.Room.Info.details, &quot;considered indoors&quot;)
+  then
+    if mmp.settings.shekinah then
+      -- Seraphim wings - &quot;Say shekinah&quot;
+      local weight = 15
+      if mmp.flying then
+        weight = 1
+      end
+      mmp.tempSpecialExit(4882, getcmd(&quot;shekinah&quot;), weight)
+    elseif mmp.settings.suriel then
+      -- Using Orphanim wings, SURIEL works, takes you to 3885
+      local weight = 15
+      if gmcp.Char.Vitals.flying == 1 then
+        weight = 1
+      end
+      mmp.tempSpecialExit(3885, getcmd(&quot;suriel&quot;), weight)
+      -- clear cache so mmp.getPath accounts for the new way
+    end
+  end
+  mmp.clearpathcache()
+end
+
+wingAbleAreas =
+  {
+    45,
+    35,
+    15,
+    56,
+    101,
+    123,
+    36,
+    110,
+    18,
+    75,
+    172,
+    9,
+    66,
+    148,
+    113,
+    175,
+    188,
+    244,
+    88,
+    171,
+    118,
+    295,
+    167,
+    25,
+    139,
+    70,
+    132,
+    28,
+    135,
+    174,
+    8,
+    275,
+    107,
+    53,
+    112,
+    185,
+    158,
+    164,
+    299,
+    74,
+    351,
+    16,
+    63,
+    269,
+    77,
+    85,
+    142,
+    328,
+    318,
+    46,
+    95,
+    17,
+    329,
+    33,
+    96,
+    82,
+    47,
+    144,
+    121,
+    3,
+    68,
+    51,
+    134,
+    1,
+    319,
+    11,
+    19,
+    129,
+    146,
+    65,
+    324,
+    325,
+    125,
+    191,
+    163,
+    30,
+    54,
+    292,
+    290,
+    7,
+    136,
+    267,
+    335,
+    102,
+    43,
+    89,
+    20,
+    169,
+    49,
+    147,
+    196,
+    301,
+    252,
+    99,
+    145,
+    195,
+    130,
+    42,
+    270,
+    166,
+    128,
+    168,
+    34,
+    223,
+    170,
+    22,
+    27,
+    138,
+    115,
+    337,
+    44,
+    6,
+    161,
+    32,
+    92,
+    83,
+    294,
+    104,
+    69,
+    23,
+    155,
+    350,
+    48,
+    57,
+    150,
+    97,
+    341,
+    105,
+    340,
+    5,
+    194,
+    338,
+    327,
+    271,
+    323,
+    322,
+    79,
+    122,
+    62,
+    131,
+    176,
+    133,
+    310,
+    307,
+    120,
+    137,
+    13,
+    76,
+    160,
+    60,
+    304,
+    94,
+    306,
+    303,
+    81,
+    291,
+    276,
+    302,
+    149,
+    297,
+    179,
+    272,
+    41,
+    293,
+    289,
+    91,
+    159,
+    71,
+    157,
+    298,
+    266,
+    208,
+    109,
+    80,
+    14,
+    2,
+    186,
+    12,
+    178,
+    52,
+    124,
+    274,
+    141,
+    343,
+    177,
+    67,
+    103,
+    111,
+    72,
+    268,
+    87,
+    117,
+    21,
+    353,
+    253,
+    93,
+    308,
+    40,
+    248,
+    243,
+    4,
+    153,
+    212,
+    116,
+    84,
+    197,
+    61,
+    78,
+    184,
+    173,
+    31,
+    98,
+    114,
+    162,
+    50,
+    37,
+    140,
+    73,
+    127,
+    156,
+    90,
+    100,
+    143,
+    309,
+    126,
+  }</script>
                     <eventHandlerList/>
                 </Script>
             </ScriptGroup>
@@ -9160,6 +9464,36 @@ end</script>
 end</script>
                         <eventHandlerList>
                             <string>mmp logged in</string>
+                        </eventHandlerList>
+                    </Script>
+                    <Script isActive="yes" isFolder="no">
+                        <name>mmapper_imperian_went_outside</name>
+                        <packageName></packageName>
+                        <script>function mmapper_imperian_went_outside()
+  if not mmp.autowalking or not (mmp.settings.shekinah or mmp.settings.suriel ) or mmp.game ~= &quot;imperian&quot; or
+    (mmp.currentroom == mmp.speedWalkPath[#mmp.speedWalkPath]) or
+    table.contains(gmcp.Room.Info.details, &quot;indoors&quot;) or
+		table.contains(gmcp.Room.Info.details, &quot;considered indoors&quot;) or
+		not table.contains(wingAbleAreas, getRoomArea(mmp.currentroom))
+  then return end
+
+  -- repath, maybe that'll allow us to use wings now.
+  raiseEvent(&quot;mmp link externals&quot;)
+	local previousDirection = mmp.speedWalkDir[speedWalkCounter]
+  mmp.getPath(mmp.currentroom, mmp.speedWalkPath[#mmp.speedWalkPath]) -- don't need to check return value since that fact shouldnt've changed
+
+  -- if our path didn't change, re-instate it as it was (since the new path starts from this room that we checked at)
+  if speedWalkDir[1]~=previousDirection then
+    speedWalkCounter = 0
+    mmp.echo(&quot;We got outside - going to shortcut with wings.&quot;)
+    mmp.gotoRoom(mmp.speedWalkPath[#mmp.speedWalkPath])
+    mmp.ignore_speedwalking = true
+  end
+	raiseEvent(&quot;mmp clear externals&quot;)
+end</script>
+                        <eventHandlerList>
+                            <string>mmapper went outside</string>
+                            <string>mmapper changed continent</string>
                         </eventHandlerList>
                     </Script>
                 </Script>
