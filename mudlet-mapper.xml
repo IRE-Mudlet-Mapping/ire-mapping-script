@@ -4883,8 +4883,8 @@ function mmp.startup()
   private_settings[&quot;gare&quot;]      		= createOption(false, mmp.setGare, {&quot;boolean&quot; }, &quot;Use Gare?&quot;)
 
 --Imperian wings
-	private_settings[&quot;shekinah&quot;]     	= createOption(false, mmp.setShekinah, { &quot;boolean&quot; }, &quot;Use Seraphim Wings?&quot;)
-	private_settings[&quot;suriel&quot;]     		= createOption(false, mmp.setSuriel, { &quot;boolean&quot; }, &quot;Use Orphanim Wings?&quot;)
+	private_settings[&quot;shekinah&quot;]			= createOption(false, mmp.setShekinah, { &quot;boolean&quot; }, &quot;Use Seraphim Wings?&quot;)
+	private_settings[&quot;suriel&quot;]				= createOption(false, mmp.setSuriel, { &quot;boolean&quot; }, &quot;Use Orphanim Wings?&quot;)
 	
 --Lusternia bixes
   private_settings[&quot;torus&quot;]         = createOption(false, mmp.setTorus, { &quot;boolean&quot; }, &quot;Make use of your Torus?&quot;)
