@@ -5986,7 +5986,7 @@ function mmp.addWingsImperian()
     gmcp.Room and
     not table.contains(gmcp.Room.Info.details, &quot;indoors&quot;) and
     not table.contains(gmcp.Room.Info.details, &quot;considered indoors&quot;) and
-    not table.contains(mmp.imperian.wingAbleAreas, getRoomArea(mmp.currentroom))
+    table.contains(mmp.imperian.wingAbleAreas, getRoomArea(mmp.currentroom))
   then
     if mmp.settings.shekinah then
       -- Seraphim wings - &quot;Say shekinah&quot;
