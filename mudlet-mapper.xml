@@ -5996,7 +5996,7 @@ function mmp.addWingsImperian()
     elseif mmp.settings.suriel then
       -- Using Orphanim wings, SURIEL works, takes you to 3885
       local weight = 15
-      if gmcp.Char.Vitals.flying == 1 then
+      if mmp.flying == &quot;1&quot; then
         weight = 1
       end
       mmp.tempSpecialExit(3885, getcmd(&quot;suriel&quot;), weight)
