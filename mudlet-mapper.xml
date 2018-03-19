@@ -5191,13 +5191,7 @@ function mmp.gotoArea (where, number, dashtype, exact)
     mmp.speedWalkDir = {}
     speedWalkCounter = 0
     raiseEvent(&quot;mmapper failed path&quot;)
-		if madeEast or madeNorth or madeWest then
---[[	
-			if madeEast then mmp.clearspecials{54231} end
-			if madeNorth then mmp.clearspecials{48719} end
-			if madeWest then mmp.clearspecials{54632} end
-  		raiseEvent(&quot;mmp clear externals&quot;)
-]]--		
+		if madeEast or madeNorth or madeWest then		
       raiseEvent(&quot;mmp clear externals&quot;)
 			clearSpecials()
 		end
@@ -5205,12 +5199,6 @@ function mmp.gotoArea (where, number, dashtype, exact)
   end
 
 	if madeEast or madeNorth or madeWest then
---[[	
-		if madeEast then mmp.clearspecials{54231} end
-		if madeNorth then mmp.clearspecials{48719} end
-		if madeWest then mmp.clearspecials{54632} end
-  	raiseEvent(&quot;mmp clear externals&quot;)
-]]--
    raiseEvent(&quot;mmp clear externals&quot;)
 		clearSpecials()
 	end
@@ -5620,7 +5608,131 @@ function mmp.clearspecials(ignorerooms)
       end
     end
   end
-end</script>
+end
+
+
+
+function mmp.gotoAreaID(areaid, number, dashtype)
+
+	if not areaid or not tonumber(areaid) then
+		mmp.echo(&quot;To where do you want to go?&quot;)
+		return
+	end
+	
+	areaid = tonumber(areaid)
+	
+	if not mmp.areatabler[areaid] then
+		mmp.echo(&quot;Invalid area ID selected&quot;)
+		return
+	end
+
+  local possibleRooms, shortestPath, shortestBorder = {}, {}, 0
+
+  mmp.computeShortestWatch = mmp.computeShortestWatch or createStopWatch()
+  startStopWatch(mmp.computeShortestWatch)
+
+	possibleRooms = mmp.getAreaBorders(areaid)
+
+	-- add in temporary links to clouds / stratospheres to enable pathfinding, auto-repath will occur when moved to outside -- PapaGuacamole
+	local madeEast, madeNorth, madeWest
+	local currentareaid = getRoomArea(mmp.currentroom)
+	raiseEvent(&quot;mmp link externals&quot;)
+	if mmp.game == &quot;achaea&quot; and mmp.settings.harness then			 	
+			if mmp.oncontinent(currentareaideaid, &quot;Eastern_Isles&quot;) then
+				if not table.contains(gmcp.Room.Info.details, &quot;indoors&quot;) then -- make it here
+					addSpecialExit(mmp.currentroom, 54231, [[script:send(&quot;shake harness&quot;,false)]])				
+				elseif currentareaid == 192 then -- Zanzibaar
+					addSpecialExit(31215, 54231, [[script:send(&quot;shake harness&quot;,false)]])
+				elseif currentareaid == 191 then -- Clockwork Isle
+					addSpecialExit(23351, 54231, [[script:send(&quot;shake harness&quot;,false)]])
+				elseif currentareaid == 180 then -- Colchis, the Isle of
+					addSpecialExit(19786, 54231, [[script:send(&quot;shake harness&quot;,false)]])
+				else --if currentareaid == 181 then -- Umbrin, the Port of
+					addSpecialExit(18443, 54231, [[script:send(&quot;shake harness&quot;,false)]])
+				end
+				madeEast = true
+			elseif mmp.oncontinent(currentareaid, &quot;Northern_Isles&quot;) then
+				if not table.contains(gmcp.Room.Info.details, &quot;indoors&quot;) then -- make it here
+					addSpecialExit(mmp.currentroom, 48719, [[script:send(&quot;shake harness&quot;,false)]])				
+				elseif currentareaid == 194 then -- Ilyrean
+					addSpecialExit(13373, 48719, [[script:send(&quot;shake harness&quot;,false)]])
+				elseif currentareaid == 351 then -- Karbaz
+					addSpecialExit(19740, 48719, [[script:send(&quot;shake harness&quot;,false)]])
+				else --if currentareaid == 206 or getRoomArea(mmp.currentroom) = 294 then -- Suliel Island / Suliel Island (Barricades)
+					addSpecialExit(17768, 48719, [[script:send(&quot;shake harness&quot;,false)]])
+				end
+				madeNorth = true
+			else --if mmp.oncontinent(areaid, &quot;Western_Isles&quot;) then
+				if not table.contains(gmcp.Room.Info.details, &quot;indoors&quot;) then -- make it here
+					addSpecialExit(mmp.currentroom, 54632, [[script:send(&quot;shake harness&quot;,false)]])				
+				elseif currentareaid == 162 then --Tapoa
+					addSpecialExit(21184, 54632, [[script:send(&quot;shake harness&quot;,false)]])
+				elseif currentareaid == 207 then --Tuar
+					addSpecialExit(19219, 54632, [[script:send(&quot;shake harness&quot;,false)]])
+				else --if currentareaid == 209 then --Ageiro
+					addSpecialExit(30222, 54632, [[script:send(&quot;shake harness&quot;,false)]])
+				end
+				madeWest = true
+			end			
+	end
+  
+	local function clearSpecials()
+		if madeEast then mmp.clearspecials{54231} end
+		if madeNorth then mmp.clearspecials{48719} end
+		if madeWest then mmp.clearspecials{54632} end
+  	raiseEvent(&quot;mmp clear externals&quot;)
+	end
+	
+	local getStopWatchTime, tonumber, getPath = getStopWatchTime, tonumber, mmp.getPath
+
+--mmp.echo(string.format(&quot;Have %s area edge nodes, %ss taken so far...&quot;, table.size(possibleRooms), getStopWatchTime(mmp.computeShortestWatch)))
+
+  -- allocate only 500ms to finding the shortest path, or more if we failed to find anything
+  local checkedsofar, outoftime = 0
+  for id, _ in pairs(possibleRooms) do
+    if mmp.getPath(mmp.currentroom, tonumber(id)) then
+      if shortestBorder==0 or #shortestPath &gt; #speedWalkPath then
+        shortestPath = speedWalkPath
+        shortestBorder = tonumber(id)
+      end
+    end
+    checkedsofar = checkedsofar + 1
+
+    if (getStopWatchTime(mmp.computeShortestWatch) &gt;= .5) then outoftime = true break end
+   -- mmp.echo(string.format(&quot;pathed from %s to %s, running time so far: %s&quot;, mmp.currentroom, id, getStopWatchTime(mmp.computeShortestWatch)))
+  end
+
+  --mmp.echo(string.format(&quot;total time took: %s&quot;, getStopWatchTime(mmp.computeShortestWatch)))
+  stopStopWatch(mmp.computeShortestWatch)
+
+  if shortestBorder == 0 then
+    if outoftime then
+      mmp.echo(string.format(
+        &quot;I checked %d of the %d possible exits \&quot;%s\&quot; has, but none of the ways there worked and it was taking too long :( try doing this again?&quot;,
+        checkedsofar, table.size(possibleRooms), where
+      ))
+    else
+      mmp.echo(&quot;Checked &quot;..table.size(possibleRooms)..&quot; exits in that area, and none of them worked :( I Don't know how to get you there.&quot;)
+    end
+    mmp.speedWalkPath = {}
+    mmp.speedWalkDir = {}
+    speedWalkCounter = 0
+    raiseEvent(&quot;mmapper failed path&quot;)
+		if madeEast or madeNorth or madeWest then	
+      raiseEvent(&quot;mmp clear externals&quot;)
+			clearSpecials()
+		end
+    return
+  end
+
+	if madeEast or madeNorth or madeWest then
+		raiseEvent(&quot;mmp clear externals&quot;)
+		clearSpecials()
+	end
+
+  mmp.gotoRoom(shortestBorder, dashtype)
+end
+</script>
                 <eventHandlerList>
                     <string>RoomNum</string>
                     <string>gmcp.Room.Info</string>
