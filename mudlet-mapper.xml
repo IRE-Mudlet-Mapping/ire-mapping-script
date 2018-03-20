@@ -5073,9 +5073,9 @@ function mmp.gotoArea (where, number, dashtype, exact)
   local temp, maptable = yajl.to_value(tmp), {}
   for k,v in pairs(temp) do maptable[k:lower()] = v end
 
-  local goto = maptable[where]
-  if goto then
-  	mmp.gotoRoom(goto, dashtype)
+  local destinationRoom = maptable[where]
+  if destinationRoom then
+  	mmp.gotoRoom(destinationRoom, dashtype)
   	return
   end
 
