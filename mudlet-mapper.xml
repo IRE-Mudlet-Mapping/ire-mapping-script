@@ -4831,6 +4831,7 @@ speedWalkDir = speedWalkDir or {}
 speedWalkCounter = 0
 
 -- actually used by the mapper for walking
+mmp.speedWalk = mmp.speedWalk or {}
 mmp.speedWalkPath = mmp.speedWalkPath or {}
 mmp.speedWalkDir = mmp.speedWalkDir or {}
 
@@ -5028,7 +5029,10 @@ registerAnonymousEventHandler(&quot;mmp logged in&quot;,&quot;mmp.rebuildOptions
             <Script isActive="yes" isFolder="no">
                 <name>speedwalking</name>
                 <packageName></packageName>
-                <script>function mmp.gotoRoom(where, dashtype)
+                <script>function mmp.gotoRoom(where, dashtype, gotoType)
+
+	mmp.speedWalk.type = gotoType or &quot;room&quot;
+	
   if not where or not tonumber(where) then
     mmp.echo(&quot;Where do you want to go to?&quot;) return end
 
@@ -5061,6 +5065,9 @@ registerAnonymousEventHandler(&quot;mmp logged in&quot;,&quot;mmp.rebuildOptions
 end
 
 function mmp.gotoArea (where, number, dashtype, exact)
+
+	mmp.speedWalk.type = &quot;area&quot;
+	
   if not where or type(where) ~= &quot;string&quot; then
     mmp.echo(&quot;Where do you want to go to?&quot;) return end
 
@@ -5627,7 +5634,7 @@ function mmp.gotoAreaID(areaid, number, dashtype)
 		clearSpecials()
 	end
 
-  mmp.gotoRoom(shortestBorder, dashtype)
+  mmp.gotoRoom(shortestBorder, dashtype, &quot;area&quot;)
 end
 </script>
                 <eventHandlerList>
@@ -8879,13 +8886,21 @@ function mmapper_achaea_went_outside()
   -- repath, maybe that'll allow us to use wings now.
   raiseEvent(&quot;mmp link externals&quot;)
 	local previousDirection = mmp.speedWalkDir[speedWalkCounter]
-  mmp.getPath(mmp.currentroom, mmp.speedWalkPath[#mmp.speedWalkPath]) -- don't need to check return value since that fact shouldnt've changed
+	if mmp.speedWalk.type == &quot;room&quot; then
+	  mmp.getPath(mmp.currentroom, mmp.speedWalkPath[#mmp.speedWalkPath]) -- don't need to check return value since that fact shouldnt've changed
+	else
+		mmp.gotoAreaID(getRoomArea(mmp.speedWalkPath[#mmp.speedWalkPath]))
+	end
 
   -- if our path didn't change, re-instate it as it was (since the new path starts from this room that we checked at)
   if speedWalkDir[1]~=previousDirection then
     speedWalkCounter = 0
     mmp.echo(&quot;We got outside - going to shortcut with wings.&quot;)
-    mmp.gotoRoom(mmp.speedWalkPath[#mmp.speedWalkPath])
+		if mmp.speedWalk.type == &quot;room&quot; then
+			mmp.gotoRoom(mmp.speedWalkPath[#mmp.speedWalkPath])
+		else
+			mmp.gotoAreaID(getRoomArea(mmp.speedWalkPath[#mmp.speedWalkPath]))
+		end
     mmp.ignore_speedwalking = true
   end
 	raiseEvent(&quot;mmp clear externals&quot;)
@@ -8976,7 +8991,11 @@ function mmapper_achaea_went_outside_harness()
 	if speedWalkDir[1]:find(&quot;harness&quot;, 1, true) then
 	speedWalkCounter = 0
 		mmp.echo(&quot;We got outside - going to shortcut with harness.&quot;)
-		mmp.gotoRoom(mmp.speedWalkPath[#mmp.speedWalkPath])
+		if mmp.speedWalk.type == &quot;room&quot; then
+			mmp.gotoRoom(mmp.speedWalkPath[#mmp.speedWalkPath])
+		else
+			mmp.gotoAreaID(getRoomArea(mmp.speedWalkPath[#mmp.speedWalkPath]))
+		end
 		mmp.ignore_speedwalking = true
  	end
 	
@@ -9190,7 +9209,11 @@ end</script>
   then
     speedWalkCounter = 0
     mmp.echo(&quot;We got outside - going to shortcut with 'bix device.&quot;)
-    mmp.gotoRoom(mmp.speedWalkPath[#mmp.speedWalkPath])
+		if mmp.speedWalk.type == &quot;room&quot; then
+			mmp.gotoRoom(mmp.speedWalkPath[#mmp.speedWalkPath])
+		else
+			mmp.gotoAreaID(getRoomArea(mmp.speedWalkPath[#mmp.speedWalkPath]))
+		end
     mmp.ignore_speedwalking = true
   end
   raiseEvent(&quot;mmp clear externals&quot;)
