@@ -3399,7 +3399,7 @@ end</script>
             <Alias isActive="yes" isFolder="no">
                 <name>Option</name>
                 <script>if not matches[2] then
-	mmp.settings:showAllOptions()
+	mmp.settings:showAllOptions(mmp.game)
 	return
 end
 
@@ -4685,7 +4685,7 @@ mmp.echo(&quot;All astral nodes have been &quot;..(matches[2]:lower()==&quot;on&
 -- Note that you can also use external Scripts --
 -------------------------------------------------
 
-function createOption(startingValue, onChangeFunc, allowedVarTypes, use, checkOption)
+function createOption(startingValue, onChangeFunc, allowedVarTypes, use, checkOption, games)
 	if allowedVarTypes then -- make sure our starting Value follows type rules
 		if not table.contains(allowedVarTypes, type(startingValue)) then
 			echo(&quot;Starting type is not of allowed type!\n&quot;)
@@ -4700,6 +4700,7 @@ function createOption(startingValue, onChangeFunc, allowedVarTypes, use, checkOp
 		onChange = onChangeFunc,
 		allowedVarTypes = allowedVarTypes,
 		use = use or &quot;&quot;,
+		games = games,
 		checkOption = checkOption or function() return true end
       
 	}
@@ -4726,10 +4727,12 @@ function createOptionsTable(defaultTable)
 		echo(string.rep(&quot; &quot;, 10 - string.len(tostring(val.value))) ..  &quot;- &quot; .. val.use .. &quot;\n&quot;)
 	end
 
-	function proxyTable:showAllOptions()
+	function proxyTable:showAllOptions(game)
 		proxyTable.disp(&quot;Available options: \n&quot;)
 		for k, v in pairs(self[index]) do
-			self.dispOption(k, v)
+			if not game or not v.games or v.games[game] then
+				self.dispOption(k, v)
+			end
 		end
 		echo(&quot;\n&quot;)
 		for k, v in pairs(self[&quot;_customOptions&quot;]) do
@@ -4835,7 +4838,7 @@ mmp.speedWalkPath = mmp.speedWalkPath or {}
 mmp.speedWalkDir = mmp.speedWalkDir or {}
 
 
-local newversion = &quot;18.3.2&quot;
+local newversion = &quot;18.3.3&quot;
 if mmp.version and mmp.version ~= newversion then
   if not mmp.game then mmp.echo(&quot;Mapper script updated - Thanks! I don't know what game are you connected to, though - so please reconnect, if you could.&quot;)
   else mmp.echo(&quot;Mapper script updated - thanks! You don't need to restart.&quot;) end
@@ -4849,82 +4852,82 @@ function mmp.startup()
 
   local private_settings = {}
 --General settings
-  private_settings[&quot;echocolour&quot;]    = createOption(&quot;cyan&quot;, mmp.changeEchoColour, { &quot;string&quot; }, &quot;Set the color for room number echos?&quot;,function(newSetting) return color_table[newSetting]~=nil end)
-  private_settings[&quot;crowdmap&quot;]      = createOption(false, mmp.chageMapSource, { &quot;boolean&quot; }, &quot;Use a crowd-sourced map instead of IREs default?&quot;)
+  private_settings[&quot;echocolour&quot;]    = createOption(&quot;cyan&quot;, mmp.changeEchoColour, { &quot;string&quot; }, &quot;Set the color for room number echos?&quot;, function(newSetting) return color_table[newSetting]~=nil end)
+  private_settings[&quot;crowdmap&quot;]      = createOption(false, mmp.chageMapSource, { &quot;boolean&quot; }, &quot;Use a crowd-sourced map instead of IREs default?&quot;, nil, {achaea=true})
   private_settings[&quot;showcmds&quot;]      = createOption(true, mmp.changeBoolFunc, { &quot;boolean&quot; }, &quot;Show walking commands?&quot;)
   private_settings[&quot;slowwalk&quot;]      = createOption(false, mmp.setSlowWalk, { &quot;boolean&quot; }, &quot;Walk slowly instead of as quick as possible?&quot;)
   private_settings[&quot;updatemap&quot;]     = createOption(true, mmp.changeUpdateMap, { &quot;boolean&quot; }, &quot;Check for new maps from your MUD?&quot;)
-  private_settings[&quot;waterwalk&quot;]     = createOption(true, mmp.setWaterWalk, { &quot;boolean&quot; }, &quot;Have waterwalk (don't avoid water)?&quot;)
+  private_settings[&quot;waterwalk&quot;]     = createOption(true, mmp.setWaterWalk, { &quot;boolean&quot; }, &quot;Have waterwalk (don't avoid water)?&quot;, nil, {achaea=true})
 
 --locking things
-  private_settings[&quot;lockpathways&quot;]  = createOption(true, mmp.lockPathways, { &quot;boolean&quot; }, &quot;Lock pathway exits?&quot;)
-  private_settings[&quot;locksewers&quot;]    = createOption(false, mmp.lockSewers, { &quot;boolean&quot; }, &quot;Lock all sewers?&quot;)
+  private_settings[&quot;lockpathways&quot;]  = createOption(true, mmp.lockPathways, { &quot;boolean&quot; }, &quot;Lock pathway exits?&quot;, nil, {lusternia=true})
+  private_settings[&quot;locksewers&quot;]    = createOption(false, mmp.lockSewers, { &quot;boolean&quot; }, &quot;Lock all sewers?&quot;, nil, {achaea=true})
   private_settings[&quot;lockspecials&quot;]  = createOption(false, mmp.lockSpecials, { &quot;boolean&quot; }, &quot;Lock all special exits?&quot;)
-  private_settings[&quot;lockwormholes&quot;] = createOption(true, mmp.lockWormholes, { &quot;boolean&quot; }, &quot;Lock all wormholes?&quot;)
+  private_settings[&quot;lockwormholes&quot;] = createOption(true, mmp.lockWormholes, { &quot;boolean&quot; }, &quot;Lock all wormholes?&quot;, nil, {achaea=true,imperian=true,aetolia=true})
 
 --Sprint movement
-  private_settings[&quot;dash&quot;]          = createOption(false, mmp.changeBoolFunc, { &quot;boolean&quot; }, &quot;Use Dash?&quot;)
+  private_settings[&quot;dash&quot;]          = createOption(false, mmp.changeBoolFunc, { &quot;boolean&quot; }, &quot;Use Dash?&quot;, nil, {achaea=true,imperian=true,aetolia=true})
   private_settings[&quot;sprint&quot;]        = createOption(false, mmp.changeBoolFunc, { &quot;boolean&quot; }, &quot;Use Sprint?&quot;)
   private_settings[&quot;gallop&quot;]        = createOption(false, mmp.changeBoolFunc, { &quot;boolean&quot; }, &quot;Use Gallop?&quot;)
-  private_settings[&quot;runaway&quot;]       = createOption(false, mmp.changeBoolFunc, { &quot;boolean&quot; }, &quot;Use Jester Runaway?&quot;)
+  private_settings[&quot;runaway&quot;]       = createOption(false, mmp.changeBoolFunc, { &quot;boolean&quot; }, &quot;Use Jester Runaway?&quot;, nil, {achaea=true})
 
 --Achaea wings and things
-  private_settings[&quot;winglanguage&quot;]  = createOption(&quot;&quot;, mmp.setWingsLanguage, { &quot;string&quot; }, &quot;Speak non-default language for wings:&quot;)
-  private_settings[&quot;pebble&quot;]        = createOption(false, mmp.lockPebble, { &quot;boolean&quot; }, &quot;Make use of your enchanted pebble?&quot;)
-  private_settings[&quot;removewings&quot;]   = createOption(true, mmp.setWingsRemoval, { &quot;boolean&quot; }, &quot;Remove Wings after using them?&quot;)
-  private_settings[&quot;harness&quot;]				= createOption(false, mmp.setHarness, { &quot;boolean&quot; }, &quot;Use Stratospheric Harness?&quot;) --PapaGuacamole
-	private_settings[&quot;duantahar&quot;]     = createOption(false, mmp.setDuantahar, { &quot;boolean&quot; }, &quot;Use Chenubian Wings?&quot;)
-  private_settings[&quot;duanatharan&quot;]   = createOption(false, mmp.setDuanatharan, { &quot;boolean&quot; }, &quot;Use Atavian Wings?&quot;)
-  private_settings[&quot;duanathar&quot;]     = createOption(false, mmp.setDuanathar, { &quot;boolean&quot; }, &quot;Use Eagle Wings?&quot;)
-  private_settings[&quot;duanatharic&quot;]   = createOption(false, mmp.setDuanatharic, { &quot;boolean&quot; }, &quot;Use Island Wings?&quot;)
-  private_settings[&quot;soar&quot;]          = createOption(false, mmp.setSoar, { &quot;boolean&quot; }, &quot;Use Aero Soar?&quot;)
-	private_settings[&quot;shackle&quot;]       = createOption(false, mmp.changeBoolFunc, { &quot;boolean&quot; }, &quot;Take off shackle?&quot;)
-  private_settings[&quot;universe&quot;]      = createOption(false, mmp.setUniverse, {&quot;boolean&quot; }, &quot;Use Universe Tarot?&quot;)
-  private_settings[&quot;gare&quot;]      		= createOption(false, mmp.setGare, {&quot;boolean&quot; }, &quot;Use Gare?&quot;)
+  private_settings[&quot;winglanguage&quot;]  = createOption(&quot;&quot;, mmp.setWingsLanguage, { &quot;string&quot; }, &quot;Speak non-default language for wings:&quot;, nil, {achaea=true})
+  private_settings[&quot;pebble&quot;]        = createOption(false, mmp.lockPebble, { &quot;boolean&quot; }, &quot;Make use of your enchanted pebble?&quot;, nil, {achaea=true})
+  private_settings[&quot;removewings&quot;]   = createOption(true, mmp.setWingsRemoval, { &quot;boolean&quot; }, &quot;Remove Wings after using them?&quot;, nil, {achaea=true,imperian=true})
+  private_settings[&quot;harness&quot;]				= createOption(false, mmp.setHarness, { &quot;boolean&quot; }, &quot;Use Stratospheric Harness?&quot;, nil, {achaea=true}) --PapaGuacamole
+  private_settings[&quot;duantahar&quot;]     = createOption(false, mmp.setDuantahar, { &quot;boolean&quot; }, &quot;Use Chenubian Wings?&quot;, nil, {achaea=true})
+  private_settings[&quot;duanatharan&quot;]   = createOption(false, mmp.setDuanatharan, { &quot;boolean&quot; }, &quot;Use Atavian Wings?&quot;, nil, {achaea=true})
+  private_settings[&quot;duanathar&quot;]     = createOption(false, mmp.setDuanathar, { &quot;boolean&quot; }, &quot;Use Eagle Wings?&quot;, nil, {achaea=true})
+  private_settings[&quot;duanatharic&quot;]   = createOption(false, mmp.setDuanatharic, { &quot;boolean&quot; }, &quot;Use Island Wings?&quot;, nil, {achaea=true})
+  private_settings[&quot;soar&quot;]          = createOption(false, mmp.setSoar, { &quot;boolean&quot; }, &quot;Use Aero Soar?&quot;, nil, {achaea=true})
+  private_settings[&quot;shackle&quot;]       = createOption(false, mmp.changeBoolFunc, { &quot;boolean&quot; }, &quot;Take off shackle?&quot;, nil, {achaea=true})
+  private_settings[&quot;universe&quot;]      = createOption(false, mmp.setUniverse, {&quot;boolean&quot; }, &quot;Use Universe Tarot?&quot;, nil, {achaea=true})
+  private_settings[&quot;gare&quot;]      		= createOption(false, mmp.setGare, {&quot;boolean&quot; }, &quot;Use Gare?&quot;, nil, {achaea=true})
 
 --Imperian wings
-  private_settings[&quot;shekinah&quot;]      = createOption(false, mmp.setShekinah, { &quot;boolean&quot; }, &quot;Use Seraphim Wings?&quot;)
-  private_settings[&quot;suriel&quot;]        = createOption(false, mmp.setSuriel, { &quot;boolean&quot; }, &quot;Use Orphanim Wings?&quot;)
+  private_settings[&quot;shekinah&quot;]      = createOption(false, mmp.setShekinah, { &quot;boolean&quot; }, &quot;Use Seraphim Wings?&quot;, nil, {imperian=true})
+  private_settings[&quot;suriel&quot;]        = createOption(false, mmp.setSuriel, { &quot;boolean&quot; }, &quot;Use Orphanim Wings?&quot;, nil, {imperian=true})
 	
 --Lusternia bixes
-  private_settings[&quot;torus&quot;]         = createOption(false, mmp.setTorus, { &quot;boolean&quot; }, &quot;Make use of your Torus?&quot;)
-  private_settings[&quot;prism&quot;]         = createOption(false, mmp.setPrism, {&quot;boolean&quot;}, &quot;Make use of your transplanar prism?&quot;)
-  private_settings[&quot;cubix&quot;]         = createOption(false, mmp.setCubix, { &quot;boolean&quot; }, &quot;Make use of your Cubix?&quot;)
-  private_settings[&quot;medallion&quot;]     = createOption(false, mmp.setMedallion, { &quot;boolean&quot; }, &quot;Make use of your Medallion?&quot;)
+  private_settings[&quot;torus&quot;]         = createOption(false, mmp.setTorus, { &quot;boolean&quot; }, &quot;Make use of your Torus?&quot;, nil, {lusternia=true})
+  private_settings[&quot;prism&quot;]         = createOption(false, mmp.setPrism, {&quot;boolean&quot;}, &quot;Make use of your transplanar prism?&quot;, nil, {lusternia=true})
+  private_settings[&quot;cubix&quot;]         = createOption(false, mmp.setCubix, { &quot;boolean&quot; }, &quot;Make use of your Cubix?&quot;, nil, {lusternia=true})
+  private_settings[&quot;medallion&quot;]     = createOption(false, mmp.setMedallion, { &quot;boolean&quot; }, &quot;Make use of your Medallion?&quot;, nil, {lusternia=true})
 
 --Lusternia Bubblixes
-  private_settings[&quot;tibia&quot;]         = createOption(false, mmp.setTibia, { &quot;boolean&quot; }, &quot;Make use of your Tibia?&quot;)
-  private_settings[&quot;mud&quot;]           = createOption(false, mmp.setMud, { &quot;boolean&quot; }, &quot;Make use of your Mud?&quot;)
-  private_settings[&quot;cookie&quot;]        = createOption(false, mmp.setCookie, { &quot;boolean&quot; }, &quot;Make use of your Cookie?&quot;)
-  private_settings[&quot;icicle&quot;]        = createOption(false, mmp.setIcicle, { &quot;boolean&quot; }, &quot;Make use of your Icicle?&quot;)
-  private_settings[&quot;screwdriver&quot;]   = createOption(false, mmp.setScrewdriver, { &quot;boolean&quot; }, &quot;Make use of your Screwdriver?&quot;)
-  private_settings[&quot;snowglobe&quot;]     = createOption(false, mmp.setSnowglobe, { &quot;boolean&quot; }, &quot;Make use of your Snowglobe?&quot;)
-  private_settings[&quot;head&quot;]          = createOption(false, mmp.setHead, { &quot;boolean&quot; }, &quot;Make use of your Doll's Head?&quot;)
-  private_settings[&quot;wheel&quot;]         = createOption(false, mmp.setWheel, { &quot;boolean&quot; }, &quot;Make use of your Quartz Wheel?&quot;)
+  private_settings[&quot;tibia&quot;]         = createOption(false, mmp.setTibia, { &quot;boolean&quot; }, &quot;Make use of your Tibia?&quot;, nil, {lusternia=true})
+  private_settings[&quot;mud&quot;]           = createOption(false, mmp.setMud, { &quot;boolean&quot; }, &quot;Make use of your Mud?&quot;, nil, {lusternia=true})
+  private_settings[&quot;cookie&quot;]        = createOption(false, mmp.setCookie, { &quot;boolean&quot; }, &quot;Make use of your Cookie?&quot;, nil, {lusternia=true})
+  private_settings[&quot;icicle&quot;]        = createOption(false, mmp.setIcicle, { &quot;boolean&quot; }, &quot;Make use of your Icicle?&quot;, nil, {lusternia=true})
+  private_settings[&quot;screwdriver&quot;]   = createOption(false, mmp.setScrewdriver, { &quot;boolean&quot; }, &quot;Make use of your Screwdriver?&quot;, nil, {lusternia=true})
+  private_settings[&quot;snowglobe&quot;]     = createOption(false, mmp.setSnowglobe, { &quot;boolean&quot; }, &quot;Make use of your Snowglobe?&quot;, nil, {lusternia=true})
+  private_settings[&quot;head&quot;]          = createOption(false, mmp.setHead, { &quot;boolean&quot; }, &quot;Make use of your Doll's Head?&quot;, nil, {lusternia=true})
+  private_settings[&quot;wheel&quot;]         = createOption(false, mmp.setWheel, { &quot;boolean&quot; }, &quot;Make use of your Quartz Wheel?&quot;, nil, {lusternia=true})
 
 --Lusternia Curio collections
-  private_settings[&quot;bonecurio&quot;]     = createOption(false, mmp.setBonecurio, { &quot;boolean&quot; }, &quot;Make use of your Bone curios?&quot;)
-  private_settings[&quot;facecurio&quot;]     = createOption(false, mmp.setFacecurio, { &quot;boolean&quot; }, &quot;Make use of your Face curios?&quot;)
-  private_settings[&quot;feathercurio&quot;]  = createOption(false, mmp.setFeathercurio, { &quot;boolean&quot; }, &quot;Make use of your Feather curios?&quot;)
-  private_settings[&quot;figurecurio&quot;]   = createOption(false, mmp.setFigurecurio, { &quot;boolean&quot; }, &quot;Make use of your Figure curios?&quot;)
-  private_settings[&quot;flowercurio&quot;]   = createOption(false, mmp.setFlowercurio, { &quot;boolean&quot; }, &quot;Make use of your Flower curios?&quot;)
-  private_settings[&quot;fluttercurio&quot;]  = createOption(false, mmp.setFluttercurio, { &quot;boolean&quot; }, &quot;Make use of your Flutter curios?&quot;)
-  private_settings[&quot;toolcurio&quot;]     = createOption(false, mmp.setToolcurio, { &quot;boolean&quot; }, &quot;Make use of your Tool curios]?&quot;)
-  private_settings[&quot;vernalcurio&quot;]   = createOption(false, mmp.setVernalcurio, { &quot;boolean&quot; }, &quot;Make use of your Vernal curios?&quot;)
-  private_settings[&quot;utensilcurio&quot;]  = createOption(false, mmp.setUtensilcurio, { &quot;boolean&quot; }, &quot;Make use of your Utensil curios?&quot;)
-  private_settings[&quot;toycurio&quot;]      = createOption(false, mmp.setToycurio, { &quot;boolean&quot; }, &quot;Make use of your Toy curios?&quot;)
-  private_settings[&quot;soullesscurio&quot;] = createOption(false, mmp.setSoullesscurio, { &quot;boolean&quot; }, &quot;Make use of your Soulless curios?&quot;)
+  private_settings[&quot;bonecurio&quot;]     = createOption(false, mmp.setBonecurio, { &quot;boolean&quot; }, &quot;Make use of your Bone curios?&quot;, nil, {lusternia=true})
+  private_settings[&quot;facecurio&quot;]     = createOption(false, mmp.setFacecurio, { &quot;boolean&quot; }, &quot;Make use of your Face curios?&quot;, nil, {lusternia=true})
+  private_settings[&quot;feathercurio&quot;]  = createOption(false, mmp.setFeathercurio, { &quot;boolean&quot; }, &quot;Make use of your Feather curios?&quot;, nil, {lusternia=true})
+  private_settings[&quot;figurecurio&quot;]   = createOption(false, mmp.setFigurecurio, { &quot;boolean&quot; }, &quot;Make use of your Figure curios?&quot;, nil, {lusternia=true})
+  private_settings[&quot;flowercurio&quot;]   = createOption(false, mmp.setFlowercurio, { &quot;boolean&quot; }, &quot;Make use of your Flower curios?&quot;, nil, {lusternia=true})
+  private_settings[&quot;fluttercurio&quot;]  = createOption(false, mmp.setFluttercurio, { &quot;boolean&quot; }, &quot;Make use of your Flutter curios?&quot;, nil, {lusternia=true})
+  private_settings[&quot;toolcurio&quot;]     = createOption(false, mmp.setToolcurio, { &quot;boolean&quot; }, &quot;Make use of your Tool curios]?&quot;, nil, {lusternia=true})
+  private_settings[&quot;vernalcurio&quot;]   = createOption(false, mmp.setVernalcurio, { &quot;boolean&quot; }, &quot;Make use of your Vernal curios?&quot;, nil, {lusternia=true})
+  private_settings[&quot;utensilcurio&quot;]  = createOption(false, mmp.setUtensilcurio, { &quot;boolean&quot; }, &quot;Make use of your Utensil curios?&quot;, nil, {lusternia=true})
+  private_settings[&quot;toycurio&quot;]      = createOption(false, mmp.setToycurio, { &quot;boolean&quot; }, &quot;Make use of your Toy curios?&quot;, nil, {lusternia=true})
+  private_settings[&quot;soullesscurio&quot;] = createOption(false, mmp.setSoullesscurio, { &quot;boolean&quot; }, &quot;Make use of your Soulless curios?&quot;, nil, {lusternia=true})
 
 --Lusternia epic
-  private_settings[&quot;fingerblade&quot;]   = createOption(false, mmp.setFingerblade, { &quot;boolean&quot; }, &quot;Make use of your Fingerblade?&quot;)
-  private_settings[&quot;blossom&quot;]       = createOption(false, mmp.setBlossom, { &quot;boolean&quot; }, &quot;Make use of your Flame of dae'Seren?&quot;)
-  private_settings[&quot;belt&quot;]          = createOption(false, mmp.setBelt, { &quot;boolean&quot; }, &quot;Make use of your Belt?&quot;)
-  private_settings[&quot;mandala&quot;]       = createOption(false, mmp.setMandala, { &quot;boolean&quot; }, &quot;Make use of your Mandala?&quot;)
-  private_settings[&quot;mantle&quot;]        = createOption(false, mmp.setMantle, { &quot;boolean&quot; }, &quot;Make use of your Mantle?&quot;)
-  private_settings[&quot;key&quot;]           = createOption(false, mmp.setKey, { &quot;boolean&quot; }, &quot;Make use of your Key?&quot;)
+  private_settings[&quot;fingerblade&quot;]   = createOption(false, mmp.setFingerblade, { &quot;boolean&quot; }, &quot;Make use of your Fingerblade?&quot;, nil, {lusternia=true})
+  private_settings[&quot;blossom&quot;]       = createOption(false, mmp.setBlossom, { &quot;boolean&quot; }, &quot;Make use of your Flame of dae'Seren?&quot;, nil, {lusternia=true})
+  private_settings[&quot;belt&quot;]          = createOption(false, mmp.setBelt, { &quot;boolean&quot; }, &quot;Make use of your Belt?&quot;, nil, {lusternia=true})
+  private_settings[&quot;mandala&quot;]       = createOption(false, mmp.setMandala, { &quot;boolean&quot; }, &quot;Make use of your Mandala?&quot;, nil, {lusternia=true})
+  private_settings[&quot;mantle&quot;]        = createOption(false, mmp.setMantle, { &quot;boolean&quot; }, &quot;Make use of your Mantle?&quot;, nil, {lusternia=true})
+  private_settings[&quot;key&quot;]           = createOption(false, mmp.setKey, { &quot;boolean&quot; }, &quot;Make use of your Key?&quot;, nil, {lusternia=true})
 
 --misc
-  private_settings[&quot;caravan&quot;]       = createOption(false, mmp.changeBoolFunc,{ &quot;boolean&quot; }, &quot;Walk caravans?&quot;)
+  private_settings[&quot;caravan&quot;]       = createOption(false, mmp.changeBoolFunc,{ &quot;boolean&quot; }, &quot;Walk caravans?&quot;, nil, {imperian=true})
 
 
 
@@ -4955,74 +4958,6 @@ function mmp.startup()
   echoLink(&quot;homepage&quot;,&quot;(openUrl or openURL)'http://wiki.mudlet.org/w/IRE_mapping_script'&quot;, &quot;Clicky clicky to read up on what's this about&quot;)
   echo(&quot;)\n&quot;)
 end</script>
-                <eventHandlerList/>
-            </Script>
-            <Script isActive="yes" isFolder="no">
-                <name>Remove other game's options on login</name>
-                <packageName></packageName>
-                <script>local whatGame = {
-belt={lusternia=true},
-blossom={lusternia=true},
-bonecurio={lusternia=true},
-caravan={imperian=true},
-cookie={lusternia=true},
-crowdmap={achaea=true},
-cubix={lusternia=true},
-dash={achaea=true,imperian=true,aetolia=true},
-duanathar={achaea=true},
-duanatharan={achaea=true},
-duantahar={achaea=true},
-duanatharic={achaea=true},
-gare={achaea=true},
-facecurio={lusternia=true},
-feathercurio={lusternia=true},
-figurecurio={lusternia=true},
-fingerblade={lusternia=true},
-flowercurio={lusternia=true},
-fluttercurio={lusternia=true},
-head={lusternia=true},
-icicle={lusternia=true},
-lockwormholes={achaea=true},
-mandala={lusternia=true},
-medallion={lusternia=true},
-mud={lusternia=true},
-pebble={achaea=true},
-prism={lusternia=true},
-removewings={achaea=true,imperian=true},
-runaway={achaea=true},
-screwdriver={lusternia=true},
-shackle={achaea=true},
-shekinah={imperian=true},
-snowglobe={lusternia=true},
-suriel={imperian=true},
-tibia={lusternia=true},
-toolcurio={lusternia=true},
-torus={lusternia=true},
-toycurio={lusternia=true},
-utensilcurio={lusternia=true},
-vernalcurio={lusternia=true},
-soullesscurio={lusternia=true},
-wheel={lusternia=true},
-mantle={lusternia=true},
-key={lusternia=true},
-winglanguage={achaea=true},
-universe={achaea=true},
-}
-function mmp.rebuildOptionsTable(_,game)
-	game=game:lower()
-	for index, settings in pairs(mmp.settings) do
-		if type(index)==&quot;table&quot; then
-			for k, v in pairs(settings) do
-				if whatGame[k] then
-					if whatGame[k][game]==nil then
-						settings[k]=nil
-					end
-				end
-			end
-		end
-	end
-end
-registerAnonymousEventHandler(&quot;mmp logged in&quot;,&quot;mmp.rebuildOptionsTable&quot;)</script>
                 <eventHandlerList/>
             </Script>
             <Script isActive="yes" isFolder="no">
@@ -5073,9 +5008,9 @@ function mmp.gotoArea (where, number, dashtype, exact)
   local temp, maptable = yajl.to_value(tmp), {}
   for k,v in pairs(temp) do maptable[k:lower()] = v end
 
-  local goto = maptable[where]
-  if goto then
-  	mmp.gotoRoom(goto, dashtype)
+  local destinationRoom = maptable[where]
+  if destinationRoom then
+  	mmp.gotoRoom(destinationRoom, dashtype)
   	return
   end
 
