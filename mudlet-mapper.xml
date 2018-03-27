@@ -5573,20 +5573,22 @@ end</script>
                     <script>local exitsCreated = exitsCreated or {}
 
 function mmp.tempSpecialExit(destination, command, weight)
-  table.insert(exitsCreated, destination)
+  table.insert(exitsCreated, command)
   addSpecialExit(mmp.currentroom, destination, command)
-	if weight then
-	  setExitWeight(mmp.currentroom,command,weight)
-	end
+  if weight then
+    setExitWeight(mmp.currentroom, command, weight)
+  end
 end
 
 function mmp.removeWings()
-	--remove all special exits that were created by addWings, then resets the table.
-	mmp.clearspecials(exitsCreated)
-	exitsCreated={}
+  --remove all special exits that were created by addWings, then resets the table.
+  for _, command in ipairs(exitsCreated) do
+    removeSpecialExit(mmp.currentroom, command)
+  end
+  exitsCreated = {}
 end
 
-registerAnonymousEventHandler(&quot;mmp clear externals&quot;,&quot;mmp.removeWings&quot;)</script>
+registerAnonymousEventHandler(&quot;mmp clear externals&quot;, &quot;mmp.removeWings&quot;)</script>
                     <eventHandlerList/>
                 </Script>
                 <Script isActive="yes" isFolder="no">
