@@ -5542,16 +5542,12 @@ function mmp.fixSpecialExits(directions)
 end
 
 -- cleanup function to remove the temp special exit we made - only way to remove specials in Mudlet atm is by clearing them all
-function mmp.clearspecials(ignorerooms)
+function mmp.clearspecials(deleterooms)
   local t = getSpecialExits(mmp.currentroom)
-  clearSpecialExits(mmp.currentroom)
-
   for connectingroom, exits in pairs(t) do
-    if not table.contains(ignorerooms,connectingroom) then -- don't re-add this one back as it's our temp
+    if table.contains(deleterooms,connectingroom) then -- delete this room
       for command, locked in pairs(exits) do
-        --debug echo: mmp.echo(&quot;need to re-link this room to &quot;..connectingroom..&quot; with &quot;..command..&quot; that is &quot;..(locked == &quot;1&quot; and &quot;locked&quot; or &quot;unlocked&quot;)..&quot;.&quot;)
-        addSpecialExit(mmp.currentroom, connectingroom, command)
-        if locked == &quot;1&quot; then lockSpecialExit(mmp.currentroom, connectingroom, command, true) end
+        removeSpecialExit(mmp.currentroom, command)
       end
     end
   end
