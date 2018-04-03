@@ -4838,7 +4838,7 @@ mmp.speedWalkPath = mmp.speedWalkPath or {}
 mmp.speedWalkDir = mmp.speedWalkDir or {}
 
 
-local newversion = &quot;18.3.3&quot;
+local newversion = &quot;18.4.1&quot;
 if mmp.version and mmp.version ~= newversion then
   if not mmp.game then mmp.echo(&quot;Mapper script updated - Thanks! I don't know what game are you connected to, though - so please reconnect, if you could.&quot;)
   else mmp.echo(&quot;Mapper script updated - thanks! You don't need to restart.&quot;) end
@@ -5426,17 +5426,13 @@ function mmp.fixSpecialExits(directions)
   end
 end
 
--- cleanup function to remove the temp special exit we made - only way to remove specials in Mudlet atm is by clearing them all
-function mmp.clearspecials(ignorerooms)
+-- cleanup function to remove the temp special exit we made
+function mmp.clearspecials(deleterooms)
   local t = getSpecialExits(mmp.currentroom)
-  clearSpecialExits(mmp.currentroom)
-
   for connectingroom, exits in pairs(t) do
-    if not table.contains(ignorerooms,connectingroom) then -- don't re-add this one back as it's our temp
+    if table.contains(deleterooms,connectingroom) then -- delete the special exits linking to this room
       for command, locked in pairs(exits) do
-        --debug echo: mmp.echo(&quot;need to re-link this room to &quot;..connectingroom..&quot; with &quot;..command..&quot; that is &quot;..(locked == &quot;1&quot; and &quot;locked&quot; or &quot;unlocked&quot;)..&quot;.&quot;)
-        addSpecialExit(mmp.currentroom, connectingroom, command)
-        if locked == &quot;1&quot; then lockSpecialExit(mmp.currentroom, connectingroom, command, true) end
+        removeSpecialExit(mmp.currentroom, command)
       end
     end
   end
@@ -5586,20 +5582,22 @@ end
                     <script>local exitsCreated = exitsCreated or {}
 
 function mmp.tempSpecialExit(destination, command, weight)
-  table.insert(exitsCreated, destination)
+  table.insert(exitsCreated, command)
   addSpecialExit(mmp.currentroom, destination, command)
-	if weight then
-	  setExitWeight(mmp.currentroom,command,weight)
-	end
+  if weight then
+    setExitWeight(mmp.currentroom, command, weight)
+  end
 end
 
 function mmp.removeWings()
-	--remove all special exits that were created by addWings, then resets the table.
-	mmp.clearspecials(exitsCreated)
-	exitsCreated={}
+  --remove all special exits that were created by addWings, then resets the table.
+  for _, command in ipairs(exitsCreated) do
+    removeSpecialExit(mmp.currentroom, command)
+  end
+  exitsCreated = {}
 end
 
-registerAnonymousEventHandler(&quot;mmp clear externals&quot;,&quot;mmp.removeWings&quot;)</script>
+registerAnonymousEventHandler(&quot;mmp clear externals&quot;, &quot;mmp.removeWings&quot;)</script>
                     <eventHandlerList/>
                 </Script>
                 <Script isActive="yes" isFolder="no">
