@@ -7585,7 +7585,7 @@ end
 function mmp.setHarness() --PapaGuacamole
   mmp.clearpathcache() -- clear the cache so it'll use harness or will stop using harness
 
-  if mmp.settings.harness then mmp.echo(&quot;Okay, will see about using Stratospheric Harness whenever it's quicker&quot;)
+  if mmp.settings.harness then mmp.echo(&quot;Okay, will use Stratospheric Harness when on appropriate islands&quot;)
   else mmp.echo(&quot;Won't use Stratospheric Harness anymore.&quot;) end
 end
 
@@ -8934,29 +8934,7 @@ end</script>
                         <name>mmapper_achaea_went_outside_harness</name>
                         <packageName></packageName>
                         <script>-- use Stratospheric Harness in Achaea -- PapaGuacamole
-alreadyRun = alreadyRun or false
-
-function mmp.updateIsles()
--- can be depreciated when crowdmap updated to put these in the right continents by default
-
-	if alreadyRun then return end
-
-	mmp.addcontinent(191,&quot;Eastern_Isles&quot;) -- Clockwork Isle
-	mmp.addcontinent(180,&quot;Eastern_Isles&quot;) -- Colchis, the Island of
-	mmp.addcontinent(181,&quot;Eastern_Isles&quot;) -- Umbrin, the Port of
-	mmp.addcontinent(192,&quot;Eastern_Isles&quot;) -- Zanzibaar
-	mmp.addcontinent(194,&quot;Northern_Isles&quot;) --Ilyrean
-	mmp.addcontinent(206,&quot;Northern_Isles&quot;) --Suliel Island
-	mmp.addcontinent(294,&quot;Northern_Isles&quot;) --Suliel Island (Barricades)
-	mmp.addcontinent(351,&quot;Northern_Isles&quot;) --Karbaz
-	mmp.addcontinent(209,&quot;Western_Isles&quot;) -- Ageiro, the Isle of
-	mmp.addcontinent(162,&quot;Western_Isles&quot;) -- Tapoa Island
-	mmp.addcontinent(207,&quot;Western_Isles&quot;) -- Tuar, the Island of
-
-	alreadyRun = true
 	
-end
-		
 function mmapper_achaea_went_outside_harness()
 
 	local area = mmp.getAreaName(mmp.currentroom)
@@ -9003,9 +8981,7 @@ function mmapper_achaea_went_outside_harness()
   elseif madeNorth then mmp.clearspecials{48719}
   elseif madeWest then mmp.clearspecials{54632} end
 
-end
-
-if not alreadyRun then mmp.updateIsles() end</script>
+end</script>
                         <eventHandlerList>
                             <string>mmapper went outside</string>
                             <string>mmapper changed continent</string>
