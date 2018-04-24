@@ -3314,7 +3314,6 @@ if areaID == 0 or not (mmp.game == &quot;achaea&quot;) then return end --don't k
 local area = mmp.cleanAreaName(areaID):lower()
 if not mmp.settings[&quot;orb&quot;..area] then
 	mmp.settings:setOption(&quot;orb&quot;..area,true)
-	mmp.setOrb(areaID)
 	mmp.inside = true
 	raiseEvent(&quot;mmapper went inside&quot;)
 end
@@ -9301,9 +9300,9 @@ function mmapper_achaea_orb_of_confinement()
   then
     return
   end
-  -- repath, maybe that'll allow us to use wings now.
+  -- repath, just in case we were going to use wings here
   raiseEvent(&quot;mmp link externals&quot;)
-  local previousDirection = mmp.speedWalkDir[speedWalkCounter]
+  local previousDirection = mmp.speedWalkDir[speedWalkCounter+1]
   if mmp.speedWalk.type == &quot;room&quot; then
     mmp.getPath(mmp.currentroom, mmp.speedWalkPath[#mmp.speedWalkPath])
     -- don't need to check return value since that fact shouldnt've changed
