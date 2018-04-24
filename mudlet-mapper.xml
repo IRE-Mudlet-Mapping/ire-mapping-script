@@ -3296,6 +3296,46 @@ end</script>
                     </regexCodePropertyList>
                 </Trigger>
             </TriggerGroup>
+            <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="yes" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+                <name>City has orb of confinement</name>
+                <script>local cityIDs = {
+	49,		-- Ashtan
+	57,		-- Cyrene
+	51,		-- Eleusis
+	55,		-- Hashan
+	44,		-- Mhaldor
+	368,	-- Targossas
+}
+
+local areaID = getRoomArea(mmp.currentroom) or 0
+
+if areaID == 0 or not (mmp.game == &quot;achaea&quot;) then return end --don't know where we are
+
+local area = mmp.cleanAreaName(areaID):lower()
+if not mmp.settings[&quot;orb&quot;..area] then
+	mmp.settings:setOption(&quot;orb&quot;..area,true)
+	mmp.setOrb(areaID)
+end
+</script>
+                <triggerType>0</triggerType>
+                <conditonLineDelta>0</conditonLineDelta>
+                <mStayOpen>0</mStayOpen>
+                <mCommand></mCommand>
+                <packageName></packageName>
+                <mFgColor>#ff0000</mFgColor>
+                <mBgColor>#ffff00</mBgColor>
+                <mSoundFile></mSoundFile>
+                <colorTriggerFgColor>#000000</colorTriggerFgColor>
+                <colorTriggerBgColor>#000000</colorTriggerBgColor>
+                <regexCodeList>
+                    <string>A shimmering orb covers the city</string>
+                    <string>A shimmering orb covers the city, preventing you from rising to the skies.</string>
+                </regexCodeList>
+                <regexCodePropertyList>
+                    <integer>2</integer>
+                    <integer>3</integer>
+                </regexCodePropertyList>
+            </Trigger>
         </TriggerGroup>
     </TriggerPackage>
     <TimerPackage>
@@ -4886,6 +4926,14 @@ function mmp.startup()
   private_settings[&quot;universe&quot;]      = createOption(false, mmp.setUniverse, {&quot;boolean&quot; }, &quot;Use Universe Tarot?&quot;, nil, {achaea=true})
   private_settings[&quot;gare&quot;]      		= createOption(false, mmp.setGare, {&quot;boolean&quot; }, &quot;Use Gare?&quot;, nil, {achaea=true})
 
+--Achaea Orb of Confinement
+	private_settings[&quot;orbashtan&quot;]			= createOption(false, mmp.setOrbAshtan, { &quot;boolean&quot; }, &quot;Orb of Confinement active in Ashtan?&quot;, nil, {achaea=true})
+	private_settings[&quot;orbcyrene&quot;]			= createOption(false, mmp.setOrbCyrene, { &quot;boolean&quot; }, &quot;Orb of Confinement active in Cyrene?&quot;, nil, {achaea=true})
+	private_settings[&quot;orbeleusis&quot;]			= createOption(false, mmp.setOrbEleusis, { &quot;boolean&quot; }, &quot;Orb of Confinement active in Eleusis?&quot;, nil, {achaea=true})
+	private_settings[&quot;orbhashan&quot;]			= createOption(false, mmp.setOrbHashan, { &quot;boolean&quot; }, &quot;Orb of Confinement active in Hashan?&quot;, nil, {achaea=true})
+	private_settings[&quot;orbmhaldor&quot;]			= createOption(false, mmp.setOrbMhaldor, { &quot;boolean&quot; }, &quot;Orb of Confinement active in Mhaldor?&quot;, nil, {achaea=true})
+	private_settings[&quot;orbtargossas&quot;]			= createOption(false, mmp.setOrbTargossas, { &quot;boolean&quot; }, &quot;Orb of Confinement active in Targossas?&quot;, nil, {achaea=true})
+	
 --Imperian wings
   private_settings[&quot;shekinah&quot;]      = createOption(false, mmp.setShekinah, { &quot;boolean&quot; }, &quot;Use Seraphim Wings?&quot;, nil, {imperian=true})
   private_settings[&quot;suriel&quot;]        = createOption(false, mmp.setSuriel, { &quot;boolean&quot; }, &quot;Use Orphanim Wings?&quot;, nil, {imperian=true})
@@ -9055,12 +9103,7 @@ end</script>
                     <Script isActive="yes" isFolder="no">
                         <name>achaea_gaia_whirlpool_reset</name>
                         <packageName></packageName>
-                        <script>-------------------------------------------------
---         Put your Lua functions here.        --
---                                             --
--- Note that you can also use external Scripts --
--------------------------------------------------
-function achaea_gaia_whirlpool_reset(event, game)
+                        <script>function achaea_gaia_whirlpool_reset(event, game)
 	if game == &quot;Achaea&quot; then
 		mmp.whirlString = 'script: send(&quot;enter whirlpool&quot;) if tempWhirlTrigger then killTrigger(tempWhirlTrigger) tempWhirlTrigger = nil end if tempWhirlTimer then killTimer(killWhirlTimer) tempWhirlTimer = nil end tempWhirlTrigger = tempTrigger(&quot;What do you wish to enter?&quot;, [[if tempWhirlTimer then killTimer(tempWhirlTimer) tempWhirlTimer = nil end mmp.echo(&quot;Whirlpool not found here. Trying another room.&quot;) local x = {45817, 45780, 45903, 45868, 46254, 45866} if tempWhirlTrigger then killTrigger(tempWhirlTrigger) tempWhirlTrigger = nil end clearSpecialExits(]]..mmp.currentroom..[[) local y = table.index_of(x, ]]..mmp.currentroom..[[) + 1 if y &gt; #x then y = 1 end addSpecialExit(x[y], 793, mmp.whirlString) mmp.clearpathcache() mmp.gotoRoom(mmp.speedWalkPath[#mmp.speedWalkPath]) mmp.echo(&quot;Moved whirlpool to &quot;..x[y]..&quot;.&quot;)]]) tempWhirlTimer = tempTimer(1, [[if tempWhirlTrigger then killTrigger(tempWhirlTrigger) tempWhirlTrigger = nil end if tempWhirlTimer then killTimer(tempWhirlTimer) tempWhirlTimer = nil end]])'
 		local x = {45817, 45780, 45903, 45868, 46254, 45866}
@@ -9155,6 +9198,67 @@ registerAnonymousEventHandler(&quot;mmapper failed path&quot;, &quot;mmp.WearSha
 registerAnonymousEventHandler(&quot;mmapper stopped&quot;, &quot;mmp.WearShackle&quot;)
 registerAnonymousEventHandler(&quot;mmapper arrived&quot;, &quot;mmp.WearShackle&quot;)
 registerAnonymousEventHandler(&quot;started speedwalk&quot;, &quot;mmp.UnwearShackle&quot;)</script>
+                        <eventHandlerList/>
+                    </Script>
+                    <Script isActive="yes" isFolder="no">
+                        <name>mmapper_achaea_orb_of_confinement</name>
+                        <packageName></packageName>
+                        <script>local cityIDs = {
+	[49] = function() 		-- Ashtan
+		mmp.clearpathcache()
+  	if mmp.settings.orbashtan then
+    	mmp.echo(&quot;Orb of Confinement set as active for Ashtan&quot;)
+  	else
+    	mmp.echo(&quot;Orb of Confinement set as inactive for Ashtan&quot;)
+  	end
+	end,
+	[57] = function()		-- Cyrene
+	  mmp.clearpathcache()
+    if mmp.settings.orbashtan then
+      mmp.echo(&quot;Orb of Confinement set as active for Cyrene&quot;)
+    else
+      mmp.echo(&quot;Orb of Confinement set as inactive for Cyrene&quot;)
+    end
+	end,
+	[51] = function()		-- Eleusis
+	  mmp.clearpathcache()
+	  if mmp.settings.orbashtan then
+  	  mmp.echo(&quot;Orb of Confinement set as active for Eleusis&quot;)
+  	else
+    	mmp.echo(&quot;Orb of Confinement set as inactive for Eleusis&quot;)
+  	end
+	end,
+	[55] = function()		-- Hashan
+	  mmp.clearpathcache()
+    if mmp.settings.orbashtan then
+      mmp.echo(&quot;Orb of Confinement set as active for Hashan&quot;)
+    else
+      mmp.echo(&quot;Orb of Confinement set as inactive for Hashan&quot;)
+    end
+	end,
+	[44] = function()		-- Mhaldor
+	  mmp.clearpathcache()
+    if mmp.settings.orbashtan then
+      mmp.echo(&quot;Orb of Confinement set as active for Mhaldor&quot;)
+    else
+      mmp.echo(&quot;Orb of Confinement set as inactive for Mhaldor&quot;)
+    end
+	end,
+	[368] = function()	-- Targossas
+	  mmp.clearpathcache()
+    if mmp.settings.orbashtan then
+      mmp.echo(&quot;Orb of Confinement set as active for Targossas&quot;)
+    else
+      mmp.echo(&quot;Orb of Confinement set as inactive for Targossas&quot;)
+    end
+	end,
+}
+
+function mmp.setOrb(areaID)
+
+	cityIDs[areaID]()
+	
+end</script>
                         <eventHandlerList/>
                     </Script>
                 </Script>
