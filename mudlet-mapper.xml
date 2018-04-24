@@ -3315,9 +3315,8 @@ local area = mmp.cleanAreaName(areaID):lower()
 if not mmp.settings[&quot;orb&quot;..area] then
 	mmp.settings:setOption(&quot;orb&quot;..area,true)
 	mmp.setOrb(areaID)
-	if not (#mmp.speedWalkPath == 0) then
-		mmp.getPath(mmp.currentroom, mmp.speedWalkPath[#mmp.speedWalkPath])
-	end
+	mmp.inside = true
+	raiseEvent(&quot;mmapper went inside&quot;)
 end
 </script>
                 <triggerType>0</triggerType>
@@ -9221,59 +9220,112 @@ registerAnonymousEventHandler(&quot;started speedwalk&quot;, &quot;mmp.UnwearSha
                     <Script isActive="yes" isFolder="no">
                         <name>mmapper_achaea_orb_of_confinement</name>
                         <packageName></packageName>
-                        <script>local cityIDs = {
-	[49] = function() 		-- Ashtan
-		
-  	if mmp.settings.orbashtan then
-    	mmp.echo(&quot;Orb of Confinement set as &lt;green&gt;ACTIVE&lt;reset&gt; for Ashtan&quot;)
-  	else
-    	mmp.echo(&quot;Orb of Confinement set as &lt;red&gt;INACTIVE&lt;reset&gt; for Ashtan&quot;)
-  	end
-	end,
-	[57] = function()		-- Cyrene
-    if mmp.settings.orbashtan then
-      mmp.echo(&quot;Orb of Confinement set as &lt;green&gt;ACTIVE&lt;reset&gt; for Cyrene&quot;)
-    else
-      mmp.echo(&quot;Orb of Confinement set as &lt;red&gt;INACTIVE&lt;reset&gt; for Cyrene&quot;)
-    end
-	end,
-	[51] = function()		-- Eleusis
-	  if mmp.settings.orbashtan then
-  	  mmp.echo(&quot;Orb of Confinement set as &lt;green&gt;ACTIVE&lt;reset&gt; for Eleusis&quot;)
-  	else
-    	mmp.echo(&quot;Orb of Confinement set as &lt;red&gt;INACTIVE&lt;reset&gt; for Eleusis&quot;)
-  	end
-	end,
-	[55] = function()		-- Hashan
-    if mmp.settings.orbashtan then
-      mmp.echo(&quot;Orb of Confinement set as &lt;green&gt;ACTIVE&lt;reset&gt; for Hashan&quot;)
-    else
-      mmp.echo(&quot;Orb of Confinement set as &lt;red&gt;INACTIVE&lt;reset&gt; for Hashan&quot;)
-    end
-	end,
-	[44] = function()		-- Mhaldor
-    if mmp.settings.orbashtan then
-      mmp.echo(&quot;Orb of Confinement set as &lt;green&gt;ACTIVE&lt;reset&gt; for Mhaldor&quot;)
-    else
-      mmp.echo(&quot;Orb of Confinement set as &lt;red&gt;INACTIVE&lt;reset&gt; for Mhaldor&quot;)
-    end
-	end,
-	[368] = function()	-- Targossas
-    if mmp.settings.orbashtan then
-      mmp.echo(&quot;Orb of Confinement set as &lt;green&gt;ACTIVE&lt;reset&gt; for Targossas&quot;)
-    else
-      mmp.echo(&quot;Orb of Confinement set as &lt;red&gt;INACTIVE&lt;reset&gt; for Targossas&quot;)
-    end
-	end,
-}
+                        <script>local cityIDs =
+  {
+    [49] =
+      function()
+        if mmp.settings.orbashtan then
+          mmp.echo(&quot;Orb of Confinement set as &lt;green&gt;ACTIVE&lt;reset&gt; for Ashtan&quot;)
+        else
+          mmp.echo(&quot;Orb of Confinement set as &lt;red&gt;INACTIVE&lt;reset&gt; for Ashtan&quot;)
+        end
+      end,
+    [57] =
+      function()
+        if mmp.settings.orbcyrene then
+          mmp.echo(&quot;Orb of Confinement set as &lt;green&gt;ACTIVE&lt;reset&gt; for Cyrene&quot;)
+        else
+          mmp.echo(&quot;Orb of Confinement set as &lt;red&gt;INACTIVE&lt;reset&gt; for Cyrene&quot;)
+        end
+      end,
+    [51] =
+      function()
+        if mmp.settings.orbeleusis then
+          mmp.echo(&quot;Orb of Confinement set as &lt;green&gt;ACTIVE&lt;reset&gt; for Eleusis&quot;)
+        else
+          mmp.echo(&quot;Orb of Confinement set as &lt;red&gt;INACTIVE&lt;reset&gt; for Eleusis&quot;)
+        end
+      end,
+    [55] =
+      function()
+        if mmp.settings.orbhashan then
+          mmp.echo(&quot;Orb of Confinement set as &lt;green&gt;ACTIVE&lt;reset&gt; for Hashan&quot;)
+        else
+          mmp.echo(&quot;Orb of Confinement set as &lt;red&gt;INACTIVE&lt;reset&gt; for Hashan&quot;)
+        end
+      end,
+    [44] =
+      function()
+        if mmp.settings.orbmhaldor then
+          mmp.echo(&quot;Orb of Confinement set as &lt;green&gt;ACTIVE&lt;reset&gt; for Mhaldor&quot;)
+        else
+          mmp.echo(&quot;Orb of Confinement set as &lt;red&gt;INACTIVE&lt;reset&gt; for Mhaldor&quot;)
+        end
+      end,
+    [368] =
+      function()
+        if mmp.settings.orbtargossas then
+          mmp.echo(&quot;Orb of Confinement set as &lt;green&gt;ACTIVE&lt;reset&gt; for Targossas&quot;)
+        else
+          mmp.echo(&quot;Orb of Confinement set as &lt;red&gt;INACTIVE&lt;reset&gt; for Targossas&quot;)
+        end
+      end,
+  }
 
 function mmp.setOrb(areaID)
-	mmp.clearpathcache()
-	cityIDs[areaID]()
+  mmp.clearpathcache()
+  cityIDs[areaID]()
 end
 
-</script>
-                        <eventHandlerList/>
+function mmapper_achaea_orb_of_confinement()
+  if
+    not mmp.autowalking or
+    not (
+      mmp.settings.duanathar or
+      mmp.settings.duanatharan or
+      mmp.settings.duantahar or
+      mmp.settings.duanatharic or
+      mmp.settings.soar
+    ) or
+    not (mmp.game == &quot;achaea&quot;) or
+    (mmp.currentroom == mmp.speedWalkPath[#mmp.speedWalkPath]) or
+    table.contains(gmcp.Room.Info.details, &quot;indoors&quot;) or
+    (
+      not (getRoomArea(mmp.currentroom) == 49 and mmp.settings.orbashtan) and
+      not (getRoomArea(mmp.currentroom) == 57 and mmp.settings.orbcyrene) and
+      not (getRoomArea(mmp.currentroom) == 51 and mmp.settings.orbeleusis) and
+      not (getRoomArea(mmp.currentroom) == 55 and mmp.settings.orbhashan) and
+      not (getRoomArea(mmp.currentroom) == 44 and mmp.settings.orbmhaldor) and
+      not (getRoomArea(mmp.currentroom) == 368 and mmp.settings.orbtargossas)
+    )
+  then
+    return
+  end
+  -- repath, maybe that'll allow us to use wings now.
+  raiseEvent(&quot;mmp link externals&quot;)
+  local previousDirection = mmp.speedWalkDir[speedWalkCounter]
+  if mmp.speedWalk.type == &quot;room&quot; then
+    mmp.getPath(mmp.currentroom, mmp.speedWalkPath[#mmp.speedWalkPath])
+    -- don't need to check return value since that fact shouldnt've changed
+  else
+    mmp.gotoAreaID(getRoomArea(mmp.speedWalkPath[#mmp.speedWalkPath]))
+  end
+  -- if our path didn't change, re-instate it as it was (since the new path starts from this room that we checked at)
+  if speedWalkDir[1] ~= previousDirection then
+    speedWalkCounter = 0
+    mmp.echo(&quot;We're inside, remapping path to not use wings here.&quot;)
+    if mmp.speedWalk.type == &quot;room&quot; then
+      mmp.gotoRoom(mmp.speedWalkPath[#mmp.speedWalkPath])
+    else
+      mmp.gotoAreaID(getRoomArea(mmp.speedWalkPath[#mmp.speedWalkPath]))
+    end
+    mmp.ignore_speedwalking = true
+  end
+  raiseEvent(&quot;mmp clear externals&quot;)
+end</script>
+                        <eventHandlerList>
+                            <string>mmapper went inside</string>
+                        </eventHandlerList>
                     </Script>
                 </Script>
                 <Script isActive="yes" isFolder="no">
