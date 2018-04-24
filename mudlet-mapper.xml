@@ -3315,6 +3315,9 @@ local area = mmp.cleanAreaName(areaID):lower()
 if not mmp.settings[&quot;orb&quot;..area] then
 	mmp.settings:setOption(&quot;orb&quot;..area,true)
 	mmp.setOrb(areaID)
+	if not (#mmp.speedWalkPath == 0) then
+		mmp.getPath(mmp.currentroom, mmp.speedWalkPath[#mmp.speedWalkPath])
+	end
 end
 </script>
                 <triggerType>0</triggerType>
@@ -4927,12 +4930,12 @@ function mmp.startup()
   private_settings[&quot;gare&quot;]      		= createOption(false, mmp.setGare, {&quot;boolean&quot; }, &quot;Use Gare?&quot;, nil, {achaea=true})
 
 --Achaea Orb of Confinement
-	private_settings[&quot;orbashtan&quot;]			= createOption(false, mmp.setOrbAshtan, { &quot;boolean&quot; }, &quot;Orb of Confinement active in Ashtan?&quot;, nil, {achaea=true})
-	private_settings[&quot;orbcyrene&quot;]			= createOption(false, mmp.setOrbCyrene, { &quot;boolean&quot; }, &quot;Orb of Confinement active in Cyrene?&quot;, nil, {achaea=true})
-	private_settings[&quot;orbeleusis&quot;]			= createOption(false, mmp.setOrbEleusis, { &quot;boolean&quot; }, &quot;Orb of Confinement active in Eleusis?&quot;, nil, {achaea=true})
-	private_settings[&quot;orbhashan&quot;]			= createOption(false, mmp.setOrbHashan, { &quot;boolean&quot; }, &quot;Orb of Confinement active in Hashan?&quot;, nil, {achaea=true})
-	private_settings[&quot;orbmhaldor&quot;]			= createOption(false, mmp.setOrbMhaldor, { &quot;boolean&quot; }, &quot;Orb of Confinement active in Mhaldor?&quot;, nil, {achaea=true})
-	private_settings[&quot;orbtargossas&quot;]			= createOption(false, mmp.setOrbTargossas, { &quot;boolean&quot; }, &quot;Orb of Confinement active in Targossas?&quot;, nil, {achaea=true})
+	private_settings[&quot;orbashtan&quot;]			= createOption(false, function() mmp.setOrb(49) end, { &quot;boolean&quot; }, &quot;Orb of Confinement active in Ashtan?&quot;, nil, {achaea=true})
+	private_settings[&quot;orbcyrene&quot;]			= createOption(false, function() mmp.setOrb(57) end, { &quot;boolean&quot; }, &quot;Orb of Confinement active in Cyrene?&quot;, nil, {achaea=true})
+	private_settings[&quot;orbeleusis&quot;]			= createOption(false, function() mmp.setOrb(51) end, { &quot;boolean&quot; }, &quot;Orb of Confinement active in Eleusis?&quot;, nil, {achaea=true})
+	private_settings[&quot;orbhashan&quot;]			= createOption(false, function() mmp.setOrb(55) end, { &quot;boolean&quot; }, &quot;Orb of Confinement active in Hashan?&quot;, nil, {achaea=true})
+	private_settings[&quot;orbmhaldor&quot;]			= createOption(false, function() mmp.setOrb(44) end, { &quot;boolean&quot; }, &quot;Orb of Confinement active in Mhaldor?&quot;, nil, {achaea=true})
+	private_settings[&quot;orbtargossas&quot;]			= createOption(false, function() mmp.setOrb(368) end, { &quot;boolean&quot; }, &quot;Orb of Confinement active in Targossas?&quot;, nil, {achaea=true})
 	
 --Imperian wings
   private_settings[&quot;shekinah&quot;]      = createOption(false, mmp.setShekinah, { &quot;boolean&quot; }, &quot;Use Seraphim Wings?&quot;, nil, {imperian=true})
@@ -5425,7 +5428,13 @@ function speedwalking(event, num)
       not (
         table.contains(gmcp.Room.Info.details, &quot;indoors&quot;) or
         table.contains(gmcp.Room.Info.details, &quot;considered indoors&quot;)
-      )
+      ) and
+			not (getRoomArea(mmp.currentroom) == 49 and mmp.settings.orbashtan) and
+			not (getRoomArea(mmp.currentroom) == 57 and mmp.settings.orbcyrene) and
+      not (getRoomArea(mmp.currentroom) == 51 and mmp.settings.orbeleusis) and
+      not (getRoomArea(mmp.currentroom) == 55 and mmp.settings.orbhashan) and
+      not (getRoomArea(mmp.currentroom) == 44 and mmp.settings.orbmhaldor) and
+      not (getRoomArea(mmp.currentroom) ==368 and mmp.settings.orbtargossas)
     then
       mmp.inside = false
       raiseEvent(&quot;mmapper went outside&quot;)
@@ -5433,9 +5442,15 @@ function speedwalking(event, num)
       not mmp.inside and
       (
         table.contains(gmcp.Room.Info.details, &quot;indoors&quot;) or
-        table.contains(gmcp.Room.Info.details, &quot;considered indoors&quot;)
-      )
-    then
+        table.contains(gmcp.Room.Info.details, &quot;considered indoors&quot;) or
+        (getRoomArea(mmp.currentroom) == 49 and mmp.settings.orbashtan) or
+        (getRoomArea(mmp.currentroom) == 57 and mmp.settings.orbcyrene) or
+        (getRoomArea(mmp.currentroom) == 51 and mmp.settings.orbeleusis) or
+        (getRoomArea(mmp.currentroom) == 55 and mmp.settings.orbhashan) or
+        (getRoomArea(mmp.currentroom) == 44 and mmp.settings.orbmhaldor) or
+        (getRoomArea(mmp.currentroom) ==368 and mmp.settings.orbtargossas)
+			)
+      then
       mmp.inside = true
       raiseEvent(&quot;mmapper went inside&quot;)
     end
@@ -5592,11 +5607,7 @@ end
 
 function mmp.changeBoolFunc(name, option)
   local en
-  if option then
-    en = &quot;will now use&quot;
-  else
-    en = &quot;will no longer use&quot;
-  end
+	en = option and &quot;will now use&quot; or &quot;will no longer use&quot;
   mmp.echo(&quot;&lt;green&gt;Okay, the mapper &quot; .. en .. &quot; &lt;white&gt;&quot; .. name .. &quot;&lt;green&gt;!&quot;)
 end
 
@@ -5892,7 +5903,14 @@ function mmp.addWingsAchaea()
 	if
     (mmp.settings.duanathar or mmp.settings.duanatharan or mmp.settings.duantahar) and
     gmcp.Room and
-    not table.contains(gmcp.Room.Info.details, &quot;indoors&quot;)
+    not table.contains(gmcp.Room.Info.details, &quot;indoors&quot;) and
+		-- orb of confinement - PapaGuacamole
+    not (getRoomArea(mmp.currentroom) == 49 and mmp.settings.orbashtan) and
+    not (getRoomArea(mmp.currentroom) == 57 and mmp.settings.orbcyrene) and
+    not (getRoomArea(mmp.currentroom) == 51 and mmp.settings.orbeleusis) and
+    not (getRoomArea(mmp.currentroom) == 55 and mmp.settings.orbhashan) and
+    not (getRoomArea(mmp.currentroom) == 44 and mmp.settings.orbmhaldor) and
+    not (getRoomArea(mmp.currentroom) ==368 and mmp.settings.orbtargossas)
   then
     --Sarapis wings.
     if mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Main&quot;) then
@@ -9205,60 +9223,56 @@ registerAnonymousEventHandler(&quot;started speedwalk&quot;, &quot;mmp.UnwearSha
                         <packageName></packageName>
                         <script>local cityIDs = {
 	[49] = function() 		-- Ashtan
-		mmp.clearpathcache()
+		
   	if mmp.settings.orbashtan then
-    	mmp.echo(&quot;Orb of Confinement set as active for Ashtan&quot;)
+    	mmp.echo(&quot;Orb of Confinement set as &lt;green&gt;ACTIVE&lt;reset&gt; for Ashtan&quot;)
   	else
-    	mmp.echo(&quot;Orb of Confinement set as inactive for Ashtan&quot;)
+    	mmp.echo(&quot;Orb of Confinement set as &lt;red&gt;INACTIVE&lt;reset&gt; for Ashtan&quot;)
   	end
 	end,
 	[57] = function()		-- Cyrene
-	  mmp.clearpathcache()
     if mmp.settings.orbashtan then
-      mmp.echo(&quot;Orb of Confinement set as active for Cyrene&quot;)
+      mmp.echo(&quot;Orb of Confinement set as &lt;green&gt;ACTIVE&lt;reset&gt; for Cyrene&quot;)
     else
-      mmp.echo(&quot;Orb of Confinement set as inactive for Cyrene&quot;)
+      mmp.echo(&quot;Orb of Confinement set as &lt;red&gt;INACTIVE&lt;reset&gt; for Cyrene&quot;)
     end
 	end,
 	[51] = function()		-- Eleusis
-	  mmp.clearpathcache()
 	  if mmp.settings.orbashtan then
-  	  mmp.echo(&quot;Orb of Confinement set as active for Eleusis&quot;)
+  	  mmp.echo(&quot;Orb of Confinement set as &lt;green&gt;ACTIVE&lt;reset&gt; for Eleusis&quot;)
   	else
-    	mmp.echo(&quot;Orb of Confinement set as inactive for Eleusis&quot;)
+    	mmp.echo(&quot;Orb of Confinement set as &lt;red&gt;INACTIVE&lt;reset&gt; for Eleusis&quot;)
   	end
 	end,
 	[55] = function()		-- Hashan
-	  mmp.clearpathcache()
     if mmp.settings.orbashtan then
-      mmp.echo(&quot;Orb of Confinement set as active for Hashan&quot;)
+      mmp.echo(&quot;Orb of Confinement set as &lt;green&gt;ACTIVE&lt;reset&gt; for Hashan&quot;)
     else
-      mmp.echo(&quot;Orb of Confinement set as inactive for Hashan&quot;)
+      mmp.echo(&quot;Orb of Confinement set as &lt;red&gt;INACTIVE&lt;reset&gt; for Hashan&quot;)
     end
 	end,
 	[44] = function()		-- Mhaldor
-	  mmp.clearpathcache()
     if mmp.settings.orbashtan then
-      mmp.echo(&quot;Orb of Confinement set as active for Mhaldor&quot;)
+      mmp.echo(&quot;Orb of Confinement set as &lt;green&gt;ACTIVE&lt;reset&gt; for Mhaldor&quot;)
     else
-      mmp.echo(&quot;Orb of Confinement set as inactive for Mhaldor&quot;)
+      mmp.echo(&quot;Orb of Confinement set as &lt;red&gt;INACTIVE&lt;reset&gt; for Mhaldor&quot;)
     end
 	end,
 	[368] = function()	-- Targossas
-	  mmp.clearpathcache()
     if mmp.settings.orbashtan then
-      mmp.echo(&quot;Orb of Confinement set as active for Targossas&quot;)
+      mmp.echo(&quot;Orb of Confinement set as &lt;green&gt;ACTIVE&lt;reset&gt; for Targossas&quot;)
     else
-      mmp.echo(&quot;Orb of Confinement set as inactive for Targossas&quot;)
+      mmp.echo(&quot;Orb of Confinement set as &lt;red&gt;INACTIVE&lt;reset&gt; for Targossas&quot;)
     end
 	end,
 }
 
 function mmp.setOrb(areaID)
-
+	mmp.clearpathcache()
 	cityIDs[areaID]()
-	
-end</script>
+end
+
+</script>
                         <eventHandlerList/>
                     </Script>
                 </Script>
