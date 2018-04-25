@@ -5940,7 +5940,7 @@ function mmp.addWingsAchaea()
 		if
     	mmp.settings.duanatharic and
     	gmcp.Room and
-    	not table.contains(gmcp.Room.Info.details, &quot;indoors&quot;) and not orbed
+    	not table.contains(gmcp.Room.Info.details, &quot;indoors&quot;) and not orbed()
   	then
 	  	--Island wings.
     	if mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Main&quot;) or mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Arcadia&quot;) or mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Outer&quot;) or mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Meropis&quot;) or mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Island&quot;) or mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;North&quot;) then
@@ -5967,7 +5967,7 @@ function mmp.addWingsAchaea()
 		
 	-- Air Elemental Aero Soar
 	  if
-			mmp.settings.soar and gmcp.Room and not table.contains(gmcp.Room.Info.details, &quot;indoors&quot;) and not orbed
+			mmp.settings.soar and gmcp.Room and not table.contains(gmcp.Room.Info.details, &quot;indoors&quot;) and not orbed()
   then
     --Sarapis soar.
     if mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Main&quot;) then
