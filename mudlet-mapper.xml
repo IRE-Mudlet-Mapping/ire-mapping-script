@@ -5891,7 +5891,17 @@ function mmp.addWingsAchaea()
         word
       )
   end
-
+	
+	local function orbed()-- orb of confinement - PapaGuacamole
+		return
+				(getRoomArea(mmp.currentroom) == 49 and mmp.settings.orbashtan) or
+    		(getRoomArea(mmp.currentroom) == 57 and mmp.settings.orbcyrene) or
+    		(getRoomArea(mmp.currentroom) == 51 and mmp.settings.orbeleusis) or
+    		(getRoomArea(mmp.currentroom) == 55 and mmp.settings.orbhashan) or
+    		(getRoomArea(mmp.currentroom) == 44 and mmp.settings.orbmhaldor) or
+    		(getRoomArea(mmp.currentroom) ==368 and mmp.settings.orbtargossas)
+	end
+	
   --creates a special exit from your current room to a destination, and adds it to a table so it can be easily cleared later.
   --Achaea stuff!
   if mmp.game ~= &quot;achaea&quot; then
@@ -5902,13 +5912,7 @@ function mmp.addWingsAchaea()
     (mmp.settings.duanathar or mmp.settings.duanatharan or mmp.settings.duantahar) and
     gmcp.Room and
     not table.contains(gmcp.Room.Info.details, &quot;indoors&quot;) and
-		-- orb of confinement - PapaGuacamole
-    not (getRoomArea(mmp.currentroom) == 49 and mmp.settings.orbashtan) and
-    not (getRoomArea(mmp.currentroom) == 57 and mmp.settings.orbcyrene) and
-    not (getRoomArea(mmp.currentroom) == 51 and mmp.settings.orbeleusis) and
-    not (getRoomArea(mmp.currentroom) == 55 and mmp.settings.orbhashan) and
-    not (getRoomArea(mmp.currentroom) == 44 and mmp.settings.orbmhaldor) and
-    not (getRoomArea(mmp.currentroom) ==368 and mmp.settings.orbtargossas)
+		not orbed()
   then
     --Sarapis wings.
     if mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Main&quot;) then
@@ -5936,7 +5940,7 @@ function mmp.addWingsAchaea()
 		if
     	mmp.settings.duanatharic and
     	gmcp.Room and
-    	not table.contains(gmcp.Room.Info.details, &quot;indoors&quot;)
+    	not table.contains(gmcp.Room.Info.details, &quot;indoors&quot;) and not orbed
   	then
 	  	--Island wings.
     	if mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Main&quot;) or mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Arcadia&quot;) or mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Outer&quot;) or mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Meropis&quot;) or mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Island&quot;) or mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;North&quot;) then
@@ -5963,7 +5967,7 @@ function mmp.addWingsAchaea()
 		
 	-- Air Elemental Aero Soar
 	  if
-			mmp.settings.soar and gmcp.Room and not table.contains(gmcp.Room.Info.details, &quot;indoors&quot;)
+			mmp.settings.soar and gmcp.Room and not table.contains(gmcp.Room.Info.details, &quot;indoors&quot;) and not orbed
   then
     --Sarapis soar.
     if mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Main&quot;) then
