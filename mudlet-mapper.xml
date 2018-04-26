@@ -5711,73 +5711,8 @@ function mmp.gotoAreaID(areaid, number, dashtype)
   local madeEast, madeNorth, madeWest
   local currentareaid = getRoomArea(mmp.currentroom)
   raiseEvent(&quot;mmp link externals&quot;)
-  if mmp.game == &quot;achaea&quot; and mmp.settings.harness then
-    if mmp.oncontinent(currentareaideaid, &quot;Eastern_Isles&quot;) then
-      if not table.contains(gmcp.Room.Info.details, &quot;indoors&quot;) then
-        -- make it here
-        addSpecialExit(mmp.currentroom, 54231, [[script:send(&quot;shake harness&quot;,false)]])
-      elseif currentareaid == 192 then
-        -- Zanzibaar
-        addSpecialExit(31215, 54231, [[script:send(&quot;shake harness&quot;,false)]])
-      elseif currentareaid == 191 then
-        -- Clockwork Isle
-        addSpecialExit(23351, 54231, [[script:send(&quot;shake harness&quot;,false)]])
-      elseif currentareaid == 180 then
-        -- Colchis, the Isle of
-        addSpecialExit(19786, 54231, [[script:send(&quot;shake harness&quot;,false)]])
-      else
-        --if currentareaid == 181 then -- Umbrin, the Port of
-        addSpecialExit(18443, 54231, [[script:send(&quot;shake harness&quot;,false)]])
-      end
-      madeEast = true
-    elseif mmp.oncontinent(currentareaid, &quot;Northern_Isles&quot;) then
-      if not table.contains(gmcp.Room.Info.details, &quot;indoors&quot;) then
-        -- make it here
-        addSpecialExit(mmp.currentroom, 48719, [[script:send(&quot;shake harness&quot;,false)]])
-      elseif currentareaid == 194 then
-        -- Ilyrean
-        addSpecialExit(13373, 48719, [[script:send(&quot;shake harness&quot;,false)]])
-      elseif currentareaid == 351 then
-        -- Karbaz
-        addSpecialExit(19740, 48719, [[script:send(&quot;shake harness&quot;,false)]])
-      else
-        --if currentareaid == 206 or getRoomArea(mmp.currentroom) = 294 then -- Suliel Island / Suliel Island (Barricades)
-        addSpecialExit(17768, 48719, [[script:send(&quot;shake harness&quot;,false)]])
-      end
-      madeNorth = true
-    else
-      --if mmp.oncontinent(areaid, &quot;Western_Isles&quot;) then
-      if not table.contains(gmcp.Room.Info.details, &quot;indoors&quot;) then
-        -- make it here
-        addSpecialExit(mmp.currentroom, 54632, [[script:send(&quot;shake harness&quot;,false)]])
-      elseif currentareaid == 162 then
-        --Tapoa
-        addSpecialExit(21184, 54632, [[script:send(&quot;shake harness&quot;,false)]])
-      elseif currentareaid == 207 then
-        --Tuar
-        addSpecialExit(19219, 54632, [[script:send(&quot;shake harness&quot;,false)]])
-      else
-        --if currentareaid == 209 then --Ageiro
-        addSpecialExit(30222, 54632, [[script:send(&quot;shake harness&quot;,false)]])
-      end
-      madeWest = true
-    end
-  end
 
-  local function clearSpecials()
-    if madeEast then
-      mmp.clearspecials({54231})
-    end
-    if madeNorth then
-      mmp.clearspecials({48719})
-    end
-    if madeWest then
-      mmp.clearspecials({54632})
-    end
-    raiseEvent(&quot;mmp clear externals&quot;)
-  end
-
-  local getStopWatchTime, tonumber, getPath = getStopWatchTime, tonumber, mmp.getPath
+	local getStopWatchTime, tonumber, getPath = getStopWatchTime, tonumber, mmp.getPath
   --mmp.echo(string.format(&quot;Have %s area edge nodes, %ss taken so far...&quot;, table.size(possibleRooms), getStopWatchTime(mmp.computeShortestWatch)))
   -- allocate only 500ms to finding the shortest path, or more if we failed to find anything
   local checkedsofar, outoftime = 0
@@ -5818,16 +5753,10 @@ function mmp.gotoAreaID(areaid, number, dashtype)
     mmp.speedWalkDir = {}
     speedWalkCounter = 0
     raiseEvent(&quot;mmapper failed path&quot;)
-    if madeEast or madeNorth or madeWest then
-      raiseEvent(&quot;mmp clear externals&quot;)
-      clearSpecials()
-    end
+    raiseEvent(&quot;mmp clear externals&quot;)
     return
   end
-  if madeEast or madeNorth or madeWest then
-    raiseEvent(&quot;mmp clear externals&quot;)
-    clearSpecials()
-  end
+  raiseEvent(&quot;mmp clear externals&quot;)
   mmp.gotoRoom(shortestBorder, dashtype, &quot;area&quot;)
 end</script>
                 <eventHandlerList>
@@ -9328,6 +9257,88 @@ function mmapper_achaea_orb_of_confinement()
 end</script>
                         <eventHandlerList>
                             <string>mmapper went inside</string>
+                        </eventHandlerList>
+                    </Script>
+                    <Script isActive="yes" isFolder="no">
+                        <name>mmapper_achaea_harness_add_exits</name>
+                        <packageName></packageName>
+                        <script>function mmapper_achaea_harness_add_exits()
+  if not (mmp.game == &quot;achaea&quot; and mmp.settings.harness) then
+    return
+  end
+	local cmd = [[script:send(&quot;shake harness&quot;,false)]]
+  local areaID = getRoomArea(mmp.currentroom) or 0
+  if mmp.oncontinent(areaID, &quot;Eastern_Isles&quot;) then
+    if not mmp.inside then
+      -- make it here
+      addSpecialExit(mmp.currentroom, 54231, cmd)
+    elseif areaID == 192 then
+      -- Zanzibaar
+      addSpecialExit(31215, 54231, cmd)
+    elseif areaID == 191 then
+      -- Clockwork Isle
+      addSpecialExit(23351, 54231, cmd)
+    elseif areaID == 180 then
+      -- Colchis, the Isle of
+      addSpecialExit(19786, 54231, cmd)
+    else
+      --if areaID == 181 then -- Umbrin, the Port of
+      addSpecialExit(18443, 54231, cmd)
+    end
+    --madeEast = true
+  elseif mmp.oncontinent(areaID, &quot;Northern_Isles&quot;) then
+    if not mmp.inside then
+      -- make it here
+      addSpecialExit(mmp.currentroom, 48719, cmd)
+    elseif areaID == 194 then
+      -- Ilyrean
+      addSpecialExit(13373, 48719, cmd)
+    elseif areaID == 351 then
+      -- Karbaz
+      addSpecialExit(19740, 48719, cmd)
+    else
+      --if areaID == 206 or getRoomArea(mmp.currentroom) = 294 then -- Suliel Island / Suliel Island (Barricades)
+      addSpecialExit(17768, 48719, cmd)
+    end
+  else
+    --if mmp.oncontinent(areaID, &quot;Western_Isles&quot;) then
+    if not mmp.inside then
+      -- make it here
+      addSpecialExit(mmp.currentroom, 54632, cmd)
+    elseif areaID == 162 then
+      --Tapoa
+      addSpecialExit(21184, 54632, cmd)
+    elseif areaID == 207 then
+      --Tuar
+      addSpecialExit(19219, 54632, cmd)
+    else
+      --if areaID == 209 then --Ageiro
+      addSpecialExit(30222, 54632, cmd)
+    end
+  end
+end</script>
+                        <eventHandlerList>
+                            <string>mmp link externals</string>
+                        </eventHandlerList>
+                    </Script>
+                    <Script isActive="yes" isFolder="no">
+                        <name>mmapper_achaea_harness_remove_exits</name>
+                        <packageName></packageName>
+                        <script>function mmapper_achaea_harness_remove_exits()
+  local areaID = getRoomArea(mmp.currentroom) or 0
+  if not (mmp.game == &quot;achaea&quot; and mmp.settings.harness) then
+    return
+  end
+  if mmp.oncontinent(areaID, &quot;Eastern_Isles&quot;) then
+    mmp.clearspecials({54231})
+  elseif mmp.oncontinent(areaID, &quot;Northern_Isles&quot;) then
+    mmp.clearspecials({48719})
+  elseif mmp.oncontinent(areaID, &quot;Western_Isles&quot;) then
+    mmp.clearspecials({54632})
+  end
+end</script>
+                        <eventHandlerList>
+                            <string>mmp clear externals</string>
                         </eventHandlerList>
                     </Script>
                 </Script>
