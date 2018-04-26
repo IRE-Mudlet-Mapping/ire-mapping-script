@@ -5810,7 +5810,7 @@ function mmp.addWingsAchaea()
     return
       mmp.settings.removewings and
       string.format(
-			  [[script:sendAll(&quot;wear wings&quot;, &quot;say *%s %s&quot;, &quot;remove wings&quot;, false)]],
+        [[script:sendAll(&quot;wear wings&quot;, &quot;say *%s %s&quot;, &quot;remove wings&quot;, false)]],
         (mmp.settings.winglanguage and mmp.settings.winglanguage or &quot;&quot;),
         word
       ) or
@@ -5820,28 +5820,33 @@ function mmp.addWingsAchaea()
         word
       )
   end
-	
-	local function orbed()-- orb of confinement - PapaGuacamole
-		return
-				(getRoomArea(mmp.currentroom) == 49 and mmp.settings.orbashtan) or
-    		(getRoomArea(mmp.currentroom) == 57 and mmp.settings.orbcyrene) or
-    		(getRoomArea(mmp.currentroom) == 51 and mmp.settings.orbeleusis) or
-    		(getRoomArea(mmp.currentroom) == 55 and mmp.settings.orbhashan) or
-    		(getRoomArea(mmp.currentroom) == 44 and mmp.settings.orbmhaldor) or
-    		(getRoomArea(mmp.currentroom) ==368 and mmp.settings.orbtargossas)
-	end
-	
+
+  local function orbed()
+    -- orb of confinement - PapaGuacamole
+    local areaID = getRoomArea(mmp.currentroom)
+    return
+      (mmp.settings.orbashtan and areaID == 49) or
+      (mmp.settings.orbcyrene and areaID == 57) or
+      (mmp.settings.orbeleusis and areaID == 51) or
+      (mmp.settings.orbhashan and areaID == 55) or
+      (mmp.settings.orbmhaldor and areaID == 44) or
+      (
+        mmp.settings.orbtargossas and
+        ((mmp.settings.crowdmap and areaID == 368) or (not mmp.settings.crowdmap and areaID == 271))
+      )
+  end
+
   --creates a special exit from your current room to a destination, and adds it to a table so it can be easily cleared later.
   --Achaea stuff!
   if mmp.game ~= &quot;achaea&quot; then
     return
   end
   --WINGS!
-	if
+  if
     (mmp.settings.duanathar or mmp.settings.duanatharan or mmp.settings.duantahar) and
     gmcp.Room and
     not table.contains(gmcp.Room.Info.details, &quot;indoors&quot;) and
-		not orbed()
+    not orbed()
   then
     --Sarapis wings.
     if mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Main&quot;) then
@@ -5866,18 +5871,25 @@ function mmp.addWingsAchaea()
         mmp.tempSpecialExit(51188, getcmd(&quot;duanathar&quot;))
       end
     end
-		if
-    	mmp.settings.duanatharic and
-    	gmcp.Room and
-    	not table.contains(gmcp.Room.Info.details, &quot;indoors&quot;) and not orbed()
-  	then
-	  	--Island wings.
-    	if mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Main&quot;) or mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Arcadia&quot;) or mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Outer&quot;) or mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Meropis&quot;) or mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Island&quot;) or mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;North&quot;) then
-        	mmp.tempSpecialExit(47571, getcmd(&quot;duanatharic&quot;))
-			end
-		end
+    if
+      mmp.settings.duanatharic and
+      gmcp.Room and
+      not table.contains(gmcp.Room.Info.details, &quot;indoors&quot;) and
+      not orbed()
+    then
+      --Island wings.
+      if
+        mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Main&quot;) or
+        mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Arcadia&quot;) or
+        mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Outer&quot;) or
+        mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Meropis&quot;) or
+        mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Island&quot;) or
+        mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;North&quot;)
+      then
+        mmp.tempSpecialExit(47571, getcmd(&quot;duanatharic&quot;))
+      end
+    end
   end
-
   -- Stratospheric Harness support -- PapaGuacamole
   if
     mmp.settings.harness and gmcp.Room and not table.contains(gmcp.Room.Info.details, &quot;indoors&quot;)
@@ -5893,33 +5905,43 @@ function mmp.addWingsAchaea()
       mmp.tempSpecialExit(54632, &quot;Shake Harness&quot;)
     end
   end
-		
-	-- Air Elemental Aero Soar
-	  if
-			mmp.settings.soar and gmcp.Room and not table.contains(gmcp.Room.Info.details, &quot;indoors&quot;) and not orbed()
+  -- Air Elemental Aero Soar
+  if
+    mmp.settings.soar and
+    gmcp.Room and
+    not table.contains(gmcp.Room.Info.details, &quot;indoors&quot;) and
+    not orbed()
   then
     --Sarapis soar.
     if mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Main&quot;) then
-			if gmcp.Char.Status.class == &quot;air Elemental Lord&quot; or gmcp.Char.Status.class == &quot;air Elemental Lady&quot; then
-      	mmp.tempSpecialExit(4882, &quot;aero soar high&quot;, 10) -- duanatharan
-       	mmp.tempSpecialExit(3885, &quot;aero soar low&quot;, 10) -- duanathar
-  			mmp.tempSpecialExit(54173, &quot;aero soar stratosphere&quot;, 10) -- Stratosphere!
-			end
-		--Meropis soar
+      if
+        gmcp.Char.Status.class == &quot;air Elemental Lord&quot; or
+        gmcp.Char.Status.class == &quot;air Elemental Lady&quot;
+      then
+        mmp.tempSpecialExit(4882, &quot;aero soar high&quot;, 10)
+        -- duanatharan
+        mmp.tempSpecialExit(3885, &quot;aero soar low&quot;, 10)
+        -- duanathar
+        mmp.tempSpecialExit(54173, &quot;aero soar stratosphere&quot;, 10)
+        -- Stratosphere!
+      end
+      --Meropis soar
     elseif mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Meropis&quot;) then
-			if gmcp.Char.Status.class == &quot;air Elemental Lord&quot; or gmcp.Char.Status.class == &quot;air Elemental Lady&quot; then
-      	mmp.tempSpecialExit(51603, &quot;aero soar high&quot;, 10) -- duanatharan
-      	mmp.tempSpecialExit(51188, &quot;aero soar low&quot;, 10) -- duanathar
-    		mmp.tempSpecialExit(54173, &quot;aero soar stratosphere&quot;, 10) -- Stratosphere!
-			end
+      if
+        gmcp.Char.Status.class == &quot;air Elemental Lord&quot; or
+        gmcp.Char.Status.class == &quot;air Elemental Lady&quot;
+      then
+        mmp.tempSpecialExit(51603, &quot;aero soar high&quot;, 10)
+        -- duanatharan
+        mmp.tempSpecialExit(51188, &quot;aero soar low&quot;, 10)
+        -- duanathar
+        mmp.tempSpecialExit(54173, &quot;aero soar stratosphere&quot;, 10)
+        -- Stratosphere!
+      end
     end
   end
-	
   --universe tarot
-  if
-    mmp.settings.universe and
-    mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Main&quot;)
-  then
+  if mmp.settings.universe and mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Main&quot;) then
     local tarotLocations =
       {
         azdun = 1772,
@@ -5943,19 +5965,23 @@ function mmp.addWingsAchaea()
         [=[script:
         mmp.customwalkdelay(4.5)
         send(&quot;fling universe at ground&quot;,false)
-        tempTimer(4,[[send(&quot;touch ]=] .. village .. [=[&quot;,false)]])
+        tempTimer(4,[[send(&quot;touch ]=] ..
+        village ..
+        [=[&quot;,false)]])
         ]=],
         10
       )
     end
   end
   --gare
-  if
-    mmp.settings.gare and
-		gmcp.Char and
-    string.match(gmcp.Char.Status.race, &quot;Dragon&quot;)
-  then
-		if mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Main&quot;) or mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Meropis&quot;) or mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Island&quot;) or mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;North&quot;) or mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Arcadia&quot;) then
+  if mmp.settings.gare and gmcp.Char and string.match(gmcp.Char.Status.race, &quot;Dragon&quot;) then
+    if
+      mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Main&quot;) or
+      mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Meropis&quot;) or
+      mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Island&quot;) or
+      mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;North&quot;) or
+      mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Arcadia&quot;)
+    then
       mmp.tempSpecialExit(
         12695,
         [=[script:
@@ -5967,7 +5993,7 @@ function mmp.addWingsAchaea()
     end
   end
   --clears the path cache so it calculates a new route.
-    mmp.clearpathcache()
+  mmp.clearpathcache()
 end</script>
                     <eventHandlerList/>
                 </Script>
@@ -9300,8 +9326,7 @@ end</script>
       --if areaID == 206 or getRoomArea(mmp.currentroom) = 294 then -- Suliel Island / Suliel Island (Barricades)
       addSpecialExit(17768, 48719, cmd)
     end
-  else
-    --if mmp.oncontinent(areaID, &quot;Western_Isles&quot;) then
+  elseif mmp.oncontinent(areaID, &quot;Western_Isles&quot;) then
     if not mmp.inside then
       -- make it here
       addSpecialExit(mmp.currentroom, 54632, cmd)
