@@ -3132,7 +3132,9 @@ mmp.echo(&quot;We're connected to Lithmeria.&quot;)</script>
                 </Trigger>
                 <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
                     <name>Failed to open door</name>
-                    <script>mmp.failpath()</script>
+                    <script>mmp.failpath()
+
+</script>
                     <triggerType>0</triggerType>
                     <conditonLineDelta>0</conditonLineDelta>
                     <mStayOpen>0</mStayOpen>
@@ -3296,6 +3298,38 @@ end</script>
                     </regexCodePropertyList>
                 </Trigger>
             </TriggerGroup>
+            <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="yes" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+                <name>City has orb of confinement</name>
+                <script>local areaID = getRoomArea(mmp.currentroom) or 0
+
+if areaID == 0 or not (mmp.game == &quot;achaea&quot;) then return end --don't know where we are
+
+local area = mmp.cleanAreaName(areaID):lower()
+if not mmp.settings[&quot;orb&quot;..area] then
+	mmp.settings:setOption(&quot;orb&quot;..area,true)
+	mmp.inside = true
+	raiseEvent(&quot;mmapper went inside&quot;)
+end
+</script>
+                <triggerType>0</triggerType>
+                <conditonLineDelta>0</conditonLineDelta>
+                <mStayOpen>0</mStayOpen>
+                <mCommand></mCommand>
+                <packageName></packageName>
+                <mFgColor>#ff0000</mFgColor>
+                <mBgColor>#ffff00</mBgColor>
+                <mSoundFile></mSoundFile>
+                <colorTriggerFgColor>#000000</colorTriggerFgColor>
+                <colorTriggerBgColor>#000000</colorTriggerBgColor>
+                <regexCodeList>
+                    <string>A shimmering orb covers the city</string>
+                    <string>A shimmering orb covers the city, preventing you from rising to the skies.</string>
+                </regexCodeList>
+                <regexCodePropertyList>
+                    <integer>2</integer>
+                    <integer>3</integer>
+                </regexCodePropertyList>
+            </Trigger>
         </TriggerGroup>
     </TriggerPackage>
     <TimerPackage>
@@ -4839,7 +4873,7 @@ mmp.speedWalkPath = mmp.speedWalkPath or {}
 mmp.speedWalkDir = mmp.speedWalkDir or {}
 
 
-local newversion = &quot;18.4.3&quot;
+local newversion = &quot;18.5.1&quot;
 if mmp.version and mmp.version ~= newversion then
   if not mmp.game then mmp.echo(&quot;Mapper script updated - Thanks! I don't know what game are you connected to, though - so please reconnect, if you could.&quot;)
   else mmp.echo(&quot;Mapper script updated - thanks! You don't need to restart.&quot;) end
@@ -4886,6 +4920,14 @@ function mmp.startup()
   private_settings[&quot;universe&quot;]      = createOption(false, mmp.setUniverse, {&quot;boolean&quot; }, &quot;Use Universe Tarot?&quot;, nil, {achaea=true})
   private_settings[&quot;gare&quot;]      		= createOption(false, mmp.setGare, {&quot;boolean&quot; }, &quot;Use Gare?&quot;, nil, {achaea=true})
 
+--Achaea Orb of Confinement
+	private_settings[&quot;orbashtan&quot;]			= createOption(false, function() mmp.setOrb(&quot;ashtan&quot;) end, { &quot;boolean&quot; }, &quot;Orb of Confinement active in Ashtan?&quot;, nil, {achaea=true})
+	private_settings[&quot;orbcyrene&quot;]			= createOption(false, function() mmp.setOrb(&quot;cyrene&quot;) end, { &quot;boolean&quot; }, &quot;Orb of Confinement active in Cyrene?&quot;, nil, {achaea=true})
+	private_settings[&quot;orbeleusis&quot;]		= createOption(false, function() mmp.setOrb(&quot;eleusis&quot;) end, { &quot;boolean&quot; }, &quot;Orb of Confinement active in Eleusis?&quot;, nil, {achaea=true})
+	private_settings[&quot;orbhashan&quot;]			= createOption(false, function() mmp.setOrb(&quot;hashan&quot;) end, { &quot;boolean&quot; }, &quot;Orb of Confinement active in Hashan?&quot;, nil, {achaea=true})
+	private_settings[&quot;orbmhaldor&quot;]		= createOption(false, function() mmp.setOrb(&quot;mhaldor&quot;) end, { &quot;boolean&quot; }, &quot;Orb of Confinement active in Mhaldor?&quot;, nil, {achaea=true})
+	private_settings[&quot;orbtargossas&quot;]	= createOption(false, function() mmp.setOrb(&quot;targossas&quot;) end, { &quot;boolean&quot; }, &quot;Orb of Confinement active in Targossas?&quot;, nil, {achaea=true})
+	
 --Imperian wings
   private_settings[&quot;shekinah&quot;]      = createOption(false, mmp.setShekinah, { &quot;boolean&quot; }, &quot;Use Seraphim Wings?&quot;, nil, {imperian=true})
   private_settings[&quot;suriel&quot;]        = createOption(false, mmp.setSuriel, { &quot;boolean&quot; }, &quot;Use Orphanim Wings?&quot;, nil, {imperian=true})
@@ -5372,12 +5414,14 @@ function speedwalking(event, num)
   end
   -- track if we're inside or outside, if possible
   if gmcp.Room then
+    local areaID = getRoomArea(mmp.currentroom)
     if
       mmp.inside and
       not (
         table.contains(gmcp.Room.Info.details, &quot;indoors&quot;) or
         table.contains(gmcp.Room.Info.details, &quot;considered indoors&quot;)
-      )
+      ) and
+      not mmp.orbed()
     then
       mmp.inside = false
       raiseEvent(&quot;mmapper went outside&quot;)
@@ -5385,7 +5429,8 @@ function speedwalking(event, num)
       not mmp.inside and
       (
         table.contains(gmcp.Room.Info.details, &quot;indoors&quot;) or
-        table.contains(gmcp.Room.Info.details, &quot;considered indoors&quot;)
+        table.contains(gmcp.Room.Info.details, &quot;considered indoors&quot;) or
+				mmp.orbed()
       )
     then
       mmp.inside = true
@@ -5544,11 +5589,7 @@ end
 
 function mmp.changeBoolFunc(name, option)
   local en
-  if option then
-    en = &quot;will now use&quot;
-  else
-    en = &quot;will no longer use&quot;
-  end
+  en = option and &quot;will now use&quot; or &quot;will no longer use&quot;
   mmp.echo(&quot;&lt;green&gt;Okay, the mapper &quot; .. en .. &quot; &lt;white&gt;&quot; .. name .. &quot;&lt;green&gt;!&quot;)
 end
 
@@ -5625,10 +5666,12 @@ function mmp.fixSpecialExits(directions)
 end
 
 -- cleanup function to remove the temp special exit we made
+
 function mmp.clearspecials(deleterooms)
   local t = getSpecialExits(mmp.currentroom)
   for connectingroom, exits in pairs(t) do
-    if table.contains(deleterooms,connectingroom) then -- delete the special exits linking to this room
+    if table.contains(deleterooms, connectingroom) then
+      -- delete the special exits linking to this room
       for command, locked in pairs(exits) do
         removeSpecialExit(mmp.currentroom, command)
       end
@@ -5654,72 +5697,6 @@ function mmp.gotoAreaID(areaid, number, dashtype)
   local madeEast, madeNorth, madeWest
   local currentareaid = getRoomArea(mmp.currentroom)
   raiseEvent(&quot;mmp link externals&quot;)
-  if mmp.game == &quot;achaea&quot; and mmp.settings.harness then
-    if mmp.oncontinent(currentareaideaid, &quot;Eastern_Isles&quot;) then
-      if not table.contains(gmcp.Room.Info.details, &quot;indoors&quot;) then
-        -- make it here
-        addSpecialExit(mmp.currentroom, 54231, [[script:send(&quot;shake harness&quot;,false)]])
-      elseif currentareaid == 192 then
-        -- Zanzibaar
-        addSpecialExit(31215, 54231, [[script:send(&quot;shake harness&quot;,false)]])
-      elseif currentareaid == 191 then
-        -- Clockwork Isle
-        addSpecialExit(23351, 54231, [[script:send(&quot;shake harness&quot;,false)]])
-      elseif currentareaid == 180 then
-        -- Colchis, the Isle of
-        addSpecialExit(19786, 54231, [[script:send(&quot;shake harness&quot;,false)]])
-      else
-        --if currentareaid == 181 then -- Umbrin, the Port of
-        addSpecialExit(18443, 54231, [[script:send(&quot;shake harness&quot;,false)]])
-      end
-      madeEast = true
-    elseif mmp.oncontinent(currentareaid, &quot;Northern_Isles&quot;) then
-      if not table.contains(gmcp.Room.Info.details, &quot;indoors&quot;) then
-        -- make it here
-        addSpecialExit(mmp.currentroom, 48719, [[script:send(&quot;shake harness&quot;,false)]])
-      elseif currentareaid == 194 then
-        -- Ilyrean
-        addSpecialExit(13373, 48719, [[script:send(&quot;shake harness&quot;,false)]])
-      elseif currentareaid == 351 then
-        -- Karbaz
-        addSpecialExit(19740, 48719, [[script:send(&quot;shake harness&quot;,false)]])
-      else
-        --if currentareaid == 206 or getRoomArea(mmp.currentroom) = 294 then -- Suliel Island / Suliel Island (Barricades)
-        addSpecialExit(17768, 48719, [[script:send(&quot;shake harness&quot;,false)]])
-      end
-      madeNorth = true
-    else
-      --if mmp.oncontinent(areaid, &quot;Western_Isles&quot;) then
-      if not table.contains(gmcp.Room.Info.details, &quot;indoors&quot;) then
-        -- make it here
-        addSpecialExit(mmp.currentroom, 54632, [[script:send(&quot;shake harness&quot;,false)]])
-      elseif currentareaid == 162 then
-        --Tapoa
-        addSpecialExit(21184, 54632, [[script:send(&quot;shake harness&quot;,false)]])
-      elseif currentareaid == 207 then
-        --Tuar
-        addSpecialExit(19219, 54632, [[script:send(&quot;shake harness&quot;,false)]])
-      else
-        --if currentareaid == 209 then --Ageiro
-        addSpecialExit(30222, 54632, [[script:send(&quot;shake harness&quot;,false)]])
-      end
-      madeWest = true
-    end
-  end
-
-  local function clearSpecials()
-    if madeEast then
-      mmp.clearspecials({54231})
-    end
-    if madeNorth then
-      mmp.clearspecials({48719})
-    end
-    if madeWest then
-      mmp.clearspecials({54632})
-    end
-    raiseEvent(&quot;mmp clear externals&quot;)
-  end
-
   local getStopWatchTime, tonumber, getPath = getStopWatchTime, tonumber, mmp.getPath
   --mmp.echo(string.format(&quot;Have %s area edge nodes, %ss taken so far...&quot;, table.size(possibleRooms), getStopWatchTime(mmp.computeShortestWatch)))
   -- allocate only 500ms to finding the shortest path, or more if we failed to find anything
@@ -5761,16 +5738,10 @@ function mmp.gotoAreaID(areaid, number, dashtype)
     mmp.speedWalkDir = {}
     speedWalkCounter = 0
     raiseEvent(&quot;mmapper failed path&quot;)
-    if madeEast or madeNorth or madeWest then
-      raiseEvent(&quot;mmp clear externals&quot;)
-      clearSpecials()
-    end
+    raiseEvent(&quot;mmp clear externals&quot;)
     return
   end
-  if madeEast or madeNorth or madeWest then
-    raiseEvent(&quot;mmp clear externals&quot;)
-    clearSpecials()
-  end
+  raiseEvent(&quot;mmp clear externals&quot;)
   mmp.gotoRoom(shortestBorder, dashtype, &quot;area&quot;)
 end</script>
                 <eventHandlerList>
@@ -5817,6 +5788,25 @@ registerAnonymousEventHandler(&quot;mmp clear externals&quot;, &quot;mmp.removeW
                     <packageName></packageName>
                     <script>registerAnonymousEventHandler(&quot;mmp link externals&quot;, &quot;mmp.addWingsAchaea&quot;)
 
+function mmp.orbed()
+	-- orb of confinement - PapaGuacamole
+  local areaID = getRoomArea(mmp.currentroom)
+  return
+		(mmp.game == &quot;achaea&quot; and
+  		(
+    		(mmp.settings.orbashtan and areaID == 49) or
+    		(mmp.settings.orbcyrene and areaID == 57) or
+    		(mmp.settings.orbeleusis and areaID == 51) or
+    		(mmp.settings.orbhashan and areaID == 55) or
+    		(mmp.settings.orbmhaldor and areaID == 44) or
+    		(
+    			mmp.settings.orbtargossas and
+    			((mmp.settings.crowdmap and areaID == 368) or (not mmp.settings.crowdmap and areaID == 271))
+    		)
+  		)
+		)
+end
+
 function mmp.addWingsAchaea()
   --Trimmed down version of the original function, meant to only be used for wings. (Where the command varies based on several MCONFIGS)
 
@@ -5824,7 +5814,7 @@ function mmp.addWingsAchaea()
     return
       mmp.settings.removewings and
       string.format(
-			  [[script:sendAll(&quot;wear wings&quot;, &quot;say *%s %s&quot;, &quot;remove wings&quot;, false)]],
+        [[script:sendAll(&quot;wear wings&quot;, &quot;say *%s %s&quot;, &quot;remove wings&quot;, false)]],
         (mmp.settings.winglanguage and mmp.settings.winglanguage or &quot;&quot;),
         word
       ) or
@@ -5834,17 +5824,17 @@ function mmp.addWingsAchaea()
         word
       )
   end
-
   --creates a special exit from your current room to a destination, and adds it to a table so it can be easily cleared later.
   --Achaea stuff!
   if mmp.game ~= &quot;achaea&quot; then
     return
   end
   --WINGS!
-	if
+  if
     (mmp.settings.duanathar or mmp.settings.duanatharan or mmp.settings.duantahar) and
     gmcp.Room and
-    not table.contains(gmcp.Room.Info.details, &quot;indoors&quot;)
+    not table.contains(gmcp.Room.Info.details, &quot;indoors&quot;) and
+    not mmp.orbed()
   then
     --Sarapis wings.
     if mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Main&quot;) then
@@ -5869,18 +5859,25 @@ function mmp.addWingsAchaea()
         mmp.tempSpecialExit(51188, getcmd(&quot;duanathar&quot;))
       end
     end
-		if
-    	mmp.settings.duanatharic and
-    	gmcp.Room and
-    	not table.contains(gmcp.Room.Info.details, &quot;indoors&quot;)
-  	then
-	  	--Island wings.
-    	if mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Main&quot;) or mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Arcadia&quot;) or mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Outer&quot;) or mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Meropis&quot;) or mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Island&quot;) or mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;North&quot;) then
-        	mmp.tempSpecialExit(47571, getcmd(&quot;duanatharic&quot;))
-			end
-		end
+    if
+      mmp.settings.duanatharic and
+      gmcp.Room and
+      not table.contains(gmcp.Room.Info.details, &quot;indoors&quot;) and
+      not mmp.orbed()
+    then
+      --Island wings.
+      if
+        mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Main&quot;) or
+        mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Arcadia&quot;) or
+        mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Outer&quot;) or
+        mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Meropis&quot;) or
+        mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Island&quot;) or
+        mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;North&quot;)
+      then
+        mmp.tempSpecialExit(47571, getcmd(&quot;duanatharic&quot;))
+      end
+    end
   end
-
   -- Stratospheric Harness support -- PapaGuacamole
   if
     mmp.settings.harness and gmcp.Room and not table.contains(gmcp.Room.Info.details, &quot;indoors&quot;)
@@ -5896,33 +5893,43 @@ function mmp.addWingsAchaea()
       mmp.tempSpecialExit(54632, &quot;Shake Harness&quot;)
     end
   end
-		
-	-- Air Elemental Aero Soar
-	  if
-			mmp.settings.soar and gmcp.Room and not table.contains(gmcp.Room.Info.details, &quot;indoors&quot;)
+  -- Air Elemental Aero Soar
+  if
+    mmp.settings.soar and
+    gmcp.Room and
+    not table.contains(gmcp.Room.Info.details, &quot;indoors&quot;) and
+    not mmp.orbed()
   then
     --Sarapis soar.
     if mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Main&quot;) then
-			if gmcp.Char.Status.class == &quot;air Elemental Lord&quot; or gmcp.Char.Status.class == &quot;air Elemental Lady&quot; then
-      	mmp.tempSpecialExit(4882, &quot;aero soar high&quot;, 10) -- duanatharan
-       	mmp.tempSpecialExit(3885, &quot;aero soar low&quot;, 10) -- duanathar
-  			mmp.tempSpecialExit(54173, &quot;aero soar stratosphere&quot;, 10) -- Stratosphere!
-			end
-		--Meropis soar
+      if
+        gmcp.Char.Status.class == &quot;air Elemental Lord&quot; or
+        gmcp.Char.Status.class == &quot;air Elemental Lady&quot;
+      then
+        mmp.tempSpecialExit(4882, &quot;aero soar high&quot;, 10)
+        -- duanatharan
+        mmp.tempSpecialExit(3885, &quot;aero soar low&quot;, 10)
+        -- duanathar
+        mmp.tempSpecialExit(54173, &quot;aero soar stratosphere&quot;, 10)
+        -- Stratosphere!
+      end
+      --Meropis soar
     elseif mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Meropis&quot;) then
-			if gmcp.Char.Status.class == &quot;air Elemental Lord&quot; or gmcp.Char.Status.class == &quot;air Elemental Lady&quot; then
-      	mmp.tempSpecialExit(51603, &quot;aero soar high&quot;, 10) -- duanatharan
-      	mmp.tempSpecialExit(51188, &quot;aero soar low&quot;, 10) -- duanathar
-    		mmp.tempSpecialExit(54173, &quot;aero soar stratosphere&quot;, 10) -- Stratosphere!
-			end
+      if
+        gmcp.Char.Status.class == &quot;air Elemental Lord&quot; or
+        gmcp.Char.Status.class == &quot;air Elemental Lady&quot;
+      then
+        mmp.tempSpecialExit(51603, &quot;aero soar high&quot;, 10)
+        -- duanatharan
+        mmp.tempSpecialExit(51188, &quot;aero soar low&quot;, 10)
+        -- duanathar
+        mmp.tempSpecialExit(54173, &quot;aero soar stratosphere&quot;, 10)
+        -- Stratosphere!
+      end
     end
   end
-	
   --universe tarot
-  if
-    mmp.settings.universe and
-    mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Main&quot;)
-  then
+  if mmp.settings.universe and mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Main&quot;) then
     local tarotLocations =
       {
         azdun = 1772,
@@ -5946,19 +5953,23 @@ function mmp.addWingsAchaea()
         [=[script:
         mmp.customwalkdelay(4.5)
         send(&quot;fling universe at ground&quot;,false)
-        tempTimer(4,[[send(&quot;touch ]=] .. village .. [=[&quot;,false)]])
+        tempTimer(4,[[send(&quot;touch ]=] ..
+        village ..
+        [=[&quot;,false)]])
         ]=],
         10
       )
     end
   end
   --gare
-  if
-    mmp.settings.gare and
-		gmcp.Char and
-    string.match(gmcp.Char.Status.race, &quot;Dragon&quot;)
-  then
-		if mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Main&quot;) or mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Meropis&quot;) or mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Island&quot;) or mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;North&quot;) or mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Arcadia&quot;) then
+  if mmp.settings.gare and gmcp.Char and string.match(gmcp.Char.Status.race, &quot;Dragon&quot;) then
+    if
+      mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Main&quot;) or
+      mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Meropis&quot;) or
+      mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Island&quot;) or
+      mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;North&quot;) or
+      mmp.oncontinent(getRoomArea(mmp.currentroom), &quot;Arcadia&quot;)
+    then
       mmp.tempSpecialExit(
         12695,
         [=[script:
@@ -5970,7 +5981,7 @@ function mmp.addWingsAchaea()
     end
   end
   --clears the path cache so it calculates a new route.
-    mmp.clearpathcache()
+  mmp.clearpathcache()
 end</script>
                     <eventHandlerList/>
                 </Script>
@@ -8944,68 +8955,72 @@ end</script>
                         <name>register_achaeas_envdata</name>
                         <packageName></packageName>
                         <script>function register_achaeas_envdata(_, game)
-  if game ~= &quot;Achaea&quot; then return end
-
+  if game ~= &quot;Achaea&quot; then
+    return
+  end
   mmp.envids =
-  {
-    [&quot;Constructed underground&quot;] = 2,
-    [&quot;Crimson Sea&quot;]             = 45,
-    [&quot;Deep Ocean&quot;]              = 24,
-    [&quot;Deep Ocean floor&quot;]        = 30,
-    [&quot;Dwarven city&quot;]            = 18,
-    [&quot;Lava Fields&quot;]             = 39,
-    [&quot;Magma Caves&quot;]             = 31,
-    [&quot;Natural underground&quot;]     = 3,
-    [&quot;Ocean floor&quot;]             = 34,
-    [&quot;Planar Highway&quot;]          = 42,
-    [&quot;Sanguine River&quot;]          = 44,
-    [&quot;Tsol'aa city&quot;]            = 19,
-    [&quot;Vast Ocean&quot;]              = 40,
-    Abstract                    = 37,
-    Agrarian                    = 48,
-    Ausafoss                    = 47,
-    Beach                       = 5,
-    Blighted                    = 29,
-    Catacombs                   = 14,
-    Chaos                       = 38,
-    Desert                      = 6,
-    Earthen                     = 43,
-    Flames                      = 49,
-    Forest                      = 4,
-    Freshwater                  = 22,
-    Garden                      = 21,
-    Grasslands                  = 7,
-    Hills                       = 9,
-    Jungle                      = 17,
-    Mountains                   = 14,
-    Nothing                     = 0,
-    Ocean                       = 20,
-    Path                        = 11,
-    Polar                       = 27,
-    Reef                        = 25,
-    River                       = 10,
-    Road                        = 12,
-    Ruins                       = 32,
-    Sewer                       = 23,
-    Skies                       = 10,
-    Storm                       = 50,
-    Swamp                       = 15,
-    Trees                       = 28,
-    Tundra                      = 16,
-    Urban                       = 8,
-    Valley                      = 13,
-    Vessel                      = 36,
-    Viscera                     = 46,
-    Wastelands                  = 41,
-    Water                       = 30,
-  }
-
+    {
+      [&quot;Constructed underground&quot;] = 2,
+      [&quot;Crimson Sea&quot;] = 45,
+      [&quot;Deep Ocean&quot;] = 24,
+      [&quot;Deep Ocean floor&quot;] = 30,
+      [&quot;Dwarven city&quot;] = 18,
+      [&quot;Lava Fields&quot;] = 39,
+      [&quot;Magma Caves&quot;] = 31,
+      [&quot;Natural underground&quot;] = 3,
+      [&quot;Ocean floor&quot;] = 34,
+      [&quot;Planar Highway&quot;] = 42,
+      [&quot;Sanguine River&quot;] = 44,
+      [&quot;Tsol'aa city&quot;] = 19,
+      [&quot;Vast Ocean&quot;] = 40,
+      Abstract = 37,
+      Agrarian = 48,
+      Ausafoss = 47,
+      Beach = 5,
+      Blighted = 29,
+      Catacombs = 14,
+      Chaos = 38,
+      Desert = 6,
+      Earthen = 43,
+      Flames = 49,
+      Forest = 4,
+      Freshwater = 22,
+      Garden = 21,
+      Grasslands = 7,
+      Hills = 9,
+      Jungle = 17,
+      Mountains = 14,
+      Nothing = 0,
+      Ocean = 20,
+      Path = 11,
+      Polar = 27,
+      Reef = 25,
+      River = 10,
+      Road = 12,
+      Ruins = 32,
+      Sewer = 23,
+      Skies = 10,
+      Storm = 50,
+      Swamp = 15,
+      Trees = 28,
+      Tundra = 16,
+      Urban = 8,
+      Valley = 13,
+      Vessel = 36,
+      Viscera = 46,
+      Wastelands = 41,
+      Water = 30,
+    }
   mmp.waterenvs = {}
-  local waterids = { &quot;Freshwater&quot;, &quot;Ocean&quot;, &quot;River&quot;, &quot;Deep Ocean&quot;, &quot;Water&quot;, &quot;Reef&quot;, &quot;Ocean floor&quot;, &quot;Vast Ocean&quot; }
-  for i = 1, #waterids do mmp.waterenvs[mmp.envids[waterids[i]]] = true end
-
-  mmp.envidsr = {};
-  for name, id in pairs(mmp.envids) do mmp.envidsr[id] = name end
+  local waterids =
+    {&quot;Freshwater&quot;, &quot;Ocean&quot;, &quot;River&quot;, &quot;Deep Ocean&quot;, &quot;Water&quot;, &quot;Reef&quot;, &quot;Ocean floor&quot;, &quot;Vast Ocean&quot;}
+  for i = 1, #waterids do
+    mmp.waterenvs[mmp.envids[waterids[i]]] = true
+  end
+  mmp.envidsr = {}
+  for name, id in pairs(mmp.envids) do
+    mmp.envidsr[id] = name
+  end
 end</script>
                         <eventHandlerList>
                             <string>mmp logged in</string>
@@ -9051,12 +9066,7 @@ end</script>
                     <Script isActive="yes" isFolder="no">
                         <name>achaea_gaia_whirlpool_reset</name>
                         <packageName></packageName>
-                        <script>-------------------------------------------------
---         Put your Lua functions here.        --
---                                             --
--- Note that you can also use external Scripts --
--------------------------------------------------
-function achaea_gaia_whirlpool_reset(event, game)
+                        <script>function achaea_gaia_whirlpool_reset(event, game)
 	if game == &quot;Achaea&quot; then
 		mmp.whirlString = 'script: send(&quot;enter whirlpool&quot;) if tempWhirlTrigger then killTrigger(tempWhirlTrigger) tempWhirlTrigger = nil end if tempWhirlTimer then killTimer(killWhirlTimer) tempWhirlTimer = nil end tempWhirlTrigger = tempTrigger(&quot;What do you wish to enter?&quot;, [[if tempWhirlTimer then killTimer(tempWhirlTimer) tempWhirlTimer = nil end mmp.echo(&quot;Whirlpool not found here. Trying another room.&quot;) local x = {45817, 45780, 45903, 45868, 46254, 45866} if tempWhirlTrigger then killTrigger(tempWhirlTrigger) tempWhirlTrigger = nil end clearSpecialExits(]]..mmp.currentroom..[[) local y = table.index_of(x, ]]..mmp.currentroom..[[) + 1 if y &gt; #x then y = 1 end addSpecialExit(x[y], 793, mmp.whirlString) mmp.clearpathcache() mmp.gotoRoom(mmp.speedWalkPath[#mmp.speedWalkPath]) mmp.echo(&quot;Moved whirlpool to &quot;..x[y]..&quot;.&quot;)]]) tempWhirlTimer = tempTimer(1, [[if tempWhirlTrigger then killTrigger(tempWhirlTrigger) tempWhirlTrigger = nil end if tempWhirlTimer then killTimer(tempWhirlTimer) tempWhirlTimer = nil end]])'
 		local x = {45817, 45780, 45903, 45868, 46254, 45866}
@@ -9152,6 +9162,143 @@ registerAnonymousEventHandler(&quot;mmapper stopped&quot;, &quot;mmp.WearShackle
 registerAnonymousEventHandler(&quot;mmapper arrived&quot;, &quot;mmp.WearShackle&quot;)
 registerAnonymousEventHandler(&quot;started speedwalk&quot;, &quot;mmp.UnwearShackle&quot;)</script>
                         <eventHandlerList/>
+                    </Script>
+                    <Script isActive="yes" isFolder="no">
+                        <name>mmapper_achaea_orb_of_confinement</name>
+                        <packageName></packageName>
+                        <script>function mmp.setOrb(city)
+  mmp.clearpathcache()
+  if mmp.settings[&quot;orb&quot;..city:lower()] then
+    mmp.echo(&quot;Orb of Confinement set as &lt;green&gt;ACTIVE&lt;reset&gt; for &quot; .. city:title())
+  else
+    mmp.echo(&quot;Orb of Confinement set as &lt;red&gt;INACTIVE&lt;reset&gt; for &quot; .. city:title())
+  end
+end
+
+function mmapper_achaea_orb_of_confinement()
+
+  if
+    not mmp.autowalking or
+    not (
+      mmp.settings.duanathar or
+      mmp.settings.duanatharan or
+      mmp.settings.duantahar or
+      mmp.settings.duanatharic or
+      mmp.settings.soar
+    ) or
+    not (mmp.game == &quot;achaea&quot;) or
+    (mmp.currentroom == mmp.speedWalkPath[#mmp.speedWalkPath]) or
+    table.contains(gmcp.Room.Info.details, &quot;indoors&quot;) or
+    not mmp.orbed()
+  then
+    return
+  end
+  -- repath, just in case we were going to use wings here
+  raiseEvent(&quot;mmp link externals&quot;)
+  local previousDirection = mmp.speedWalkDir[speedWalkCounter+1]
+  if mmp.speedWalk.type == &quot;room&quot; then
+    mmp.getPath(mmp.currentroom, mmp.speedWalkPath[#mmp.speedWalkPath])
+    -- don't need to check return value since that fact shouldnt've changed
+  else
+    mmp.gotoAreaID(getRoomArea(mmp.speedWalkPath[#mmp.speedWalkPath]))
+  end
+  -- if our path didn't change, re-instate it as it was (since the new path starts from this room that we checked at)
+  if speedWalkDir[1] ~= previousDirection then
+    speedWalkCounter = 0
+    mmp.echo(&quot;We're inside, remapping path to not use wings here.&quot;)
+    if mmp.speedWalk.type == &quot;room&quot; then
+      mmp.gotoRoom(mmp.speedWalkPath[#mmp.speedWalkPath])
+    else
+      mmp.gotoAreaID(getRoomArea(mmp.speedWalkPath[#mmp.speedWalkPath]))
+    end
+    mmp.ignore_speedwalking = true
+  end
+  raiseEvent(&quot;mmp clear externals&quot;)
+end</script>
+                        <eventHandlerList>
+                            <string>mmapper went inside</string>
+                        </eventHandlerList>
+                    </Script>
+                    <Script isActive="yes" isFolder="no">
+                        <name>mmapper_achaea_harness_add_exits</name>
+                        <packageName></packageName>
+                        <script>function mmapper_achaea_harness_add_exits()
+  if not (mmp.game == &quot;achaea&quot; and mmp.settings.harness) then
+    return
+  end
+	local cmd = [[script:send(&quot;shake harness&quot;,false)]]
+  local areaID = getRoomArea(mmp.currentroom) or 0
+  if mmp.oncontinent(areaID, &quot;Eastern_Isles&quot;) then
+    if not mmp.inside then
+      -- make it here
+      addSpecialExit(mmp.currentroom, 54231, cmd)
+    elseif areaID == 192 then
+      -- Zanzibaar
+      addSpecialExit(31215, 54231, cmd)
+    elseif areaID == 191 then
+      -- Clockwork Isle
+      addSpecialExit(23351, 54231, cmd)
+    elseif areaID == 180 then
+      -- Colchis, the Isle of
+      addSpecialExit(19786, 54231, cmd)
+    else
+      --if areaID == 181 then -- Umbrin, the Port of
+      addSpecialExit(18443, 54231, cmd)
+    end
+    --madeEast = true
+  elseif mmp.oncontinent(areaID, &quot;Northern_Isles&quot;) then
+    if not mmp.inside then
+      -- make it here
+      addSpecialExit(mmp.currentroom, 48719, cmd)
+    elseif areaID == 194 then
+      -- Ilyrean
+      addSpecialExit(13373, 48719, cmd)
+    elseif areaID == 351 then
+      -- Karbaz
+      addSpecialExit(19740, 48719, cmd)
+    else
+      --if areaID == 206 or getRoomArea(mmp.currentroom) = 294 then -- Suliel Island / Suliel Island (Barricades)
+      addSpecialExit(17768, 48719, cmd)
+    end
+  elseif mmp.oncontinent(areaID, &quot;Western_Isles&quot;) then
+    if not mmp.inside then
+      -- make it here
+      addSpecialExit(mmp.currentroom, 54632, cmd)
+    elseif areaID == 162 then
+      --Tapoa
+      addSpecialExit(21184, 54632, cmd)
+    elseif areaID == 207 then
+      --Tuar
+      addSpecialExit(19219, 54632, cmd)
+    else
+      --if areaID == 209 then --Ageiro
+      addSpecialExit(30222, 54632, cmd)
+    end
+  end
+end</script>
+                        <eventHandlerList>
+                            <string>mmp link externals</string>
+                        </eventHandlerList>
+                    </Script>
+                    <Script isActive="yes" isFolder="no">
+                        <name>mmapper_achaea_harness_remove_exits</name>
+                        <packageName></packageName>
+                        <script>function mmapper_achaea_harness_remove_exits()
+  local areaID = getRoomArea(mmp.currentroom) or 0
+  if not (mmp.game == &quot;achaea&quot; and mmp.settings.harness) then
+    return
+  end
+  if mmp.oncontinent(areaID, &quot;Eastern_Isles&quot;) then
+    mmp.clearspecials({54231})
+  elseif mmp.oncontinent(areaID, &quot;Northern_Isles&quot;) then
+    mmp.clearspecials({48719})
+  elseif mmp.oncontinent(areaID, &quot;Western_Isles&quot;) then
+    mmp.clearspecials({54632})
+  end
+end</script>
+                        <eventHandlerList>
+                            <string>mmp clear externals</string>
+                        </eventHandlerList>
                     </Script>
                 </Script>
                 <Script isActive="yes" isFolder="no">
