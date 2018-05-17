@@ -5547,10 +5547,11 @@ function doSpeedWalk(dashtype)
   end
   if not mmp.paused then
     mmp.echon(&quot;Starting speedwalk from &quot; .. (atcp.RoomNum or gmcp.Room.Info.num) .. &quot; to &quot;)
-    echoLink(
-      mmp.speedWalkPath[#mmp.speedWalkPath],
+    cechoLink(
+      &quot;&lt;&quot; .. mmp.settings.echocolour .. &quot;&gt;&quot; .. mmp.speedWalkPath[#mmp.speedWalkPath],
       'mmp.gotoRoom &quot;' .. mmp.speedWalkPath[#mmp.speedWalkPath] .. '&quot;',
-      'Go to ' .. mmp.speedWalkPath[#mmp.speedWalkPath]
+      'Go to ' .. mmp.speedWalkPath[#mmp.speedWalkPath],
+			true
     )
     echo(&quot;: &quot;)
     speedWalkCounter = 1
