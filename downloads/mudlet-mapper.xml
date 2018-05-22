@@ -4873,7 +4873,7 @@ mmp.speedWalkPath = mmp.speedWalkPath or {}
 mmp.speedWalkDir = mmp.speedWalkDir or {}
 
 
-local newversion = &quot;18.5.1&quot;
+local newversion = &quot;18.5.2&quot;
 if mmp.version and mmp.version ~= newversion then
   if not mmp.game then mmp.echo(&quot;Mapper script updated - Thanks! I don't know what game are you connected to, though - so please reconnect, if you could.&quot;)
   else mmp.echo(&quot;Mapper script updated - thanks! You don't need to restart.&quot;) end
@@ -5547,10 +5547,11 @@ function doSpeedWalk(dashtype)
   end
   if not mmp.paused then
     mmp.echon(&quot;Starting speedwalk from &quot; .. (atcp.RoomNum or gmcp.Room.Info.num) .. &quot; to &quot;)
-    echoLink(
-      mmp.speedWalkPath[#mmp.speedWalkPath],
+    cechoLink(
+      &quot;&lt;&quot; .. mmp.settings.echocolour .. &quot;&gt;&quot; .. mmp.speedWalkPath[#mmp.speedWalkPath],
       'mmp.gotoRoom &quot;' .. mmp.speedWalkPath[#mmp.speedWalkPath] .. '&quot;',
-      'Go to ' .. mmp.speedWalkPath[#mmp.speedWalkPath]
+      'Go to ' .. mmp.speedWalkPath[#mmp.speedWalkPath],
+			true
     )
     echo(&quot;: &quot;)
     speedWalkCounter = 1
