@@ -5765,18 +5765,22 @@ end</script>
 					<packageName></packageName>
 					<script>local exitsCreated = exitsCreated or {}
 
-function mmp.tempSpecialExit(destination, command, weight)
-  table.insert(exitsCreated, command)
-  addSpecialExit(mmp.currentroom, destination, command)
+function mmp.tempSpecialExit(start, destination, command, weight)
+  if type(destination) == "string" then
+    -- no start room given, so shift all arguments one to the right
+    start, destination, command, weight = mmp.currentroom, start, destination, command
+  end
+  table.insert(exitsCreated, {room = start, command = command})
+  addSpecialExit(start, destination, command)
   if weight then
-    setExitWeight(mmp.currentroom, command, weight)
+    setExitWeight(start, command, weight)
   end
 end
 
 function mmp.removeWings()
   --remove all special exits that were created by addWings, then resets the table.
-  for _, command in ipairs(exitsCreated) do
-    removeSpecialExit(mmp.currentroom, command)
+  for _, exit in ipairs(exitsCreated) do
+    removeSpecialExit(exit.room, exit.command)
   end
   exitsCreated = {}
 end
