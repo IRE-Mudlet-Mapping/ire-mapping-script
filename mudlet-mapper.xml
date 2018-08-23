@@ -6098,6 +6098,7 @@ function mmp.addWingsLusternia()
         mmp.tempSpecialExit(6831, "shake snowglobe")
       elseif not table.contains(gmcp.Room.Info.details, "an Aetherbubble") then
         mmp.tempSpecialExit(10992, "shake snowglobe")
+        mmp.tempSpecialExit(10992, 6831, "shake snowglobe")
       end
     end
     if mmp.settings.cookie then
