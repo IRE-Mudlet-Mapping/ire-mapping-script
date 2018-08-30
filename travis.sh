@@ -40,7 +40,7 @@ else
   versionPart=1
 fi
 version="$datePart.$versionPart"
-sed -rbe "s/local newversion = &quot;developer&quot;/local newversion = \&quot;$version\&quot;/g" "mudlet-mapper.xml" > "mudlet-mapper.xml.tmp" && mv "mudlet-mapper.xml.tmp" "mudlet-mapper.xml"
+sed -rbe "s/local newversion = \"developer\"/local newversion = \"$version\"/g" "mudlet-mapper.xml" > "mudlet-mapper.xml.tmp" && mv "mudlet-mapper.xml.tmp" "mudlet-mapper.xml"
 echo "$version" > version
 
 git config user.email "keneanung+ire-mapping@googlemail.com"
