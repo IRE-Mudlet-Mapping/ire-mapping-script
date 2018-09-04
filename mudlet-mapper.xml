@@ -5994,6 +5994,19 @@ end</script>
 					<name>Lusternia</name>
 					<packageName></packageName>
 					<script>registerAnonymousEventHandler("mmp link externals", "mmp.addWingsLusternia")
+
+local function linkBubblix(area, entranceRoom, command)
+  if table.contains(gmcp.Room.Info.details, "an Aetherbubble") then
+    mmp.tempSpecialExit(6831, entranceRoom, command)
+    if gmcp.Room.Info.area == area then
+      mmp.tempSpecialExit(6831, command)
+    end
+  else
+    mmp.tempSpecialExit(entranceRoom, command)
+    mmp.tempSpecialExit(entranceRoom, 6831, command)
+  end
+end
+
 function mmp.addWingsLusternia()
   if mmp.game ~= "lusternia" then
     return
@@ -6073,61 +6086,28 @@ function mmp.addWingsLusternia()
   --all the bubblixes!
   if mmp.usebubblix() then
     if mmp.settings.screwdriver then
-      if gmcp.Room.Info.area == "the Facility" then
-        mmp.tempSpecialExit(6831, "touch screwdriver")
-      elseif not table.contains(gmcp.Room.Info.details, "an Aetherbubble") then
-        mmp.tempSpecialExit(10185, "touch screwdriver")
-      end
+      linkBubblix("the Facility", 10185, "touch screwdriver")
     end
     if mmp.settings.wheel then
-      if gmcp.Room.Info.area == "the Dramube Triangle" then
-        mmp.tempSpecialExit(6831, "touch wheel")
-      elseif not table.contains(gmcp.Room.Info.details, "an Aetherbubble") then
-        mmp.tempSpecialExit(10509, "touch wheel")
-      end
+      linkBubblix("the Dramube Triangle", 10509, "touch wheel")
     end
     if mmp.settings.mud then
-      if gmcp.Room.Info.area == "Mucklemarsh" then
-        mmp.tempSpecialExit(6831, "touch mud")
-      elseif not table.contains(gmcp.Room.Info.details, "an Aetherbubble") then
-        mmp.tempSpecialExit(9985, "touch mud")
-      end
+      linkBubblix("Mucklemarsh", 9985, "touch mud")
     end
     if mmp.settings.snowglobe then
-      if gmcp.Room.Info.area == "the Great Spirit Tree" then
-        mmp.tempSpecialExit(6831, "shake snowglobe")
-      elseif not table.contains(gmcp.Room.Info.details, "an Aetherbubble") then
-        mmp.tempSpecialExit(10992, "shake snowglobe")
-        mmp.tempSpecialExit(10992, 6831, "shake snowglobe")
-      end
+      linkBubblix("the Great Spirit Tree", 10992, "shake snowglobe")
     end
     if mmp.settings.cookie then
-      if gmcp.Room.Info.area == "Crumkindivia" then
-        mmp.tempSpecialExit(6831, "touch cookie")
-      elseif not table.contains(gmcp.Room.Info.details, "an Aetherbubble") then
-        mmp.tempSpecialExit(9888, "touch cookie")
-      end
+      linkBubblix("Crumkindivia", 9888, "touch cookie")
     end
     if mmp.settings.head then
-      if gmcp.Room.Info.area == "the Bubble of Bottledowns" then
-        mmp.tempSpecialExit(6831, "touch doll")
-      elseif not table.contains(gmcp.Room.Info.details, "an Aetherbubble") then
-        mmp.tempSpecialExit(11811, "touch doll")
-      end
+      linkBubblix("the Bubble of Bottledowns", 11811, "touch doll")
     end
     if mmp.settings.icicle then
-      if gmcp.Room.Info.area == "Frosticia" then
-        mmp.tempSpecialExit(6831, "touch icicle")
-      elseif not table.contains(gmcp.Room.Info.details, "an Aetherbubble") then
-        mmp.tempSpecialExit(10457, "touch icicle")
-      end
+      linkBubblix("Frosticia", 10457, "touch icicle")
     end
     if mmp.settings.tibia then
-      if gmcp.Room.Info.area == "the Cankermore Battlegrounds" then
-        mmp.tempSpecialExit(6831, "touch tibia")
-      elseif not table.contains(gmcp.Room.Info.details, "an Aetherbubble") then
-        mmp.tempSpecialExit(11600, "touch tibia")
-      end
+      linkBubblix("the Cankermore Battlegrounds", 11600, "touch tibia")
     end
   end
   mmp.clearpathcache()
