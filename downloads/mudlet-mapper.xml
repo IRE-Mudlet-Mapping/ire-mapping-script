@@ -4873,7 +4873,7 @@ mmp.speedWalkPath = mmp.speedWalkPath or {}
 mmp.speedWalkDir = mmp.speedWalkDir or {}
 
 
-local newversion = "developer"
+local newversion = "18.9.1"
 if mmp.version and mmp.version ~= newversion then
   if not mmp.game then mmp.echo("Mapper script updated - Thanks! I don't know what game are you connected to, though - so please reconnect, if you could.")
   else mmp.echo("Mapper script updated - thanks! You don't need to restart.") end
@@ -10335,7 +10335,8 @@ end</script>
 					<script>-- aggregates map load and such events into one
 function mmp.mapdata_changed()
   raiseEvent("mmapper map reloaded")
-end</script>
+end
+					</script>
 					<eventHandlerList>
 						<string>sysMapLoad</string>
 						<string>sys2DMapLoad</string>
