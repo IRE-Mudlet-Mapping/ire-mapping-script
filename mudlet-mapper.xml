@@ -10335,7 +10335,8 @@ end</script>
 					<script>-- aggregates map load and such events into one
 function mmp.mapdata_changed()
   raiseEvent("mmapper map reloaded")
-end</script>
+end
+					</script>
 					<eventHandlerList>
 						<string>sysMapLoad</string>
 						<string>sys2DMapLoad</string>
