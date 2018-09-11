@@ -5996,14 +5996,18 @@ end</script>
 					<script>registerAnonymousEventHandler("mmp link externals", "mmp.addWingsLusternia")
 
 local function linkBubblix(area, entranceRoom, command)
-  if table.contains(gmcp.Room.Info.details, "an Aetherbubble") then
-    mmp.tempSpecialExit(6831, entranceRoom, command)
-    if gmcp.Room.Info.area == area then
+  -- always add this link to allow pathfinding to the bubble regardless of indoor/outdoor
+  mmp.tempSpecialExit(148, entranceRoom, command)
+  -- always add this link to allow pathfinding from the bubbe regardless of indoor/outdoor
+  mmp.tempSpecialExit(entranceRoom, 6831, command)
+  if mmp.usebubblix() then
+    if not table.contains(gmcp.Room.Info.details, "an Aetherbubble") then
+      -- we are not in an Aetherbubble and could use a bubblix, so allow its use from here
+      mmp.tempSpecialExit(entranceRoom, command)
+    elseif gmcp.Room.Info.area == area then
+      -- we are in an Aetherbubble and it's the one the bubblix belongs to and we could use a bubblix, so allow its use from here
       mmp.tempSpecialExit(6831, command)
     end
-  else
-    mmp.tempSpecialExit(entranceRoom, command)
-    mmp.tempSpecialExit(entranceRoom, 6831, command)
   end
 end
 
@@ -6084,31 +6088,29 @@ function mmp.addWingsLusternia()
     end
   end
   --all the bubblixes!
-  if mmp.usebubblix() then
-    if mmp.settings.screwdriver then
-      linkBubblix("the Facility", 10185, "touch screwdriver")
-    end
-    if mmp.settings.wheel then
-      linkBubblix("the Dramube Triangle", 10509, "touch wheel")
-    end
-    if mmp.settings.mud then
-      linkBubblix("Mucklemarsh", 9985, "touch mud")
-    end
-    if mmp.settings.snowglobe then
-      linkBubblix("the Great Spirit Tree", 10992, "shake snowglobe")
-    end
-    if mmp.settings.cookie then
-      linkBubblix("Crumkindivia", 9888, "touch cookie")
-    end
-    if mmp.settings.head then
-      linkBubblix("the Bubble of Bottledowns", 11811, "touch doll")
-    end
-    if mmp.settings.icicle then
-      linkBubblix("Frosticia", 10457, "touch icicle")
-    end
-    if mmp.settings.tibia then
-      linkBubblix("the Cankermore Battlegrounds", 11600, "touch tibia")
-    end
+  if mmp.settings.screwdriver then
+    linkBubblix("the Facility", 10185, "touch screwdriver")
+  end
+  if mmp.settings.wheel then
+    linkBubblix("the Dramube Triangle", 10509, "touch wheel")
+  end
+  if mmp.settings.mud then
+    linkBubblix("Mucklemarsh", 9985, "touch mud")
+  end
+  if mmp.settings.snowglobe then
+    linkBubblix("the Great Spirit Tree", 10992, "shake snowglobe")
+  end
+  if mmp.settings.cookie then
+    linkBubblix("Crumkindivia", 9888, "touch cookie")
+  end
+  if mmp.settings.head then
+    linkBubblix("the Bubble of Bottledowns", 11811, "touch doll")
+  end
+  if mmp.settings.icicle then
+    linkBubblix("Frosticia", 10457, "touch icicle")
+  end
+  if mmp.settings.tibia then
+    linkBubblix("the Cankermore Battlegrounds", 11600, "touch tibia")
   end
   mmp.clearpathcache()
 end</script>
