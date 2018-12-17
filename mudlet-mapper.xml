@@ -231,14 +231,14 @@ end</script>
 				<name>Alertness (Achaea+Imperian)</name>
 				<script>mmp.alertness = mmp.alertness or {}
 local alertness = mmp.alertness
- 
+
 local roomexists, getRoomName, anytolong, matches, deleteLine = mmp.roomexists, getRoomName, mmp.anytolong, matches, deleteLine
- 
+
 if mmp.debug then
  mmp.alertnessTime = mmp.alertnessTime or createStopWatch()
  startStopWatch(mmp.alertnessTime)
 end
- 
+
 if matches[4] ~= "location" then
   local longexitname = matches[4]
   alertness[longexitname] = alertness[longexitname] or {}
@@ -258,12 +258,12 @@ if not mmp.firstAlert then
 	mmp.firstAlert = true
 	mmp.pdb_lastupdate = {}
 end
- 
+
 mmp.pdb[matches[2]] = matches[3]
 mmp.pdb_lastupdate[matches[2]] = true
- 
+
 enableTrigger"Mudlet Mapper prompt trigger"
- 
+
 if mmp.debug then mmp.echo("alertness trigger for "..matches[2].." took "..stopStopWatch(mmp.alertnessTime).."s.") end</script>
 				<triggerType>0</triggerType>
 				<conditonLineDelta>0</conditonLineDelta>
@@ -2817,7 +2817,7 @@ mmp.roomEcho(matches[3]) </script>
 				</Trigger>
 			</TriggerGroup>
 			<TriggerGroup isActive="yes" isFolder="yes" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
-				<name>Midkemia Online</name>
+				<name>Starmourn</name>
 				<script></script>
 				<triggerType>0</triggerType>
 				<conditonLineDelta>99</conditonLineDelta>
@@ -2833,8 +2833,8 @@ mmp.roomEcho(matches[3]) </script>
 				<regexCodePropertyList />
 				<Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
 					<name>Login</name>
-					<script>raiseEvent("mmp logged in", "Midkemia Online")
-mmp.game = "mko"</script>
+					<script>raiseEvent("mmp logged in", "Starmourn")
+mmp.game = "starmourn"</script>
 					<triggerType>0</triggerType>
 					<conditonLineDelta>0</conditonLineDelta>
 					<mStayOpen>0</mStayOpen>
@@ -2846,27 +2846,7 @@ mmp.game = "mko"</script>
 					<colorTriggerFgColor>#000000</colorTriggerFgColor>
 					<colorTriggerBgColor>#000000</colorTriggerBgColor>
 					<regexCodeList>
-						<string>Password correct. Welcome to Midkemia Online.</string>
-					</regexCodeList>
-					<regexCodePropertyList>
-						<integer>3</integer>
-					</regexCodePropertyList>
-				</Trigger>
-				<Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
-					<name>Fording</name>
-					<script>mmp.customwalkdelay(3)</script>
-					<triggerType>0</triggerType>
-					<conditonLineDelta>0</conditonLineDelta>
-					<mStayOpen>0</mStayOpen>
-					<mCommand></mCommand>
-					<packageName></packageName>
-					<mFgColor>#ff0000</mFgColor>
-					<mBgColor>#ffff00</mBgColor>
-					<mSoundFile></mSoundFile>
-					<colorTriggerFgColor>#000000</colorTriggerFgColor>
-					<colorTriggerBgColor>#000000</colorTriggerBgColor>
-					<regexCodeList>
-						<string>You ford the water towards the </string>
+						<string>Please enter the name of your Starmourn character.</string>
 					</regexCodeList>
 					<regexCodePropertyList>
 						<integer>2</integer>
@@ -4736,7 +4716,7 @@ function createOption(startingValue, onChangeFunc, allowedVarTypes, use, checkOp
 		use = use or "",
 		games = games,
 		checkOption = checkOption or function() return true end
-      
+
 	}
 
 	return option
@@ -4927,11 +4907,11 @@ function mmp.startup()
 	private_settings["orbhashan"]			= createOption(false, function() mmp.setOrb("hashan") end, { "boolean" }, "Orb of Confinement active in Hashan?", nil, {achaea=true})
 	private_settings["orbmhaldor"]		= createOption(false, function() mmp.setOrb("mhaldor") end, { "boolean" }, "Orb of Confinement active in Mhaldor?", nil, {achaea=true})
 	private_settings["orbtargossas"]	= createOption(false, function() mmp.setOrb("targossas") end, { "boolean" }, "Orb of Confinement active in Targossas?", nil, {achaea=true})
-	
+
 --Imperian wings
   private_settings["shekinah"]      = createOption(false, mmp.setShekinah, { "boolean" }, "Use Seraphim Wings?", nil, {imperian=true})
   private_settings["suriel"]        = createOption(false, mmp.setSuriel, { "boolean" }, "Use Orphanim Wings?", nil, {imperian=true})
-	
+
 --Lusternia bixes
   private_settings["torus"]         = createOption(false, mmp.setTorus, { "boolean" }, "Make use of your Torus?", nil, {lusternia=true})
   private_settings["prism"]         = createOption(false, mmp.setPrism, {"boolean"}, "Make use of your transplanar prism?", nil, {lusternia=true})
@@ -7025,7 +7005,7 @@ function mmp.getAreaBorders(areaid)
         mmp.getAreaBordersTimer = mmp.getAreaBordersTimer or createStopWatch()
         startStopWatch(mmp.getAreaBordersTimer)
     end
-    
+
   local roomlist, endresult = getAreaRooms(areaid), {}
   -- sometimes getAreaRooms can give us no result :(
   if not roomlist then mmp.echo("Sorry, seems we can't go there - getAreaRooms("..areaid..") didn't give us any results (Mudlet problem - redownloading the map might help fix it)") return end
@@ -7033,7 +7013,7 @@ function mmp.getAreaBorders(areaid)
   -- make a key-value list of room IDs
   local reverselist = {}
   for i = 0, #roomlist do reverselist[roomlist[i]] = true end
-  
+
   local getRoomName, contains, pairs = getRoomName, table.contains, pairs
   if getAllRoomEntrances then
     for i = 0, #roomlist do
@@ -7467,7 +7447,7 @@ end
 
 function mmp.setUniverse()
   mmp.clearpathcache()
-	
+
 	if mmp.settings.universe then mmp.echo("Okay, will see about using the Universe tarot whenever it's faster.")
 	else mmp.echo("Won't use Universe tarot anymore.") end
 
@@ -9083,7 +9063,7 @@ end</script>
 						<name>mmapper_achaea_went_outside_harness</name>
 						<packageName></packageName>
 						<script>-- use Stratospheric Harness in Achaea -- PapaGuacamole
-	
+
 function mmapper_achaea_went_outside_harness()
 
 	local area = mmp.getAreaName(mmp.currentroom)
@@ -9125,7 +9105,7 @@ function mmapper_achaea_went_outside_harness()
 		end
 		mmp.ignore_speedwalking = true
  	end
-	
+
   if madeEast then mmp.clearspecials{54231}
   elseif madeNorth then mmp.clearspecials{48719}
   elseif madeWest then mmp.clearspecials{54632} end
@@ -9501,7 +9481,7 @@ end</script>
 	{5130, 5096, "e"},
 	{5089, 5058, "n"},
 	{5102, 5115, "e"},
-	{5111, 5159, "e"},	
+	{5111, 5159, "e"},
 	{5103, 5071, "n"},
 	{5059, 5053, "w"},
 	{5187, 5169, "w"},
@@ -9798,7 +9778,7 @@ end</script>
 					</Script>
 				</Script>
 				<Script isActive="yes" isFolder="no">
-					<name>Midmekia Online</name>
+					<name>Starmourn</name>
 					<packageName></packageName>
 					<script>-------------------------------------------------
 --         Put your Lua functions here.        --
@@ -9808,49 +9788,102 @@ end</script>
 </script>
 					<eventHandlerList />
 					<Script isActive="yes" isFolder="no">
-						<name>register_midkemias_envdata</name>
+						<name>register_starmourn_envdata</name>
 						<packageName></packageName>
-						<script>function register_midkemias_envdata(_, game)
-  if game ~= "Midkemia Online" then return end
+						<script>function register_starmourn_envdata(_, game)
+  if game ~= "Starmourn" then
+	print("bye")
+    return
+  end
+	print("hi")
   mmp.envids =
-  {
-    ["constructed underground"] = 2,
-    ["fresh water"]             = 20,
-    ["natural underground"]     = 3,
-    ["shores of Lake Moraelin"] = 33,
-    beach                       = 5,
-    canyon                      = 29,
-    farmlands                   = 31,
-    forest                      = 4,
-    garden                      = 19,
-    grasslands                  = 7,
-    hills                       = 9,
-    ice                         = 27,
-    mines                       = 28,
-    mountains                   = 14,
-    ocean                       = 18,
-    path                        = 11,
-    plains                      = 30,
-    reef                        = 23,
-    river                       = 10,
-    road                        = 12,
-    ruins                       = 24,
-    sewers                      = 21,
-    swamp                       = 15,
-    temple                      = 26,
-    tundra                      = 16,
-    urban                       = 8,
-    valley                      = 13,
-    village                     = 25,
-    volcanic                    = 32,
-  }
-
-  mmp.waterenvs = {}
-  local waterids = { "river", "ocean", "fresh water", "reef" }
-  for i = 1, #waterids do mmp.waterenvs[mmp.envids[waterids[i]]] = true end
-
-  mmp.envidsr = {};
-  for name, id in pairs(mmp.envids) do mmp.envidsr[id] = name end
+    {
+      ["mountain"] = 173,
+      ["street"] = 116,
+      ["mine"] = 209,
+      ["urban"] = 116,
+      ["building"] = 116,
+      ["ocean"] = 21,
+      ["desert"] = 220,
+      ["forest"] = 2,
+      ["spacecraft"] = 251,
+      ["tundra"] = 159,
+      ["deep space"] = 57,
+      ["garden"] = 22,
+      ["cargo bay"] = 251,
+      ["pool"] = 39,
+      ["office"] = 116,
+      ["transport"] = 105,
+      ["medical facility"] = 255,
+      ["bridge"] = 251,
+      ["jungle"] = 28,
+      ["swamp"] = 106,
+      ["ventilation shaft"] = 251,
+      ["duct"] = 251,
+      ["catwalk"] = 251,
+      ["hangar"] = 251,
+      ["medical facility"] = 255,
+      ["farmland"] = 70,
+      ["road"] = 246,
+      ["meadow"] = 46,
+      ["canyon"] = 172,
+      ["factory"] = 116,
+      ["corral"] = 116,
+      ["stream"] = 27,
+      ["treehouse"] = 116,
+      ["cave"] = 166,
+      ["pier/dock"] = 116,
+      ["spaceport"] = 116,
+      ["sewer"] = 100,
+      ["ruin"] = 94,
+      ["stateroom"] = 251,
+      ["engine room"] = 251,
+      ["badlands"] = 203,
+      ["urbanunderground"] = 116,
+      ["alleyway"] = 116,
+      ["junkyard"] = 94,
+      ["lake"] = 39,
+      ["river"] = 39,
+      ["beach"] = 136,
+      ["icyforest"] = 30,
+      ["treetops"] = 2,
+      ["temple"] = 88,
+      ["airlock"] = 251,
+      ["lava fields"] = 1,
+      ["lava"] = 9,
+      ["hallway"] = 251,
+      ["prison"] = 58,
+      ["gym"] = 116,
+      ["hydroponics"] = 112,
+      ["cantina"] = 116,
+      ["residence"] = 116,
+      ["pond"] = 39,
+      ["campsite"] = 121,
+      ["bedroom"] = 116,
+      ["shop"] = 116,
+      ["slum"] = 100,
+      ["slumstreet"] = 58,
+      ["bathroom"] = 116,
+      ["slumtoilet"] = 100,
+      ["slumbuilding"] = 100,
+      ["verdantcliffs"] = 29,
+      ["militarybase"] = 107,
+      ["barracks"] = 107,
+      ["messhall"] = 107,
+      ["hangar"] = 107,
+      ["commandpost"] = 107,
+      ["militaryroad"] = 107,
+      ["armory"] = 107,
+      ["firingrange"] = 107,
+      ["obstaclecourse"] = 107,
+      ["canal"] = 39,
+      ["underground"] = 166,
+      ["underwater"] = 21,
+    }
+  mmp.envidsr = {}
+  for name, id in pairs(mmp.envids) do
+    mmp.envidsr[id] = name
+  end
 end</script>
 						<eventHandlerList>
 							<string>mmp logged in</string>
