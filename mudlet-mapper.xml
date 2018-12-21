@@ -231,14 +231,14 @@ end</script>
 				<name>Alertness (Achaea+Imperian)</name>
 				<script>mmp.alertness = mmp.alertness or {}
 local alertness = mmp.alertness
-
+ 
 local roomexists, getRoomName, anytolong, matches, deleteLine = mmp.roomexists, getRoomName, mmp.anytolong, matches, deleteLine
-
+ 
 if mmp.debug then
  mmp.alertnessTime = mmp.alertnessTime or createStopWatch()
  startStopWatch(mmp.alertnessTime)
 end
-
+ 
 if matches[4] ~= "location" then
   local longexitname = matches[4]
   alertness[longexitname] = alertness[longexitname] or {}
@@ -258,12 +258,12 @@ if not mmp.firstAlert then
 	mmp.firstAlert = true
 	mmp.pdb_lastupdate = {}
 end
-
+ 
 mmp.pdb[matches[2]] = matches[3]
 mmp.pdb_lastupdate[matches[2]] = true
-
+ 
 enableTrigger"Mudlet Mapper prompt trigger"
-
+ 
 if mmp.debug then mmp.echo("alertness trigger for "..matches[2].." took "..stopStopWatch(mmp.alertnessTime).."s.") end</script>
 				<triggerType>0</triggerType>
 				<conditonLineDelta>0</conditonLineDelta>
@@ -4716,7 +4716,7 @@ function createOption(startingValue, onChangeFunc, allowedVarTypes, use, checkOp
 		use = use or "",
 		games = games,
 		checkOption = checkOption or function() return true end
-
+      
 	}
 
 	return option
@@ -4853,7 +4853,7 @@ mmp.speedWalkPath = mmp.speedWalkPath or {}
 mmp.speedWalkDir = mmp.speedWalkDir or {}
 
 
-local newversion = "developer"
+local newversion = "18.9.1"
 if mmp.version and mmp.version ~= newversion then
   if not mmp.game then mmp.echo("Mapper script updated - Thanks! I don't know what game are you connected to, though - so please reconnect, if you could.")
   else mmp.echo("Mapper script updated - thanks! You don't need to restart.") end
@@ -4907,11 +4907,11 @@ function mmp.startup()
 	private_settings["orbhashan"]			= createOption(false, function() mmp.setOrb("hashan") end, { "boolean" }, "Orb of Confinement active in Hashan?", nil, {achaea=true})
 	private_settings["orbmhaldor"]		= createOption(false, function() mmp.setOrb("mhaldor") end, { "boolean" }, "Orb of Confinement active in Mhaldor?", nil, {achaea=true})
 	private_settings["orbtargossas"]	= createOption(false, function() mmp.setOrb("targossas") end, { "boolean" }, "Orb of Confinement active in Targossas?", nil, {achaea=true})
-
+	
 --Imperian wings
   private_settings["shekinah"]      = createOption(false, mmp.setShekinah, { "boolean" }, "Use Seraphim Wings?", nil, {imperian=true})
   private_settings["suriel"]        = createOption(false, mmp.setSuriel, { "boolean" }, "Use Orphanim Wings?", nil, {imperian=true})
-
+	
 --Lusternia bixes
   private_settings["torus"]         = createOption(false, mmp.setTorus, { "boolean" }, "Make use of your Torus?", nil, {lusternia=true})
   private_settings["prism"]         = createOption(false, mmp.setPrism, {"boolean"}, "Make use of your transplanar prism?", nil, {lusternia=true})
@@ -7005,7 +7005,7 @@ function mmp.getAreaBorders(areaid)
         mmp.getAreaBordersTimer = mmp.getAreaBordersTimer or createStopWatch()
         startStopWatch(mmp.getAreaBordersTimer)
     end
-
+    
   local roomlist, endresult = getAreaRooms(areaid), {}
   -- sometimes getAreaRooms can give us no result :(
   if not roomlist then mmp.echo("Sorry, seems we can't go there - getAreaRooms("..areaid..") didn't give us any results (Mudlet problem - redownloading the map might help fix it)") return end
@@ -7013,7 +7013,7 @@ function mmp.getAreaBorders(areaid)
   -- make a key-value list of room IDs
   local reverselist = {}
   for i = 0, #roomlist do reverselist[roomlist[i]] = true end
-
+  
   local getRoomName, contains, pairs = getRoomName, table.contains, pairs
   if getAllRoomEntrances then
     for i = 0, #roomlist do
@@ -7447,7 +7447,7 @@ end
 
 function mmp.setUniverse()
   mmp.clearpathcache()
-
+	
 	if mmp.settings.universe then mmp.echo("Okay, will see about using the Universe tarot whenever it's faster.")
 	else mmp.echo("Won't use Universe tarot anymore.") end
 
@@ -9063,7 +9063,7 @@ end</script>
 						<name>mmapper_achaea_went_outside_harness</name>
 						<packageName></packageName>
 						<script>-- use Stratospheric Harness in Achaea -- PapaGuacamole
-
+	
 function mmapper_achaea_went_outside_harness()
 
 	local area = mmp.getAreaName(mmp.currentroom)
@@ -9105,7 +9105,7 @@ function mmapper_achaea_went_outside_harness()
 		end
 		mmp.ignore_speedwalking = true
  	end
-
+	
   if madeEast then mmp.clearspecials{54231}
   elseif madeNorth then mmp.clearspecials{48719}
   elseif madeWest then mmp.clearspecials{54632} end
@@ -9481,7 +9481,7 @@ end</script>
 	{5130, 5096, "e"},
 	{5089, 5058, "n"},
 	{5102, 5115, "e"},
-	{5111, 5159, "e"},
+	{5111, 5159, "e"},	
 	{5103, 5071, "n"},
 	{5059, 5053, "w"},
 	{5187, 5169, "w"},
@@ -9792,93 +9792,91 @@ end</script>
 						<packageName></packageName>
 						<script>function register_starmourn_envdata(_, game)
   if game ~= "Starmourn" then
-	print("bye")
     return
   end
-	print("hi")
   mmp.envids =
     {
-      ["mountain"] = 173,
-      ["street"] = 116,
-      ["mine"] = 209,
-      ["urban"] = 116,
-      ["building"] = 116,
-      ["ocean"] = 21,
-      ["desert"] = 220,
-      ["forest"] = 2,
-      ["spacecraft"] = 251,
-      ["tundra"] = 159,
-      ["deep space"] = 57,
-      ["garden"] = 22,
-      ["cargo bay"] = 251,
-      ["pool"] = 39,
-      ["office"] = 116,
-      ["transport"] = 105,
-      ["medical facility"] = 255,
-      ["bridge"] = 251,
-      ["jungle"] = 28,
-      ["swamp"] = 106,
-      ["ventilation shaft"] = 251,
-      ["duct"] = 251,
-      ["catwalk"] = 251,
-      ["hangar"] = 251,
-      ["medical facility"] = 255,
-      ["farmland"] = 70,
-      ["road"] = 246,
-      ["meadow"] = 46,
-      ["canyon"] = 172,
-      ["factory"] = 116,
-      ["corral"] = 116,
-      ["stream"] = 27,
-      ["treehouse"] = 116,
-      ["cave"] = 166,
-      ["pier/dock"] = 116,
-      ["spaceport"] = 116,
-      ["sewer"] = 100,
-      ["ruin"] = 94,
-      ["stateroom"] = 251,
-      ["engine room"] = 251,
-      ["badlands"] = 203,
-      ["urbanunderground"] = 116,
-      ["alleyway"] = 116,
-      ["junkyard"] = 94,
-      ["lake"] = 39,
-      ["river"] = 39,
-      ["beach"] = 136,
-      ["icyforest"] = 30,
-      ["treetops"] = 2,
-      ["temple"] = 88,
-      ["airlock"] = 251,
-      ["lava fields"] = 1,
-      ["lava"] = 9,
-      ["hallway"] = 251,
-      ["prison"] = 58,
-      ["gym"] = 116,
-      ["hydroponics"] = 112,
-      ["cantina"] = 116,
-      ["residence"] = 116,
-      ["pond"] = 39,
-      ["campsite"] = 121,
-      ["bedroom"] = 116,
-      ["shop"] = 116,
-      ["slum"] = 100,
-      ["slumstreet"] = 58,
-      ["bathroom"] = 116,
-      ["slumtoilet"] = 100,
-      ["slumbuilding"] = 100,
-      ["verdantcliffs"] = 29,
-      ["militarybase"] = 107,
-      ["barracks"] = 107,
-      ["messhall"] = 107,
-      ["hangar"] = 107,
-      ["commandpost"] = 107,
-      ["militaryroad"] = 107,
-      ["armory"] = 107,
-      ["firingrange"] = 107,
-      ["obstaclecourse"] = 107,
-      ["canal"] = 39,
-      ["underground"] = 166,
-      ["underwater"] = 21,
+      ["airlock"] = 55,
+      ["alleyway"] = 47,
+      ["armory"] = 82,
+      ["badlands"] = 45,
+      ["barracks"] = 77,
+      ["bathroom"] = 71,
+      ["beach"] = 51,
+      ["bedroom"] = 66,
+      ["bridge"] = 18,
+      ["building"] = 5,
+      ["campsite"] = 65,
+      ["canal"] = 85,
+      ["cantina"] = 62,
+      ["canyon"] = 31,
+      ["cargo bay"] = 13,
+      ["catwalk"] = 23,
+      ["cave"] = 37,
+      ["commandpost"] = 80,
+      ["corral"] = 34,
+      ["deep space"] = 11,
+      ["desert"] = 7,
+      ["duct"] = 22,
+      ["engine room"] = 44,
+      ["factory"] = 32,
+      ["farmland"] = 28,
+      ["firingrange"] = 83,
+      ["forest"] = 8,
+      ["garden"] = 12,
+      ["gym"] = 60,
+      ["hallway"] = 58,
+      ["hangar"] = 26,
+      ["hangar"] = 79,
+      ["hydroponics"] = 61,
+      ["icyforest"] = 52,
+      ["jungle"] = 19,
+      ["junkyard"] = 48,
+      ["lake"] = 49,
+      ["lava fields"] = 56,
+      ["lava"] = 57,
+      ["meadow"] = 30,
+      ["medical facility"] = 17,
+      ["medical facility"] = 27,
+      ["messhall"] = 78,
+      ["militarybase"] = 76,
+      ["militaryroad"] = 81,
+      ["mine"] = 3,
+      ["mountain"] = 1,
+      ["obstaclecourse"] = 84,
+      ["ocean"] = 6,
+      ["office"] = 15,
+      ["pier/dock"] = 38,
+      ["pond"] = 64,
+      ["pool"] = 14,
+      ["prison"] = 59,
+      ["residence"] = 63,
+      ["river"] = 50,
+      ["road"] = 29,
+      ["ruin"] = 42,
+      ["sewer"] = 40,
+      ["shop"] = 67,
+      ["slum"] = 69,
+      ["slumbuilding"] = 73,
+      ["slumstreet"] = 70,
+      ["slumtoilet"] = 72,
+      ["spacecraft"] = 9,
+      ["spaceport"] = 39,
+      ["stateroom"] = 43,
+      ["stream"] = 35,
+      ["street"] = 2,
+      ["swamp"] = 20,
+      ["temple"] = 54,
+      ["transport"] = 16,
+      ["treehouse"] = 36,
+      ["treetops"] = 53,
+      ["tundra"] = 10,
+      ["underground"] = 86,
+      ["underwater"] = 87,
+      ["urban"] = 4,
+      ["urbanunderground"] = 46,
+      ["ventilation shaft"] = 21,
+      ["verdantcliffs"] = 75,
     }
   mmp.envidsr = {}
   for name, id in pairs(mmp.envids) do
