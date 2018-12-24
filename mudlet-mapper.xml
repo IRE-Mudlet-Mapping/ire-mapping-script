@@ -93,8 +93,10 @@ end</script>
 				<regexCodeList>
 					<string>Now now, don't be so hasty!</string>
 					<string>You can not move that fast!</string>
+					<string>You cannot move that fast, slow down!</string>
 				</regexCodeList>
 				<regexCodePropertyList>
+					<integer>3</integer>
 					<integer>3</integer>
 					<integer>3</integer>
 				</regexCodePropertyList>
