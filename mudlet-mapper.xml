@@ -4832,33 +4832,35 @@ end</script>
 				<name>Load settings</name>
 				<packageName></packageName>
 				<script>-- mmp = mudlet mapper namespace
-mmp = mmp or {
-  paused = false,
-  autowalking = false,
-  currentroom = 0,
-  currentroomname = "(unknown)",
-  firstRun = true,
-  specials = {},
-  ferry_rooms = {},
-}
-
+mmp =
+  mmp or
+  {
+    paused = false,
+    autowalking = false,
+    currentroom = 0,
+    currentroomname = "(unknown)",
+    firstRun = true,
+    specials = {},
+    ferry_rooms = {},
+  }
 speedWalkWatch = createStopWatch()
-
 -- populated by Mudlet from getPath() and gotoRoom()
 speedWalkPath = speedWalkPath or {}
 speedWalkDir = speedWalkDir or {}
 speedWalkCounter = 0
-
 -- actually used by the mapper for walking
 mmp.speedWalk = mmp.speedWalk or {}
 mmp.speedWalkPath = mmp.speedWalkPath or {}
 mmp.speedWalkDir = mmp.speedWalkDir or {}
-
-
 local newversion = "developer"
 if mmp.version and mmp.version ~= newversion then
-  if not mmp.game then mmp.echo("Mapper script updated - Thanks! I don't know what game are you connected to, though - so please reconnect, if you could.")
-  else mmp.echo("Mapper script updated - thanks! You don't need to restart.") end
+  if not mmp.game then
+    mmp.echo(
+      "Mapper script updated - Thanks! I don't know what game are you connected to, though - so please reconnect, if you could."
+    )
+  else
+    mmp.echo("Mapper script updated - thanks! You don't need to restart.")
+  end
 end
 mmp.version = newversion
 
@@ -4866,121 +4868,405 @@ function mmp.startup()
   if not mmp.firstRun then
     return
   end
-
   local private_settings = {}
---General settings
-  private_settings["echocolour"]    = createOption("cyan", mmp.changeEchoColour, { "string" }, "Set the color for room number echos?", function(newSetting) return color_table[newSetting]~=nil end)
-  private_settings["crowdmap"]      = createOption(false, mmp.chageMapSource, { "boolean" }, "Use a crowd-sourced map instead of IREs default?", nil, {achaea=true})
-  private_settings["showcmds"]      = createOption(true, mmp.changeBoolFunc, { "boolean" }, "Show walking commands?")
-  private_settings["slowwalk"]      = createOption(false, mmp.setSlowWalk, { "boolean" }, "Walk slowly instead of as quick as possible?")
-  private_settings["updatemap"]     = createOption(true, mmp.changeUpdateMap, { "boolean" }, "Check for new maps from your MUD?")
-  private_settings["waterwalk"]     = createOption(true, mmp.setWaterWalk, { "boolean" }, "Have waterwalk (don't avoid water)?", nil, {achaea=true})
-
---locking things
-  private_settings["lockpathways"]  = createOption(true, mmp.lockPathways, { "boolean" }, "Lock pathway exits?", nil, {lusternia=true})
-  private_settings["locksewers"]    = createOption(false, mmp.lockSewers, { "boolean" }, "Lock all sewers?", nil, {achaea=true})
-  private_settings["lockspecials"]  = createOption(false, mmp.lockSpecials, { "boolean" }, "Lock all special exits?")
-  private_settings["lockwormholes"] = createOption(true, mmp.lockWormholes, { "boolean" }, "Lock all wormholes?", nil, {achaea=true,imperian=true,aetolia=true})
-
---Sprint movement
-  private_settings["dash"]          = createOption(false, mmp.changeBoolFunc, { "boolean" }, "Use Dash?", nil, {achaea=true,imperian=true,aetolia=true})
-  private_settings["sprint"]        = createOption(false, mmp.changeBoolFunc, { "boolean" }, "Use Sprint?")
-  private_settings["gallop"]        = createOption(false, mmp.changeBoolFunc, { "boolean" }, "Use Gallop?")
-  private_settings["runaway"]       = createOption(false, mmp.changeBoolFunc, { "boolean" }, "Use Jester Runaway?", nil, {achaea=true})
-
---Achaea wings and things
-  private_settings["winglanguage"]  = createOption("", mmp.setWingsLanguage, { "string" }, "Speak non-default language for wings:", nil, {achaea=true})
-  private_settings["pebble"]        = createOption(false, mmp.lockPebble, { "boolean" }, "Make use of your enchanted pebble?", nil, {achaea=true})
-  private_settings["removewings"]   = createOption(true, mmp.setWingsRemoval, { "boolean" }, "Remove Wings after using them?", nil, {achaea=true,imperian=true})
-  private_settings["harness"]				= createOption(false, mmp.setHarness, { "boolean" }, "Use Stratospheric Harness?", nil, {achaea=true}) --PapaGuacamole
-  private_settings["duantahar"]     = createOption(false, mmp.setDuantahar, { "boolean" }, "Use Chenubian Wings?", nil, {achaea=true})
-  private_settings["duanatharan"]   = createOption(false, mmp.setDuanatharan, { "boolean" }, "Use Atavian Wings?", nil, {achaea=true})
-  private_settings["duanathar"]     = createOption(false, mmp.setDuanathar, { "boolean" }, "Use Eagle Wings?", nil, {achaea=true})
-  private_settings["duanatharic"]   = createOption(false, mmp.setDuanatharic, { "boolean" }, "Use Island Wings?", nil, {achaea=true})
-  private_settings["soar"]          = createOption(false, mmp.setSoar, { "boolean" }, "Use Aero Soar?", nil, {achaea=true})
-  private_settings["shackle"]       = createOption(false, mmp.changeBoolFunc, { "boolean" }, "Take off shackle?", nil, {achaea=true})
-  private_settings["universe"]      = createOption(false, mmp.setUniverse, {"boolean" }, "Use Universe Tarot?", nil, {achaea=true})
-  private_settings["gare"]      		= createOption(false, mmp.setGare, {"boolean" }, "Use Gare?", nil, {achaea=true})
-
---Achaea Orb of Confinement
-	private_settings["orbashtan"]			= createOption(false, function() mmp.setOrb("ashtan") end, { "boolean" }, "Orb of Confinement active in Ashtan?", nil, {achaea=true})
-	private_settings["orbcyrene"]			= createOption(false, function() mmp.setOrb("cyrene") end, { "boolean" }, "Orb of Confinement active in Cyrene?", nil, {achaea=true})
-	private_settings["orbeleusis"]		= createOption(false, function() mmp.setOrb("eleusis") end, { "boolean" }, "Orb of Confinement active in Eleusis?", nil, {achaea=true})
-	private_settings["orbhashan"]			= createOption(false, function() mmp.setOrb("hashan") end, { "boolean" }, "Orb of Confinement active in Hashan?", nil, {achaea=true})
-	private_settings["orbmhaldor"]		= createOption(false, function() mmp.setOrb("mhaldor") end, { "boolean" }, "Orb of Confinement active in Mhaldor?", nil, {achaea=true})
-	private_settings["orbtargossas"]	= createOption(false, function() mmp.setOrb("targossas") end, { "boolean" }, "Orb of Confinement active in Targossas?", nil, {achaea=true})
-	
---Imperian wings
-  private_settings["shekinah"]      = createOption(false, mmp.setShekinah, { "boolean" }, "Use Seraphim Wings?", nil, {imperian=true})
-  private_settings["suriel"]        = createOption(false, mmp.setSuriel, { "boolean" }, "Use Orphanim Wings?", nil, {imperian=true})
-	
---Lusternia bixes
-  private_settings["torus"]         = createOption(false, mmp.setTorus, { "boolean" }, "Make use of your Torus?", nil, {lusternia=true})
-  private_settings["prism"]         = createOption(false, mmp.setPrism, {"boolean"}, "Make use of your transplanar prism?", nil, {lusternia=true})
-  private_settings["cubix"]         = createOption(false, mmp.setCubix, { "boolean" }, "Make use of your Cubix?", nil, {lusternia=true})
-  private_settings["medallion"]     = createOption(false, mmp.setMedallion, { "boolean" }, "Make use of your Medallion?", nil, {lusternia=true})
-
---Lusternia Bubblixes
-  private_settings["tibia"]         = createOption(false, mmp.setTibia, { "boolean" }, "Make use of your Tibia?", nil, {lusternia=true})
-  private_settings["mud"]           = createOption(false, mmp.setMud, { "boolean" }, "Make use of your Mud?", nil, {lusternia=true})
-  private_settings["cookie"]        = createOption(false, mmp.setCookie, { "boolean" }, "Make use of your Cookie?", nil, {lusternia=true})
-  private_settings["icicle"]        = createOption(false, mmp.setIcicle, { "boolean" }, "Make use of your Icicle?", nil, {lusternia=true})
-  private_settings["screwdriver"]   = createOption(false, mmp.setScrewdriver, { "boolean" }, "Make use of your Screwdriver?", nil, {lusternia=true})
-  private_settings["snowglobe"]     = createOption(false, mmp.setSnowglobe, { "boolean" }, "Make use of your Snowglobe?", nil, {lusternia=true})
-  private_settings["head"]          = createOption(false, mmp.setHead, { "boolean" }, "Make use of your Doll's Head?", nil, {lusternia=true})
-  private_settings["wheel"]         = createOption(false, mmp.setWheel, { "boolean" }, "Make use of your Quartz Wheel?", nil, {lusternia=true})
-
---Lusternia Curio collections
-  private_settings["bonecurio"]     = createOption(false, mmp.setBonecurio, { "boolean" }, "Make use of your Bone curios?", nil, {lusternia=true})
-  private_settings["facecurio"]     = createOption(false, mmp.setFacecurio, { "boolean" }, "Make use of your Face curios?", nil, {lusternia=true})
-  private_settings["feathercurio"]  = createOption(false, mmp.setFeathercurio, { "boolean" }, "Make use of your Feather curios?", nil, {lusternia=true})
-  private_settings["figurecurio"]   = createOption(false, mmp.setFigurecurio, { "boolean" }, "Make use of your Figure curios?", nil, {lusternia=true})
-  private_settings["flowercurio"]   = createOption(false, mmp.setFlowercurio, { "boolean" }, "Make use of your Flower curios?", nil, {lusternia=true})
-  private_settings["fluttercurio"]  = createOption(false, mmp.setFluttercurio, { "boolean" }, "Make use of your Flutter curios?", nil, {lusternia=true})
-  private_settings["toolcurio"]     = createOption(false, mmp.setToolcurio, { "boolean" }, "Make use of your Tool curios]?", nil, {lusternia=true})
-  private_settings["vernalcurio"]   = createOption(false, mmp.setVernalcurio, { "boolean" }, "Make use of your Vernal curios?", nil, {lusternia=true})
-  private_settings["utensilcurio"]  = createOption(false, mmp.setUtensilcurio, { "boolean" }, "Make use of your Utensil curios?", nil, {lusternia=true})
-  private_settings["toycurio"]      = createOption(false, mmp.setToycurio, { "boolean" }, "Make use of your Toy curios?", nil, {lusternia=true})
-  private_settings["soullesscurio"] = createOption(false, mmp.setSoullesscurio, { "boolean" }, "Make use of your Soulless curios?", nil, {lusternia=true})
-
---Lusternia epic
-  private_settings["fingerblade"]   = createOption(false, mmp.setFingerblade, { "boolean" }, "Make use of your Fingerblade?", nil, {lusternia=true})
-  private_settings["blossom"]       = createOption(false, mmp.setBlossom, { "boolean" }, "Make use of your Flame of dae'Seren?", nil, {lusternia=true})
-  private_settings["belt"]          = createOption(false, mmp.setBelt, { "boolean" }, "Make use of your Belt?", nil, {lusternia=true})
-  private_settings["mandala"]       = createOption(false, mmp.setMandala, { "boolean" }, "Make use of your Mandala?", nil, {lusternia=true})
-  private_settings["mantle"]        = createOption(false, mmp.setMantle, { "boolean" }, "Make use of your Mantle?", nil, {lusternia=true})
-  private_settings["key"]           = createOption(false, mmp.setKey, { "boolean" }, "Make use of your Key?", nil, {lusternia=true})
-
---misc
-  private_settings["caravan"]       = createOption(false, mmp.changeBoolFunc,{ "boolean" }, "Walk caravans?", nil, {imperian=true})
-
-
-
-
+  --General settings
+  private_settings["echocolour"] =
+    createOption(
+      "cyan",
+      mmp.changeEchoColour,
+      {"string"},
+      "Set the color for room number echos?",
+      function(newSetting)
+        return color_table[newSetting] ~= nil
+      end
+    )
+  private_settings["crowdmap"] =
+    createOption(
+      false,
+      mmp.chageMapSource,
+      {"boolean"},
+      "Use a crowd-sourced map instead of IREs default?",
+      nil,
+      {achaea = true, starmourn = true}
+    )
+  private_settings["showcmds"] =
+    createOption(true, mmp.changeBoolFunc, {"boolean"}, "Show walking commands?")
+  private_settings["slowwalk"] =
+    createOption(
+      false, mmp.setSlowWalk, {"boolean"}, "Walk slowly instead of as quick as possible?"
+    )
+  private_settings["updatemap"] =
+    createOption(true, mmp.changeUpdateMap, {"boolean"}, "Check for new maps from your MUD?")
+  private_settings["waterwalk"] =
+    createOption(
+      true,
+      mmp.setWaterWalk,
+      {"boolean"},
+      "Have waterwalk (don't avoid water)?",
+      nil,
+      {achaea = true}
+    )
+  --locking things
+  private_settings["lockpathways"] =
+    createOption(
+      true, mmp.lockPathways, {"boolean"}, "Lock pathway exits?", nil, {lusternia = true}
+    )
+  private_settings["locksewers"] =
+    createOption(false, mmp.lockSewers, {"boolean"}, "Lock all sewers?", nil, {achaea = true})
+  private_settings["lockspecials"] =
+    createOption(false, mmp.lockSpecials, {"boolean"}, "Lock all special exits?")
+  private_settings["lockwormholes"] =
+    createOption(
+      true,
+      mmp.lockWormholes,
+      {"boolean"},
+      "Lock all wormholes?",
+      nil,
+      {achaea = true, imperian = true, aetolia = true}
+    )
+  --Sprint movement
+  private_settings["dash"] =
+    createOption(
+      false,
+      mmp.changeBoolFunc,
+      {"boolean"},
+      "Use Dash?",
+      nil,
+      {achaea = true, imperian = true, aetolia = true}
+    )
+  private_settings["sprint"] = createOption(false, mmp.changeBoolFunc, {"boolean"}, "Use Sprint?")
+  private_settings["gallop"] = createOption(false, mmp.changeBoolFunc, {"boolean"}, "Use Gallop?")
+  private_settings["runaway"] =
+    createOption(
+      false, mmp.changeBoolFunc, {"boolean"}, "Use Jester Runaway?", nil, {achaea = true}
+    )
+  --Achaea wings and things
+  private_settings["winglanguage"] =
+    createOption(
+      "",
+      mmp.setWingsLanguage,
+      {"string"},
+      "Speak non-default language for wings:",
+      nil,
+      {achaea = true}
+    )
+  private_settings["pebble"] =
+    createOption(
+      false, mmp.lockPebble, {"boolean"}, "Make use of your enchanted pebble?", nil, {achaea = true}
+    )
+  private_settings["removewings"] =
+    createOption(
+      true,
+      mmp.setWingsRemoval,
+      {"boolean"},
+      "Remove Wings after using them?",
+      nil,
+      {achaea = true, imperian = true}
+    )
+  private_settings["harness"] =
+    createOption(
+      false, mmp.setHarness, {"boolean"}, "Use Stratospheric Harness?", nil, {achaea = true}
+    )
+  --PapaGuacamole
+  private_settings["duantahar"] =
+    createOption(false, mmp.setDuantahar, {"boolean"}, "Use Chenubian Wings?", nil, {achaea = true})
+  private_settings["duanatharan"] =
+    createOption(false, mmp.setDuanatharan, {"boolean"}, "Use Atavian Wings?", nil, {achaea = true})
+  private_settings["duanathar"] =
+    createOption(false, mmp.setDuanathar, {"boolean"}, "Use Eagle Wings?", nil, {achaea = true})
+  private_settings["duanatharic"] =
+    createOption(false, mmp.setDuanatharic, {"boolean"}, "Use Island Wings?", nil, {achaea = true})
+  private_settings["soar"] =
+    createOption(false, mmp.setSoar, {"boolean"}, "Use Aero Soar?", nil, {achaea = true})
+  private_settings["shackle"] =
+    createOption(false, mmp.changeBoolFunc, {"boolean"}, "Take off shackle?", nil, {achaea = true})
+  private_settings["universe"] =
+    createOption(false, mmp.setUniverse, {"boolean"}, "Use Universe Tarot?", nil, {achaea = true})
+  private_settings["gare"] =
+    createOption(false, mmp.setGare, {"boolean"}, "Use Gare?", nil, {achaea = true})
+  --Achaea Orb of Confinement
+  private_settings["orbashtan"] =
+    createOption(
+      false,
+      function()
+        mmp.setOrb("ashtan")
+      end,
+      {"boolean"},
+      "Orb of Confinement active in Ashtan?",
+      nil,
+      {achaea = true}
+    )
+  private_settings["orbcyrene"] =
+    createOption(
+      false,
+      function()
+        mmp.setOrb("cyrene")
+      end,
+      {"boolean"},
+      "Orb of Confinement active in Cyrene?",
+      nil,
+      {achaea = true}
+    )
+  private_settings["orbeleusis"] =
+    createOption(
+      false,
+      function()
+        mmp.setOrb("eleusis")
+      end,
+      {"boolean"},
+      "Orb of Confinement active in Eleusis?",
+      nil,
+      {achaea = true}
+    )
+  private_settings["orbhashan"] =
+    createOption(
+      false,
+      function()
+        mmp.setOrb("hashan")
+      end,
+      {"boolean"},
+      "Orb of Confinement active in Hashan?",
+      nil,
+      {achaea = true}
+    )
+  private_settings["orbmhaldor"] =
+    createOption(
+      false,
+      function()
+        mmp.setOrb("mhaldor")
+      end,
+      {"boolean"},
+      "Orb of Confinement active in Mhaldor?",
+      nil,
+      {achaea = true}
+    )
+  private_settings["orbtargossas"] =
+    createOption(
+      false,
+      function()
+        mmp.setOrb("targossas")
+      end,
+      {"boolean"},
+      "Orb of Confinement active in Targossas?",
+      nil,
+      {achaea = true}
+    )
+  --Imperian wings
+  private_settings["shekinah"] =
+    createOption(false, mmp.setShekinah, {"boolean"}, "Use Seraphim Wings?", nil, {imperian = true})
+  private_settings["suriel"] =
+    createOption(false, mmp.setSuriel, {"boolean"}, "Use Orphanim Wings?", nil, {imperian = true})
+  --Lusternia bixes
+  private_settings["torus"] =
+    createOption(
+      false, mmp.setTorus, {"boolean"}, "Make use of your Torus?", nil, {lusternia = true}
+    )
+  private_settings["prism"] =
+    createOption(
+      false,
+      mmp.setPrism,
+      {"boolean"},
+      "Make use of your transplanar prism?",
+      nil,
+      {lusternia = true}
+    )
+  private_settings["cubix"] =
+    createOption(
+      false, mmp.setCubix, {"boolean"}, "Make use of your Cubix?", nil, {lusternia = true}
+    )
+  private_settings["medallion"] =
+    createOption(
+      false, mmp.setMedallion, {"boolean"}, "Make use of your Medallion?", nil, {lusternia = true}
+    )
+  --Lusternia Bubblixes
+  private_settings["tibia"] =
+    createOption(
+      false, mmp.setTibia, {"boolean"}, "Make use of your Tibia?", nil, {lusternia = true}
+    )
+  private_settings["mud"] =
+    createOption(false, mmp.setMud, {"boolean"}, "Make use of your Mud?", nil, {lusternia = true})
+  private_settings["cookie"] =
+    createOption(
+      false, mmp.setCookie, {"boolean"}, "Make use of your Cookie?", nil, {lusternia = true}
+    )
+  private_settings["icicle"] =
+    createOption(
+      false, mmp.setIcicle, {"boolean"}, "Make use of your Icicle?", nil, {lusternia = true}
+    )
+  private_settings["screwdriver"] =
+    createOption(
+      false,
+      mmp.setScrewdriver,
+      {"boolean"},
+      "Make use of your Screwdriver?",
+      nil,
+      {lusternia = true}
+    )
+  private_settings["snowglobe"] =
+    createOption(
+      false, mmp.setSnowglobe, {"boolean"}, "Make use of your Snowglobe?", nil, {lusternia = true}
+    )
+  private_settings["head"] =
+    createOption(
+      false, mmp.setHead, {"boolean"}, "Make use of your Doll's Head?", nil, {lusternia = true}
+    )
+  private_settings["wheel"] =
+    createOption(
+      false, mmp.setWheel, {"boolean"}, "Make use of your Quartz Wheel?", nil, {lusternia = true}
+    )
+  --Lusternia Curio collections
+  private_settings["bonecurio"] =
+    createOption(
+      false, mmp.setBonecurio, {"boolean"}, "Make use of your Bone curios?", nil, {lusternia = true}
+    )
+  private_settings["facecurio"] =
+    createOption(
+      false, mmp.setFacecurio, {"boolean"}, "Make use of your Face curios?", nil, {lusternia = true}
+    )
+  private_settings["feathercurio"] =
+    createOption(
+      false,
+      mmp.setFeathercurio,
+      {"boolean"},
+      "Make use of your Feather curios?",
+      nil,
+      {lusternia = true}
+    )
+  private_settings["figurecurio"] =
+    createOption(
+      false,
+      mmp.setFigurecurio,
+      {"boolean"},
+      "Make use of your Figure curios?",
+      nil,
+      {lusternia = true}
+    )
+  private_settings["flowercurio"] =
+    createOption(
+      false,
+      mmp.setFlowercurio,
+      {"boolean"},
+      "Make use of your Flower curios?",
+      nil,
+      {lusternia = true}
+    )
+  private_settings["fluttercurio"] =
+    createOption(
+      false,
+      mmp.setFluttercurio,
+      {"boolean"},
+      "Make use of your Flutter curios?",
+      nil,
+      {lusternia = true}
+    )
+  private_settings["toolcurio"] =
+    createOption(
+      false,
+      mmp.setToolcurio,
+      {"boolean"},
+      "Make use of your Tool curios]?",
+      nil,
+      {lusternia = true}
+    )
+  private_settings["vernalcurio"] =
+    createOption(
+      false,
+      mmp.setVernalcurio,
+      {"boolean"},
+      "Make use of your Vernal curios?",
+      nil,
+      {lusternia = true}
+    )
+  private_settings["utensilcurio"] =
+    createOption(
+      false,
+      mmp.setUtensilcurio,
+      {"boolean"},
+      "Make use of your Utensil curios?",
+      nil,
+      {lusternia = true}
+    )
+  private_settings["toycurio"] =
+    createOption(
+      false, mmp.setToycurio, {"boolean"}, "Make use of your Toy curios?", nil, {lusternia = true}
+    )
+  private_settings["soullesscurio"] =
+    createOption(
+      false,
+      mmp.setSoullesscurio,
+      {"boolean"},
+      "Make use of your Soulless curios?",
+      nil,
+      {lusternia = true}
+    )
+  --Lusternia epic
+  private_settings["fingerblade"] =
+    createOption(
+      false,
+      mmp.setFingerblade,
+      {"boolean"},
+      "Make use of your Fingerblade?",
+      nil,
+      {lusternia = true}
+    )
+  private_settings["blossom"] =
+    createOption(
+      false,
+      mmp.setBlossom,
+      {"boolean"},
+      "Make use of your Flame of dae'Seren?",
+      nil,
+      {lusternia = true}
+    )
+  private_settings["belt"] =
+    createOption(false, mmp.setBelt, {"boolean"}, "Make use of your Belt?", nil, {lusternia = true})
+  private_settings["mandala"] =
+    createOption(
+      false, mmp.setMandala, {"boolean"}, "Make use of your Mandala?", nil, {lusternia = true}
+    )
+  private_settings["mantle"] =
+    createOption(
+      false, mmp.setMantle, {"boolean"}, "Make use of your Mantle?", nil, {lusternia = true}
+    )
+  private_settings["key"] =
+    createOption(false, mmp.setKey, {"boolean"}, "Make use of your Key?", nil, {lusternia = true})
+  --misc
+  private_settings["caravan"] =
+    createOption(false, mmp.changeBoolFunc, {"boolean"}, "Walk caravans?", nil, {imperian = true})
   mmp.settings = createOptionsTable(private_settings)
   mmp.settings.disp = mmp.echo
-
   mmp.game = false
-
-  mmp.settings.dispOption = function(opt, val)
-    cecho("&lt;green&gt;" .. val.use .. "&lt;white&gt; (" ..opt..") " .. string.rep(" ", 50 - val.use:len() - opt:len()) .. tostring(val.value) .. "\n")
-  end
-
-  mmp.settings.dispDefaultWriteError = function()
-    mmp.echo("Please use the mconfig alias to set options!")
-  end
-
+  mmp.settings.dispOption =
+    function(opt, val)
+      cecho(
+        "&lt;green&gt;" ..
+        val.use ..
+        "&lt;white&gt; (" ..
+        opt ..
+        ") " ..
+        string.rep(" ", 50 - val.use:len() - opt:len()) ..
+        tostring(val.value) ..
+        "\n"
+      )
+    end
+  mmp.settings.dispDefaultWriteError =
+    function()
+      mmp.echo("Please use the mconfig alias to set options!")
+    end
   local tmp = getRoomUserData(1, "ferry rooms")
   if tmp ~= "" then
     for _, i in ipairs(yajl.to_value(tmp)) do
       mmp.ferry_rooms[i] = true
     end
   end
-
   raiseEvent("mmp areas changed")
   mmp.firstRun = false
-  mmp.echon("Mudlet Mapper script for IREs ("..tostring(mmp.version)..") loaded! (")
-  echoLink("homepage","(openUrl or openURL)'http://wiki.mudlet.org/w/IRE_mapping_script'", "Clicky clicky to read up on what's this about")
+  mmp.echon("Mudlet Mapper script for IREs (" .. tostring(mmp.version) .. ") loaded! (")
+  echoLink(
+    "homepage",
+    "(openUrl or openURL)'http://wiki.mudlet.org/w/IRE_mapping_script'",
+    "Clicky clicky to read up on what's this about"
+  )
   echo(")\n")
 end</script>
 				<eventHandlerList />
@@ -7464,8 +7750,8 @@ end
 
 function mmp.chageMapSource()
   local use = mmp.settings.crowdmap and true or false
-  if use and not mmp.game or mmp.game ~= "achaea" then
-    mmp.echo("Sorry - the crowdsourced map is only available for use in Achaea. If you'd like to help start one for your game, please post at http://forums.mudlet.org/viewtopic.php?f=13&amp;t=1696. If you are playing Achaea, then it is likely that you just downloaded the script - and it doens't know what you are playing. Reconnect and it'll know.")
+  if use and not mmp.game or mmp.game ~= "achaea" or mmp.game ~= "starmourn" then
+    mmp.echo("Sorry - the crowdsourced map is only available for use in Achaea or Starmourn. If you'd like to help start one for your game, please post at http://forums.mudlet.org/viewtopic.php?f=13&amp;t=1696. If you are playing one of the games, then it is likely that you just downloaded the script - and it doens't know what you are playing. Reconnect and it'll know.")
     mmp.settings.crowdmap = false
   elseif use and not loadMap then
    mmp.echo("Sorry - your Mudlet is too old and can't load maps. Please update: http://forums.mudlet.org/viewtopic.php?f=5&amp;t=1874")
@@ -7474,7 +7760,7 @@ function mmp.chageMapSource()
     mmp.echo("Will use the crowdsourced map for updates instead!")
     mmp.checkforupdate()
   else
-    mmp.echo("Will use the default Achaea map for updates.")
+    mmp.echo("Will use the default game map for updates.")
   end
 end
 
@@ -8021,50 +8307,92 @@ end</script>
 					<packageName></packageName>
 					<script>function mmp.roomLook(input)
   -- we can do a report with a number
+
   local function handle_number(num)
     -- compile all available data
-    if not mmp.roomexists(num) then mmp.echo(num.." doesn't seem to exist.") return end
-    local s, areanum = pcall(getRoomArea,num)
-    if not s then mmp.echo(areanum); return; end
-
+    if not mmp.roomexists(num) then
+      mmp.echo(num .. " doesn't seem to exist.")
+      return
+    end
+    local s, areanum = pcall(getRoomArea, num)
+    if not s then
+      mmp.echo(areanum);
+      return ;
+    end
     local exits = getRoomExits(num)
     local name = getRoomName(num)
     local islocked = roomLocked(num)
-    local weight = (getRoomWeight(num) and getRoomWeight(num) or "?") -- getRoomWeight is buggy in one of the versions, is actually linked to setRoomWeight and thus returns nil
+    local weight = (getRoomWeight(num) and getRoomWeight(num) or "?")
+    -- getRoomWeight is buggy in one of the versions, is actually linked to setRoomWeight and thus returns nil
     local exitweights = (getExitWeights and getExitWeights(num) or {})
     local coords = {getRoomCoordinates(num)}
     local specexits = getSpecialExits(num)
     local env = getRoomEnv(num)
     local envname = (mmp.envidsr and mmp.envidsr[env]) or "?"
-
     -- generate a report
-    mmp.echo(string.format("Room: %s #: %d area: %s (%d)",
-      name, num, tostring(mmp.areatabler[areanum]), areanum))
-
-    mmp.echo(string.format("Coordinates: x:%d, y:%d, z:%d, locked: %s, weight: %s", coords[1], coords[2], coords[3], (islocked and "yep" or "nope"), tostring(weight)))
-
-    mmp.echo(string.format("Environment: %s (%d)%s", tostring(envname), env, (getRoomUserData(num, "indoors") ~= '' and ", indoors" or '')))
-
+    mmp.echo(
+      string.format(
+        "Room: %s #: %d area: %s (%d)", name, num, tostring(mmp.areatabler[areanum]), areanum
+      )
+    )
+    mmp.echo(
+      string.format(
+        "Coordinates: x:%d, y:%d, z:%d, locked: %s, weight: %s",
+        coords[1],
+        coords[2],
+        coords[3],
+        (islocked and "yep" or "nope"),
+        tostring(weight)
+      )
+    )
+    mmp.echo(
+      string.format(
+        "Environment: %s (%d)%s",
+        tostring(envname),
+        env,
+        (getRoomUserData(num, "indoors") ~= '' and ", indoors" or '')
+      )
+    )
     mmp.echo(string.format("Exits (%d):", table.size(exits)))
     for exit, leadsto in pairs(exits) do
-      echo(string.format("  %s -&gt; %s (%d)%s%s\n", exit, getRoomName(leadsto), leadsto,
-        ((getRoomArea(leadsto) or "?") == areanum and ""
-        or " (in "..(mmp.areatabler[getRoomArea(leadsto)] or "?")..")"),
-        ((not exitweights[mmp.anytoshort(exit)] or exitweights[mmp.anytoshort(exit)] == 0) and "" or " (weight: "..exitweights[mmp.anytoshort(exit)]..")")
-      ))
+      echo(
+        string.format(
+          "  %s -&gt; %s (%d)%s%s\n",
+          exit,
+          getRoomName(leadsto),
+          leadsto,
+          (
+            (getRoomArea(leadsto) or "?") == areanum and
+            "" or
+            " (in " ..
+            (mmp.areatabler[getRoomArea(leadsto)] or "?") ..
+            ")"
+          ),
+          (
+            (not exitweights[mmp.anytoshort(exit)] or exitweights[mmp.anytoshort(exit)] == 0) and
+            "" or
+            " (weight: " ..
+            exitweights[mmp.anytoshort(exit)] ..
+            ")"
+          )
+        )
+      )
     end
-
     -- display special exits if we got any
     if next(specexits) then
-      mmp.echo(string.format("Special exits (%d):",table.size(specexits)))
-
+      mmp.echo(string.format("Special exits (%d):", table.size(specexits)))
       for leadsto, command in pairs(specexits) do
         if type(command) == "string" then
           echo(string.format("  %s -&gt; %s (%d)\n", command, getRoomName(leadsto), leadsto))
-        else -- new format - exit name, command
+        else
+          -- new format - exit name, command
           for cmd, locked in pairs(command) do
             if locked == '1' then
-              cecho(string.format("&lt;DarkSlateGrey&gt;  %s -&gt; %s (%d) (locked)\n", cmd, getRoomName(leadsto), leadsto))
+              cecho(
+                string.format(
+                  "&lt;DarkSlateGrey&gt;  %s -&gt; %s (%d) (locked)\n", cmd, getRoomName(leadsto), leadsto
+                )
+              )
             else
               echo(string.format("  %s -&gt; %s (%d)\n", cmd, getRoomName(leadsto), leadsto))
             end
@@ -8072,12 +8400,18 @@ end</script>
         end
       end
     end
-
     -- actions we can do. This will be a short menu of sorts for actions
     mmp.echo("Stuff you can do:")
-    echo"  " echo("Clear all labels ") setUnderline(true) echoLink("(in area)", 'mmp.clearLabels('..areanum..')', '', true) setUnderline(false)
-    echo" " setUnderline(true)
-    echoLink("(whole map)", [[
+    echo("  ")
+    echo("Clear all labels ")
+    setUnderline(true)
+    echoLink("(in area)", 'mmp.clearLabels(' .. areanum .. ')', '', true)
+    setUnderline(false)
+    echo(" ")
+    setUnderline(true)
+    echoLink(
+      "(whole map)",
+      [[
     if not mmp.clearinglabels then
       mmp.echo("Are you sure you want to clear all of your labels on this map? If yes, click the link again.")
       mmp.clearinglabels = true
@@ -8085,27 +8419,45 @@ end</script>
       mmp.clearLabels("map")
       mmp.clearinglabels = nil
     end
-    ]], '', true) setUnderline(false) echo"\n"
-    echo"  " setUnderline(true) echoLink("Check for mapper &amp; map updates", 'mmp.echo("Checking...") mmp.checkforupdate()', '', true) setUnderline(false)
-    echo" " setUnderline(true) echoLink("(force map)", [[
+    ]],
+      '',
+      true
+    )
+    setUnderline(false)
+    echo("\n")
+    echo("  ")
+    setUnderline(true)
+    echoLink(
+      "Check for mapper &amp; map updates", 'mmp.echo("Checking...") mmp.checkforupdate()', '', true
+    )
+    setUnderline(false)
+    echo(" ")
+    setUnderline(true)
+    echoLink(
+      "(force map)",
+      [[
       if io.exists(getMudletHomeDir().."/map downloads/current") then
         local s,m = os.remove(getMudletHomeDir().."/map downloads/current")
         if not s then mmp.echo("Couldn't delete '"..getMudletHomeDir().."/map downloads/current' file: "..tostring(m)..".") end
       end
       mmp.echo("Re-downloading the latest crowdmap...")
       mmp.checkforupdate()
-    ]], "Re-download the map regardless if you have latest", true)
+    ]],
+      "Re-download the map regardless if you have latest",
+      true
+    )
     setUnderline(false)
-    echo"\n"
+    echo("\n")
   end
 
   -- see if we can do anything with the name
+
   local function handle_name(name)
     local result = mmp.searchRoom(name)
-
     if type(result) == "string" then
-      cecho("&lt;grey&gt;You have no recollection of any room with that name.") return end
-
+      cecho("&lt;grey&gt;You have no recollection of any room with that name.")
+      return
+    end
     -- if we got one result, then act on it
     if table.size(result) == 1 then
       if type(next(result)) == "number" then
@@ -8115,33 +8467,55 @@ end</script>
       end
       return
     end
-
     -- if not, then ask the user to clarify which one would they want
     mmp.echo("Which room specifically would you like to look up?")
     if not select(2, next(result)) or not tonumber(select(2, next(result))) then
-      for roomid, roomname in pairs(result) do roomid = tonumber(roomid)
-        cecho(string.format("  &lt;LightSlateGray&gt;%s&lt;DarkSlateGrey&gt; (",
-          tostring(roomname)))
-        cechoLink("&lt;"..mmp.settings.echocolour.."&gt;"..roomid, 'mmp.roomLook('..roomid..')', string.format("View room details for %s (%s)", roomid, tostring(roomname)), true)
-        cecho(string.format("&lt;DarkSlateGrey&gt;) in the &lt;LightSlateGray&gt;%s&lt;DarkSlateGrey&gt;.\n", tostring(mmp.areatabler[getRoomArea(roomid)])))
+      for roomid, roomname in pairs(result) do
+        roomid = tonumber(roomid)
+        cecho(string.format("  &lt;LightSlateGray&gt;%s&lt;DarkSlateGrey&gt; (", tostring(roomname)))
+        cechoLink(
+          "&lt;" .. mmp.settings.echocolour .. "&gt;" .. roomid,
+          'mmp.roomLook(' .. roomid .. ')',
+          string.format("View room details for %s (%s)", roomid, tostring(roomname)),
+          true
+        )
+        cecho(
+          string.format(
+            "&lt;DarkSlateGrey&gt;) in the &lt;LightSlateGray&gt;%s&lt;DarkSlateGrey&gt;.\n",
+            tostring(mmp.areatabler[getRoomArea(roomid)])
+          )
+        )
       end
-
     else
-      for roomname, roomid in pairs(result) do roomid = tonumber(roomid)
-        cecho(string.format("  &lt;LightSlateGray&gt;%s&lt;DarkSlateGrey&gt; (",
-          tostring(roomname)))
-        cechoLink("&lt;"..mmp.settings.echocolour.."&gt;"..roomid, 'mmp.roomLook('..roomid..')', string.format("View room details for %s (%s)", roomid, tostring(roomname)), true)
-        cecho(string.format("&lt;DarkSlateGrey&gt;) in the &lt;LightSlateGray&gt;%s&lt;DarkSlateGrey&gt;.\n", tostring(mmp.areatabler[getRoomArea(roomid)])))
+      for roomname, roomid in pairs(result) do
+        roomid = tonumber(roomid)
+        cecho(string.format("  &lt;LightSlateGray&gt;%s&lt;DarkSlateGrey&gt; (", tostring(roomname)))
+        cechoLink(
+          "&lt;" .. mmp.settings.echocolour .. "&gt;" .. roomid,
+          'mmp.roomLook(' .. roomid .. ')',
+          string.format("View room details for %s (%s)", roomid, tostring(roomname)),
+          true
+        )
+        cecho(
+          string.format(
+            "&lt;DarkSlateGrey&gt;) in the &lt;LightSlateGray&gt;%s&lt;DarkSlateGrey&gt;.\n",
+            tostring(mmp.areatabler[getRoomArea(roomid)])
+          )
+        )
       end
     end
   end
 
   if not input then
     if not mmp.roomexists(mmp.currentroom) then
-      mmp.echo(mmp.currentroom.. " doesn't seem to be mapped yet.")
+      mmp.echo(mmp.currentroom .. " doesn't seem to be mapped yet.")
       mmp.echo("Stuff you can do:")
-      echo"  " echoLink("Check for all updates", 'mmp.echo("Checking...") mmp.checkforupdate()', '')
-      echo" " echoLink("(force map)", [[
+      echo("  ")
+      echoLink("Check for all updates", 'mmp.echo("Checking...") mmp.checkforupdate()', '')
+      echo(" ")
+      echoLink(
+        "(force map)",
+        [[
       local s,m = os.remove(getMudletHomeDir().."/map downloads/current")
         if io.exists(getMudletHomeDir().."/map downloads/current") then
           local s,m = os.remove(getMudletHomeDir().."/map downloads/current")
@@ -8149,17 +8523,21 @@ end</script>
         end
         mmp.echo("Re-downloading the latest map...")
         mmp.checkforupdate()
-      ]], "Re-download the map regardless if you have latest")
-      echo"\n"
-    else input = mmp.currentroom end
+      ]],
+        "Re-download the map regardless if you have latest"
+      )
+      echo("\n")
+      mmp.echo(string.format("version %s.", tostring(mmp.version)))
+      return
+    else
+      input = mmp.currentroom
+    end
   end
-
   if tonumber(input) then
     handle_number(tonumber(input))
   else
     handle_name(input)
   end
-
   mmp.echo(string.format("version %s.", tostring(mmp.version)))
 end</script>
 					<eventHandlerList />
@@ -9880,6 +10258,7 @@ end</script>
       ["ventilation shaft"] = 21,
       ["verdantcliffs"] = 75,
     }
+  mmp.waterenvs = {}
   mmp.envidsr = {}
   for name, id in pairs(mmp.envids) do
     mmp.envidsr[id] = name
@@ -10196,130 +10575,170 @@ end</script>
 				<Script isActive="yes" isFolder="no">
 					<name>Check for updates</name>
 					<packageName></packageName>
-					<script>local downloadfolder = getMudletHomeDir().."/map downloads/"
+					<script>local downloadfolder = getMudletHomeDir() .. "/map downloads/"
 local whereisit
-
 -- this should get called at start and every hour after that
+
 function mmp.checkforupdate()
-  if not mmp.game or mmp.checkingupdates then return end
-
-  local game = (mmp.game == "mko") and "midkemiaonline" or mmp.game
-  mmp.mapfile = downloadfolder.."MD5"
-  mmp.mapperfile = downloadfolder.."mapper"
-
+  if not mmp.game or mmp.checkingupdates then
+    return
+  end
+  local game = mmp.game
+  mmp.mapfile = downloadfolder .. "MD5"
+  mmp.mapperfile = downloadfolder .. "mapper"
   if not downloadFile then
     mmp.echo("Your version of Mudlet doesn't support downloading files - please upgrade to 2.0+")
   else
     if not lfs.attributes(downloadfolder) then
       if lfs and lfs.mkdir then
-         local t,s = lfs.mkdir(downloadfolder)
-         if not t and s ~= "File exists" then mmp.echo("Couldn't make the '"..downloadfolder.."' folder; "..s) return end
+        local t, s = lfs.mkdir(downloadfolder)
+        if not t and s ~= "File exists" then
+          mmp.echo("Couldn't make the '" .. downloadfolder .. "' folder; " .. s)
+          return
+        end
       else
-        mmp.echo("Sorry, but you need LuaFileSystem (lfs) installed, or have the '"..downloadfolder.."' folder exist.")
+        mmp.echo(
+          "Sorry, but you need LuaFileSystem (lfs) installed, or have the '" ..
+          downloadfolder ..
+          "' folder exist."
+        )
         return
       end
     end
-
-    if mmp.settings.crowdmap and mmp.game and mmp.game == "achaea" then
-      downloadFile(mmp.mapfile, "http://ire-mudlet-mapping.github.io/AchaeaCrowdmap/Map/version.txt")
+    if mmp.settings.crowdmap then
+      if game == "achaea" then
+        downloadFile(
+          mmp.mapfile, "http://ire-mudlet-mapping.github.io/AchaeaCrowdmap/Map/version.txt"
+        )
+      elseif game == "starmourn" then
+        downloadFile(
+          mmp.mapfile, "http://ire-mudlet-mapping.github.io/StarmournCrowdmap/Map/version.txt"
+        )
+      end
     elseif mmp.settings.updatemap then
-      downloadFile(mmp.mapfile, "http://www."..game..".com/maps/MD5SUM")
+      downloadFile(mmp.mapfile, "http://www." .. game .. ".com/maps/MD5SUM")
     end
-
-    downloadFile(mmp.mapperfile, "http://ire-mudlet-mapping.github.io/ire-mapping-script/downloads/version")
-	mmp.checkingupdates = true
+    downloadFile(
+      mmp.mapperfile, "http://ire-mudlet-mapping.github.io/ire-mapping-script/downloads/version"
+    )
+    mmp.checkingupdates = true
   end
 end
 
 -- called by the user when the map is updated to register the fact that it was
+
 function mmp.updatedmap(currentmd5)
   assert(currentmd5, "need md5 sum to write to file")
-
-  local f,err = io.open(downloadfolder.."current", "w")
-  if not f then return mmp.echo("Couldn't write to the update file, because: "..err) end
+  local f, err = io.open(downloadfolder .. "current", "w")
+  if not f then
+    return mmp.echo("Couldn't write to the update file, because: " .. err)
+  end
   f:write(currentmd5)
   f:close()
-
   local t = {"Go you for updating!", "Thanks for updating the map!", "Alright, map updated!"}
   mmp.echo(t[math.random(1, #t)])
 end
 
 -- downloads the latest changelog for the mapper if it was updated
-function mmp.retrievechangelog()
-  mmp.changelogfile = downloadfolder.."changelog"
 
-  downloadFile(mmp.changelogfile, "http://ire-mudlet-mapping.github.io/ire-mapping-script/downloads/changelog")
+function mmp.retrievechangelog()
+  mmp.changelogfile = downloadfolder .. "changelog"
+  downloadFile(
+    mmp.changelogfile, "http://ire-mudlet-mapping.github.io/ire-mapping-script/downloads/changelog"
+  )
 end
 
 function mmp.retrievecrowdchangelog()
-  mmp.crowdchangelogfile = downloadfolder.."crowdchangelogfile"
-
-  downloadFile(mmp.crowdchangelogfile, "http://ire-mudlet-mapping.github.io/AchaeaCrowdmap/Map/changelog.txt")
+  mmp.crowdchangelogfile = downloadfolder .. "crowdchangelogfile"
+  if mmp.game == "achaea" then
+    downloadFile(
+      mmp.crowdchangelogfile, "http://ire-mudlet-mapping.github.io/AchaeaCrowdmap/Map/changelog.txt"
+    )
+  elseif mmp.game == "starmourn" then
+    downloadFile(
+      mmp.crowdchangelogfile,
+      "http://ire-mudlet-mapping.github.io/StarmournCrowdmap/Map/changelog.txt"
+    )
+  end
 end
 
 -- downloads the public crowdsources map!
+
 function mmp.downloadmapperscript()
-  local downloadlocationfile = downloadfolder.."savepath"
+  local downloadlocationfile = downloadfolder .. "savepath"
   local downloadlocation
   local exists = lfs.attributes
-
   -- somewhat complicated thing to nicely deal with all scenarios.
   if not exists(downloadlocationfile) then
     downloadlocation = whereisit()
-    if not downloadlocation then return end
-  end
-
-  if not downloadlocation then
-    local f, s = io.open(downloadlocationfile)
-    if f then downloadlocation = f:read("*a"); io.close(f) end
-
-
-    if not exists(downloadlocation) then
-      downloadlocation = whereisit()
-      if not downloadlocation or not exists(downloadlocation) then return end
+    if not downloadlocation then
+      return
     end
   end
-
-
-  mmp.downloadedscript = downloadlocation.."/mudlet-mapper.xml"
-  downloadFile(mmp.downloadedscript, "http://ire-mudlet-mapping.github.io/ire-mapping-script/downloads/mudlet-mapper.xml")
-
-  local f,err = io.open(downloadlocationfile, "w")
-  if not f then return mmp.echo("Couldn't write to the location file, because: "..err) end
+  if not downloadlocation then
+    local f, s = io.open(downloadlocationfile)
+    if f then
+      downloadlocation = f:read("*a");
+      io.close(f)
+    end
+    if not exists(downloadlocation) then
+      downloadlocation = whereisit()
+      if not downloadlocation or not exists(downloadlocation) then
+        return
+      end
+    end
+  end
+  mmp.downloadedscript = downloadlocation .. "/mudlet-mapper.xml"
+  downloadFile(
+    mmp.downloadedscript,
+    "http://ire-mudlet-mapping.github.io/ire-mapping-script/downloads/mudlet-mapper.xml"
+  )
+  local f, err = io.open(downloadlocationfile, "w")
+  if not f then
+    return mmp.echo("Couldn't write to the location file, because: " .. err)
+  end
   f:write(downloadlocation)
   f:close()
   mmp.echo("Okay, downloading the mapper script...")
 end
 
 function mmp.downloadcrowdmap(newversion)
-  mmp.crowdmapfile = downloadfolder.."crowdmap"
-
-  local f,err = io.open(downloadfolder.."current", "w")
-  if not f then return mmp.echo("Couldn't write to the update file, because: "..err) end
+  mmp.crowdmapfile = downloadfolder .. "crowdmap"
+  local f, err = io.open(downloadfolder .. "current", "w")
+  if not f then
+    return mmp.echo("Couldn't write to the update file, because: " .. err)
+  end
   f:write(newversion)
   f:close()
-
-
-  downloadFile(mmp.crowdmapfile, "http://ire-mudlet-mapping.github.io/AchaeaCrowdmap/Map/map")
-
+  if mmp.game == "achaea" then
+    downloadFile(mmp.crowdmapfile, "http://ire-mudlet-mapping.github.io/AchaeaCrowdmap/Map/map")
+  elseif mmp.game == "starmourn" then
+    downloadFile(mmp.crowdmapfile, "http://ire-mudlet-mapping.github.io/StarmournCrowdmap/Map/map")
+  end
   mmp.echo("Downloading the latest crowdmap...")
 end
 
 function mmp.showcrowdchangelog()
   mmp.echo("Public map changelog:")
-
-  if not mmp.crowdchangelog then mmp.echo("(none yet)") return end
-
-  for k,v in ipairs(mmp.crowdchangelog) do
-    cecho(string.format("  %s) %s\n", k,v:gsub("\t", "     ")))
+  if not mmp.crowdchangelog then
+    mmp.echo("(none yet)")
+    return
+  end
+  for k, v in ipairs(mmp.crowdchangelog) do
+    cecho(string.format("  %s) %s\n", k, v:gsub("\t", "     ")))
   end
 end
 
-whereisit = function()
-  local path = invokeFileDialog(false, "Where should we save the file? Select a folder and click Open")
-
-  if path == "" then return nil else return path end
-end</script>
+whereisit =
+  function()
+    local path =
+      invokeFileDialog(false, "Where should we save the file? Select a folder and click Open")
+    if path == "" then
+      return nil
+    else
+      return path
+    end
+  end</script>
 					<eventHandlerList />
 					<Script isActive="yes" isFolder="no">
 						<name>mmp_checkupdatestart</name>
