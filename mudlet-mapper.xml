@@ -7751,7 +7751,7 @@ end
 function mmp.chageMapSource()
   local use = mmp.settings.crowdmap and true or false
   if use and not mmp.game or mmp.game ~= "achaea" or mmp.game ~= "starmourn" then
-    mmp.echo("Sorry - the crowdsourced map is only available for use in Achaea or Starmourn. If you'd like to help start one for your game, please post at http://forums.mudlet.org/viewtopic.php?f=13&amp;t=1696. If you are playing one of the games, then it is likely that you just downloaded the script - and it doens't know what you are playing. Reconnect and it'll know.")
+    mmp.echo("Sorry - the crowdsourced map is only available for use in Achaea or Starmourn. If you'd like to help start one for your game, please post at http://forums.mudlet.org/viewtopic.php?f=13&amp;t=1696. If you are playing one of the games, then it is likely that you just downloaded the script - and it doesn't know what you are playing. Reconnect and it'll know.")
     mmp.settings.crowdmap = false
   elseif use and not loadMap then
    mmp.echo("Sorry - your Mudlet is too old and can't load maps. Please update: http://forums.mudlet.org/viewtopic.php?f=5&amp;t=1874")
