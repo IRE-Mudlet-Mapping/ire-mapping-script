@@ -3152,8 +3152,10 @@ mmp.echo("We're connected to Lithmeria.")</script>
 						<string>This door has been magically locked shut.</string>
 						<string>Not recognising you as cast or crew, stagehands firmly close the door on you.</string>
 						<string>You push against the door in vain as you try to open it.</string>
+						<string>You do not have access to open this door.</string>
 					</regexCodeList>
 					<regexCodePropertyList>
+						<integer>3</integer>
 						<integer>3</integer>
 						<integer>3</integer>
 						<integer>3</integer>
@@ -3196,10 +3198,12 @@ mmp.echo("We're connected to Lithmeria.")</script>
 					<regexCodeList>
 						<string>There is a door in the way, to the</string>
 						<string>There is a door in the way.</string>
+						<string>A closed door is in the way. You need to OPEN DOOR</string>
 					</regexCodeList>
 					<regexCodePropertyList>
 						<integer>2</integer>
 						<integer>3</integer>
+						<integer>2</integer>
 					</regexCodePropertyList>
 				</Trigger>
 			</TriggerGroup>
