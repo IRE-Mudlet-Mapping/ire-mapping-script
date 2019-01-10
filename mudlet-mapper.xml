@@ -2855,24 +2855,24 @@ mmp.game = "starmourn"</script>
 					</regexCodePropertyList>
 				</Trigger>
 				<Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
-						<name>Path Blocked</name>
-						<script>mmp.failpath()</script>
-						<triggerType>0</triggerType>
-						<conditonLineDelta>0</conditonLineDelta>
-						<mStayOpen>0</mStayOpen>
-						<mCommand></mCommand>
-						<packageName></packageName>
-						<mFgColor>#ff0000</mFgColor>
-						<mBgColor>#ffff00</mBgColor>
-						<mSoundFile></mSoundFile>
-						<colorTriggerFgColor>#000000</colorTriggerFgColor>
-						<colorTriggerBgColor>#000000</colorTriggerBgColor>
-						<regexCodeList>
-							<string>^.+ blocks your attempt to leave. You can attempt to CRASH \w+ to escape\.$</string>
-						</regexCodeList>
-						<regexCodePropertyList>
-							<integer>1</integer>
-						</regexCodePropertyList>
+					<name>Path Blocked</name>
+					<script>mmp.failpath()</script>
+					<triggerType>0</triggerType>
+					<conditonLineDelta>0</conditonLineDelta>
+					<mStayOpen>0</mStayOpen>
+					<mCommand></mCommand>
+					<packageName></packageName>
+					<mFgColor>#ff0000</mFgColor>
+					<mBgColor>#ffff00</mBgColor>
+					<mSoundFile></mSoundFile>
+					<colorTriggerFgColor>#000000</colorTriggerFgColor>
+					<colorTriggerBgColor>#000000</colorTriggerBgColor>
+					<regexCodeList>
+						<string>^.+ blocks your attempt to leave. You can attempt to CRASH \w+ to escape\.$</string>
+					</regexCodeList>
+					<regexCodePropertyList>
+						<integer>1</integer>
+					</regexCodePropertyList>
 				</Trigger>
 			</TriggerGroup>
 			<TriggerGroup isActive="yes" isFolder="yes" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
@@ -3381,27 +3381,29 @@ elseif command:ends("glide") then
   gallop = "glide"
   where = where:sub(1, -7)
 end
-
 if mmp.debug then
   mmp.gotoPerf = mmp.gotoPerf or createStopWatch()
   startStopWatch(mmp.gotoPerf)
 end
-
 -- goto room ID
 if tonumber(where) then
-	mmp.gotoRoom(where, gallop)
+  mmp.gotoRoom(where, gallop)
 else
-	-- goto area
-    local split = where:split(" ")
+  -- goto area or feature
+  local split = where:split(" ")
+  if split[1] == "feature" then
+	  table.remove(split, 1)
+    mmp.gotoFeature(table.concat(split, " "), gallop)
+  else
     if tonumber(split[#split]) then
-        mmp.gotoArea(where:sub(1, -#(split[#split])-2), tonumber(split[#split]), gallop)
+      mmp.gotoArea(where:sub(1, -#(split[#split]) - 2), tonumber(split[#split]), gallop)
     else
-        mmp.gotoArea(where, nil, gallop)
+      mmp.gotoArea(where, nil, gallop)
     end
+  end
 end
-
 if mmp.debug then
-  mmp.echo("goto alias took "..stopStopWatch(mmp.gotoPerf).."s to run.")
+  mmp.echo("goto alias took " .. stopStopWatch(mmp.gotoPerf) .. "s to run.")
 end</script>
 				<command></command>
 				<packageName></packageName>
@@ -5722,7 +5724,7 @@ function speedwalking(event, num)
       (
         table.contains(gmcp.Room.Info.details, "indoors") or
         table.contains(gmcp.Room.Info.details, "considered indoors") or
-				mmp.orbed()
+        mmp.orbed()
       )
     then
       mmp.inside = true
@@ -5843,7 +5845,7 @@ function doSpeedWalk(dashtype)
       "&lt;" .. mmp.settings.echocolour .. "&gt;" .. mmp.speedWalkPath[#mmp.speedWalkPath],
       'mmp.gotoRoom "' .. mmp.speedWalkPath[#mmp.speedWalkPath] .. '"',
       'Go to ' .. mmp.speedWalkPath[#mmp.speedWalkPath],
-			true
+      true
     )
     echo(": ")
     speedWalkCounter = 1
@@ -5972,33 +5974,20 @@ function mmp.clearspecials(deleterooms)
   end
 end
 
-function mmp.gotoAreaID(areaid, number, dashtype)
-  if not areaid or not tonumber(areaid) then
-    mmp.echo("To where do you want to go?")
-    return
-  end
-  areaid = tonumber(areaid)
-  if not mmp.areatabler[areaid] then
-    mmp.echo("Invalid area ID selected")
-    return
-  end
-  local possibleRooms, shortestPath, shortestBorder = {}, {}, 0
+local function getShortestOfMultipleRooms(possibleRooms)
+  local shortestPath, closestRoom = {}, 0
   mmp.computeShortestWatch = mmp.computeShortestWatch or createStopWatch()
   startStopWatch(mmp.computeShortestWatch)
-  possibleRooms = mmp.getAreaBorders(areaid)
-  -- add in temporary links to clouds / stratospheres to enable pathfinding, auto-repath will occur when moved to outside -- PapaGuacamole
-  local madeEast, madeNorth, madeWest
-  local currentareaid = getRoomArea(mmp.currentroom)
   raiseEvent("mmp link externals")
   local getStopWatchTime, tonumber, getPath = getStopWatchTime, tonumber, mmp.getPath
-  --mmp.echo(string.format("Have %s area edge nodes, %ss taken so far...", table.size(possibleRooms), getStopWatchTime(mmp.computeShortestWatch)))
+  --mmp.echo(string.format("Have %s rooms nodes, %ss taken so far...", table.size(possibleRooms), getStopWatchTime(mmp.computeShortestWatch)))
   -- allocate only 500ms to finding the shortest path, or more if we failed to find anything
   local checkedsofar, outoftime = 0
   for id, _ in pairs(possibleRooms) do
     if mmp.getPath(mmp.currentroom, tonumber(id)) then
-      if shortestBorder == 0 or #shortestPath &gt; #speedWalkPath then
+      if closestRoom == 0 or #shortestPath &gt; #speedWalkPath then
         shortestPath = speedWalkPath
-        shortestBorder = tonumber(id)
+        closestRoom = tonumber(id)
       end
     end
     checkedsofar = checkedsofar + 1
@@ -6010,6 +5999,22 @@ function mmp.gotoAreaID(areaid, number, dashtype)
   end
   --mmp.echo(string.format("total time took: %s", getStopWatchTime(mmp.computeShortestWatch)))
   stopStopWatch(mmp.computeShortestWatch)
+  return closestRoom, outoftime, checkedsofar
+end
+
+function mmp.gotoAreaID(areaid, number, dashtype)
+  if not areaid or not tonumber(areaid) then
+    mmp.echo("To where do you want to go?")
+    return
+  end
+  areaid = tonumber(areaid)
+  if not mmp.areatabler[areaid] then
+    mmp.echo("Invalid area ID selected")
+    return
+  end
+  local possibleRooms, shortestBorder = {}, 0
+  possibleRooms = mmp.getAreaBorders(areaid)
+  shortestBorder, outoftime, checkedsofar = getShortestOfMultipleRooms(possibleRooms)
   if shortestBorder == 0 then
     if outoftime then
       mmp.echo(
@@ -6017,7 +6022,7 @@ function mmp.gotoAreaID(areaid, number, dashtype)
           "I checked %d of the %d possible exits \"%s\" has, but none of the ways there worked and it was taking too long :( try doing this again?",
           checkedsofar,
           table.size(possibleRooms),
-          where
+          getRoomAreaName(areaid)
         )
       )
     else
@@ -6036,6 +6041,54 @@ function mmp.gotoAreaID(areaid, number, dashtype)
   end
   raiseEvent("mmp clear externals")
   mmp.gotoRoom(shortestBorder, dashtype, "area")
+end
+
+function mmp.gotoFeature(partialFeatureName, dashtype)
+  local userDataKeys = searchRoomUserData()
+  local feature
+  for _, key in pairs(userDataKeys) do
+    if key:starts("feature-") and key:find(partialFeatureName:lower()) then
+      feature = key
+      break
+    end
+  end
+  if not feature then
+    mmp.echo("No feature like " .. partialFeatureName .. " found.")
+    return
+  end
+  local rooms = searchRoomUserData(feature, "true")
+  -- change the structure of the table so it fits getShortestOfMultipleRooms
+  local possibleRooms = {}
+  for _, room in pairs(rooms) do
+    possibleRooms[room] = true
+  end
+  closestFeature, outoftime, checkedsofar = getShortestOfMultipleRooms(possibleRooms)
+  if closestFeature == 0 then
+    if outoftime then
+      mmp.echo(
+        string.format(
+          "I checked %d of the %d possible features \"%s\" has, but none of the ways there worked and it was taking too long :( try doing this again?",
+          checkedsofar,
+          table.size(possibleRooms),
+          partialFeatureName
+        )
+      )
+    else
+      mmp.echo(
+        "Checked " ..
+        table.size(possibleRooms) ..
+        " rooms with that feature, and none of them worked :( I Don't know how to get you there."
+      )
+    end
+    mmp.speedWalkPath = {}
+    mmp.speedWalkDir = {}
+    speedWalkCounter = 0
+    raiseEvent("mmapper failed path")
+    raiseEvent("mmp clear externals")
+    return
+  end
+  raiseEvent("mmp clear externals")
+  mmp.gotoRoom(closestFeature, dashtype, "area")
 end</script>
 				<eventHandlerList>
 					<string>RoomNum</string>
