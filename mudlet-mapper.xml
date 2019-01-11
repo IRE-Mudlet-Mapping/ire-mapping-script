@@ -7321,7 +7321,8 @@ function mmp.getAreaBorders(areaid)
   local roomlist, endresult = getAreaRooms(areaid), {}
   -- sometimes getAreaRooms can give us no result :(
   if not roomlist then mmp.echo("Sorry, seems we can't go there - getAreaRooms("..areaid..") didn't give us any results (Mudlet problem - redownloading the map might help fix it)") return end
-
+  if table.is_empty(roomlist) then mmp.echo("Sorry, seems we can't go there - "..getRoomAreaName(areaid).." has no rooms in it.") return end
+						
   -- make a key-value list of room IDs
   local reverselist = {}
   for i = 0, #roomlist do reverselist[roomlist[i]] = true end
