@@ -4346,6 +4346,13 @@ end</script>
 					<packageName></packageName>
 					<regex>^spe delete all(?: (.+))?$</regex>
 				</Alias>
+				<Alias isActive="yes" isFolder="no">
+					<name>Add map feature</name>
+					<script>mmp.createMapFeature(matches[2]:trim(), matches[3]:trim())</script>
+					<command></command>
+					<packageName></packageName>
+					<regex>^feature create (.+?)(?: char (.+))?$</regex>
+				</Alias>
 			</AliasGroup>
 			<Alias isActive="yes" isFolder="no">
 				<name>Toggle mapping mode</name>
@@ -10876,6 +10883,62 @@ end
 						<string>mapOpenEvent</string>
 					</eventHandlerList>
 				</Script>
+			</Script>
+			<Script isActive="yes" isFolder="no">
+				<name>map features</name>
+				<packageName></packageName>
+				<script>-------------------------------------------------
+--         Put your Lua functions here.        --
+--                                             --
+-- Note that you can also use external Scripts --
+-------------------------------------------------
+
+local function loadMapFeatures()
+  local mapFeaturesString = getRoomUserData(1, "mapFeatures")
+  local mapFeatures
+  if mapFeaturesString and mapFeaturesString ~= "" then
+    mapFeatures = yajl.to_value(mapFeaturesString)
+  else
+    mapFeatures = {}
+  end
+  return mapFeatures
+end
+
+local function saveMapFeatures(mapFeaturesToSave)
+  local mapFeaturesString = yajl.to_string(mapFeaturesToSave)
+  setRoomUserData(1, "mapFeatures", mapFeaturesString)
+end
+
+function mmp.createMapFeature(featureName, roomCharacter)
+  if not featureName or featureName == "" then
+    mmp.echo("Can't create an empty map feature.")
+    return
+  end
+  roomCharacter = roomCharacter or ""
+  if type(roomCharacter) ~= "string" then
+    mmp.echo(
+      "The new room character must be either a string or nil. " ..
+      type(roomCharacter) ..
+      " is not allowed."
+    )
+    return
+  end
+  local mapFeatures = loadMapFeatures()
+  if not mapFeatures[featureName] then
+    mapFeatures[featureName] = roomCharacter
+    saveMapFeatures(mapFeatures)
+    mmp.echo(
+      "Created map feature '" ..
+      featureName ..
+      "' with the room character '" ..
+      roomCharacter ..
+      "'."
+    )
+  else
+    mmp.echo("A map feature with the name '" .. featureName .. "' already exists.")
+  end
+end</script>
+				<eventHandlerList />
 			</Script>
 		</ScriptGroup>
 	</ScriptPackage>
