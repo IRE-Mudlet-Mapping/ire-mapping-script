@@ -4354,7 +4354,7 @@ end</script>
 					<regex>^feature create (.+?)(?: char (.+))?$</regex>
 				</Alias>
 				<Alias isActive="yes" isFolder="no">
-					<name>list map features</name>
+					<name>List map features</name>
 					<script>mmp.listMapFeatures()</script>
 					<command></command>
 					<packageName></packageName>
@@ -10901,7 +10901,7 @@ end
 -------------------------------------------------
 
 local function loadMapFeatures()
-  local mapFeaturesString = getRoomUserData(1, "mapFeatures")
+  local mapFeaturesString = getMapUserData("mapFeatures")
   local mapFeatures
   if mapFeaturesString and mapFeaturesString ~= "" then
     mapFeatures = yajl.to_value(mapFeaturesString)
@@ -10913,12 +10913,16 @@ end
 
 local function saveMapFeatures(mapFeaturesToSave)
   local mapFeaturesString = yajl.to_string(mapFeaturesToSave)
-  setRoomUserData(1, "mapFeatures", mapFeaturesString)
+  setMapUserData("mapFeatures", mapFeaturesString)
 end
 
 function mmp.createMapFeature(featureName, roomCharacter)
   if not featureName or featureName == "" then
     mmp.echo("Can't create an empty map feature.")
+    return
+  end
+  if featureName:find("%d") then
+    mmp.echo("Map feature names must not contain numbers.")
     return
   end
   roomCharacter = roomCharacter or ""
