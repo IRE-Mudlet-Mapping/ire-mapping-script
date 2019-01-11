@@ -4353,6 +4353,13 @@ end</script>
 					<packageName></packageName>
 					<regex>^feature create (.+?)(?: char (.+))?$</regex>
 				</Alias>
+				<Alias isActive="yes" isFolder="no">
+					<name>list map features</name>
+					<script>mmp.listMapFeatures()</script>
+					<command></command>
+					<packageName></packageName>
+					<regex>^feature list$</regex>
+				</Alias>
 			</AliasGroup>
 			<Alias isActive="yes" isFolder="no">
 				<name>Toggle mapping mode</name>
@@ -10936,6 +10943,16 @@ function mmp.createMapFeature(featureName, roomCharacter)
     )
   else
     mmp.echo("A map feature with the name '" .. featureName .. "' already exists.")
+  end
+end
+
+function mmp.listMapFeatures()
+  local mapFeatures = loadMapFeatures()
+  mmp.echo("This map has the following features:")
+  echo(string.format("    %-25s | %s\n", "feature name", "room character"))
+  echo(string.format("    %s\n", string.rep("-", 45)))
+  for featureName, roomCharacter in pairs(mapFeatures) do
+    echo(string.format("    %-25s | %s\n", featureName, roomCharacter))
   end
 end</script>
 				<eventHandlerList />
