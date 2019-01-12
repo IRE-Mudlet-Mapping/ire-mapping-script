@@ -4221,7 +4221,7 @@ end</script>
 					<regex></regex>
 				</Alias>
 				<Alias isActive="yes" isFolder="no">
-					<name>Add map feature</name>
+					<name>Create map feature</name>
 					<script>mmp.createMapFeature(matches[2]:trim(), (matches[3] and matches[3]:trim()))</script>
 					<command></command>
 					<packageName></packageName>
@@ -4242,11 +4242,18 @@ end</script>
 					<regex>^(?:room create feature|rcf) (?:v(\d+) )?(.+)$</regex>
 				</Alias>
 				<Alias isActive="yes" isFolder="no">
-					<name>delete map feature from room</name>
+					<name>Delete map feature from room</name>
 					<script>mmp.roomDeleteMapFeature(matches[3], matches[2] == "" and mmp.currentroom or tonumber(matches[2]))</script>
 					<command></command>
 					<packageName></packageName>
 					<regex>^(?:room delete feature|rdf) (?:v(\d+) )?(.+)$</regex>
+				</Alias>
+				<Alias isActive="yes" isFolder="no">
+					<name>Delete map feature</name>
+					<script>mmp.deleteMapFeature(matches[2]:trim())</script>
+					<command></command>
+					<packageName></packageName>
+					<regex>^feature delete (.+)$</regex>
 				</Alias>
 				<Alias isActive="no" isFolder="no">
 					<name>-- (dangerous functions)</name>
@@ -10994,9 +11001,10 @@ function mmp.createMapFeature(featureName, roomCharacter)
     )
     return
   end
+  local lowerFeatureName = featureName:lower()
   local mapFeatures = loadMapFeatures()
-  if not mapFeatures[featureName] then
-    mapFeatures[featureName] = roomCharacter
+  if not mapFeatures[lowerFeatureName] then
+    mapFeatures[lowerFeatureName] = roomCharacter
     saveMapFeatures(mapFeatures)
     mmp.echo(
       "Created map feature '" ..
@@ -11007,7 +11015,9 @@ function mmp.createMapFeature(featureName, roomCharacter)
     )
   else
     mmp.echo("A map feature with the name '" .. featureName .. "' already exists.")
+    return
   end
+  return true
 end
 
 function mmp.listMapFeatures()
@@ -11018,6 +11028,7 @@ function mmp.listMapFeatures()
   for featureName, roomCharacter in pairs(mapFeatures) do
     echo(string.format("    %-25s | %s\n", featureName, roomCharacter))
   end
+  return true
 end
 
 function mmp.roomCreateMapFeature(featureName, roomId)
@@ -11066,6 +11077,7 @@ function mmp.roomCreateMapFeature(featureName, roomId)
     setRoomChar(roomId, featureRoomChar)
     mmp.echo("The room now carries the room char '" .. featureRoomChar .. "'.")
   end
+  return true
 end
 
 function mmp.roomDeleteMapFeature(featureName, roomId)
@@ -11106,7 +11118,7 @@ function mmp.roomDeleteMapFeature(featureName, roomId)
   roomMapFeatures = mmp.getRoomMapFeatures(roomId)
   local mapFeatures = loadMapFeatures()
   -- find out if we need to set a new room character
-  if getRoomChar(roomId) == mapFeatures[lowerFeatureName] then
+  if getRoomChar(roomId) == mapFeatures[lowerFeatureName] and getRoomChar(roomId) ~= "" then
     local index, otherRoomMapFeature
     -- find another usable room character
     repeat
@@ -11123,6 +11135,7 @@ function mmp.roomDeleteMapFeature(featureName, roomId)
       mmp.echo("Deleted the current room character.")
     end
   end
+  return true
 end
 
 function mmp.getRoomMapFeatures(roomId)
@@ -11151,6 +11164,35 @@ function mmp.getRoomMapFeatures(roomId)
     end
   end
   return result
+end
+
+function mmp.deleteMapFeature(featureName)
+  if not featureName or featureName == "" then
+    mmp.echo("Which map feature would you like to delete?")
+    return
+  end
+  local lowerFeatureName = featureName:lower()
+  local mapFeatures = loadMapFeatures()
+  if not mapFeatures[lowerFeatureName] then
+    mmp.echo("Map feature '" .. featureName .. "' does not exist.")
+    return
+  end
+  local roomsWithFeature = searchRoomUserData("feature-" .. lowerFeatureName, "true")
+  for _, roomId in pairs(roomsWithFeature) do
+    local deletionResult = mmp.roomDeleteMapFeature(lowerFeatureName, roomId)
+    if not deletionResult then
+      mmp.echo(
+        "Something went wrong deleting the map feature '" ..
+        featureName ..
+        "' from all rooms. Deletion incomplete."
+      )
+      return
+    end
+  end
+  mapFeatures[lowerFeatureName] = nil
+  saveMapFeatures(mapFeatures)
+  mmp.echo("Deleted map feature '" .. featureName .. "' from map.")
+  return true
 end</script>
 				<eventHandlerList />
 			</Script>
