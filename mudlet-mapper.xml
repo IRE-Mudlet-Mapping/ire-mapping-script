@@ -4179,6 +4179,27 @@ end</script>
 					<regex>^weight ferry exits$</regex>
 				</Alias>
 				<Alias isActive="no" isFolder="no">
+					<name>-- (Map feature functions)</name>
+					<script></script>
+					<command></command>
+					<packageName></packageName>
+					<regex></regex>
+				</Alias>
+				<Alias isActive="yes" isFolder="no">
+					<name>Add map feature</name>
+					<script>mmp.createMapFeature(matches[2]:trim(), matches[3]:trim())</script>
+					<command></command>
+					<packageName></packageName>
+					<regex>^feature create (.+?)(?: char (.+))?$</regex>
+				</Alias>
+				<Alias isActive="yes" isFolder="no">
+					<name>List map features</name>
+					<script>mmp.listMapFeatures()</script>
+					<command></command>
+					<packageName></packageName>
+					<regex>^feature list$</regex>
+				</Alias>
+				<Alias isActive="no" isFolder="no">
 					<name>-- (dangerous functions)</name>
 					<script></script>
 					<command></command>
@@ -4345,20 +4366,6 @@ end</script>
 					<command></command>
 					<packageName></packageName>
 					<regex>^spe delete all(?: (.+))?$</regex>
-				</Alias>
-				<Alias isActive="yes" isFolder="no">
-					<name>Add map feature</name>
-					<script>mmp.createMapFeature(matches[2]:trim(), matches[3]:trim())</script>
-					<command></command>
-					<packageName></packageName>
-					<regex>^feature create (.+?)(?: char (.+))?$</regex>
-				</Alias>
-				<Alias isActive="yes" isFolder="no">
-					<name>List map features</name>
-					<script>mmp.listMapFeatures()</script>
-					<command></command>
-					<packageName></packageName>
-					<regex>^feature list$</regex>
 				</Alias>
 			</AliasGroup>
 			<Alias isActive="yes" isFolder="no">
