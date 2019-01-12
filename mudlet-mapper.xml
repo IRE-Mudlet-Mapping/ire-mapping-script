@@ -4222,7 +4222,7 @@ end</script>
 				</Alias>
 				<Alias isActive="yes" isFolder="no">
 					<name>Add map feature</name>
-					<script>mmp.createMapFeature(matches[2]:trim(), matches[3]:trim())</script>
+					<script>mmp.createMapFeature(matches[2]:trim(), (matches[3] and matches[3]:trim()))</script>
 					<command></command>
 					<packageName></packageName>
 					<regex>^feature create (.+?)(?: char (.+))?$</regex>
@@ -4240,6 +4240,13 @@ end</script>
 					<command></command>
 					<packageName></packageName>
 					<regex>^(?:room create feature|rcf) (?:v(\d+) )?(.+)$</regex>
+				</Alias>
+				<Alias isActive="yes" isFolder="no">
+					<name>delete map feature from room</name>
+					<script>mmp.roomDeleteMapFeature(matches[3], matches[2] == "" and mmp.currentroom or tonumber(matches[2]))</script>
+					<command></command>
+					<packageName></packageName>
+					<regex>^(?:room delete feature|rdf) (?:v(\d+) )?(.+)$</regex>
 				</Alias>
 				<Alias isActive="no" isFolder="no">
 					<name>-- (dangerous functions)</name>
@@ -8540,15 +8547,9 @@ end</script>
         end
       end
     end
-    local mapFeatureString = getMapUserData("mapFeatures")
-    if mapFeatureString then
-      local mapFeatures = yajl.to_value(mapFeatureString)
-      local message = "This room has the feature '%s'."
-      for mapFeature in pairs(mapFeatures) do
-        if getRoomUserData(num, "feature-" .. mapFeature) == "true" then
-          mmp.echo(string.format(message, mapFeature))
-        end
-      end
+    local message = "This room has the feature '%s'."
+    for _, mapFeature in pairs(mmp.getRoomMapFeatures(num)) do
+      mmp.echo(string.format(message, mapFeature))
     end
     -- actions we can do. This will be a short menu of sorts for actions
     mmp.echo("Stuff you can do:")
@@ -11052,11 +11053,11 @@ function mmp.roomCreateMapFeature(featureName, roomId)
     mmp.echo("Room number '" .. roomId .. "' does not exist.")
     return
   end
-	-- check if feature already exists
-	if getRoomUserData(roomId, "feature-" .. lowerFeatureName) == "true" then
-	  mmp.echo("Room '" .. roomId .. "' has already map feature '" .. lowerFeatureName .. "'.")
-		return
-	end
+  -- check if feature already exists
+  if table.contains(mmp.getRoomMapFeatures(roomId), lowerFeatureName) then
+    mmp.echo("Room '" .. roomId .. "' has already map feature '" .. featureName .. "'.")
+    return
+  end
   -- create map feature in room
   setRoomUserData(roomId, "feature-" .. lowerFeatureName, "true")
   mmp.echo(string.format("Map feature '%s' created in room number '%d'.", featureName, roomId))
@@ -11065,6 +11066,91 @@ function mmp.roomCreateMapFeature(featureName, roomId)
     setRoomChar(roomId, featureRoomChar)
     mmp.echo("The room now carries the room char '" .. featureRoomChar .. "'.")
   end
+end
+
+function mmp.roomDeleteMapFeature(featureName, roomId)
+  -- checks for the feature name
+  if not featureName then
+    mmp.echo("Which feature would you like to delete?")
+    return
+  end
+  local lowerFeatureName = featureName:lower()
+  -- checks for the room ID
+  if not roomId then
+    if not mmp.currentroom then
+      mmp.echo("Don't know where we are at the moment.")
+      return
+    end
+    roomId = mmp.currentroom
+  else
+    if type(roomId) ~= "number" then
+      mmp.echo("Need a room ID as number for deleting a map feature from a room.")
+      return
+    end
+  end
+  if not getRoomName(roomId) then
+    mmp.echo("Room number '" .. roomId .. "' does not exist.")
+    return
+  end
+  -- check if feature exists
+  local roomMapFeatures = mmp.getRoomMapFeatures(roomId)
+  if not table.contains(roomMapFeatures, lowerFeatureName) then
+    mmp.echo("Room '" .. roomId .. "' doesn't have map feature '" .. featureName .. "'.")
+    return
+  end
+  -- delete map feature from room
+  setRoomUserData(roomId, "feature-" .. lowerFeatureName, "")
+  mmp.echo(string.format("Map feature '%s' deleted from room number '%d'.", featureName, roomId))
+  -- now update room char if needed.
+  -- first update current map features of this room
+  roomMapFeatures = mmp.getRoomMapFeatures(roomId)
+  local mapFeatures = loadMapFeatures()
+  -- find out if we need to set a new room character
+  if getRoomChar(roomId) == mapFeatures[lowerFeatureName] then
+    local index, otherRoomMapFeature
+    -- find another usable room character
+    repeat
+      index, otherRoomMapFeature = next(roomMapFeatures, index)
+    until not otherRoomMapFeature or mapFeatures[otherRoomMapFeature] ~= ""
+    if otherRoomMapFeature then
+      -- we found a usable room character, now set it
+      local newRoomChar = mapFeatures[otherRoomMapFeature]
+      setRoomChar(roomId, newRoomChar)
+      mmp.echo("Using '" .. newRoomChar .. "' as new room character.")
+    else
+      -- we didn't find a usable room character, delete it.
+      setRoomChar(roomId, "")
+      mmp.echo("Deleted the current room character.")
+    end
+  end
+end
+
+function mmp.getRoomMapFeatures(roomId)
+  -- checks for the room ID
+  if not roomId then
+    if not mmp.currentroom then
+      mmp.echo("Don't know where we are at the moment.")
+      return
+    end
+    roomId = mmp.currentroom
+  else
+    if type(roomId) ~= "number" then
+      mmp.echo("Need a room ID as number for getting all map features of a room.")
+      return
+    end
+  end
+  if not getRoomName(roomId) then
+    mmp.echo("Room number '" .. roomId .. "' does not exist.")
+    return
+  end
+  local result = {}
+  local mapFeatures = loadMapFeatures()
+  for mapFeature in pairs(mapFeatures) do
+    if getRoomUserData(roomId, "feature-" .. mapFeature) == "true" then
+      result[#result + 1] = mapFeature
+    end
+  end
+  return result
 end</script>
 				<eventHandlerList />
 			</Script>
