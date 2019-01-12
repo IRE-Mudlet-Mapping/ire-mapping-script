@@ -8540,6 +8540,16 @@ end</script>
         end
       end
     end
+    local mapFeatureString = getMapUserData("mapFeatures")
+    if mapFeatureString then
+      local mapFeatures = yajl.to_value(mapFeatureString)
+      local message = "This room has the feature '%s'."
+      for mapFeature in pairs(mapFeatures) do
+        if getRoomUserData(num, "feature-" .. mapFeature) == "true" then
+          mmp.echo(string.format(message, mapFeature))
+        end
+      end
+    end
     -- actions we can do. This will be a short menu of sorts for actions
     mmp.echo("Stuff you can do:")
     echo("  ")
