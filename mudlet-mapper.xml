@@ -6121,19 +6121,23 @@ function mmp.gotoAreaID(areaid, number, dashtype)
 end
 
 function mmp.gotoFeature(partialFeatureName, dashtype)
-  local userDataKeys = searchRoomUserData()
+  local mapFeatures = mmp.getMapFeatures()
   local feature
-  for _, key in pairs(userDataKeys) do
-    if key:starts("feature-") and key:find(partialFeatureName:lower()) then
-      feature = key
-      break
+  if mapFeatures[partialFeatureName:lower()] then
+    feature = partialFeatureName:lower()
+  else
+    for key in pairs(mapFeatures) do
+      if key:find(partialFeatureName:lower()) then
+        feature = key
+        break
+      end
     end
   end
   if not feature then
     mmp.echo("No feature like " .. partialFeatureName .. " found.")
     return
   end
-  local rooms = searchRoomUserData(feature, "true")
+  local rooms = searchRoomUserData("feature-" .. feature, "true")
   -- change the structure of the table so it fits getShortestOfMultipleRooms
   local possibleRooms = {}
   for _, room in pairs(rooms) do
@@ -11193,6 +11197,10 @@ function mmp.deleteMapFeature(featureName)
   saveMapFeatures(mapFeatures)
   mmp.echo("Deleted map feature '" .. featureName .. "' from map.")
   return true
+end
+
+function mmp.getMapFeatures()
+  return loadMapFeatures()
 end</script>
 				<eventHandlerList />
 			</Script>
