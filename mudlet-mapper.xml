@@ -4092,18 +4092,6 @@ end</script>
 					<name>Add/remove a ferry room</name>
 					<script>local room = tonumber(matches[2])
 
--- load the ferry rooms if they haven't been already
-if table.is_empty(mmp.ferry_rooms) then
-  local tmp = getRoomUserData(1, "ferry rooms")
-
-  mmp.ferry_rooms = {}
-  if tmp ~= "" then
-    for _, i in ipairs(yajl.to_value(tmp)) do
-      mmp.ferry_rooms[i] = true
-    end
-  end
-end
-
 if matches[3] == "add" then
   if mmp.ferry_rooms[room] then
     mmp.echo("Ferry room #"..room.." is already recorded as such.") return
@@ -4127,18 +4115,7 @@ setRoomUserData(1, "ferry rooms", yajl.to_string(keys))</script>
 				</Alias>
 				<Alias isActive="yes" isFolder="no">
 					<name>Show ferry rooms</name>
-					<script>if table.is_empty(mmp.ferry_rooms) then
-  local tmp = getRoomUserData(1, "ferry rooms")
-
-  mmp.ferry_rooms = {}
-  if tmp ~= "" then
-    for _, i in ipairs(yajl.to_value(tmp)) do
-      mmp.ferry_rooms[i] = true
-    end
-  end
-end
-
-mmp.echo("Ferry rooms available:")
+					<script>mmp.echo("Ferry rooms available:")
 if not next(mmp.ferry_rooms) then  mmp.echo("(none)") return end
 
 for k, _ in pairs(mmp.ferry_rooms) do
@@ -5277,12 +5254,6 @@ function mmp.startup()
     function()
       mmp.echo("Please use the mconfig alias to set options!")
     end
-  local tmp = getRoomUserData(1, "ferry rooms")
-  if tmp ~= "" then
-    for _, i in ipairs(yajl.to_value(tmp)) do
-      mmp.ferry_rooms[i] = true
-    end
-  end
   raiseEvent("mmp areas changed")
   mmp.firstRun = false
   mmp.echon("Mudlet Mapper script for IREs (" .. tostring(mmp.version) .. ") loaded! (")
@@ -8566,6 +8537,25 @@ end</script>
   mmp.echo(string.format("version %s.", tostring(mmp.version)))
 end</script>
 					<eventHandlerList />
+				</Script>
+				<Script isActive="yes" isFolder="no">
+					<name>mmp.ferriesfix</name>
+					<packageName></packageName>
+					<script>
+function mmp.ferriesfix()
+	if table.is_empty(mmp.ferry_rooms) then
+    local tmp = getRoomUserData(1, "ferry rooms")
+    if tmp ~= "" then
+      for _, i in ipairs(yajl.to_value(tmp)) do
+        mmp.ferry_rooms[i] = true
+      end
+		end
+	end	
+end</script>
+					<eventHandlerList>
+						<string>mmapper updated map</string>
+						<string>sysConnectionEvent</string>
+					</eventHandlerList>
 				</Script>
 				<Script isActive="yes" isFolder="no">
 					<name>mmp.wormholesfix</name>
