@@ -4093,7 +4093,7 @@ end</script>
 					<script>local room = tonumber(matches[2])
 
 -- load the ferry rooms if they haven't been already
-if not mmp.ferry_rooms then
+if table.is_empty(mmp.ferry_rooms) then
   local tmp = getRoomUserData(1, "ferry rooms")
 
   mmp.ferry_rooms = {}
@@ -4127,7 +4127,7 @@ setRoomUserData(1, "ferry rooms", yajl.to_string(keys))</script>
 				</Alias>
 				<Alias isActive="yes" isFolder="no">
 					<name>Show ferry rooms</name>
-					<script>if not mmp.ferry_rooms then
+					<script>if table.is_empty(mmp.ferry_rooms) then
   local tmp = getRoomUserData(1, "ferry rooms")
 
   mmp.ferry_rooms = {}
