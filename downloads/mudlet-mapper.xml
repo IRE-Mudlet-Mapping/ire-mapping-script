@@ -2855,24 +2855,24 @@ mmp.game = "starmourn"</script>
 					</regexCodePropertyList>
 				</Trigger>
 				<Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
-						<name>Path Blocked</name>
-						<script>mmp.failpath()</script>
-						<triggerType>0</triggerType>
-						<conditonLineDelta>0</conditonLineDelta>
-						<mStayOpen>0</mStayOpen>
-						<mCommand></mCommand>
-						<packageName></packageName>
-						<mFgColor>#ff0000</mFgColor>
-						<mBgColor>#ffff00</mBgColor>
-						<mSoundFile></mSoundFile>
-						<colorTriggerFgColor>#000000</colorTriggerFgColor>
-						<colorTriggerBgColor>#000000</colorTriggerBgColor>
-						<regexCodeList>
-							<string>^.+ blocks your attempt to leave. You can attempt to CRASH \w+ to escape\.$</string>
-						</regexCodeList>
-						<regexCodePropertyList>
-							<integer>1</integer>
-						</regexCodePropertyList>
+					<name>Path Blocked</name>
+					<script>mmp.failpath()</script>
+					<triggerType>0</triggerType>
+					<conditonLineDelta>0</conditonLineDelta>
+					<mStayOpen>0</mStayOpen>
+					<mCommand></mCommand>
+					<packageName></packageName>
+					<mFgColor>#ff0000</mFgColor>
+					<mBgColor>#ffff00</mBgColor>
+					<mSoundFile></mSoundFile>
+					<colorTriggerFgColor>#000000</colorTriggerFgColor>
+					<colorTriggerBgColor>#000000</colorTriggerBgColor>
+					<regexCodeList>
+						<string>^.+ blocks your attempt to leave. You can attempt to CRASH \w+ to escape\.$</string>
+					</regexCodeList>
+					<regexCodePropertyList>
+						<integer>1</integer>
+					</regexCodePropertyList>
 				</Trigger>
 			</TriggerGroup>
 			<TriggerGroup isActive="yes" isFolder="yes" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
@@ -3152,8 +3152,10 @@ mmp.echo("We're connected to Lithmeria.")</script>
 						<string>This door has been magically locked shut.</string>
 						<string>Not recognising you as cast or crew, stagehands firmly close the door on you.</string>
 						<string>You push against the door in vain as you try to open it.</string>
+						<string>You do not have access to open this door.</string>
 					</regexCodeList>
 					<regexCodePropertyList>
+						<integer>3</integer>
 						<integer>3</integer>
 						<integer>3</integer>
 						<integer>3</integer>
@@ -3196,10 +3198,12 @@ mmp.echo("We're connected to Lithmeria.")</script>
 					<regexCodeList>
 						<string>There is a door in the way, to the</string>
 						<string>There is a door in the way.</string>
+						<string>A closed door is in the way. You need to OPEN DOOR</string>
 					</regexCodeList>
 					<regexCodePropertyList>
 						<integer>2</integer>
 						<integer>3</integer>
+						<integer>2</integer>
 					</regexCodePropertyList>
 				</Trigger>
 			</TriggerGroup>
@@ -3377,27 +3381,29 @@ elseif command:ends("glide") then
   gallop = "glide"
   where = where:sub(1, -7)
 end
-
 if mmp.debug then
   mmp.gotoPerf = mmp.gotoPerf or createStopWatch()
   startStopWatch(mmp.gotoPerf)
 end
-
 -- goto room ID
 if tonumber(where) then
-	mmp.gotoRoom(where, gallop)
+  mmp.gotoRoom(where, gallop)
 else
-	-- goto area
-    local split = where:split(" ")
+  -- goto area or feature
+  local split = where:split(" ")
+  if split[1] == "feature" then
+	  table.remove(split, 1)
+    mmp.gotoFeature(table.concat(split, " "), gallop)
+  else
     if tonumber(split[#split]) then
-        mmp.gotoArea(where:sub(1, -#(split[#split])-2), tonumber(split[#split]), gallop)
+      mmp.gotoArea(where:sub(1, -#(split[#split]) - 2), tonumber(split[#split]), gallop)
     else
-        mmp.gotoArea(where, nil, gallop)
+      mmp.gotoArea(where, nil, gallop)
     end
+  end
 end
-
 if mmp.debug then
-  mmp.echo("goto alias took "..stopStopWatch(mmp.gotoPerf).."s to run.")
+  mmp.echo("goto alias took " .. stopStopWatch(mmp.gotoPerf) .. "s to run.")
 end</script>
 				<command></command>
 				<packageName></packageName>
@@ -3643,83 +3649,118 @@ mmp.echo(string.format("Cleared all special exits in %s (%d).\n", getRoomName(ri
 				<Alias isActive="yes" isFolder="no">
 					<name>Create a room</name>
 					<script>local m = matches[2]
+if m:starts("feature") then
+  -- another alias was meant.
+  return
+end
 local rid, rname
 if mmp.roomexists(mmp.currentroom) then
   rid, rname = mmp.currentroom, mmp.currentroomname
 end
-local x,y,z
+local x, y, z
 
-local function set(newid) -- small func to set things
+local function set(newid)
+  -- small func to set things
   local rid = newid or createRoomID()
   addRoom(rid)
   setRoomCoordinates(rid, x, y, z)
-  if mmp.roomexists(mmp.currentroom) then setRoomArea(rid, getRoomArea(mmp.currentroom)) end
-  if mmp.roomexists(mmp.currentroom) then setRoomEnv(rid, getRoomEnv(mmp.currentroom)) end
+  if mmp.roomexists(mmp.currentroom) then
+    setRoomArea(rid, getRoomArea(mmp.currentroom))
+  end
+  if mmp.roomexists(mmp.currentroom) then
+    setRoomEnv(rid, getRoomEnv(mmp.currentroom))
+  end
   setExit(mmp.currentroom, rid, m)
-  mmp.echo(string.format("Created new room (%d) at %dx, %dy, %dz.\n", rid, x,y,z))
+  mmp.echo(string.format("Created new room (%d) at %dx, %dy, %dz.\n", rid, x, y, z))
   centerview(mmp.roomexists(mmp.currentroom) and mmp.currentroom or rid)
-  if not mmp.roomexists(mmp.currentroom) then mmp.currentroom = rid; mmp.currentroomname = "" end
+  if not mmp.roomexists(mmp.currentroom) then
+    mmp.currentroom = rid;
+    mmp.currentroomname = ""
+  end
 end
 
 -- let's be flexible and allow several ways if giving an arg
 -- rc v# x y z
-newid, x,y,z = string.match(m, "v(%d+) (%-?%d+) (%-?%d+) (%-?%d+)")
+newid, x, y, z = string.match(m, "v(%d+) (%-?%d+) (%-?%d+) (%-?%d+)")
 if x then
-  set(newid); return
+  set(newid);
+  return
 end
-
 -- rc x y z
-x,y,z = string.match(m, "(%-?%d+) (%-?%d+) (%-?%d+)")
+x, y, z = string.match(m, "(%-?%d+) (%-?%d+) (%-?%d+)")
 if x then
-  set(); return
+  set();
+  return
 end
-
-
 if not rid then
   mmp.echo("Don't know where we are at the moment in order to use relative coordinates.")
   return
 end
-
 -- rc xx? yy? zz?
-x,y,z = string.match(m, "(%-?%d+)x"), string.match(m, "(%-?%d+)y"), string.match(m, "(%-?%d+)z")
+x, y, z = string.match(m, "(%-?%d+)x"), string.match(m, "(%-?%d+)y"), string.match(m, "(%-?%d+)z")
 if x or y or z then
   -- merge w/ old coords if any are missing
   local ox, oy, oz = getRoomCoordinates(rid)
-  x = x or ox; y = y or oy; z = z or oz
-  set(); return
+  x = x or ox;
+  y = y or oy;
+  z = z or oz
+  set();
+  return
 end
-
 -- rc left/west, right/east, ...
 local ox, oy, oz = getRoomCoordinates(rid)
 local has = table.contains
 for w in string.gmatch(m, "%a+") do
   if has({"west", "left", "w", "l"}, w) then
-    x = (x or ox) - 1; y = (y or oy); z = (z or oz)
+    x = (x or ox) - 1;
+    y = (y or oy);
+    z = (z or oz)
   elseif has({"east", "right", "e", "r"}, w) then
-    x = (x or ox) + 1; y = (y or oy); z = (z or oz)
+    x = (x or ox) + 1;
+    y = (y or oy);
+    z = (z or oz)
   elseif has({"north", "top", "n", "t"}, w) then
-    x = (x or ox); y = (y or oy) + 1; z = (z or oz)
+    x = (x or ox);
+    y = (y or oy) + 1;
+    z = (z or oz)
   elseif has({"south", "bottom", "s", "b"}, w) then
-    x = (x or ox); y = (y or oy) - 1; z = (z or oz)
+    x = (x or ox);
+    y = (y or oy) - 1;
+    z = (z or oz)
   elseif has({"northwest", "topleft", "nw", "tl"}, w) then
-    x = (x or ox) - 1; y = (y or oy) + 1; z = (z or oz)
+    x = (x or ox) - 1;
+    y = (y or oy) + 1;
+    z = (z or oz)
   elseif has({"northeast", "topright", "ne", "tr"}, w) then
-    x = (x or ox) + 1; y = (y or oy) + 1; z = (z or oz)
+    x = (x or ox) + 1;
+    y = (y or oy) + 1;
+    z = (z or oz)
   elseif has({"southeast", "bottomright", "se", "br"}, w) then
-    x = (x or ox) + 1; y = (y or oy) - 1; z = (z or oz)
+    x = (x or ox) + 1;
+    y = (y or oy) - 1;
+    z = (z or oz)
   elseif has({"southwest", "bottomleft", "sw", "bl"}, w) then
-    x = (x or ox) - 1; y = (y or oy) - 1; z = (z or oz)
+    x = (x or ox) - 1;
+    y = (y or oy) - 1;
+    z = (z or oz)
   elseif has({"up", "u"}, w) then
-    x = (x or ox); y = (y or oy); z = (z or oz) + 1
+    x = (x or ox);
+    y = (y or oy);
+    z = (z or oz) + 1
   elseif has({"down", "d"}, w) then
-    x = (x or ox); y = (y or oy); z = (z or oz) - 1
+    x = (x or ox);
+    y = (y or oy);
+    z = (z or oz) - 1
   end
-
 end
-if x then set(); return end
-
-mmp.echo([[Where do you want to move the room to?
-  You can use direct coordinates or relative directions.]])</script>
+if x then
+  set();
+  return
+end
+mmp.echo(
+  [[Where do you want to move the room to?
+  You can use direct coordinates or relative directions.]]
+)</script>
 					<command></command>
 					<packageName></packageName>
 					<regex>^(?:rlc|room create) (.+)?$</regex>
@@ -4171,6 +4212,90 @@ end</script>
 					<command></command>
 					<packageName></packageName>
 					<regex>^weight ferry exits$</regex>
+				</Alias>
+				<Alias isActive="no" isFolder="no">
+					<name>-- (Map feature functions)</name>
+					<script></script>
+					<command></command>
+					<packageName></packageName>
+					<regex></regex>
+				</Alias>
+				<Alias isActive="yes" isFolder="no">
+					<name>Create map feature</name>
+					<script>mmp.createMapFeature(matches[2]:trim(), (matches[3] and matches[3]:trim()))</script>
+					<command></command>
+					<packageName></packageName>
+					<regex>^feature create (.+?)(?: char (.+))?$</regex>
+				</Alias>
+				<Alias isActive="yes" isFolder="no">
+					<name>List map features</name>
+					<script>mmp.listMapFeatures()</script>
+					<command></command>
+					<packageName></packageName>
+					<regex>^feature list$</regex>
+				</Alias>
+				<Alias isActive="yes" isFolder="no">
+					<name>Add map feature to room</name>
+					<script>mmp.roomCreateMapFeature(matches[3], matches[2] == "" and mmp.currentroom or tonumber(matches[2]))</script>
+					<command></command>
+					<packageName></packageName>
+					<regex>^(?:room create feature|rcf) (?:v(\d+) )?(.+)$</regex>
+				</Alias>
+				<Alias isActive="yes" isFolder="no">
+					<name>Delete map feature from room</name>
+					<script>mmp.roomDeleteMapFeature(matches[3], matches[2] == "" and mmp.currentroom or tonumber(matches[2]))</script>
+					<command></command>
+					<packageName></packageName>
+					<regex>^(?:room delete feature|rdf) (?:v(\d+) )?(.+)$</regex>
+				</Alias>
+				<Alias isActive="yes" isFolder="no">
+					<name>Delete map feature</name>
+					<script>mmp.deleteMapFeature(matches[2]:trim())</script>
+					<command></command>
+					<packageName></packageName>
+					<regex>^feature delete (.+)$</regex>
+				</Alias>
+				<Alias isActive="yes" isFolder="no">
+					<name>migrate features</name>
+					<script>local translation
+if mmp.game == "starmourn" then
+  translation =
+  {
+    ["@"] = "landing dock",
+    ["C"] = "cloning",
+    ["R"] = "repair",
+    ["$"] = "denizen shop",
+    ["I"] = "insurance office",
+    ["T"] = "transport",
+    ["J"] = "junk",
+    ["M"] = "mall",
+    ["L"] = "lift",
+    ["P"] = "ptp",
+    ["TT"] = "trade terminal",
+  }
+else
+  mmp.echo("Sorry, don't know which room character maps to which map feature for your game. Please contact us at https://discord.gg/PPUNnc3 to get this sorted out.")
+	return
+end
+mmp.echo("Migrating room characters to map features...")
+for char, feature in pairs(translation) do
+  mmp.createMapFeature(feature, char)
+end
+for key in pairs(getRooms()) do
+  local char = getRoomChar(key)
+  if char ~= "" then
+    if translation[char] then
+      if not mmp.roomCreateMapFeature(translation[char], key) then
+			  mmp.echo("An error occured when migrating room characters, see messages above for details. Migration incomplete!")
+			  return
+			end
+    end
+  end
+end
+mmp.echo("Migration done.")</script>
+					<command></command>
+					<packageName></packageName>
+					<regex>^feature migrate$</regex>
 				</Alias>
 				<Alias isActive="no" isFolder="no">
 					<name>-- (dangerous functions)</name>
@@ -4872,7 +4997,7 @@ speedWalkCounter = 0
 mmp.speedWalk = mmp.speedWalk or {}
 mmp.speedWalkPath = mmp.speedWalkPath or {}
 mmp.speedWalkDir = mmp.speedWalkDir or {}
-local newversion = "19.1.1"
+local newversion = "19.1.2"
 if mmp.version and mmp.version ~= newversion then
   if not mmp.game then
     mmp.echo(
@@ -5718,7 +5843,7 @@ function speedwalking(event, num)
       (
         table.contains(gmcp.Room.Info.details, "indoors") or
         table.contains(gmcp.Room.Info.details, "considered indoors") or
-				mmp.orbed()
+        mmp.orbed()
       )
     then
       mmp.inside = true
@@ -5839,7 +5964,7 @@ function doSpeedWalk(dashtype)
       "&lt;" .. mmp.settings.echocolour .. "&gt;" .. mmp.speedWalkPath[#mmp.speedWalkPath],
       'mmp.gotoRoom "' .. mmp.speedWalkPath[#mmp.speedWalkPath] .. '"',
       'Go to ' .. mmp.speedWalkPath[#mmp.speedWalkPath],
-			true
+      true
     )
     echo(": ")
     speedWalkCounter = 1
@@ -5968,33 +6093,20 @@ function mmp.clearspecials(deleterooms)
   end
 end
 
-function mmp.gotoAreaID(areaid, number, dashtype)
-  if not areaid or not tonumber(areaid) then
-    mmp.echo("To where do you want to go?")
-    return
-  end
-  areaid = tonumber(areaid)
-  if not mmp.areatabler[areaid] then
-    mmp.echo("Invalid area ID selected")
-    return
-  end
-  local possibleRooms, shortestPath, shortestBorder = {}, {}, 0
+local function getShortestOfMultipleRooms(possibleRooms)
+  local shortestPath, closestRoom = {}, 0
   mmp.computeShortestWatch = mmp.computeShortestWatch or createStopWatch()
   startStopWatch(mmp.computeShortestWatch)
-  possibleRooms = mmp.getAreaBorders(areaid)
-  -- add in temporary links to clouds / stratospheres to enable pathfinding, auto-repath will occur when moved to outside -- PapaGuacamole
-  local madeEast, madeNorth, madeWest
-  local currentareaid = getRoomArea(mmp.currentroom)
   raiseEvent("mmp link externals")
   local getStopWatchTime, tonumber, getPath = getStopWatchTime, tonumber, mmp.getPath
-  --mmp.echo(string.format("Have %s area edge nodes, %ss taken so far...", table.size(possibleRooms), getStopWatchTime(mmp.computeShortestWatch)))
+  --mmp.echo(string.format("Have %s rooms nodes, %ss taken so far...", table.size(possibleRooms), getStopWatchTime(mmp.computeShortestWatch)))
   -- allocate only 500ms to finding the shortest path, or more if we failed to find anything
   local checkedsofar, outoftime = 0
   for id, _ in pairs(possibleRooms) do
     if mmp.getPath(mmp.currentroom, tonumber(id)) then
-      if shortestBorder == 0 or #shortestPath &gt; #speedWalkPath then
+      if closestRoom == 0 or #shortestPath &gt; #speedWalkPath then
         shortestPath = speedWalkPath
-        shortestBorder = tonumber(id)
+        closestRoom = tonumber(id)
       end
     end
     checkedsofar = checkedsofar + 1
@@ -6006,6 +6118,22 @@ function mmp.gotoAreaID(areaid, number, dashtype)
   end
   --mmp.echo(string.format("total time took: %s", getStopWatchTime(mmp.computeShortestWatch)))
   stopStopWatch(mmp.computeShortestWatch)
+  return closestRoom, outoftime, checkedsofar
+end
+
+function mmp.gotoAreaID(areaid, number, dashtype)
+  if not areaid or not tonumber(areaid) then
+    mmp.echo("To where do you want to go?")
+    return
+  end
+  areaid = tonumber(areaid)
+  if not mmp.areatabler[areaid] then
+    mmp.echo("Invalid area ID selected")
+    return
+  end
+  local possibleRooms, shortestBorder = {}, 0
+  possibleRooms = mmp.getAreaBorders(areaid)
+  shortestBorder, outoftime, checkedsofar = getShortestOfMultipleRooms(possibleRooms)
   if shortestBorder == 0 then
     if outoftime then
       mmp.echo(
@@ -6013,7 +6141,7 @@ function mmp.gotoAreaID(areaid, number, dashtype)
           "I checked %d of the %d possible exits \"%s\" has, but none of the ways there worked and it was taking too long :( try doing this again?",
           checkedsofar,
           table.size(possibleRooms),
-          where
+          getRoomAreaName(areaid)
         )
       )
     else
@@ -6032,6 +6160,58 @@ function mmp.gotoAreaID(areaid, number, dashtype)
   end
   raiseEvent("mmp clear externals")
   mmp.gotoRoom(shortestBorder, dashtype, "area")
+end
+
+function mmp.gotoFeature(partialFeatureName, dashtype)
+  local mapFeatures = mmp.getMapFeatures()
+  local feature
+  if mapFeatures[partialFeatureName:lower()] then
+    feature = partialFeatureName:lower()
+  else
+    for key in pairs(mapFeatures) do
+      if key:find(partialFeatureName:lower()) then
+        feature = key
+        break
+      end
+    end
+  end
+  if not feature then
+    mmp.echo("No feature like " .. partialFeatureName .. " found.")
+    return
+  end
+  local rooms = searchRoomUserData("feature-" .. feature, "true")
+  -- change the structure of the table so it fits getShortestOfMultipleRooms
+  local possibleRooms = {}
+  for _, room in pairs(rooms) do
+    possibleRooms[room] = true
+  end
+  closestFeature, outoftime, checkedsofar = getShortestOfMultipleRooms(possibleRooms)
+  if closestFeature == 0 then
+    if outoftime then
+      mmp.echo(
+        string.format(
+          "I checked %d of the %d possible features \"%s\" has, but none of the ways there worked and it was taking too long :( try doing this again?",
+          checkedsofar,
+          table.size(possibleRooms),
+          partialFeatureName
+        )
+      )
+    else
+      mmp.echo(
+        "Checked " ..
+        table.size(possibleRooms) ..
+        " rooms with that feature, and none of them worked :( I Don't know how to get you there."
+      )
+    end
+    mmp.speedWalkPath = {}
+    mmp.speedWalkDir = {}
+    speedWalkCounter = 0
+    raiseEvent("mmapper failed path")
+    raiseEvent("mmp clear externals")
+    return
+  end
+  raiseEvent("mmp clear externals")
+  mmp.gotoRoom(closestFeature, dashtype, "area")
 end</script>
 				<eventHandlerList>
 					<string>RoomNum</string>
@@ -7317,7 +7497,8 @@ function mmp.getAreaBorders(areaid)
   local roomlist, endresult = getAreaRooms(areaid), {}
   -- sometimes getAreaRooms can give us no result :(
   if not roomlist then mmp.echo("Sorry, seems we can't go there - getAreaRooms("..areaid..") didn't give us any results (Mudlet problem - redownloading the map might help fix it)") return end
-
+  if table.is_empty(roomlist) then mmp.echo("Sorry, seems we can't go there - "..getRoomAreaName(areaid).." has no rooms in it.") return end
+						
   -- make a key-value list of room IDs
   local reverselist = {}
   for i = 0, #roomlist do reverselist[roomlist[i]] = true end
@@ -8419,6 +8600,10 @@ end</script>
           end
         end
       end
+    end
+    local message = "This room has the feature '%s'."
+    for _, mapFeature in pairs(mmp.getRoomMapFeatures(num)) do
+      mmp.echo(string.format(message, mapFeature))
     end
     -- actions we can do. This will be a short menu of sorts for actions
     mmp.echo("Stuff you can do:")
@@ -10819,6 +11004,248 @@ end
 						<string>mapOpenEvent</string>
 					</eventHandlerList>
 				</Script>
+			</Script>
+			<Script isActive="yes" isFolder="no">
+				<name>map features</name>
+				<packageName></packageName>
+				<script>-------------------------------------------------
+--         Put your Lua functions here.        --
+--                                             --
+-- Note that you can also use external Scripts --
+-------------------------------------------------
+
+local function loadMapFeatures()
+  local mapFeaturesString = getMapUserData("mapFeatures")
+  local mapFeatures
+  if mapFeaturesString and mapFeaturesString ~= "" then
+    mapFeatures = yajl.to_value(mapFeaturesString)
+  else
+    mapFeatures = {}
+  end
+  return mapFeatures
+end
+
+local function saveMapFeatures(mapFeaturesToSave)
+  local mapFeaturesString = yajl.to_string(mapFeaturesToSave)
+  setMapUserData("mapFeatures", mapFeaturesString)
+end
+
+function mmp.createMapFeature(featureName, roomCharacter)
+  if not featureName or featureName == "" then
+    mmp.echo("Can't create an empty map feature.")
+    return
+  end
+  if featureName:find("%d") then
+    mmp.echo("Map feature names must not contain numbers.")
+    return
+  end
+  roomCharacter = roomCharacter or ""
+  if type(roomCharacter) ~= "string" then
+    mmp.echo(
+      "The new room character must be either a string or nil. " ..
+      type(roomCharacter) ..
+      " is not allowed."
+    )
+    return
+  end
+  local lowerFeatureName = featureName:lower()
+  local mapFeatures = loadMapFeatures()
+  if not mapFeatures[lowerFeatureName] then
+    mapFeatures[lowerFeatureName] = roomCharacter
+    saveMapFeatures(mapFeatures)
+    mmp.echo(
+      "Created map feature '" ..
+      featureName ..
+      "' with the room character '" ..
+      roomCharacter ..
+      "'."
+    )
+  else
+    mmp.echo("A map feature with the name '" .. featureName .. "' already exists.")
+    return
+  end
+  return true
+end
+
+function mmp.listMapFeatures()
+  local mapFeatures = loadMapFeatures()
+  mmp.echo("This map has the following features:")
+  echo(string.format("    %-25s | %s\n", "feature name", "room character"))
+  echo(string.format("    %s\n", string.rep("-", 45)))
+  for featureName, roomCharacter in pairs(mapFeatures) do
+    echo(string.format("    %-25s | %s\n", featureName, roomCharacter))
+  end
+  return true
+end
+
+function mmp.roomCreateMapFeature(featureName, roomId)
+  -- checks for the feature name
+  if not featureName then
+    mmp.echo("Which feature would you like to create?")
+    return
+  end
+  local lowerFeatureName = featureName:lower()
+  local mapFeatures = loadMapFeatures()
+  if not mapFeatures[lowerFeatureName] then
+    mmp.echo(
+      "A feature with name '" ..
+      featureName ..
+      "' does not exist. You need to use 'feature create' first."
+    )
+    return
+  end
+  -- checks for the room ID
+  if not roomId then
+    if not mmp.currentroom then
+      mmp.echo("Don't know where we are at the moment.")
+      return
+    end
+    roomId = mmp.currentroom
+  else
+    if type(roomId) ~= "number" then
+      mmp.echo("Need a room ID as number for creating a map feature on a room.")
+      return
+    end
+  end
+  if not getRoomName(roomId) then
+    mmp.echo("Room number '" .. roomId .. "' does not exist.")
+    return
+  end
+  -- check if feature already exists
+  if table.contains(mmp.getRoomMapFeatures(roomId), lowerFeatureName) then
+    mmp.echo("Room '" .. roomId .. "' has already map feature '" .. featureName .. "'.")
+    return
+  end
+  -- create map feature in room
+  setRoomUserData(roomId, "feature-" .. lowerFeatureName, "true")
+  mmp.echo(string.format("Map feature '%s' created in room number '%d'.", featureName, roomId))
+  local featureRoomChar = mapFeatures[lowerFeatureName]
+  if featureRoomChar ~= "" then
+    setRoomChar(roomId, featureRoomChar)
+    mmp.echo("The room now carries the room char '" .. featureRoomChar .. "'.")
+  end
+  return true
+end
+
+function mmp.roomDeleteMapFeature(featureName, roomId)
+  -- checks for the feature name
+  if not featureName then
+    mmp.echo("Which feature would you like to delete?")
+    return
+  end
+  local lowerFeatureName = featureName:lower()
+  -- checks for the room ID
+  if not roomId then
+    if not mmp.currentroom then
+      mmp.echo("Don't know where we are at the moment.")
+      return
+    end
+    roomId = mmp.currentroom
+  else
+    if type(roomId) ~= "number" then
+      mmp.echo("Need a room ID as number for deleting a map feature from a room.")
+      return
+    end
+  end
+  if not getRoomName(roomId) then
+    mmp.echo("Room number '" .. roomId .. "' does not exist.")
+    return
+  end
+  -- check if feature exists
+  local roomMapFeatures = mmp.getRoomMapFeatures(roomId)
+  if not table.contains(roomMapFeatures, lowerFeatureName) then
+    mmp.echo("Room '" .. roomId .. "' doesn't have map feature '" .. featureName .. "'.")
+    return
+  end
+  -- delete map feature from room
+  setRoomUserData(roomId, "feature-" .. lowerFeatureName, "")
+  mmp.echo(string.format("Map feature '%s' deleted from room number '%d'.", featureName, roomId))
+  -- now update room char if needed.
+  -- first update current map features of this room
+  roomMapFeatures = mmp.getRoomMapFeatures(roomId)
+  local mapFeatures = loadMapFeatures()
+  -- find out if we need to set a new room character
+  if getRoomChar(roomId) == mapFeatures[lowerFeatureName] and getRoomChar(roomId) ~= "" then
+    local index, otherRoomMapFeature
+    -- find another usable room character
+    repeat
+      index, otherRoomMapFeature = next(roomMapFeatures, index)
+    until not otherRoomMapFeature or mapFeatures[otherRoomMapFeature] ~= ""
+    if otherRoomMapFeature then
+      -- we found a usable room character, now set it
+      local newRoomChar = mapFeatures[otherRoomMapFeature]
+      setRoomChar(roomId, newRoomChar)
+      mmp.echo("Using '" .. newRoomChar .. "' as new room character.")
+    else
+      -- we didn't find a usable room character, delete it.
+      setRoomChar(roomId, "")
+      mmp.echo("Deleted the current room character.")
+    end
+  end
+  return true
+end
+
+function mmp.getRoomMapFeatures(roomId)
+  -- checks for the room ID
+  if not roomId then
+    if not mmp.currentroom then
+      mmp.echo("Don't know where we are at the moment.")
+      return
+    end
+    roomId = mmp.currentroom
+  else
+    if type(roomId) ~= "number" then
+      mmp.echo("Need a room ID as number for getting all map features of a room.")
+      return
+    end
+  end
+  if not getRoomName(roomId) then
+    mmp.echo("Room number '" .. roomId .. "' does not exist.")
+    return
+  end
+  local result = {}
+  local mapFeatures = loadMapFeatures()
+  for mapFeature in pairs(mapFeatures) do
+    if getRoomUserData(roomId, "feature-" .. mapFeature) == "true" then
+      result[#result + 1] = mapFeature
+    end
+  end
+  return result
+end
+
+function mmp.deleteMapFeature(featureName)
+  if not featureName or featureName == "" then
+    mmp.echo("Which map feature would you like to delete?")
+    return
+  end
+  local lowerFeatureName = featureName:lower()
+  local mapFeatures = loadMapFeatures()
+  if not mapFeatures[lowerFeatureName] then
+    mmp.echo("Map feature '" .. featureName .. "' does not exist.")
+    return
+  end
+  local roomsWithFeature = searchRoomUserData("feature-" .. lowerFeatureName, "true")
+  for _, roomId in pairs(roomsWithFeature) do
+    local deletionResult = mmp.roomDeleteMapFeature(lowerFeatureName, roomId)
+    if not deletionResult then
+      mmp.echo(
+        "Something went wrong deleting the map feature '" ..
+        featureName ..
+        "' from all rooms. Deletion incomplete."
+      )
+      return
+    end
+  end
+  mapFeatures[lowerFeatureName] = nil
+  saveMapFeatures(mapFeatures)
+  mmp.echo("Deleted map feature '" .. featureName .. "' from map.")
+  return true
+end
+
+function mmp.getMapFeatures()
+  return loadMapFeatures()
+end</script>
+				<eventHandlerList />
 			</Script>
 		</ScriptGroup>
 	</ScriptPackage>
