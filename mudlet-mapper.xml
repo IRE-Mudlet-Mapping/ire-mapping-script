@@ -2855,24 +2855,24 @@ mmp.game = "starmourn"</script>
 					</regexCodePropertyList>
 				</Trigger>
 				<Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
-						<name>Path Blocked</name>
-						<script>mmp.failpath()</script>
-						<triggerType>0</triggerType>
-						<conditonLineDelta>0</conditonLineDelta>
-						<mStayOpen>0</mStayOpen>
-						<mCommand></mCommand>
-						<packageName></packageName>
-						<mFgColor>#ff0000</mFgColor>
-						<mBgColor>#ffff00</mBgColor>
-						<mSoundFile></mSoundFile>
-						<colorTriggerFgColor>#000000</colorTriggerFgColor>
-						<colorTriggerBgColor>#000000</colorTriggerBgColor>
-						<regexCodeList>
-							<string>^.+ blocks your attempt to leave. You can attempt to CRASH \w+ to escape\.$</string>
-						</regexCodeList>
-						<regexCodePropertyList>
-							<integer>1</integer>
-						</regexCodePropertyList>
+					<name>Path Blocked</name>
+					<script>mmp.failpath()</script>
+					<triggerType>0</triggerType>
+					<conditonLineDelta>0</conditonLineDelta>
+					<mStayOpen>0</mStayOpen>
+					<mCommand></mCommand>
+					<packageName></packageName>
+					<mFgColor>#ff0000</mFgColor>
+					<mBgColor>#ffff00</mBgColor>
+					<mSoundFile></mSoundFile>
+					<colorTriggerFgColor>#000000</colorTriggerFgColor>
+					<colorTriggerBgColor>#000000</colorTriggerBgColor>
+					<regexCodeList>
+						<string>^.+ blocks your attempt to leave. You can attempt to CRASH \w+ to escape\.$</string>
+					</regexCodeList>
+					<regexCodePropertyList>
+						<integer>1</integer>
+					</regexCodePropertyList>
 				</Trigger>
 			</TriggerGroup>
 			<TriggerGroup isActive="yes" isFolder="yes" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
@@ -8541,16 +8541,15 @@ end</script>
 				<Script isActive="yes" isFolder="no">
 					<name>mmp.ferriesfix</name>
 					<packageName></packageName>
-					<script>
-function mmp.ferriesfix()
-	if table.is_empty(mmp.ferry_rooms) then
+					<script>function mmp.ferriesfix()
+  if table.is_empty(mmp.ferry_rooms) then
     local tmp = getRoomUserData(1, "ferry rooms")
     if tmp ~= "" then
       for _, i in ipairs(yajl.to_value(tmp)) do
         mmp.ferry_rooms[i] = true
       end
-		end
-	end	
+    end
+  end
 end</script>
 					<eventHandlerList>
 						<string>mmapper updated map</string>
