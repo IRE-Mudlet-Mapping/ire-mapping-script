@@ -5992,43 +5992,50 @@ function mmp.fixPath(rFrom, rTo, dashtype)
   local index = 1
   local dashExaust = false
   while mmp.speedWalkDir[index] do
-    dashExaust = false
-    repCount = 1
-    while mmp.speedWalkDir[index + repCount] == mmp.speedWalkDir[index] do
-      repCount = repCount + 1
-      if repCount == 11 then
-        dashExaust = true
-        break
-      end
-    end
-    if repCount &gt; 1 then
-      -- Found direction repitition. Calculate dash path.
-      local exits = getRoomExits(mmp.speedWalkPath[index + (repCount - 1)])
-      local pname = ""
-      for word in mmp.speedWalkDir[index]:gmatch("%w") do
-        pname = pname .. (dRef[word] or word)
-      end
-      if not exits[pname] or dashExaust then
-        -- Final room in this direction does not continue, dash!
-        table.insert(currentPath, string.format("%s %s", dashtype, mmp.speedWalkDir[index]))
-        currentIds[#currentIds + 1] = mmp.speedWalkPath[index + repCount - 1]
-      else
-        -- Final room in this direction continues onwards, don't dash unless on achaea
-        if mmp.game == "achaea" then
-          table.insert(
-            currentPath, string.format("%s %s %s", dashtype, mmp.speedWalkDir[index], repCount)
-          )
-          currentIds[#currentIds + 1] = mmp.speedWalkPath[index + repCount - 1]
-        else
-          for i = 1, repCount do
-            table.insert(currentPath, mmp.speedWalkDir[index])
-            currentIds[#currentIds + 1] = mmp.speedWalkPath[index + i - 1]
-          end
+    if not table.contains(getSpecialExits(mmp.speedWalkPath[index]), mmp.speedWalkDir[index]) then
+      dashExaust = false
+      repCount = 1
+      while mmp.speedWalkDir[index + repCount] == mmp.speedWalkDir[index] do
+        repCount = repCount + 1
+        if repCount == 11 then
+          dashExaust = true
+          break
         end
       end
-      index = index + repCount
+      if repCount &gt; 1 then
+        -- Found direction repitition. Calculate dash path.
+        local exits = getRoomExits(mmp.speedWalkPath[index + (repCount - 1)])
+        local pname = ""
+        for word in mmp.speedWalkDir[index]:gmatch("%w") do
+          pname = pname .. (dRef[word] or word)
+        end
+        if not exits[pname] or dashExaust then
+          -- Final room in this direction does not continue, dash!
+          table.insert(currentPath, string.format("%s %s", dashtype, mmp.speedWalkDir[index]))
+          currentIds[#currentIds + 1] = mmp.speedWalkPath[index + repCount - 1]
+        else
+          -- Final room in this direction continues onwards, don't dash unless on achaea
+          if mmp.game == "achaea" then
+            table.insert(
+              currentPath, string.format("%s %s %s", dashtype, mmp.speedWalkDir[index], repCount)
+            )
+            currentIds[#currentIds + 1] = mmp.speedWalkPath[index + repCount - 1]
+          else
+            for i = 1, repCount do
+              table.insert(currentPath, mmp.speedWalkDir[index])
+              currentIds[#currentIds + 1] = mmp.speedWalkPath[index + i - 1]
+            end
+          end
+        end
+        index = index + repCount
+      else
+        -- No repetition, just add the direction.
+        table.insert(currentPath, mmp.speedWalkDir[index])
+        currentIds[#currentIds + 1] = mmp.speedWalkPath[index]
+        index = index + 1
+      end
     else
-      -- No repetition, just add the direction.
+      -- Special exit, skip over this step
       table.insert(currentPath, mmp.speedWalkDir[index])
       currentIds[#currentIds + 1] = mmp.speedWalkPath[index]
       index = index + 1
