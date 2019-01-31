@@ -7642,6 +7642,8 @@ function mmp.echoPath(from, to)
 		mmp.echo("&lt;white&gt;Directions from &lt;yellow&gt;" .. string.upper(searchRoom(from)) .. " &lt;white&gt;to &lt;yellow&gt;" .. string.upper(searchRoom(to)) .. "&lt;white&gt;:")
 		mmp.echo(table.concat(speedWalkDir, ", "))
 		return mmp.speedWalkDir
+	else
+	  mmp.echo("&lt;white&gt;I can't find a way from &lt;yellow&gt;" .. string.upper(searchRoom(from)) .. " &lt;white&gt;to &lt;yellow&gt;" .. string.upper(searchRoom(to)) .. "&lt;white&gt;")
 	end
 end
 
