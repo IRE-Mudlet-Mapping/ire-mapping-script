@@ -4129,18 +4129,6 @@ end</script>
 					<name>Add/remove a ferry room</name>
 					<script>local room = tonumber(matches[2])
 
--- load the ferry rooms if they haven't been already
-if not mmp.ferry_rooms then
-  local tmp = getRoomUserData(1, "ferry rooms")
-
-  mmp.ferry_rooms = {}
-  if tmp ~= "" then
-    for _, i in ipairs(yajl.to_value(tmp)) do
-      mmp.ferry_rooms[i] = true
-    end
-  end
-end
-
 if matches[3] == "add" then
   if mmp.ferry_rooms[room] then
     mmp.echo("Ferry room #"..room.." is already recorded as such.") return
@@ -4164,18 +4152,7 @@ setRoomUserData(1, "ferry rooms", yajl.to_string(keys))</script>
 				</Alias>
 				<Alias isActive="yes" isFolder="no">
 					<name>Show ferry rooms</name>
-					<script>if not mmp.ferry_rooms then
-  local tmp = getRoomUserData(1, "ferry rooms")
-
-  mmp.ferry_rooms = {}
-  if tmp ~= "" then
-    for _, i in ipairs(yajl.to_value(tmp)) do
-      mmp.ferry_rooms[i] = true
-    end
-  end
-end
-
-mmp.echo("Ferry rooms available:")
+					<script>mmp.echo("Ferry rooms available:")
 if not next(mmp.ferry_rooms) then  mmp.echo("(none)") return end
 
 for k, _ in pairs(mmp.ferry_rooms) do
@@ -4187,28 +4164,46 @@ end</script>
 				</Alias>
 				<Alias isActive="yes" isFolder="no">
 					<name>Weight ferry exits</name>
-					<script>  local c = 0
-  local weight = 200
-  for area in pairs(mmp.areatabler) do
-    local rooms = getAreaRooms(area) or {}
-    for i = 0, #rooms do
-      local exits = getSpecialExits(rooms[i] or 0)
-
-       if exits and next(exits) then
-         for exit, cmd in pairs(exits) do
-           if type(cmd) == "table" then cmd = next(cmd) end
-
-           if (cmd:lower():find("buy passage to", 1, true)) then
-				setExitWeight(rooms[i], cmd, weight)
-				mmp.echo("Weighted "..cmd.." going to "..rooms[i].." ("..getRoomName(rooms[i])..").")
-             c = c + 1
-           end
-         end
-       end
+					<script>local ferryCommands = {
+  ["buy passage to"] = {"achaea"},
+  ["takeoff to"] = {"starmourn"},
+  ["station transfer to"] = {"starmourn"}
+}
+local c = 0
+local weight = 200
+for area in pairs(mmp.areatabler) do
+  local rooms = getAreaRooms(area) or {}
+  for i = 0, #rooms do
+    local exits = getSpecialExits(rooms[i] or 0)
+    if exits and next(exits) then
+      for exit, cmd in pairs(exits) do
+        if type(cmd) == "table" then
+          cmd = next(cmd)
+        end
+        local lowerCommand = cmd:lower()
+        local found = false
+        for ferryCommand, games in pairs(ferryCommands) do
+          if table.contains(games, mmp.game) and lowerCommand:find(ferryCommand, 1, true) then
+            found = true
+            break
+          end
+        end
+        if found then
+          setExitWeight(rooms[i], cmd, weight)
+          mmp.echo(
+            "Weighted " .. cmd .. " going to " .. rooms[i] .. " (" .. getRoomName(rooms[i]) .. ")."
+          )
+          c = c + 1
+        end
+      end
     end
   end
-
-  mmp.echo(string.format("%s ferry exits weighted to %s (so we don't take them over too short distances).", c, weight))</script>
+end
+mmp.echo(
+  string.format(
+    "%s ferry exits weighted to %s (so we don't take them over too short distances).", c, weight
+  )
+)</script>
 					<command></command>
 					<packageName></packageName>
 					<regex>^weight ferry exits$</regex>
@@ -4997,7 +4992,7 @@ speedWalkCounter = 0
 mmp.speedWalk = mmp.speedWalk or {}
 mmp.speedWalkPath = mmp.speedWalkPath or {}
 mmp.speedWalkDir = mmp.speedWalkDir or {}
-local newversion = "19.1.2"
+local newversion = "19.2.1"
 if mmp.version and mmp.version ~= newversion then
   if not mmp.game then
     mmp.echo(
@@ -5398,12 +5393,6 @@ function mmp.startup()
     function()
       mmp.echo("Please use the mconfig alias to set options!")
     end
-  local tmp = getRoomUserData(1, "ferry rooms")
-  if tmp ~= "" then
-    for _, i in ipairs(yajl.to_value(tmp)) do
-      mmp.ferry_rooms[i] = true
-    end
-  end
   raiseEvent("mmp areas changed")
   mmp.firstRun = false
   mmp.echon("Mudlet Mapper script for IREs (" .. tostring(mmp.version) .. ") loaded! (")
@@ -6021,43 +6010,50 @@ function mmp.fixPath(rFrom, rTo, dashtype)
   local index = 1
   local dashExaust = false
   while mmp.speedWalkDir[index] do
-    dashExaust = false
-    repCount = 1
-    while mmp.speedWalkDir[index + repCount] == mmp.speedWalkDir[index] do
-      repCount = repCount + 1
-      if repCount == 11 then
-        dashExaust = true
-        break
-      end
-    end
-    if repCount &gt; 1 then
-      -- Found direction repitition. Calculate dash path.
-      local exits = getRoomExits(mmp.speedWalkPath[index + (repCount - 1)])
-      local pname = ""
-      for word in mmp.speedWalkDir[index]:gmatch("%w") do
-        pname = pname .. (dRef[word] or word)
-      end
-      if not exits[pname] or dashExaust then
-        -- Final room in this direction does not continue, dash!
-        table.insert(currentPath, string.format("%s %s", dashtype, mmp.speedWalkDir[index]))
-        currentIds[#currentIds + 1] = mmp.speedWalkPath[index + repCount - 1]
-      else
-        -- Final room in this direction continues onwards, don't dash unless on achaea
-        if mmp.game == "achaea" then
-          table.insert(
-            currentPath, string.format("%s %s %s", dashtype, mmp.speedWalkDir[index], repCount)
-          )
-          currentIds[#currentIds + 1] = mmp.speedWalkPath[index + repCount - 1]
-        else
-          for i = 1, repCount do
-            table.insert(currentPath, mmp.speedWalkDir[index])
-            currentIds[#currentIds + 1] = mmp.speedWalkPath[index + i - 1]
-          end
+    if not table.contains(getSpecialExits(mmp.speedWalkPath[index]), mmp.speedWalkDir[index]) then
+      dashExaust = false
+      repCount = 1
+      while mmp.speedWalkDir[index + repCount] == mmp.speedWalkDir[index] do
+        repCount = repCount + 1
+        if repCount == 11 then
+          dashExaust = true
+          break
         end
       end
-      index = index + repCount
+      if repCount &gt; 1 then
+        -- Found direction repitition. Calculate dash path.
+        local exits = getRoomExits(mmp.speedWalkPath[index + (repCount - 1)])
+        local pname = ""
+        for word in mmp.speedWalkDir[index]:gmatch("%w") do
+          pname = pname .. (dRef[word] or word)
+        end
+        if not exits[pname] or dashExaust then
+          -- Final room in this direction does not continue, dash!
+          table.insert(currentPath, string.format("%s %s", dashtype, mmp.speedWalkDir[index]))
+          currentIds[#currentIds + 1] = mmp.speedWalkPath[index + repCount - 1]
+        else
+          -- Final room in this direction continues onwards, don't dash unless on achaea
+          if mmp.game == "achaea" then
+            table.insert(
+              currentPath, string.format("%s %s %s", dashtype, mmp.speedWalkDir[index], repCount)
+            )
+            currentIds[#currentIds + 1] = mmp.speedWalkPath[index + repCount - 1]
+          else
+            for i = 1, repCount do
+              table.insert(currentPath, mmp.speedWalkDir[index])
+              currentIds[#currentIds + 1] = mmp.speedWalkPath[index + i - 1]
+            end
+          end
+        end
+        index = index + repCount
+      else
+        -- No repetition, just add the direction.
+        table.insert(currentPath, mmp.speedWalkDir[index])
+        currentIds[#currentIds + 1] = mmp.speedWalkPath[index]
+        index = index + 1
+      end
     else
-      -- No repetition, just add the direction.
+      -- Special exit, skip over this step
       table.insert(currentPath, mmp.speedWalkDir[index])
       currentIds[#currentIds + 1] = mmp.speedWalkPath[index]
       index = index + 1
@@ -7671,6 +7667,8 @@ function mmp.echoPath(from, to)
 		mmp.echo("&lt;white&gt;Directions from &lt;yellow&gt;" .. string.upper(searchRoom(from)) .. " &lt;white&gt;to &lt;yellow&gt;" .. string.upper(searchRoom(to)) .. "&lt;white&gt;:")
 		mmp.echo(table.concat(speedWalkDir, ", "))
 		return mmp.speedWalkDir
+	else
+	  mmp.echo("&lt;white&gt;I can't find a way from &lt;yellow&gt;" .. string.upper(searchRoom(from)) .. " &lt;white&gt;to &lt;yellow&gt;" .. string.upper(searchRoom(to)) .. "&lt;white&gt;")
 	end
 end
 
@@ -8746,6 +8744,24 @@ end</script>
   mmp.echo(string.format("version %s.", tostring(mmp.version)))
 end</script>
 					<eventHandlerList />
+				</Script>
+				<Script isActive="yes" isFolder="no">
+					<name>mmp.ferriesfix</name>
+					<packageName></packageName>
+					<script>function mmp.ferriesfix()
+  if table.is_empty(mmp.ferry_rooms) then
+    local tmp = getRoomUserData(1, "ferry rooms")
+    if tmp ~= "" then
+      for _, i in ipairs(yajl.to_value(tmp)) do
+        mmp.ferry_rooms[i] = true
+      end
+    end
+  end
+end</script>
+					<eventHandlerList>
+						<string>mmapper updated map</string>
+						<string>sysConnectionEvent</string>
+					</eventHandlerList>
 				</Script>
 				<Script isActive="yes" isFolder="no">
 					<name>mmp.wormholesfix</name>
