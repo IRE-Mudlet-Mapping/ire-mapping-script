@@ -4992,7 +4992,7 @@ speedWalkCounter = 0
 mmp.speedWalk = mmp.speedWalk or {}
 mmp.speedWalkPath = mmp.speedWalkPath or {}
 mmp.speedWalkDir = mmp.speedWalkDir or {}
-local newversion = "19.2.1"
+local newversion = "19.7.1"
 if mmp.version and mmp.version ~= newversion then
   if not mmp.game then
     mmp.echo(
@@ -7102,7 +7102,7 @@ end
 function mmp.locateAndEchoSide(room, person)
   local t = mmp.searchRoomExact(room)
   echo("  (")
-  mmp.echonums(room, true)
+  mmp.echonums(room)
   echo(")")
   -- lowercase results
   for k, v in pairs(t) do
