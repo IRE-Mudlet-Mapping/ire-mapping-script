@@ -5280,7 +5280,7 @@ speedWalkCounter = 0
 mmp.speedWalk = mmp.speedWalk or {}
 mmp.speedWalkPath = mmp.speedWalkPath or {}
 mmp.speedWalkDir = mmp.speedWalkDir or {}
-local newversion = "19.7.1"
+local newversion = "developer"
 if mmp.version and mmp.version ~= newversion then
   if not mmp.game then
     mmp.echo(
