@@ -2479,8 +2479,7 @@ cecho("&lt;orange_red&gt;)")</script>
 					<Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
 						<name>Succesful transverse</name>
 						<script>if mmp.game~= "lusternia" then return end
-mmp.registerTransverseExit()
-</script>
+mmp.registerTransverseExit()</script>
 						<triggerType>0</triggerType>
 						<conditonLineDelta>0</conditonLineDelta>
 						<mStayOpen>0</mStayOpen>
@@ -2492,7 +2491,7 @@ mmp.registerTransverseExit()
 						<colorTriggerFgColor>#000000</colorTriggerFgColor>
 						<colorTriggerBgColor>#000000</colorTriggerBgColor>
 						<regexCodeList>
-							<string>^You place your hands on .+ and find the link to .+\. Pulsating energy flares throughout your field of vision, and you find yourself tumbling through the aether pathways\.$</string>
+							<string>^You (place your hands on|reach out to) .+ and find the link to .+\. Pulsating energy flares throughout your field of vision, and you find yourself tumbling through the aether pathways\.$</string>
 						</regexCodeList>
 						<regexCodePropertyList>
 							<integer>1</integer>
@@ -3791,7 +3790,7 @@ mmp.settings:setOption(matches[3], val)</script>
 				<packageName></packageName>
 				<regex>^area list$</regex>
 			</Alias>
-			<AliasGroup isActive="yes" isFolder="yes">
+			<AliasGroup isActive="no" isFolder="yes">
 				<name>mm Mapping</name>
 				<script></script>
 				<command></command>
@@ -4359,7 +4358,7 @@ end</script>
 				</Alias>
 				<Alias isActive="yes" isFolder="no">
 					<name>Add area to continent</name>
-					<script>-- ac continent [optional area]
+					<script>-- aca continent [optional area]
 
 local continent = matches[2]:title()
 local area
@@ -4383,7 +4382,7 @@ else
 end</script>
 					<command></command>
 					<packageName></packageName>
-					<regex>^ac ([\w']+)(?: (.+))?$</regex>
+					<regex>^aca ([\w']+)(?: (.+))?$</regex>
 				</Alias>
 				<Alias isActive="yes" isFolder="no">
 					<name>remove area from continent</name>
@@ -5072,7 +5071,7 @@ else
 	mmp.echo("Invalid city")
 	return
 end
-if gmcp.Room.Info.area~="an aether manse" then
+if not gmcp.Room.Info.area:find("(manse)") then
 	mmp.echo("You are not in a manse")
 else
 	if	searchRoom(gmcp.Room.Info.num):sub(0,11)=="searchRoom:" then
@@ -5280,7 +5279,7 @@ speedWalkCounter = 0
 mmp.speedWalk = mmp.speedWalk or {}
 mmp.speedWalkPath = mmp.speedWalkPath or {}
 mmp.speedWalkDir = mmp.speedWalkDir or {}
-local newversion = "19.9.1"
+local newversion = "19.10.1"
 if mmp.version and mmp.version ~= newversion then
   if not mmp.game then
     mmp.echo(
