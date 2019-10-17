@@ -2521,6 +2521,7 @@ mmp.clearTransverse()</script>
 					<Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
 						<name>Succesful pathfind</name>
 						<script>if mmp.game~= "lusternia" then return end
+mmp.clearPathfind()
 mmp.registerPathfind()</script>
 						<triggerType>0</triggerType>
 						<conditonLineDelta>0</conditonLineDelta>
