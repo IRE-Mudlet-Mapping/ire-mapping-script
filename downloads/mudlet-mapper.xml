@@ -2521,6 +2521,7 @@ mmp.clearTransverse()</script>
 					<Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
 						<name>Succesful pathfind</name>
 						<script>if mmp.game~= "lusternia" then return end
+mmp.clearPathfind()
 mmp.registerPathfind()</script>
 						<triggerType>0</triggerType>
 						<conditonLineDelta>0</conditonLineDelta>
@@ -5279,7 +5280,7 @@ speedWalkCounter = 0
 mmp.speedWalk = mmp.speedWalk or {}
 mmp.speedWalkPath = mmp.speedWalkPath or {}
 mmp.speedWalkDir = mmp.speedWalkDir or {}
-local newversion = "19.10.1"
+local newversion = "19.10.2"
 if mmp.version and mmp.version ~= newversion then
   if not mmp.game then
     mmp.echo(
