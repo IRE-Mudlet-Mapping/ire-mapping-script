@@ -5315,7 +5315,7 @@ function mmp.startup()
       {"boolean"},
       "Use a crowd-sourced map instead of IREs default?",
       nil,
-      {achaea = true, starmourn = true}
+      {achaea = true, starmourn = true, lusternia = true}
     )
   private_settings["showcmds"] =
     createOption(true, mmp.changeBoolFunc, {"boolean"}, "Show walking commands?")
@@ -8423,7 +8423,7 @@ end
 
 function mmp.chageMapSource()
   local use = mmp.settings.crowdmap and true or false
-  if use and not (mmp.game == "achaea" or mmp.game == "starmourn") then
+  if use and not (mmp.game == "achaea" or mmp.game == "starmourn" or mmp.game == "lusternia") then
     mmp.echo("Sorry - the crowdsourced map is only available for use in Achaea or Starmourn. If you'd like to help start one for your game, please post at http://forums.mudlet.org/viewtopic.php?f=13&amp;t=1696. If you are playing one of the games, then it is likely that you just downloaded the script - and it doesn't know what you are playing. Reconnect and it'll know.")
     mmp.settings.crowdmap = false
   elseif use and not loadMap then
@@ -11344,6 +11344,10 @@ function mmp.checkforupdate()
         downloadFile(
           mmp.mapfile, "http://ire-mudlet-mapping.github.io/StarmournCrowdmap/Map/version.txt"
         )
+      elseif game == "lusternia" then
+        downloadFile(
+          mmp.mapfile, "http://ire-mudlet-mapping.github.io/LusterniaCrowdmap/Map/version.txt"
+        )
       end
     elseif mmp.settings.updatemap then
       downloadFile(mmp.mapfile, "http://www." .. game .. ".com/maps/MD5SUM")
@@ -11388,6 +11392,11 @@ function mmp.retrievecrowdchangelog()
     downloadFile(
       mmp.crowdchangelogfile,
       "http://ire-mudlet-mapping.github.io/StarmournCrowdmap/Map/changelog.txt"
+    )
+  elseif mmp.game == "lusternia" then
+    downloadFile(
+      mmp.crowdchangelogfile,
+      "http://ire-mudlet-mapping.github.io/LusterniaCrowdmap/Map/changelog.txt"
     )
   end
 end
@@ -11444,6 +11453,8 @@ function mmp.downloadcrowdmap(newversion)
     downloadFile(mmp.crowdmapfile, "http://ire-mudlet-mapping.github.io/AchaeaCrowdmap/Map/map")
   elseif mmp.game == "starmourn" then
     downloadFile(mmp.crowdmapfile, "http://ire-mudlet-mapping.github.io/StarmournCrowdmap/Map/map")
+  elseif mmp.game == "lusternia" then
+    downloadFile(mmp.crowdmapfile, "http://ire-mudlet-mapping.github.io/LusterniaCrowdmap/Map/map")
   end
   mmp.echo("Downloading the latest crowdmap...")
 end
