@@ -1632,7 +1632,7 @@ mmp.pdb_lastupdate = {}</script>
 						<string>You snort and snuffle at the air, sensing through a ridiculous pig nose upon your face the faint traces of others in the surrounding area.</string>
 						<string>A pert little nose takes in a delicate whiff of your surroundings, sensing the faint traces of others in the nearby area.</string>
 						<string>You tilt back your head and inhale deeply through your nose, the whiskers of a wolf's snout upon your face twitching as you sense the faint traces of others in the surrounding area.</string>
-						<string>Your snout twitches and trembles at the air, sensing through a cute little rabbit nose upon your face the faint traces of others in the surrounding area.</string>
+						<string>You flutter your nose at the air, sensing through a cute little rabbit nose upon your face the faint traces of others in the surrounding area.</string>
 						<string>You sniff disdainfully at the air with a snobby snoot, wrinkling your nose as you sense the faint traces of others in the nearby area.</string>
 						<string>Your snout twitches and trembles at the air, sensing through a striped badger nose upon your face the faint traces of others in the surrounding area.</string>
 						<string>You twitch your snout and scent the air, sensing through a scaled fink nose upon your face the faint traces of others in the surrounding area.</string>
@@ -2479,7 +2479,9 @@ cecho("&lt;orange_red&gt;)")</script>
 					<Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
 						<name>Succesful transverse</name>
 						<script>if mmp.game~= "lusternia" then return end
-mmp.registerTransverseExit()</script>
+if validTransverse then
+  mmp.registerTransverseExit()
+end</script>
 						<triggerType>0</triggerType>
 						<conditonLineDelta>0</conditonLineDelta>
 						<mStayOpen>0</mStayOpen>
@@ -2521,8 +2523,10 @@ mmp.clearTransverse()</script>
 					<Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
 						<name>Succesful pathfind</name>
 						<script>if mmp.game~= "lusternia" then return end
-mmp.clearPathfind()
-mmp.registerPathfind()</script>
+if validTransverse then
+  mmp.clearPathfind()
+  mmp.registerPathfind()
+end</script>
 						<triggerType>0</triggerType>
 						<conditonLineDelta>0</conditonLineDelta>
 						<mStayOpen>0</mStayOpen>
@@ -10623,21 +10627,13 @@ end</script>
 ["the Astral Plane"]="astral",
 }
 
-local transverseCMD = transverseCMD
-local transversedFrom = transversedFrom
-local lastPlane = lastPlane
-function testytest()
-	echo(transversedFrom)
-	echo(transverseCMD)
-	echo(lastPlane)
-end
-
 function mmp.transverse(_, command)
 	command = command:lower()
 	if command:sub(0,11)=="transverse " or command=="pathfind" then
 		transverseCMD = command
 		transversedFrom=gmcp.Room.Info.num
 		lastPlane = planes[gmcp.Room.Info.details[1]]
+    validTransverse = true
 	end
 end
 registerAnonymousEventHandler("sysDataSendRequest","mmp.transverse")
@@ -10645,11 +10641,12 @@ registerAnonymousEventHandler("sysDataSendRequest","mmp.transverse")
 function mmp.registerTransverseExit()
 	if transversedFrom~=gmcp.Room.Info.num then
 		addSpecialExit(transversedFrom,gmcp.Room.Info.num,transverseCMD)
-		setExitWeight(transversedFrom,transverseCMD,10)
+		setExitWeight(transversedFrom,transverseCMD,20)
 		if lastPlane then
 			addSpecialExit(gmcp.Room.Info.num,transversedFrom,"transverse "..lastPlane)
-			setExitWeight(gmcp.Room.Info.num,"transverse "..lastPlane,10)
+			setExitWeight(gmcp.Room.Info.num,"transverse "..lastPlane,20)
 		end
+    validTransverse = false
 	end
 end
 
@@ -10674,9 +10671,10 @@ end
 
 function mmp.registerPathfind()
 	addSpecialExit(transversedFrom,gmcp.Room.Info.num,"pathfind")
-	setExitWeight(transversedFrom,"pathfind",6)
+	setExitWeight(transversedFrom,"pathfind",15)
 	addSpecialExit(gmcp.Room.Info.num,transversedFrom,"pathfind")
-	setExitWeight(gmcp.Room.Info.num,"pathfind",6)
+	setExitWeight(gmcp.Room.Info.num,"pathfind",15)
+  validTransverse = false
 end
 
 function mmp.clearPathfind()
