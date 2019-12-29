@@ -1,6 +1,6 @@
 # IRE Mapping Script
 
-This script allows [Mudlet's](http://www.mudlet.org) mapper to do autowalking on Achaea, Aetolia, Lusternia, Imperian, or Midkemia Online. See the [download section](http://wiki.mudlet.org/w/IRE_mapping_script#Download) to get started!
+This script allows [Mudlet's](http://www.mudlet.org) mapper to do autowalking on Achaea, Aetolia, Lusternia, Imperian, or Starmourn. See the [download section](http://wiki.mudlet.org/w/IRE_mapping_script#Download) to get started!
 
 It has many features such as:
 - automatic repathing if you get offcourse
