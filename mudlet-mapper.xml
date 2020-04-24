@@ -3493,7 +3493,7 @@ mmp.echo("We're connected to Lithmeria.")</script>
 						<string>There is a door in the way, to the</string>
 						<string>There is a door in the way.</string>
 						<string>A closed door is in the way. You need to OPEN DOOR</string>
-						<string>There is an? (walnut|pine|oak|iron|reinforced steel) door in the way.</string>
+						<string>There is an? (walnut|pine|oak|iron|reinforced) door in the way.</string>
 					</regexCodeList>
 					<regexCodePropertyList>
 						<integer>2</integer>
