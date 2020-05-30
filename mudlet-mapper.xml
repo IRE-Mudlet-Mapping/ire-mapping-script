@@ -11058,6 +11058,33 @@ end</script>
 						</eventHandlerList>
 					</Script>
 				</Script>
+					<Script isActive="yes" isFolder="no">
+						<name>StickMUD</name>
+						<packageName></packageName>
+						<script>-------------------------------------------------
+--         Put your Lua functions here.        --
+--                                             --
+-- Note that you can also use external scripts --
+-------------------------------------------------
+</script>
+						<eventHandlerList />
+						<Script isActive="yes" isFolder="no">
+							<name>stickmud_stop_speedwalk_for_wrong_dir</name>
+							<packageName></packageName>
+							<script>function stickmud_stop_speedwalk_for_wrong_dir()
+  if mmp.game and mmp.game ~= "StickMUD" then
+    return
+  end
+  if #mmp.speedWalkPath &gt; 0 then
+    echo("The way \"" .. gmcp.Room.WrongDir .. "\" is blocked. Stopping speedwalk.")
+    mmp.stop()
+  end
+end</script>
+							<eventHandlerList>
+								<string>gmcp.Room.WrongDir</string>
+							</eventHandlerList>
+						</Script>
+					</Script>
 			</ScriptGroup>
 			<ScriptGroup isActive="yes" isFolder="yes">
 				<name>Test / one-time things</name>
