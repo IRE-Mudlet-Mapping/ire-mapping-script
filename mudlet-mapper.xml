@@ -6465,7 +6465,7 @@ function mmp.gotoAreaID(areaid, number, dashtype)
   end
   local possibleRooms, shortestBorder = {}, 0
   for id,_ in pairs(mmp.getAreaBorders(areaid)) do
-    table.insert(possibleRooms,id)
+    possibleRooms[#possibleRooms+1] = id
   end
   shortestBorder, outoftime, checkedsofar = mmp.getShortestOfMultipleRooms(possibleRooms)
   if shortestBorder == 0 then
