@@ -6447,27 +6447,29 @@ function mmp.clearspecials(deleterooms)
   end
 end
 
-local function getShortestOfMultipleRooms(possibleRooms)
-  local shortestPath, closestRoom = {}, 0
+function mmp.getShortestOfMultipleRooms(possibleRooms)
+  local shortestWeight, closestRoom = 10000000, 0
+  local checkedsofar, outoftime = 0, false
+  local getStopWatchTime, tonumber = getStopWatchTime, tonumber
+  
+  -- allocate only 500ms to finding the shortest path, or more if we failed to find anything
   mmp.computeShortestWatch = mmp.computeShortestWatch or createStopWatch()
   startStopWatch(mmp.computeShortestWatch)
   raiseEvent("mmp link externals")
-  local getStopWatchTime, tonumber, getPath = getStopWatchTime, tonumber, mmp.getPath
-  --mmp.echo(string.format("Have %s rooms nodes, %ss taken so far...", table.size(possibleRooms), getStopWatchTime(mmp.computeShortestWatch)))
-  -- allocate only 500ms to finding the shortest path, or more if we failed to find anything
-  local checkedsofar, outoftime = 0
-  for id, _ in pairs(possibleRooms) do
-    if mmp.getPath(mmp.currentroom, tonumber(id)) then
-      if closestRoom == 0 or #shortestPath &gt; #speedWalkPath then
-        shortestPath = speedWalkPath
-        closestRoom = tonumber(id)
-      end
+  
+  -- mmp.echo(string.format("Have %s rooms nodes, %ss taken so far...", table.size(possibleRooms), getStopWatchTime(mmp.computeShortestWatch)))
+  for _, id in pairs(possibleRooms) do
+    local possible, thisWeight = getPath(mmp.currentroom, tonumber(id))
+    if possible and thisWeight &lt; shortestWeight then
+      shortestWeight = thisWeight
+      closestRoom = tonumber(id)
     end
     checkedsofar = checkedsofar + 1
     if (getStopWatchTime(mmp.computeShortestWatch) &gt;= .5) then
       outoftime = true
       break
     end
+	
     -- mmp.echo(string.format("pathed from %s to %s, running time so far: %s", mmp.currentroom, id, getStopWatchTime(mmp.computeShortestWatch)))
   end
   --mmp.echo(string.format("total time took: %s", getStopWatchTime(mmp.computeShortestWatch)))
@@ -6486,8 +6488,10 @@ function mmp.gotoAreaID(areaid, number, dashtype)
     return
   end
   local possibleRooms, shortestBorder = {}, 0
-  possibleRooms = mmp.getAreaBorders(areaid)
-  shortestBorder, outoftime, checkedsofar = getShortestOfMultipleRooms(possibleRooms)
+  for id,_ in pairs(mmp.getAreaBorders(areaid)) do
+    possibleRooms[#possibleRooms+1] = id
+  end
+  shortestBorder, outoftime, checkedsofar = mmp.getShortestOfMultipleRooms(possibleRooms)
   if shortestBorder == 0 then
     if outoftime then
       mmp.echo(
@@ -6533,13 +6537,8 @@ function mmp.gotoFeature(partialFeatureName, dashtype)
     mmp.echo("No feature like " .. partialFeatureName .. " found.")
     return
   end
-  local rooms = searchRoomUserData("feature-" .. feature, "true")
-  -- change the structure of the table so it fits getShortestOfMultipleRooms
-  local possibleRooms = {}
-  for _, room in pairs(rooms) do
-    possibleRooms[room] = true
-  end
-  closestFeature, outoftime, checkedsofar = getShortestOfMultipleRooms(possibleRooms)
+  local possibleRooms = searchRoomUserData("feature-" .. feature, "true")
+  closestFeature, outoftime, checkedsofar = mmp.getShortestOfMultipleRooms(possibleRooms)
   if closestFeature == 0 then
     if outoftime then
       mmp.echo(
