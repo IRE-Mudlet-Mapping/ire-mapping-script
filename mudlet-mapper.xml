@@ -3904,7 +3904,7 @@ mmp.settings:setOption(matches[3], val)</script>
 				<packageName></packageName>
 				<regex>^area list$</regex>
 			</Alias>
-			<AliasGroup isActive="yes" isFolder="yes">
+			<AliasGroup isActive="no" isFolder="yes">
 				<name>mm Mapping</name>
 				<script></script>
 				<command></command>
