@@ -453,7 +453,7 @@ mmp.echo("We're connected to Achaea.")</script>
 					</regexCodePropertyList>
 					<Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
 						<name>Local farsee</name>
-						<script>mmp.locateAndEcho(matches[3], matches[2])</script>
+						<script>mmp.locateAndEcho(matches[3], matches[2], gmcp.Room.Info.area)</script>
 						<triggerType>0</triggerType>
 						<conditonLineDelta>0</conditonLineDelta>
 						<mStayOpen>0</mStayOpen>
@@ -1583,7 +1583,7 @@ end</script>
 						<integer>1</integer>
 					</regexCodePropertyList>
 				</Trigger>
-    				<Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+				<Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
 					<name>Soulmark Scry</name>
 					<script>mmp.locateAndEcho(matches[3], matches[2])</script>
 					<triggerType>0</triggerType>
@@ -3623,12 +3623,13 @@ mmp.echo("We're connected to StickMUD.")</script>
 				<Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="yes" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
 					<name>Worm sources</name>
 					<script>deleteLine()
-local from = multimatches[2][2]
-local to = multimatches[2][3]
-
-cecho("\nYou see connections between "..from.." (")
-mmp.echonums(from)
-cecho(") and "..to.." (")
+local from,fromhouse = multimatches[2][2]:gsub(" %(house%)","")
+local to,tohouse = multimatches[2][3]:gsub(" %(house%)","")
+if fromhouse &gt;= 1 then fromhouse = " (house)" else fromhouse = "" end
+if tohouse &gt;= 1 then tohouse = " (house)" else tohouse = "" end
+cecho("\nYou see a connection between ".. from .. fromhouse .. " (")
+mmp.echonums(from, gmcp.Room.Info.area)
+cecho(") and "..to..tohouse.." (")
 mmp.echonums(to)
 cecho(")")
 </script>
@@ -3695,10 +3696,12 @@ end</script>
 					<regexCodeList>
 						<string>You see exits</string>
 						<string>You see a single exit</string>
+						<string>There are no obvious exits.</string>
 					</regexCodeList>
 					<regexCodePropertyList>
 						<integer>2</integer>
 						<integer>2</integer>
+						<integer>3</integer>
 					</regexCodePropertyList>
 				</Trigger>
 			</TriggerGroup>
@@ -3901,7 +3904,7 @@ mmp.settings:setOption(matches[3], val)</script>
 				<packageName></packageName>
 				<regex>^area list$</regex>
 			</Alias>
-			<AliasGroup isActive="no" isFolder="yes">
+			<AliasGroup isActive="yes" isFolder="yes">
 				<name>mm Mapping</name>
 				<script></script>
 				<command></command>
@@ -5390,7 +5393,7 @@ speedWalkCounter = 0
 mmp.speedWalk = mmp.speedWalk or {}
 mmp.speedWalkPath = mmp.speedWalkPath or {}
 mmp.speedWalkDir = mmp.speedWalkDir or {}
-local newversion = "developer"
+local newversion = "20.11.1"
 if mmp.version and mmp.version ~= newversion then
   if not mmp.game then
     mmp.echo(
@@ -7346,7 +7349,7 @@ end
 function mmp.echonums(roomname, area)
   local t = mmp.searchRoomExact(roomname)
   if area then
-    t = filterRooms(t, area)
+    t = mmp.filterRooms(t, area)
   end
   if not next(t) then
     echo("?")
@@ -7428,7 +7431,7 @@ end
 function mmp.locateAndEcho(room, person, area)
   local t = mmp.searchRoomExact(room)
   if area then
-    t = filterRooms(t, area)
+    t = mmp.filterRooms(t, area)
   end
   echo("  (")
   mmp.echonums(room, area)
