@@ -7330,7 +7330,7 @@ end</script>
 				<Script isActive="yes" isFolder="no">
 					<name>Locating &amp; echoing functions</name>
 					<packageName></packageName>
-					<script>local function filterRooms(rooms, area)
+					<script>function mmp.filterRooms(rooms, area)
   local unassignedRooms = {}
   local areaRooms = {}
   for roomnum, roomname in pairs(rooms) do
