@@ -75,9 +75,11 @@
 					<integer>3</integer>
 				</regexCodePropertyList>
 			</Trigger>
-			<Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+			<Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="yes" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
 				<name>Too quick</name>
 				<script>if mmp.autowalking then
+  mmp.hasty = true
+  mmp.setmovetimer(0.5)
   mmp.deleteLineP()
 end</script>
 				<triggerType>0</triggerType>
@@ -1583,7 +1585,7 @@ end</script>
 						<integer>1</integer>
 					</regexCodePropertyList>
 				</Trigger>
-    				<Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+				<Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
 					<name>Soulmark Scry</name>
 					<script>mmp.locateAndEcho(matches[3], matches[2])</script>
 					<triggerType>0</triggerType>
@@ -3548,6 +3550,8 @@ mmp.echo("We're connected to StickMUD.")</script>
 						<string>You push against the door in vain as you try to open it.</string>
 						<string>You do not have access to open this door.</string>
 						<string>The door beeps quietly. It appears to be locked.</string>
+						<string>This (walnut|pine|oak|iron|reinforced) door has been magically locked shut\.</string>
+						<string>You are not carrying a key for this (walnut|pine|oak|iron|reinforced) door\.</string>
 					</regexCodeList>
 					<regexCodePropertyList>
 						<integer>3</integer>
@@ -3556,6 +3560,8 @@ mmp.echo("We're connected to StickMUD.")</script>
 						<integer>3</integer>
 						<integer>3</integer>
 						<integer>3</integer>
+						<integer>1</integer>
+						<integer>1</integer>
 					</regexCodePropertyList>
 				</Trigger>
 				<Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
@@ -3573,9 +3579,11 @@ mmp.echo("We're connected to StickMUD.")</script>
 					<colorTriggerBgColor>#000000</colorTriggerBgColor>
 					<regexCodeList>
 						<string>The door is locked.</string>
+						<string>The (walnut|pine|oak|iron|reinforced) door is locked\.</string>
 					</regexCodeList>
 					<regexCodePropertyList>
 						<integer>3</integer>
+						<integer>1</integer>
 					</regexCodePropertyList>
 				</Trigger>
 				<Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
@@ -3846,7 +3854,8 @@ end
 local val = matches[4]
 if val == "true" or val == "yes" or val == "on" then val = true end
 if val == "false" or val == "no" or val == "off" then val = false end
-
+local numberVal = tonumber(val)
+val = numberVal and numberVal or val
 mmp.settings:setOption(matches[3], val)</script>
 				<command></command>
 				<packageName></packageName>
@@ -5390,7 +5399,7 @@ speedWalkCounter = 0
 mmp.speedWalk = mmp.speedWalk or {}
 mmp.speedWalkPath = mmp.speedWalkPath or {}
 mmp.speedWalkDir = mmp.speedWalkDir or {}
-local newversion = "developer"
+local newversion = "20.11.1"
 if mmp.version and mmp.version ~= newversion then
   if not mmp.game then
     mmp.echo(
@@ -5429,6 +5438,10 @@ function mmp.startup()
     )
   private_settings["showcmds"] =
     createOption(true, mmp.changeBoolFunc, {"boolean"}, "Show walking commands?")
+  private_settings["fastwalktime"] =
+    createOption(0.5, mmp.changeFastwalktime, {"number"}, "How often to send move command?")
+  private_settings["promptmove"] =
+    createOption(false, mmp.changePromptmove, {"boolean"}, "Move on prompt rather than gmcp event?")
   private_settings["slowwalk"] =
     createOption(
       false, mmp.setSlowWalk, {"boolean"}, "Walk slowly instead of as quick as possible?"
@@ -5952,12 +5965,13 @@ function mmp.setmovetimer(time)
   if mmp.movetimer then
     killTimer(mmp.movetimer)
   end
-  if mmp.settings.slowwalk then
+  if mmp.settings.slowwalk and not mmp.hasty then
     return
   end
+  time = time or mmp.settings.fastwalktime
   mmp.movetimer =
     tempTimer(
-      getNetworkLatency() + (time or 0.5),
+      getNetworkLatency() + time,
       function()
         mmp.movetimer = false
         mmp.move()
@@ -5987,7 +6001,7 @@ function mmp.move()
   if string.starts(cmd, "script:") then
     cmd = string.gsub(cmd, "script:", "")
     loadstring(cmd)()
-    if mmp.settings.showcmds then
+    if mmp.settings.showcmds and not mmp.hasty then
       cecho(
         string.format(
           "&lt;red&gt;(&lt;maroon&gt;%d - &lt;dark_slate_grey&gt;%s&lt;red&gt;)",
@@ -5996,9 +6010,10 @@ function mmp.move()
         )
       )
     end
+    mmp.hasty = false
   else
     send(cmd, false)
-    if mmp.settings.showcmds then
+    if mmp.settings.showcmds and not mmp.hasty then
       cecho(
         string.format(
           "&lt;red&gt;(&lt;maroon&gt;%d - &lt;dark_slate_grey&gt;%s&lt;red&gt;)",
@@ -6007,6 +6022,7 @@ function mmp.move()
         )
       )
     end
+    mmp.hasty = false
   end
 end
 
@@ -6275,10 +6291,18 @@ function speedwalking(event, num)
     mmp.autowalking = false
   elseif mmp.speedWalkPath[speedWalkCounter] == num then
     speedWalkCounter = speedWalkCounter + 1
-    mmp.move()
+    if mmp.settings.promptmove then
+      tempPromptTrigger(mmp.move, 1)
+    else
+      mmp.move()
+    end
   elseif mmp.game == "imperian" and madeflight then
     mmp.echo("We began flying!")
-    mmp.move()
+    if mmp.settings.promptmove then
+      tempPromptTrigger(mmp.move, 1)
+    else
+      mmp.move()
+    end
   elseif
     #mmp.speedWalkPath &gt; 0 and
     not mmp.ferry_rooms[num] and
@@ -8449,6 +8473,18 @@ end
 
 function mmp.changeEchoColour()
     mmp.echo("Now displaying echos in &lt;"..mmp.settings.echocolour.."&gt;"..mmp.settings.echocolour )
+end
+
+function mmp.changeFastwalktime()
+    mmp.echo(string.format("Fast walk timer now %.3f seconds.", mmp.settings.fastwalktime))
+end
+
+function mmp.changePromptmove()
+    if mmp.settings.promptmove then
+        mmp.echo("We will wait until we receive a prompt to send our movement commands!")
+        return
+    end
+    mmp.echo("We will send the movement command as soon as we get the Room.Info event!")
 end
 
 function mmp.lockPathways()
