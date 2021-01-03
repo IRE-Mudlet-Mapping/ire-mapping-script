@@ -5288,7 +5288,6 @@ function createOption(startingValue, onChangeFunc, allowedVarTypes, use, checkOp
 		use = use or "",
 		games = games,
 		checkOption = checkOption or function() return true end
-      
 	}
 
 	return option
@@ -5315,13 +5314,13 @@ function createOptionsTable(defaultTable)
 
 	function proxyTable:showAllOptions(game)
 		proxyTable.disp("Available options: \n")
-		for k, v in pairs(self[index]) do
+		for k, v in spairs(self[index]) do
 			if not game or not v.games or v.games[game] then
 				self.dispOption(k, v)
 			end
 		end
 		echo("\n")
-		for k, v in pairs(self["_customOptions"]) do
+		for k, v in spairs(self["_customOptions"]) do
 			self.dispOption(k, v)
 		end
 
@@ -5422,6 +5421,28 @@ speedWalkCounter = 0
 mmp.speedWalk = mmp.speedWalk or {}
 mmp.speedWalkPath = mmp.speedWalkPath or {}
 mmp.speedWalkDir = mmp.speedWalkDir or {}
+mmp.lagtable = {
+    [1] = {
+        description = "Normal, default level.",
+        time = 0.5
+    },
+    [2] = {
+        description = "Decent, but slightly laggy.",
+        time = 1
+    },
+    [3] = {
+        description = "Noticably laggy with occasional spikes.",
+        time = 2
+    },
+    [4] = {
+        description = "Bad. Terrible. Terribad.",
+        time = 5
+    },
+    [5] = {
+        description = "Carrier Pigeon",
+        time = 10
+    }
+}
 local newversion = "21.1.1"
 if mmp.version and mmp.version ~= newversion then
   if not mmp.game then
@@ -5461,10 +5482,8 @@ function mmp.startup()
     )
   private_settings["showcmds"] =
     createOption(true, mmp.changeBoolFunc, {"boolean"}, "Show walking commands?")
-  private_settings["fastwalktime"] =
-    createOption(0.5, mmp.changeFastwalktime, {"number"}, "How often to send move command?")
-  private_settings["promptmove"] =
-    createOption(false, mmp.changePromptmove, {"boolean"}, "Move on prompt rather than gmcp event?")
+  private_settings["laglevel"] =
+    createOption(1, mmp.changeLaglevel, {"number"}, "How laggy is your connection, (fast 1&lt;-&gt;5 slow)?", mmp.verifyLaglevel)
   private_settings["slowwalk"] =
     createOption(
       false, mmp.setSlowWalk, {"boolean"}, "Walk slowly instead of as quick as possible?"
@@ -5991,7 +6010,7 @@ function mmp.setmovetimer(time)
   if mmp.settings.slowwalk and not mmp.hasty then
     return
   end
-  time = time or mmp.settings.fastwalktime
+  time = time or mmp.lagtable[mmp.settings.laglevel].time
   mmp.movetimer =
     tempTimer(
       getNetworkLatency() + time,
@@ -6318,18 +6337,10 @@ function speedwalking(event, num)
     mmp.autowalking = false
   elseif mmp.speedWalkPath[speedWalkCounter] == num then
     speedWalkCounter = speedWalkCounter + 1
-    if mmp.settings.promptmove then
-      tempPromptTrigger(mmp.move, 1)
-    else
-      mmp.move()
-    end
+    tempPromptTrigger(mmp.move, 1)
   elseif mmp.game == "imperian" and madeflight then
     mmp.echo("We began flying!")
-    if mmp.settings.promptmove then
-      tempPromptTrigger(mmp.move, 1)
-    else
-      mmp.move()
-    end
+    tempPromptTrigger(mmp.move, 1)
   elseif
     #mmp.speedWalkPath &gt; 0 and
     not mmp.ferry_rooms[num] and
@@ -6407,7 +6418,8 @@ function doSpeedWalk(dashtype)
     echo(": ")
     speedWalkCounter = 1
     if mmp.canmove() then
-      mmp.move()
+      mmp.hasty = true
+      mmp.setmovetimer(0.1)
     else
       echo("(when we get balance back / aren't hindered)")
     end
@@ -8502,16 +8514,15 @@ function mmp.changeEchoColour()
     mmp.echo("Now displaying echos in &lt;"..mmp.settings.echocolour.."&gt;"..mmp.settings.echocolour )
 end
 
-function mmp.changeFastwalktime()
-    mmp.echo(string.format("Fast walk timer now %.3f seconds.", mmp.settings.fastwalktime))
+function mmp.changeLaglevel()
+    local laglevel = mmp.settings.laglevel
+    local laginfo = mmp.lagtable[laglevel]
+    mmp.echo(string.format("Lag level set to [%d]: %s (%ss timer)", laglevel, laginfo.description, tostring(laginfo.time)))
 end
 
-function mmp.changePromptmove()
-    if mmp.settings.promptmove then
-        mmp.echo("We will wait until we receive a prompt to send our movement commands!")
-        return
-    end
-    mmp.echo("We will send the movement command as soon as we get the Room.Info event!")
+function mmp.verifyLaglevel(value)
+  if mmp.lagtable[value] then return true end
+  return false
 end
 
 function mmp.lockPathways()
