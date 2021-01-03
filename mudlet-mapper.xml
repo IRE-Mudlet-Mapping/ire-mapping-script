@@ -3573,8 +3573,8 @@ mmp.echo("We're connected to StickMUD.")</script>
 						<string>You push against the door in vain as you try to open it.</string>
 						<string>You do not have access to open this door.</string>
 						<string>The door beeps quietly. It appears to be locked.</string>
-						<string>This (walnut|pine|oak|iron|reinforced) door has been magically locked shut\.</string>
-						<string>You are not carrying a key for this (walnut|pine|oak|iron|reinforced) door\.</string>
+						<string>This (?:walnut|pine|oak|iron|reinforced) door has been magically locked shut\.</string>
+						<string>You are not carrying a key for this (?:walnut|pine|oak|iron|reinforced) door\.</string>
 					</regexCodeList>
 					<regexCodePropertyList>
 						<integer>3</integer>
@@ -3602,7 +3602,7 @@ mmp.echo("We're connected to StickMUD.")</script>
 					<colorTriggerBgColor>#000000</colorTriggerBgColor>
 					<regexCodeList>
 						<string>The door is locked.</string>
-						<string>The (walnut|pine|oak|iron|reinforced) door is locked\.</string>
+						<string>The (?:walnut|pine|oak|iron|reinforced) door is locked\.</string>
 					</regexCodeList>
 					<regexCodePropertyList>
 						<integer>3</integer>
@@ -3626,7 +3626,7 @@ mmp.echo("We're connected to StickMUD.")</script>
 						<string>There is a door in the way, to the</string>
 						<string>There is a door in the way.</string>
 						<string>A closed door is in the way. You need to OPEN DOOR</string>
-						<string>There is an? (walnut|pine|oak|iron|reinforced) door in the way.</string>
+						<string>There is an? (?:walnut|pine|oak|iron|reinforced) door in the way.</string>
 					</regexCodeList>
 					<regexCodePropertyList>
 						<integer>2</integer>
@@ -5443,7 +5443,7 @@ mmp.lagtable = {
         time = 10
     }
 }
-local newversion = "21.1.1"
+local newversion = "developer"
 if mmp.version and mmp.version ~= newversion then
   if not mmp.game then
     mmp.echo(
@@ -6010,7 +6010,8 @@ function mmp.setmovetimer(time)
   if mmp.settings.slowwalk and not mmp.hasty then
     return
   end
-  time = time or mmp.lagtable[mmp.settings.laglevel].time
+  local laglevel = mmp.settings.laglevel or 1
+  time = time or mmp.lagtable[laglevel].time
   mmp.movetimer =
     tempTimer(
       getNetworkLatency() + time,
