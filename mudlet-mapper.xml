@@ -5105,18 +5105,6 @@ end</script>
 				<regex>^(small|big|biggest)map(?: (\d+))?$</regex>
 			</Alias>
 			<Alias isActive="yes" isFolder="no">
-				<name>^make maps$</name>
-				<script>local c = 0
-for _, id in pairs(getAreaTable()) do
-  tempTimer(c*.5, [[exportAreaImage(]]..id..[[)]])
-  c = c + 1
-end
-mmp.echo("Done!")</script>
-				<command></command>
-				<packageName></packageName>
-				<regex>^make maps$</regex>
-			</Alias>
-			<Alias isActive="yes" isFolder="no">
 				<name>Set debug mode</name>
 				<script>if matches[2] == "on" then
   mmp.debug = true
