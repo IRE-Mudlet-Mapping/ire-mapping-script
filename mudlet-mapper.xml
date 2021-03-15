@@ -4929,12 +4929,12 @@ end</script>
   if savednormal == nil then
     mmp.echo("Couldn't save the map :(")
   elseif savednormal == true then
-    mmp.echo(loc ~= "" and "Map saved." or "Saved the default map.")
+    mmp.echo(location ~= "" and "Map saved." or "Saved the default map.")
   end
   if savedjson == nil then
     mmp.echo("Couldn't save the JSON map :(")
   elseif savedjson == true then
-    mmp.echo(loc ~= "" and "Map saved in JSON." or "Saved the default map in JSON.")
+    mmp.echo(location ~= "" and "Map saved in JSON." or "Saved the default map in JSON.")
   end
 end
 
