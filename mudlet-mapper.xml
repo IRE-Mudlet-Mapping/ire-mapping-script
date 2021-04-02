@@ -4920,8 +4920,8 @@ end</script>
   if format == "json" then
     savedjson = saveJsonMap(location)
   elseif format == "all" then
-    savednormal = saveMap(location)
     savedjson = saveJsonMap(location)
+    savednormal = saveMap(location)
   elseif format == nil or format == "" then
     savednormal = saveMap(location)
   end
