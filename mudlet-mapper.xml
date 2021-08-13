@@ -7730,11 +7730,32 @@ end</script>
   end
 end
 
-function mmp.roomFind(query)
+function mmp.roomFind(query, lines)
   if query:ends('.') then
     query = query:sub(1, -2)
   end
+  local defaultLine = 30 --could this to a setting
   local result = mmp.searchRoom(query)
+  if lines == 'all' then
+    lines = table.size(result)
+  end
+  lines = (lines ~= '') and tonumber(lines) or defaultLine 
+  
+  --create a new table (_nt) with keys and add areas to the table
+  local _nt = {}
+  for k, v in pairs(result) do
+    --not all rooms have an area associated with it in mmp.areatabler so need to either remove those or add one
+    local a = mmp.areatabler[getRoomArea(k)] or "unknown"
+    _nt[#_nt + 1] = {num = k, area = a, name = v}
+  end
+  --sort _nt by area name
+  table.sort(
+    _nt,
+    function(a, b)
+      return a.area &lt; b.area
+    end
+  )
+  --start displaying info
   if type(result) == "string" or not next(result) then
     cecho("&lt;grey&gt;You have no recollection of any room with that name.")
     return
@@ -7748,35 +7769,39 @@ function mmp.roomFind(query)
     return mmp.oncontinent(getRoomArea(roomid), "Main") and '' or ' (Meropis)'
   end
 
+  local i = 1
   if not tonumber(select(2, next(result))) then
-    -- old style
-    for roomid, roomname in pairs(result) do
-      roomid = tonumber(roomid)
-      cecho(string.format("  &lt;LightSlateGray&gt;%s&lt;DarkSlateGrey&gt; (", tostring(roomname)))
+    cecho(string.format("&lt;white&gt; %-10s%-40s%s\n", "ROOM ID", "ROOM NAME", "ROOM AREA"))
+    for _, v in ipairs(_nt) do
+      if i &gt; lines then
+        break
+      end
+      roomid = tonumber(v.num)
+      roomname = v.name
+      roomarea = v.area
       cechoLink(
-        "&lt;" .. mmp.settings.echocolour .. "&gt;" .. roomid,
+        string.format("&lt;" .. mmp.settings.echocolour .. "&gt; %-10s", roomid),
         'mmp.gotoRoom(' .. roomid .. ')',
         string.format("Go to %s (%s)", roomid, tostring(roomname)),
         true
       )
-      cecho(
+      cecho(string.format("&lt;LightSlateGray&gt;%-40s", string.sub(tostring(roomname), 1, 39)))
+      cechoLink(
         string.format(
-          "&lt;DarkSlateGrey&gt;) in &lt;LightSlateGray&gt;%s%s&lt;DarkSlateGrey&gt;.",
+          "&lt;DarkSlateGrey&gt;%s%s&lt;DarkSlateGrey&gt;\n",
           mmp.cleanAreaName(tostring(mmp.areatabler[getRoomArea(roomid)])),
           showmeropis(roomid)
-        )
-      )
-      fg("DarkSlateGrey")
-      echoLink(
-        " &gt; Show path\n",
+        ),
         [[mmp.echoPath(mmp.currentroom, ]] .. roomid .. [[)]],
         "Display directions from here to " .. roomname,
         true
       )
       resetFormat()
+      i = i + 1
     end
   else
     -- new style
+    --- not sure what this new area code is but it doesn't seem to fire
     for roomname, roomid in pairs(result) do
       roomid = tonumber(roomid)
       cecho(string.format("  &lt;LightSlateGray&gt;%s&lt;DarkSlateGrey&gt; (", tostring(roomname)))
@@ -7803,7 +7828,19 @@ function mmp.roomFind(query)
       resetFormat()
     end
   end
-  cecho(string.format("  &lt;DarkSlateGrey&gt;%d rooms found.\n", table.size(result)))
+  if table.size(result) &lt;= lines then
+    cecho(string.format("&lt;DarkSlateGrey&gt;%d rooms found.\n", table.size(result)))
+  else
+    lastRoomQuery = query
+    cechoLink(
+      string.format(
+        "&lt;DarkSlateGrey&gt;%d of %d rooms shown. Click to see all rooms.\n", lines, table.size(result)
+      ),
+      'mmp.roomFind(lastRoomQuery, "all")',
+      string.format("Show all %d rooms.", table.size(result)),
+      true
+    )
+  end
 end
 
 function mmp.echoRoomList(areaname, exact)
