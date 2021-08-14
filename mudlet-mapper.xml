@@ -4656,13 +4656,6 @@ mmp.echo(
 					<regex>^feature create (.+?)(?: char (.+))?$</regex>
 				</Alias>
 				<Alias isActive="yes" isFolder="no">
-					<name>List map features</name>
-					<script>mmp.listMapFeatures()</script>
-					<command></command>
-					<packageName></packageName>
-					<regex>^feature list$</regex>
-				</Alias>
-				<Alias isActive="yes" isFolder="no">
 					<name>Add map feature to room</name>
 					<script>mmp.roomCreateMapFeature(matches[3], matches[2] == "" and mmp.currentroom or tonumber(matches[2]))</script>
 					<command></command>
@@ -4912,6 +4905,13 @@ end</script>
 				<command></command>
 				<packageName></packageName>
 				<regex>^(?:mc|map create) ?(on|off)?$</regex>
+			</Alias>
+			<Alias isActive="yes" isFolder="no">
+				<name>List map features</name>
+				<script>mmp.listMapFeatures()</script>
+				<command></command>
+				<packageName></packageName>
+				<regex>^feature list$</regex>
 			</Alias>
 			<Alias isActive="yes" isFolder="no">
 				<name>Save a map</name>
