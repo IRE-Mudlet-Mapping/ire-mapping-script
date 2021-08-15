@@ -7734,23 +7734,23 @@ function mmp.roomFind(query, lines)
   if query:ends('.') then
     query = query:sub(1, -2)
   end
-  local defaultLine = 30 --could this to a setting
+  local defaultLine = 30 -- this could this to a setting instead of a static number
   local result = mmp.searchRoom(query)
   if lines == 'all' then
     lines = table.size(result)
   end
   lines = (lines ~= '') and tonumber(lines) or defaultLine 
   
-  --create a new table (_nt) with keys and add areas to the table
-  local _nt = {}
+  --create a new table (roomsTable) with keys and add areas to the table
+  local roomsTable = {}
   for k, v in pairs(result) do
     --not all rooms have an area associated with it in mmp.areatabler so need to either remove those or add one
     local a = mmp.areatabler[getRoomArea(k)] or "unknown"
-    _nt[#_nt + 1] = {num = k, area = a, name = v}
+    roomsTable[#roomsTable + 1] = {num = k, area = a, name = v}
   end
-  --sort _nt by area name
+  --sort roomsTable by area name
   table.sort(
-    _nt,
+    roomsTable,
     function(a, b)
       return a.area &lt; b.area
     end
@@ -7772,7 +7772,7 @@ function mmp.roomFind(query, lines)
   local i = 1
   if not tonumber(select(2, next(result))) then
     cecho(string.format("&lt;white&gt; %-10s%-40s%s\n", "ROOM ID", "ROOM NAME", "ROOM AREA"))
-    for _, v in ipairs(_nt) do
+    for _, v in ipairs(roomsTable) do
       if i &gt; lines then
         break
       end
