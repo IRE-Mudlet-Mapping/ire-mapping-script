@@ -5343,13 +5343,13 @@ function createOptionsTable(defaultTable)
 
 	function proxyTable:showAllOptions(game)
 		proxyTable.disp("Available options: \n")
-		for k, v in spairs(self[index]) do
+		for k, v in pairs(self[index]) do
 			if not game or not v.games or v.games[game] then
 				self.dispOption(k, v)
 			end
 		end
 		echo("\n")
-		for k, v in spairs(self["_customOptions"]) do
+		for k, v in pairs(self["_customOptions"]) do
 			self.dispOption(k, v)
 		end
 
