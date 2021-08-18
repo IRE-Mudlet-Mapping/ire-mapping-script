@@ -5299,6 +5299,23 @@ mmp.echo("All astral nodes have been "..(matches[2]:lower()=="on" and "" or "un"
 --                                             --
 -- Note that you can also use external Scripts --
 -------------------------------------------------
+local spairs = spairs or function(tbl, order)
+  local keys = table.keys(tbl)
+  if order then
+    table.sort(keys, function(a,b) return order(tbl, a, b) end)
+  else
+    table.sort(keys)
+  end
+
+  local i = 0
+  return function()
+    i = i + 1
+    if keys[i] then
+      return keys[i], tbl[keys[i]]
+    end
+  end
+end
+
 
 function createOption(startingValue, onChangeFunc, allowedVarTypes, use, checkOption, games)
 	if allowedVarTypes then -- make sure our starting Value follows type rules
