@@ -10163,6 +10163,17 @@ function mmp_mapping_newroom(_, num)
             setRoomUserData(num, "indoors", "")
             s = s .. (#s &gt; 0 and " " or "") .. "Updated room to be outdoors."
           end
+          --flipping the above around to set an outdoors flag too, to help
+          --differentiate between outdoors rooms and unflagged rooms
+          local outdoors = not table.contains(gmcp.Room.Info.details, "indoors")
+          if outdoors and getRoomUserData(num, "outdoors") == '' then
+            setRoomUserData(num, "outdoors", "y")
+            s = s .. (#s &gt; 0 and " " or "") .. "Set outdoors flag."
+          elseif not outdoors and getRoomUserData(num, "outdoors") ~= '' then
+            setRoomUserData(num, "outdoors", "")
+            s = s .. (#s &gt; 0 and " " or "") .. "Removed outdoors flag."
+          end
+          
           -- check server area name (Achaea only for now)
           if mmp.game == "achaea" then
             local serverArea = gmcp.Room.Info.area
