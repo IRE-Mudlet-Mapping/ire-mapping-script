@@ -10158,10 +10158,10 @@ function mmp_mapping_newroom(_, num)
           local indoors = table.contains(gmcp.Room.Info.details, "indoors")
           if indoors and (getRoomUserData(num, "indoors") == '' or getRoomUserData(num,"outdoors") ~= '') then
             setRoomUserData(num, "indoors", "y")
-            setRoomUserData(num, "outdoors", "")
+            clearRoomUserDataItem(num, "outdoors")
             s = s .. (#s &gt; 0 and " " or "") .. "Updated room to be indoors."
           elseif not indoors and (getRoomUserData(num, "indoors") ~= '' or getRoomUserData(num, "outdoors") == '') then
-            setRoomUserData(num, "indoors", "")
+            clearRoomUserDataItem(num, "indoors")
             setRoomUserData(num, "outdoors", "y")
             s = s .. (#s &gt; 0 and " " or "") .. "Updated room to be outdoors."
           end
