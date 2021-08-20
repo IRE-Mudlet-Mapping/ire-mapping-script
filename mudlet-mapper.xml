@@ -1605,6 +1605,43 @@ end</script>
 						<integer>1</integer>
 					</regexCodePropertyList>
 				</Trigger>
+				<Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="yes" isPerlSlashGOption="no" isColorizerTrigger="yes" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+					<name>City has orb of confinement</name>
+					<script>local orbTable = mmp.getAchaeaOrbTable()
+local areaID = getRoomArea(mmp.currentroom) or 0
+if areaID == 0 or mmp.game ~= "achaea" then
+  return
+end
+--don't know where we are
+for city, areas in pairs(orbTable) do
+  if table.contains(areas, areaID) then
+    if not mmp.settings["orb" .. city] then
+      mmp.settings:setOption("orb" .. city, true)
+      mmp.inside = true
+      raiseEvent("mmapper went inside")
+    end
+    return
+  end
+end</script>
+					<triggerType>0</triggerType>
+					<conditonLineDelta>0</conditonLineDelta>
+					<mStayOpen>0</mStayOpen>
+					<mCommand></mCommand>
+					<packageName></packageName>
+					<mFgColor>#ff0000</mFgColor>
+					<mBgColor>#ffff00</mBgColor>
+					<mSoundFile></mSoundFile>
+					<colorTriggerFgColor>#000000</colorTriggerFgColor>
+					<colorTriggerBgColor>#000000</colorTriggerBgColor>
+					<regexCodeList>
+						<string>A shimmering orb covers the city</string>
+						<string>A shimmering orb covers the city, preventing you from rising to the skies.</string>
+					</regexCodeList>
+					<regexCodePropertyList>
+						<integer>2</integer>
+						<integer>3</integer>
+					</regexCodePropertyList>
+				</Trigger>
 			</TriggerGroup>
 			<TriggerGroup isActive="yes" isFolder="yes" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
 				<name>Aetolia</name>
@@ -3736,38 +3773,6 @@ end</script>
 					</regexCodePropertyList>
 				</Trigger>
 			</TriggerGroup>
-			<Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="yes" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
-				<name>City has orb of confinement</name>
-				<script>local areaID = getRoomArea(mmp.currentroom) or 0
-
-if areaID == 0 or not (mmp.game == "achaea") then return end --don't know where we are
-
-local area = mmp.cleanAreaName(areaID):lower()
-if not mmp.settings["orb"..area] then
-	mmp.settings:setOption("orb"..area,true)
-	mmp.inside = true
-	raiseEvent("mmapper went inside")
-end
-</script>
-				<triggerType>0</triggerType>
-				<conditonLineDelta>0</conditonLineDelta>
-				<mStayOpen>0</mStayOpen>
-				<mCommand></mCommand>
-				<packageName></packageName>
-				<mFgColor>#ff0000</mFgColor>
-				<mBgColor>#ffff00</mBgColor>
-				<mSoundFile></mSoundFile>
-				<colorTriggerFgColor>#000000</colorTriggerFgColor>
-				<colorTriggerBgColor>#000000</colorTriggerBgColor>
-				<regexCodeList>
-					<string>A shimmering orb covers the city</string>
-					<string>A shimmering orb covers the city, preventing you from rising to the skies.</string>
-				</regexCodeList>
-				<regexCodePropertyList>
-					<integer>2</integer>
-					<integer>3</integer>
-				</regexCodePropertyList>
-			</Trigger>
 		</TriggerGroup>
 	</TriggerPackage>
 	<TimerPackage>
@@ -6764,24 +6769,7 @@ registerAnonymousEventHandler("mmp clear externals", "mmp.removeWings")</script>
 					<packageName></packageName>
 					<script>registerAnonymousEventHandler("mmp link externals", "mmp.addWingsAchaea")
 
-function mmp.orbed()
-	-- orb of confinement - PapaGuacamole
-  local areaID = getRoomArea(mmp.currentroom)
-  return
-		(mmp.game == "achaea" and
-  		(
-    		(mmp.settings.orbashtan and areaID == 49) or
-    		(mmp.settings.orbcyrene and areaID == 57) or
-    		(mmp.settings.orbeleusis and areaID == 51) or
-    		(mmp.settings.orbhashan and areaID == 55) or
-    		(mmp.settings.orbmhaldor and areaID == 44) or
-    		(
-    			mmp.settings.orbtargossas and
-    			((mmp.settings.crowdmap and areaID == 368) or (not mmp.settings.crowdmap and areaID == 271))
-    		)
-  		)
-		)
-end
+
 
 function mmp.addWingsAchaea()
   --Trimmed down version of the original function, meant to only be used for wings. (Where the command varies based on several MCONFIGS)
@@ -10492,7 +10480,46 @@ registerAnonymousEventHandler("started speedwalk", "mmp.UnwearShackle")</script>
 					<Script isActive="yes" isFolder="no">
 						<name>mmapper_achaea_orb_of_confinement</name>
 						<packageName></packageName>
-						<script>function mmp.setOrb(city)
+						<script>--returns a table depending on current crowdmap settings. Functionized so that these tables will only have to be stored in one location.
+function mmp.getAchaeaOrbTable()
+  return
+  --first table is areas in each org for the crowdmap, second is for the game provided map.
+    mmp.settings.crowdmap and
+    {
+      ashtan = {49, 53},
+      cyrene = {57, 59, 62, 63, 68, 70},
+      eleusis = {51},
+      hashan = {55, 56, 267},
+      mhaldor = {44, 40, 48},
+      targossas = {368},
+    } or
+    {
+      ashtan = {49, 53, 54, 60},
+      cyrene = {57, 62, 67, 174, 189, 292, 293, 294},
+      eleusis = {51},
+      hashan = {55, 56},
+      mhaldor = {44, 48, 295, 296, 297},
+      targossas = {271, 277, 298, 299, 300},
+    }
+end
+
+--roomID is optional, if not it will default to current room. Returns true if you're in an area covered by the orb of confinement.
+function mmp.orbed(roomID)
+  if mmp.game ~= "achaea" then
+    return false
+  end
+  local orbTable = mmp.getAchaeaOrbTable()
+  --first table is the areas in the city for the crowdmap, second is for the game provided map.
+  local areaID = getRoomArea(roomID or mmp.currentroom)
+  for city, areaTable in pairs(orbTable) do
+    if table.contains(areaTable, areaID) then
+      return mmp.settings["orb" .. city]
+    end
+  end
+  return false
+end
+
+function mmp.setOrb(city)
   mmp.clearpathcache()
   if mmp.settings["orb"..city:lower()] then
     mmp.echo("Orb of Confinement set as &lt;green&gt;ACTIVE&lt;reset&gt; for " .. city:title())
