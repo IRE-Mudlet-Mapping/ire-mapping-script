@@ -1619,9 +1619,15 @@ for city, areas in pairs(orbTable) do
       mmp.settings:setOption("orb" .. city, true)
       mmp.inside = true
       raiseEvent("mmapper went inside")
+      if mmp.autowalking then
+        mmp.gotoRoom(mmp.speedWalkPath[#mmp.speedWalkPath])
+      end
     end
     return
   end
+end
+if mmp.autowalking then
+  mmp.stop()
 end</script>
 					<triggerType>0</triggerType>
 					<conditonLineDelta>0</conditonLineDelta>
