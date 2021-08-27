@@ -5636,7 +5636,7 @@ function mmp.startup()
     createOption(false, mmp.setGare, {"boolean"}, "Use Gare?", nil, {achaea = true})
   --Wings pathfinding improvements
   private_settings["betterwings"]=  
-    createOption(false, mmp.setBetterWings, {"boolean"}, "Use Better Wings pathfinding?", nil, {achaea = true})
+    createOption(true, mmp.setBetterWings, {"boolean"}, "Use Better Wings pathfinding?", nil, {achaea = true})
   --Achaea Orb of Confinement
   private_settings["orbashtan"] =
     createOption(
