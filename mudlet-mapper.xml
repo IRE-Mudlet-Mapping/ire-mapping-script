@@ -7025,9 +7025,6 @@ local function closestOutdoors(startRoom)
   --only willing to search for 500ms. Will abort in longer cases,
   while getStopWatchTime(stopwatch) &lt; .5 do
     for room, val in pairs(checking) do
-      if mmp.debug then
-        display("checking " .. room)
-      end
       --if these conditions are met, returns a roomid and exits out.
       --probably doesn't work great on weird planes, as thei
       if getRoomUserData(room, "outdoors") == "y" and orbed(room) then
@@ -7208,7 +7205,6 @@ function mmp.achaeaBetterWings()
   --if none of the shortcut items are enabled, return.
   if
     not (
-    true or
       mmp.settings.duanathar or
       mmp.settings.duantahar or
       mmp.settings.duanatharan or
@@ -7222,6 +7218,9 @@ function mmp.achaeaBetterWings()
   --find closest room, if that function returned something useful, call above function to create temporary remote special exits depending on settings.
   local closestRoom = closestOutdoors(mmp.currentroom)
   if closestRoom then
+      if mmp.debug then
+        mmp.echo("Closest outdoors room found at " .. closestRoom)
+      end
     linkWingsRemote(closestRoom)
   end
 end
