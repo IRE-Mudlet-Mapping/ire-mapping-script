@@ -6704,6 +6704,7 @@ function mmp.addWingsAchaea()
       )
     end
   end
+  mmp.clearpathcache()
 end</script>
 					<eventHandlerList />
 				</Script>
@@ -6937,6 +6938,7 @@ local function linkWingsRemote(room)
       end
     end
   end
+  mmp.clearpathcache()
 end
 
 --is called when you do pathfinding.
@@ -7099,6 +7101,7 @@ function mmp.addWingsLusternia()
   if mmp.settings.tibia then
     linkBubblix("the Cankermore Battlegrounds", 11600, "touch tibia")
   end
+  mmp.clearpathcache()
 end</script>
 					<eventHandlerList />
 				</Script>
@@ -7144,6 +7147,7 @@ function mmp.addWingsImperian()
       -- clear cache so mmp.getPath accounts for the new way
     end
   end
+  mmp.clearpathcache()
 end
 
 mmp.imperian.wingAbleAreas =
