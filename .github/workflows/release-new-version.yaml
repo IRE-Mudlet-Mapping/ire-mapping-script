@@ -11,7 +11,7 @@ jobs:
     steps:
       - name: check out current master
         uses: actions/checkout@v2
-      - name: check if script was updated
+      - name: check if script was updated and release new version
         run: |
           bash release.sh
         env:
