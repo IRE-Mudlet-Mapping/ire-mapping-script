@@ -10,10 +10,10 @@ jobs:
     name: release
     runs-on: ubuntu-latest
     steps:
-      - name: check out current master
-        uses: actions/checkout@v2
+      - uses: actions/checkout@v2
+      - uses: oleksiyrudenko/gha-git-credentials@v2-latest
+        with:
+          token: '${{ secrets.GITHUB_TOKEN }}'
       - name: check if script was updated and release new version
         run: |
           bash release.sh
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
