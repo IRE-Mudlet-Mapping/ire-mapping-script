@@ -1,11 +1,6 @@
 #!/bin/bash
 
-if [ "$TRAVIS_BRANCH" != "master" ] || [ "$TRAVIS_PULL_REQUEST" != "false" ]; then
-  echo "Not on master, aborting"
-  exit 0
-fi
-
-if [ "$TRAVIS_REPO_SLUG" != "IRE-Mudlet-Mapping/ire-mapping-script" ]; then
+if [ "$GITHUB_REPOSITORY" != "IRE-Mudlet-Mapping/ire-mapping-script" ]; then
   echo "Not on main repo, aborting"
   exit 0
 fi
@@ -27,7 +22,7 @@ fi
 mainDirectory=$(pwd)
 
 cd ..
-git clone --quiet --branch=gh-pages "https://ire-mudlet-mapping-machine-account:${GH_TOKEN}@github.com/IRE-Mudlet-Mapping/ire-mapping-script.git" gh-pages 
+git clone --quiet --branch=gh-pages "https://${GH_TOKEN}@github.com/IRE-Mudlet-Mapping/ire-mapping-script.git" gh-pages
 
 cd gh-pages/downloads || exit 1
 cp "$mainDirectory/mudlet-mapper.xml" .
