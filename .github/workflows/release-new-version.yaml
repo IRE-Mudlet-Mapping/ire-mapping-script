@@ -17,7 +17,6 @@ jobs:
       - name: check out master branch
         uses: actions/checkout@v2
         with:
-          ref: master
           path: master
       - name: check out gh-pages branch (where we release in)
         uses: actions/checkout@v2
