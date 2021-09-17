@@ -1,0 +1,18 @@
+name: "Release new version of the script"
+on:
+  schedule:
+    # Every Tuesday at 3pm (whatever timezone is used?)
+    - cron: 0 15 * * TUE
+
+jobs:
+  release:
+    name: release
+    runs-on: ubuntu-latest
+    steps:
+      - name: check out current master
+        uses: actions/checkout@v2
+      - name: check if script was updated
+        run: |
+          bash release.sh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
