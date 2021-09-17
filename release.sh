@@ -5,27 +5,16 @@ if [ "$GITHUB_REPOSITORY" != "IRE-Mudlet-Mapping/ire-mapping-script" ]; then
   exit 0
 fi
 
-TEMPDIR="${HOME}/tmp/"
-
-mkdir -p "${TEMPDIR}"
-
-wget -O "${TEMPDIR}/mudlet-mapper.xml" http://ire-mudlet-mapping.github.io/ire-mapping-script/downloads/mudlet-mapper.xml
-
-currentScriptSha1=$(grep -v "local newversion = " "${TEMPDIR}/mudlet-mapper.xml" | sha1sum | cut -d " " -f1)
-newScriptSha1=$(grep -v "local newversion = " mudlet-mapper.xml | sha1sum | cut -d " " -f1)
+currentScriptSha1=$(grep -v "local newversion = " "${GITHUB_WORKSPACE}/gh-pages/downloads/mudlet-mapper.xml" | sha1sum | cut -d " " -f1)
+newScriptSha1=$(grep -v "local newversion = " "${GITHUB_WORKSPACE}/master/mudlet-mapper.xml" | sha1sum | cut -d " " -f1)
 
 if [ "${currentScriptSha1}" = "${newScriptSha1}" ]; then
   echo "No change in the script, aborting"
   exit 0
 fi
 
-mainDirectory=$(pwd)
-
-cd ..
-git clone --quiet --branch=gh-pages "https://github.com/IRE-Mudlet-Mapping/ire-mapping-script.git" gh-pages
-
-cd gh-pages/downloads || exit 1
-cp "$mainDirectory/mudlet-mapper.xml" .
+cd "${GITHUB_WORKSPACE}/gh-pages/downloads" || exit 1
+cp "${GITHUB_WORKSPACE}/master/mudlet-mapper.xml" .
 
 datePart=$(date +"%y.%-m")
 lastDatePart=$(grep -o "^[0-9]*\.[0-9]*" version)
