@@ -26,4 +26,5 @@ jobs:
           path: gh-pages
       - name: check if script was updated and release new version
         run: |
-          bash master/release.sh
+          bash release.sh
+        working-directory: "${GITHUB_WORKSPACE}/master"
