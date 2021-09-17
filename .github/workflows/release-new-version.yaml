@@ -19,11 +19,11 @@ jobs:
         with:
           ref: master
           path: master
-      - name: check out gh-pages branhc (where we release in)
+      - name: check out gh-pages branch (where we release in)
         uses: actions/checkout@v2
         with:
           ref: gh-pages
           path: gh-pages
       - name: check if script was updated and release new version
         run: |
-          bash release.sh
+          bash master/release.sh
