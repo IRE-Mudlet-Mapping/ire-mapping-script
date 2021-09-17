@@ -43,4 +43,6 @@ git config user.name "ire-mudlet-mapping-machine-account"
 
 git commit -m"Release new version" .
 
+exit 0
+
 git push --quiet

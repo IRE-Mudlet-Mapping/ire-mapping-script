@@ -1,8 +1,9 @@
 name: "Release new version of the script"
 on:
-  schedule:
-    # Every Tuesday at 3pm (whatever timezone is used?)
-    - cron: 0 15 * * TUE
+  #schedule:
+  #  # Every Tuesday at 3pm (whatever timezone is used?)
+  #  - cron: 0 15 * * TUE
+  push
 
 jobs:
   release:
