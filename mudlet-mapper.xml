@@ -6776,7 +6776,7 @@ local function closestOutdoors(startRoom)
   while getStopWatchTime(stopwatch) &lt; .5 do
     for room, val in pairs(checking) do
       --if these conditions are met, returns a roomid and exits out.
-      --probably doesn't work great on weird planes, as thei
+      --probably doesn't work great on weird planes, as when off plane, the room returned may not work for wings.
       if getRoomUserData(room, "outdoors") == "y" and orbed(room) then
         return room
       end
