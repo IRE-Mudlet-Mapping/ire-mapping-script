@@ -7145,7 +7145,7 @@ function mmp.addWingsLusternia()
         areas = {"Northern Icewynd Mountains", "Southern Icewynd Mountains"},
       },
       {setting = "twist", item = "diobix", room = 18203, areas = {"Mount Dio"}},
-      {setting = "snowglobe", item = "treebix", room = 10992, areas = {"The Great Spirit Tree"}},
+      {setting = "snowglobe", item = "treebix", room = 10992, areas = {"the Great Spirit Tree"}},
       {setting = "periscope", item = "aquabix", room = 36073, areas = {"Aquagoria"}},
       {setting = "pebble", item = "lyraabix", room = 33825, areas = {"Lyraa Ey Rielys"}},
       {setting = "shard", item = "xionbix", room = 12652, areas = {"the Workshop of Xion"}},
