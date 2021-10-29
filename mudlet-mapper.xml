@@ -845,7 +845,7 @@ mmp.locateAndEcho(matches[3], matches[2])</script>
 				<Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
 					<name>Angel/Demon presences</name>
 					<script>disableTrigger("Angel sense")
-
+disableTrigger("Demon sense")
 mmp.pdb_lastupdate = {}</script>
 					<triggerType>0</triggerType>
 					<conditonLineDelta>0</conditonLineDelta>
@@ -890,7 +890,8 @@ mmp.pdb_lastupdate = {}</script>
 					<Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
 						<name>Stop (angel presences)</name>
 						<script>setTriggerStayOpen("Angel/Demon presences", 0)
-enableTrigger("Angel sense")</script>
+enableTrigger("Angel sense")
+enableTrigger("Demon sense")</script>
 						<triggerType>0</triggerType>
 						<conditonLineDelta>0</conditonLineDelta>
 						<mStayOpen>0</mStayOpen>
