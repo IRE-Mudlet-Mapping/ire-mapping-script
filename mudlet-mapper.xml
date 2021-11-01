@@ -10636,6 +10636,7 @@ end</script>
     ["constructed underground"] = 2,
     ["deep ocean"]              = 24,
     ["natural underground"]     = 3,
+    ["constructed underwater"]  = 41,
     aether                      = 36,
     astral                      = 35,
     beach                       = 5,
@@ -10670,6 +10671,8 @@ end</script>
     valley                      = 13,
     volcanic                    = 32,
     wasteland                   = 29,
+    badlands                    = 40,
+    wetlands                    = 31,
   }
 
   mmp.waterenvs = {}
