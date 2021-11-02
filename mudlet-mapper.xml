@@ -10732,21 +10732,22 @@ local mirror =
     ["in"] = "out",
   }
 
-function mmp.astroboots(name, option)
+function mmp.astroboots()
   if mmp.game ~= "lusternia" then
     return
   end
-  mmp.changeBoolFunc(name,option)
+  local option = mmp.settings.astrojump
+  mmp.echo("&lt;green&gt;" .. (option and "Set up" or "Removed") .. " &lt;white&gt;Astrojump &lt;green&gt;exits")
   local exitString = [[script:if gmcp.Room.Info.exits.%s then send("%s", false) else send("astrojump", false) end]]
   for k, v in pairs(astralExits) do
     if option then
-      addSpecialExit(v[1], v[2], string.format(exitString, v[3],v[3]))
-      addSpecialExit(v[2], v[1], string.format(exitString, mirror[v[3]],mirror[v[3]]))
+      addSpecialExit(v[1], v[2], string.format(exitString, v[3], v[3]))
+      addSpecialExit(v[2], v[1], string.format(exitString, mirror[v[3]], mirror[v[3]]))
     else
       removeSpecialExit(v[1], "astrojump")
       removeSpecialExit(v[2], "astrojump")
-      removeSpecialExit(v[1], string.format(exitString, v[3],v[3]))
-      removeSpecialExit(v[2], string.format(exitString, mirror[v[3]],mirror[v[3]]))
+      removeSpecialExit(v[1], string.format(exitString, v[3], v[3]))
+      removeSpecialExit(v[2], string.format(exitString, mirror[v[3]], mirror[v[3]]))
     end
   end
 end
@@ -10978,6 +10979,20 @@ function mmp.lusterniaInBasin()
   return basinAreas[gmcp.Room.Info.area] or false
 end</script>
 						<eventHandlerList />
+					</Script>
+					<Script isActive="yes" isFolder="no">
+						<name>mmp.lusterniaMapUpdated</name>
+						<packageName></packageName>
+						<script>function mmp.lusterniaMapUpdated()
+  if mmp.game == "lusternia" then
+    mmp.lockPathways()
+    mmp.astroboots()
+  end
+end</script>
+						<eventHandlerList>
+							<string>mmapper updated map</string>
+							<string>sysMapDownloadEvent</string>
+						</eventHandlerList>
 					</Script>
 				</Script>
 				<Script isActive="yes" isFolder="no">
