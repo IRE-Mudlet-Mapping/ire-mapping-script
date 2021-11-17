@@ -4171,7 +4171,7 @@ mmp.settings:setOption(matches[3], val)</script>
 				<packageName></packageName>
 				<regex>^area list$</regex>
 			</Alias>
-			<AliasGroup isActive="yes" isFolder="yes">
+			<AliasGroup isActive="no" isFolder="yes">
 				<name>mm Mapping</name>
 				<script></script>
 				<command></command>
@@ -6227,12 +6227,6 @@ end
 -- Aetolia and Lusternia support showing balances in GMCP. This is easy to support, so we do!
 -- if we can't move, setup a polling timer to prompt walking when we can again.
 -- popular systems that expose balance &amp; equilibrium values can be added here as well, perhaps though a similarly-named function.
-
-if mmp.game == "asteria" then
-  function mapper_can_move()
-    return gmcp.Char and gmcp.Char.Balance and gmcp.Char.Balance.balance == 0
-  end
-end
 
 function mmp.canmove(fromtimer)
   if mapper_can_move and mapper_can_move() then
@@ -10237,8 +10231,8 @@ function mmp_mapping_newroom(_, num)
           end
           -- check indoors status
           if mmp.game ~= "asteria" then
-          local indoors = table.contains(gmcp.Room.Info.details, "indoors")
-          if indoors and (getRoomUserData(num, "indoors") == '' or getRoomUserData(num,"outdoors") ~= '') then
+            local indoors = table.contains(gmcp.Room.Info.details, "indoors")
+            if indoors and (getRoomUserData(num, "indoors") == '' or getRoomUserData(num,"outdoors") ~= '') then
             setRoomUserData(num, "indoors", "y")
             clearRoomUserDataItem(num, "outdoors")
             s = s .. (#s &gt; 0 and " " or "") .. "Updated room to be indoors."
@@ -10609,7 +10603,7 @@ end</script>
 						<name>asteria_stop_speedwalk_for_wrong_dir</name>
 						<packageName></packageName>
 						<script>function asteria_stop_speedwalk_for_wrong_dir()
-  if mmp.game and mmp.game ~= "Asteria" then
+  if mmp.game and mmp.game ~= "asteria" then
     return
   end
   if #mmp.speedWalkPath &gt; 0 then
@@ -10663,7 +10657,7 @@ end</script>
   for name, id in pairs(mmp.envids) do
     mmp.envidsr[id] = name
   end
-end
+
 
 mmp.colorcodes = {}
 mmp.colorcodes[20] = {176, 224, 230, 255}
@@ -10697,6 +10691,25 @@ mmp.colorcodes[46] = {30, 144, 255, 255}
 function set_asteria_colorcodes()
   for id, rgba in pairs(mmp.colorcodes) do
     setCustomEnvColor(id, rgba[1], rgba[2], rgba[3], rgba[4])
+  end
+ end
+end</script>
+						<eventHandlerList>
+							<string>mmp logged in</string>
+						</eventHandlerList>
+					</Script>
+					<Script isActive="yes" isFolder="no">
+						<name>asteria_can_move</name>
+						<packageName></packageName>
+						<script>-- Asteria's GMCP butts heads with existing GMCP 'able' checks in the speedwalking script. This works around it.
+
+function asteria_can_move(_, game)
+  if game ~= "Asteria" then
+    return
+  end
+
+  function mapper_can_move()
+    return gmcp.Char and gmcp.Char.Balance and gmcp.Char.Balance.balance == 0
   end
 end</script>
 						<eventHandlerList>
