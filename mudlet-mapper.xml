@@ -11938,7 +11938,7 @@ function mmp.downloadcrowdmap(newversion)
     downloadFile(mmp.crowdmapfile, "http://ire-mudlet-mapping.github.io/StarmournCrowdmap/Map/map")
   elseif mmp.game == "lusternia" then
     downloadFile(mmp.crowdmapfile, "http://ire-mudlet-mapping.github.io/LusterniaCrowdmap/Map/map")
-  elseif mmp.game == "Imperian" then
+  elseif mmp.game == "imperian" then
     downloadFile(mmp.crowdmapfile, "http://ire-mudlet-mapping.github.io/ImperianCrowdmap/Map/map")
   elseif mmp.game == "asteria" then
     downloadFile(mmp.crowdmapfile, "http://asteria-ui.github.io/AsteriaCrowdmap/Map/map")
