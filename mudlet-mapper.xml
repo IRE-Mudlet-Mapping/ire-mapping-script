@@ -1606,9 +1606,11 @@ end</script>
 						<integer>1</integer>
 					</regexCodePropertyList>
 				</Trigger>
-				<Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="yes" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+				<Trigger isActive="no" isFolder="no" isTempTrigger="no" isMultiline="yes" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
 					<name>City has orb of confinement</name>
-					<script>local orbTable = mmp.getAchaeaOrbTable()
+					<script> -- disabled since the orb is now an rng chance and not a 100% blocker
+
+local orbTable = mmp.getAchaeaOrbTable()
 local areaID = getRoomArea(mmp.currentroom) or 0
 if areaID == 0 or mmp.game ~= "achaea" then
   return
