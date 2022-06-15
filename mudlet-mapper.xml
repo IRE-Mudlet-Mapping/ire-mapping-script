@@ -5788,7 +5788,7 @@ function mmp.startup()
   private_settings["twist"] = createOption(false, mmp.changeBoolFunc, {"boolean"}, "Make use of your Mt. Dio Bix?", nil, {lusternia = true})
   private_settings["figurine"] = createOption(false, mmp.changeBoolFunc, {"boolean"}, "Make use of your Icewynd Bix?", nil, {lusternia = true})
   private_settings["periscope"] = createOption(false, mmp.changeBoolFunc, {"boolean"}, "Make use of your Aquagoria Bix?", nil, {lusternia = true})
-  private_settings["pebble"] = createOption(false, mmp.changeBoolFunc, {"boolean"}, "Make use of your Lyraa Bix?", nil, {lusternia = true})
+  private_settings["lyraa"] = createOption(false, mmp.changeBoolFunc, {"boolean"}, "Make use of your Lyraa Bix?", nil, {lusternia = true})
   private_settings["shard"] = createOption(false, mmp.changeBoolFunc, {"boolean"}, "Make use of your Xion Bix?", nil, {lusternia = true})
   private_settings["tibia"] = createOption(false, mmp.changeBoolFunc, {"boolean"}, "Make use of your Cankermore Bix?", nil, {lusternia = true})
   private_settings["mud"] = createOption(false, mmp.changeBoolFunc, {"boolean"}, "Make use of your Mucklemarsh Bix?", nil, {lusternia = true})
@@ -10509,7 +10509,7 @@ function mmp.orbed(roomID)
   --first table is the areas in the city for the crowdmap, second is for the game provided map.
   local areaID = getRoomArea(roomID or mmp.currentroom)
   for city, areaTable in pairs(orbTable) do
-    if table.contains(areaTable, areaID) then
+    if table.index_of(areaTable, areaID) then
       return mmp.settings["orb" .. city]
     end
   end
