@@ -5688,11 +5688,12 @@ mmp =
     ferry_rooms = {},
   }
 mmp.speedWalkWatch = createStopWatch()
--- populated by Mudlet from getPath() and gotoRoom()
+-- speedWalkPath and speedWalkDir populated by Mudlet from getPath() and gotoRoom()
 speedWalkPath = speedWalkPath or {}
 speedWalkDir = speedWalkDir or {}
-mmp.speedWalkCounter = 0
+
 -- actually used by the mapper for walking
+mmp.speedWalkCounter = 0
 mmp.speedWalk = mmp.speedWalk or {}
 mmp.speedWalkPath = mmp.speedWalkPath or {}
 mmp.speedWalkDir = mmp.speedWalkDir or {}
