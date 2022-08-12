@@ -11603,7 +11603,7 @@ end</script>
     if f then changelog = f:read("*a"); io.close(f) end
 
     mmp.echon("")
-    echoLink("The mapper script was updated! Would you like to download the update? Click here if so.", "mmp.downloadmapperscript()", "Changelog for the latest ("..tostring(mmp.version).." -&gt; "..tostring(mmp.newmapperversion)..") update:\n"..changelog, true)
+    echoLink("The mapper script was updated! Would you like to install the update? Click here if so.", "mmp.downloadmapperscript()", "Changelog for the latest ("..tostring(mmp.version).." -&gt; "..tostring(mmp.newmapperversion)..") update:\n"..changelog, true)
 
   elseif filename == mmp.crowdchangelogfile then   -- changelog for the crowdmap
     local f, s = io.open(filename)
@@ -11715,10 +11715,8 @@ end</script>
     end
 
   elseif filename == tostring(mmp.downloadedscript) then   -- new mapper script xml downloaded
-	mmp.checkingupdates = false
-
-    mmp.echo("Your mapper script was downloaded to '"..filename.."' - uninstall the current copy and install the new one now!")
-
+	  mmp.checkingupdates = false
+    mmp.installMapperScript()
   elseif filename == tostring(mmp.mapfile) then   -- map version #, either IRE's or crowd
 	mmp.checkingupdates = false
 
@@ -11726,7 +11724,7 @@ end</script>
       if not mmp.settings.crowdmap then
         mmp.echon("The games map was ")
         echoLink("updated", '', "New MD5: "..tostring(currentmd5)..", previous MD5: "..(oldmd5 or "(none)"), true)
-        echo(" - you should update yours! Go to Settings -&gt; Mapper tab and click on the button there. Once you've updated, ")
+        echo(" - you should update yours! Go to Settings -&gt; Mapper tab and click on the 'Download' button there. Once you've updated, ")
         echoLink("click here", "mmp.updatedmap('"..currentmd5.."')", "Click here to quiet the update reminder")
         echo(" to remove the reminder.")
       else
@@ -11764,7 +11762,7 @@ end</script>
 					<name>Check for updates</name>
 					<packageName></packageName>
 					<script>local downloadfolder = getMudletHomeDir() .. "/map downloads/"
-local whereisit
+
 -- this should get called at start and every hour after that
 
 function mmp.checkforupdate()
@@ -11898,30 +11896,16 @@ end
 -- downloads the public crowdsources map!
 
 function mmp.downloadmapperscript()
-  local downloadlocationfile = downloadfolder .. "savepath"
-  local downloadlocation
+	
+  local file = getMudletHomeDir().."/map downloads/mudlet-mapper.xml"
+  
   local exists = lfs.attributes
-  -- somewhat complicated thing to nicely deal with all scenarios.
-  if not exists(downloadlocationfile) then
-    downloadlocation = whereisit()
-    if not downloadlocation then
-      return
-    end
+  
+  if io.exists(file) then
+    local s,m = os.remove(file)
+	if not s then mmp.echo("Couldn't delete the old xml (located at %s), because of: %s. This might be a problem.", file, m) end
   end
-  if not downloadlocation then
-    local f, s = io.open(downloadlocationfile)
-    if f then
-      downloadlocation = f:read("*a");
-      io.close(f)
-    end
-    if not exists(downloadlocation) then
-      downloadlocation = whereisit()
-      if not downloadlocation or not exists(downloadlocation) then
-        return
-      end
-    end
-  end
-  mmp.downloadedscript = downloadlocation .. "/mudlet-mapper.xml"
+  mmp.downloadedscript = file
   downloadFile(
     mmp.downloadedscript,
     "http://ire-mudlet-mapping.github.io/ire-mapping-script/downloads/mudlet-mapper.xml"
@@ -11972,16 +11956,12 @@ function mmp.showcrowdchangelog()
   end
 end
 
-whereisit =
-  function()
-    local path =
-      invokeFileDialog(false, "Where should we save the file? Select a folder and click Open")
-    if path == "" then
-      return nil
-    else
-      return path
-    end
-  end</script>
+function mmp.installMapperScript()
+  uninstallPackage("mudlet-mapper")
+  installPackage(mmp.downloadedscript)		
+end
+
+</script>
 					<eventHandlerList />
 					<Script isActive="yes" isFolder="no">
 						<name>mmp_checkupdatestart</name>
@@ -12286,7 +12266,7 @@ end</script>
 		</ScriptGroup>
 	</ScriptPackage>
 	<KeyPackage />
-	<HelpPackage>
-		<helpURL></helpURL>
-	</HelpPackage>
+	<VariablePackage>
+		<HiddenVariables />
+	</VariablePackage>
 </MudletPackage>
