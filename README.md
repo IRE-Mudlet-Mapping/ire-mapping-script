@@ -1,6 +1,6 @@
 # IRE Mapping Script
 
-This script allows [Mudlet's](http://www.mudlet.org) mapper to do autowalking on Achaea, Aetolia, Lusternia, Imperian, or Starmourn. See the [download section](http://wiki.mudlet.org/w/IRE_mapping_script#Download) to get started!
+This script allows [Mudlet's](http://www.mudlet.org) mapper to do autowalking on Achaea, Aetolia, Lusternia, Imperian, Starmourn or StickMUD. See the [download section](http://wiki.mudlet.org/w/IRE_mapping_script#Download) to get started!
 
 It has many features such as:
 - automatic repathing if you get offcourse
@@ -9,8 +9,10 @@ It has many features such as:
 - mapping
 - scriptable exits
 
-The script is written and maintained by Vadi, with Qwindor doing the notable mapping in Achaea.
+The script is originally written by Vadi and includes contributions from Kard, Keneanung, Patrick, Qwindor, Wyd and others! Would you like to add something? Submit a PR!
 
-To contact Qwindor about adjustments that need to be made to the Achaean crowdmap you can contact him in game or on skype at "qwindor.rousseau". Please include room numbers if possible to make it easier and faster for the corrections to be made.
+Are you a game admin and would like to add another game to the script? [See here](https://wiki.mudlet.org/w/Adding_your_mud_to_the_IRE_mapping_script).
 
-The script is open-source and includes contributions from Kard, Keneanung, Patrick, Qwindor, Wyd and others! Would you like to add something? Submit a PR!
+Notable mappers:
+- Qwindor (Achaea)
+- you?
