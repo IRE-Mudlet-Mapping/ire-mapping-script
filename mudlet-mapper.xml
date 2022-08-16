@@ -5705,7 +5705,7 @@ mmp.lagtable =
     [4] = {description = "Bad. Terrible. Terribad.", time = 5},
     [5] = {description = "Carrier Pigeon", time = 10},
   }
-local newversion = "developer"
+local newversion = "22.8.1"
 if mmp.version and mmp.version ~= newversion then
   if not mmp.game then
     mmp.echo("Mapper script updated - Thanks! I don't know what game are you connected to, though - so please reconnect, if you could.")
@@ -5900,7 +5900,7 @@ end</script>
     raiseEvent("mmp clear externals")
     return
   end
-  doSpeedWalk(dashtype)
+  mmp.doSpeedWalk(dashtype)
   -- allow mapper 'addons' to unlink their special exits
   raiseEvent("mmp clear externals")
 end
@@ -6401,7 +6401,7 @@ function mmp.speedwalking(event, num)
   end
 end
 
-function doSpeedWalk(dashtype)
+function mmp.doSpeedWalk(dashtype)
   mmp.speedWalkDir = mmp.deepcopy(speedWalkDir)
   mmp.speedWalkPath = mmp.deepcopy(speedWalkPath)
   speedWalkDir, speedWalkPath = {}, {}
@@ -10292,7 +10292,7 @@ end</script>
 		locked_areas = mmp.locked,
 		options = mmp.settings:getAllOptions()
 	}
-
+  local _sep
 	if string.char(getMudletHomeDir():byte()) == "/" then _sep = "/" else  _sep = "\\" end
 	local saveFile = getMudletHomeDir() ..  _sep .. "mapper.options.lua"
 
@@ -10317,7 +10317,7 @@ end
 
 function mmp.loadLocks()
 	local loadTable = {}
-
+  local _sep
 	if string.char(getMudletHomeDir():byte()) == "/" then _sep = "/" else  _sep = "\\" end
 	local loadFile = getMudletHomeDir() ..  _sep .. "mapper.options.lua"
 
