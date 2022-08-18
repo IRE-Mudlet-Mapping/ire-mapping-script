@@ -5900,7 +5900,7 @@ end</script>
     raiseEvent("mmp clear externals")
     return
   end
-  mmp.doSpeedWalk(dashtype)
+  doSpeedWalk(dashtype)
   -- allow mapper 'addons' to unlink their special exits
   raiseEvent("mmp clear externals")
 end
@@ -6401,7 +6401,8 @@ function mmp.speedwalking(event, num)
   end
 end
 
-function mmp.doSpeedWalk(dashtype)
+-- doSpeedWalk is used by the mudlet mapping script and should not be changed
+function doSpeedWalk(dashtype)
   mmp.speedWalkDir = mmp.deepcopy(speedWalkDir)
   mmp.speedWalkPath = mmp.deepcopy(speedWalkPath)
   speedWalkDir, speedWalkPath = {}, {}
