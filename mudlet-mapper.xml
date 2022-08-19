@@ -6401,6 +6401,7 @@ function mmp.speedwalking(event, num)
   end
 end
 
+-- doSpeedWalk is used by the mudlet mapping script and should not be changed
 function doSpeedWalk(dashtype)
   mmp.speedWalkDir = mmp.deepcopy(speedWalkDir)
   mmp.speedWalkPath = mmp.deepcopy(speedWalkPath)
@@ -10292,7 +10293,7 @@ end</script>
 		locked_areas = mmp.locked,
 		options = mmp.settings:getAllOptions()
 	}
-
+  local _sep
 	if string.char(getMudletHomeDir():byte()) == "/" then _sep = "/" else  _sep = "\\" end
 	local saveFile = getMudletHomeDir() ..  _sep .. "mapper.options.lua"
 
@@ -10317,7 +10318,7 @@ end
 
 function mmp.loadLocks()
 	local loadTable = {}
-
+  local _sep
 	if string.char(getMudletHomeDir():byte()) == "/" then _sep = "/" else  _sep = "\\" end
 	local loadFile = getMudletHomeDir() ..  _sep .. "mapper.options.lua"
 
