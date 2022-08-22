@@ -9701,7 +9701,7 @@ end</script>
 					<name>Fix setExit</name>
 					<packageName></packageName>
 					<script>do
-local oldsetExit = mmp.setExit
+local oldsetExit = setExit
 
 local exitmap = {
   n = 1,
@@ -9740,8 +9740,8 @@ end</script>
 					<name>Fix exit locking funcs</name>
 					<packageName></packageName>
 					<script>do
-local oldlockExit = mmp.lockExit
-local oldhasExitLock = mmp.hasExitLock
+local oldlockExit = lockExit
+local oldhasExitLock = hasExitLock
 
 local exitmap = {
   n = 1,
