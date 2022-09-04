@@ -11501,7 +11501,7 @@ end</script>
 						<name>mmp.stickmudStopSpeedwalkForWrongDir</name>
 						<packageName></packageName>
 						<script>function mmp.stickmudStopSpeedwalkForWrongDir()
-  if mmp.game and mmp.game ~= "StickMUD" then
+  if mmp.game and mmp.game ~= "stickmud" then
     return
   end
   if #mmp.speedWalkPath &gt; 0 then
