@@ -1771,6 +1771,91 @@ mmp.game = "aetolia"</script>
 						<integer>3</integer>
 					</regexCodePropertyList>
 				</Trigger>
+				<Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+					<name>Aetolia Survey</name>
+					<script></script>
+					<triggerType>0</triggerType>
+					<conditonLineDelta>0</conditonLineDelta>
+					<mStayOpen>5</mStayOpen>
+					<mCommand></mCommand>
+					<packageName></packageName>
+					<mFgColor>#ff0000</mFgColor>
+					<mBgColor>#ffff00</mBgColor>
+					<mSoundFile></mSoundFile>
+					<colorTriggerFgColor>#000000</colorTriggerFgColor>
+					<colorTriggerBgColor>#000000</colorTriggerBgColor>
+					<regexCodeList>
+						<string>You discern that you are standing in </string>
+						<string>You stand, brilliantly illuminated, within</string>
+						<string>You are standing </string>
+					</regexCodeList>
+					<regexCodePropertyList>
+						<integer>2</integer>
+						<integer>2</integer>
+						<integer>2</integer>
+					</regexCodePropertyList>
+					<Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+						<name>Grab continent</name>
+						<script>mmp.aetoliaContinent = matches[2]</script>
+						<triggerType>0</triggerType>
+						<conditonLineDelta>0</conditonLineDelta>
+						<mStayOpen>0</mStayOpen>
+						<mCommand></mCommand>
+						<packageName></packageName>
+						<mFgColor>#ff0000</mFgColor>
+						<mBgColor>#ffff00</mBgColor>
+						<mSoundFile></mSoundFile>
+						<colorTriggerFgColor>#000000</colorTriggerFgColor>
+						<colorTriggerBgColor>#000000</colorTriggerBgColor>
+						<regexCodeList>
+							<string>^You stand upon (.+?)(\.|,)</string>
+						</regexCodeList>
+						<regexCodePropertyList>
+							<integer>1</integer>
+						</regexCodePropertyList>
+					</Trigger>
+					<Trigger isActive="no" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+						<name>Aetolia Gag Survey</name>
+						<script>deleteLine()</script>
+						<triggerType>0</triggerType>
+						<conditonLineDelta>0</conditonLineDelta>
+						<mStayOpen>0</mStayOpen>
+						<mCommand></mCommand>
+						<packageName></packageName>
+						<mFgColor>#ff0000</mFgColor>
+						<mBgColor>#ffff00</mBgColor>
+						<mSoundFile></mSoundFile>
+						<colorTriggerFgColor>#000000</colorTriggerFgColor>
+						<colorTriggerBgColor>#000000</colorTriggerBgColor>
+						<regexCodeList>
+							<string>return true</string>
+						</regexCodeList>
+						<regexCodePropertyList>
+							<integer>4</integer>
+						</regexCodePropertyList>
+					</Trigger>
+					<Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+						<name>Close Aetolia Survey</name>
+						<script>setTriggerStayOpen("Aetolia Survey",0)
+disableTrigger("Aetolia Gag Survey")</script>
+						<triggerType>0</triggerType>
+						<conditonLineDelta>0</conditonLineDelta>
+						<mStayOpen>0</mStayOpen>
+						<mCommand></mCommand>
+						<packageName></packageName>
+						<mFgColor>#ff0000</mFgColor>
+						<mBgColor>#ffff00</mBgColor>
+						<mSoundFile></mSoundFile>
+						<colorTriggerFgColor>#000000</colorTriggerFgColor>
+						<colorTriggerBgColor>#000000</colorTriggerBgColor>
+						<regexCodeList>
+							<string></string>
+						</regexCodeList>
+						<regexCodePropertyList>
+							<integer>7</integer>
+						</regexCodePropertyList>
+					</Trigger>
+				</Trigger>
 			</TriggerGroup>
 			<TriggerGroup isActive="yes" isFolder="yes" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
 				<name>Asteria</name>
@@ -3870,10 +3955,12 @@ mmp.echo("We're connected to StickMUD.")</script>
 					<regexCodeList>
 						<string>The door is locked.</string>
 						<string>The (?:walnut|pine|oak|iron|reinforced) door is locked\.</string>
+						<string>The door is locked shut.</string>
 					</regexCodeList>
 					<regexCodePropertyList>
 						<integer>3</integer>
 						<integer>1</integer>
+						<integer>3</integer>
 					</regexCodePropertyList>
 				</Trigger>
 				<Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
@@ -3895,6 +3982,7 @@ mmp.echo("We're connected to StickMUD.")</script>
 						<string>A closed door is in the way. You need to OPEN DOOR</string>
 						<string>There is an? (?:walnut|pine|oak|iron|reinforced) door in the way.</string>
 						<string>The door to the (\w+) is closed.</string>
+						<string>There is a closed door in the way.</string>
 					</regexCodeList>
 					<regexCodePropertyList>
 						<integer>2</integer>
@@ -3902,6 +3990,7 @@ mmp.echo("We're connected to StickMUD.")</script>
 						<integer>2</integer>
 						<integer>1</integer>
 						<integer>1</integer>
+						<integer>3</integer>
 					</regexCodePropertyList>
 				</Trigger>
 			</TriggerGroup>
@@ -5752,14 +5841,18 @@ function mmp.startup()
   private_settings["removewings"] = mmp.createOption(true, mmp.setWingsRemoval, {"boolean"}, "Remove Wings after using them?", nil, {achaea = true, imperian = true})
   private_settings["harness"] = mmp.createOption(false, mmp.setHarness, {"boolean"}, "Use Stratospheric Harness?", nil, {achaea = true})
   private_settings["duantahar"] = mmp.createOption(false, mmp.changeBoolFunc, {"boolean"}, "Use Chenubian Wings?", nil, {achaea = true})
-  private_settings["duanatharan"] = mmp.createOption(false, mmp.changeBoolFunc, {"boolean"}, "Use Atavian Wings?", nil, {achaea = true})
-  private_settings["duanathar"] = mmp.createOption(false, mmp.changeBoolFunc, {"boolean"}, "Use Eagle Wings?", nil, {achaea = true})
+  private_settings["duanatharan"] = mmp.createOption(false, mmp.changeBoolFunc, {"boolean"}, "Use Atavian Wings?", nil, {achaea = true, aetolia = true})
+  private_settings["duanathar"] = mmp.createOption(false, mmp.changeBoolFunc, {"boolean"}, "Use Eagle Wings?", nil, {achaea = true, aetolia = true})
   private_settings["duanatharic"] = mmp.createOption(false, mmp.changeBoolFunc, {"boolean"}, "Use Island Wings?", nil, {achaea = true})
   private_settings["soar"] = mmp.createOption(false, mmp.changeBoolFunc, {"boolean"}, "Use Aero Soar?", nil, {achaea = true})
   private_settings["shackle"] = mmp.createOption(false, mmp.changeBoolFunc, {"boolean"}, "Take off shackle?", nil, {achaea = true})
   private_settings["universe"] = mmp.createOption(false, mmp.changeBoolFunc, {"boolean"}, "Use Universe Tarot?", nil, {achaea = true})
   private_settings["gare"] = mmp.createOption(false, mmp.changeBoolFunc, {"boolean"}, "Use Gare?", nil, {achaea = true})
 
+  --aet wings and things
+  private_settings["voltda"] = mmp.createOption(false, mmp.changeBoolFunc, {"boolean"}, "Use dark amulet?", nil, {aetolia = true})
+  private_settings["voltdaran"] = mmp.createOption(false, mmp.changeBoolFunc, {"boolean"}, "Use midnight amulet?", nil, {aetolia = true})
+  
   --Wings pathfinding improvements
 
   private_settings["betterwings"] = mmp.createOption(false, mmp.changeBoolFunc, {"boolean"}, "Use Better Wings pathfinding?", nil, {achaea = true})
@@ -7686,6 +7779,45 @@ mmp.imperian.wingAbleAreas =
     309,
     126,
   }</script>
+					<eventHandlerList />
+				</Script>
+				<Script isActive="yes" isFolder="no">
+					<name>Aetolia</name>
+					<packageName></packageName>
+					<script>registerAnonymousEventHandler("mmp link externals", "mmp.addWingsAetolia")
+
+
+
+function mmp.addWingsAetolia()
+  if mmp.game ~= "aetolia" then return end
+  
+  if mmp.aetoliaContinent == "the Continent of Sapience" and
+  --health check
+  tonumber(gmcp.Char.Vitals.hp)/tonumber(gmcp.Char.Vitals.maxhp)&gt;.95 and 
+  --mana check
+  tonumber(gmcp.Char.Vitals.mp)/tonumber(gmcp.Char.Vitals.maxmp)&gt;.95 then
+  
+      --eagle wings
+      if mmp.settings.duanathar or mmp.settings.duanatharan then
+        mmp.tempSpecialExit(3885, "say duanathar")
+      end
+      --atavian wings
+      if mmp.settings.duanatharan then
+        mmp.tempSpecialExit(4882, "say duanatharan")
+      end
+      
+      if mmp.settings.voltda or mmp.settings.voltdaran then
+        mmp.tempSpecialExit(19911,"say voltda")
+      end
+      
+      if mmp.settings.voltdaran then
+        mmp.tempSpecialExit(19912,"say voltdaran")
+      end
+      
+      
+  
+  end
+end</script>
 					<eventHandlerList />
 				</Script>
 			</ScriptGroup>
@@ -10597,6 +10729,24 @@ end</script>
 							<string>mmp logged in</string>
 						</eventHandlerList>
 					</Script>
+					<Script isActive="yes" isFolder="no">
+						<name>mmp.aetContinentCheck</name>
+						<packageName></packageName>
+						<script>local oldArea = oldArea or ""
+function mmp.aetContinentCheck()
+  if mmp.game ~= "aetolia" then return end
+  
+  if oldArea ~= gmcp.Room.Info.area then
+     oldArea = gmcp.Room.Info.area
+     enableTrigger("Aetolia Gag Survey")
+    send("survey",false)
+    tempTimer(5,function() disableTrigger("Aetolia Gag Survey") end)
+  end
+end</script>
+						<eventHandlerList>
+							<string>gmcp.Room.Info</string>
+						</eventHandlerList>
+					</Script>
 				</Script>
 				<Script isActive="yes" isFolder="no">
 					<name>Asteria</name>
@@ -12268,7 +12418,7 @@ end</script>
 		</ScriptGroup>
 	</ScriptPackage>
 	<KeyPackage />
-	<VariablePackage>
-		<HiddenVariables />
-	</VariablePackage>
+	<HelpPackage>
+		<helpURL></helpURL>
+	</HelpPackage>
 </MudletPackage>
