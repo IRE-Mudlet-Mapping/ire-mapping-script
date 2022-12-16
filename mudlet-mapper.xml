@@ -3947,6 +3947,7 @@ mmp.echo("We're connected to StickMUD.")</script>
 						<string>The door beeps quietly. It appears to be locked.</string>
 						<string>This (?:walnut|pine|oak|iron|reinforced) door has been magically locked shut\.</string>
 						<string>You are not carrying a key for this (?:walnut|pine|oak|iron|reinforced) door\.</string>
+						<string>The door has been magically locked shut.</string>
 					</regexCodeList>
 					<regexCodePropertyList>
 						<integer>3</integer>
@@ -3957,6 +3958,7 @@ mmp.echo("We're connected to StickMUD.")</script>
 						<integer>3</integer>
 						<integer>1</integer>
 						<integer>1</integer>
+						<integer>3</integer>
 					</regexCodePropertyList>
 				</Trigger>
 				<Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
