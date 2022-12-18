@@ -1776,7 +1776,7 @@ mmp.game = "aetolia"</script>
 					<script></script>
 					<triggerType>0</triggerType>
 					<conditonLineDelta>0</conditonLineDelta>
-					<mStayOpen>5</mStayOpen>
+					<mStayOpen>10</mStayOpen>
 					<mCommand></mCommand>
 					<packageName></packageName>
 					<mFgColor>#ff0000</mFgColor>
