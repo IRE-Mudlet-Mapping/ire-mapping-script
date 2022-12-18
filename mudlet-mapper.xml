@@ -10760,8 +10760,8 @@ function mmp.aetContinentCheck()
   if mmp.game ~= "aetolia" then return end
   
   if oldArea ~= gmcp.Room.Info.area then
-     oldArea = gmcp.Room.Info.area
-     enableTrigger("Aetolia Gag Survey")
+    oldArea = gmcp.Room.Info.area
+    enableTrigger("Aetolia Gag Survey")
     send("survey",false)
     tempTimer(5,function() disableTrigger("Aetolia Gag Survey") end)
   end
