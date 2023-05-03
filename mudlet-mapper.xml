@@ -6259,7 +6259,7 @@ function mmp.showpathcache()
   return getpathcache
 end
 
-function mmp.setmovetimer(time)
+function mmp.setmovetimer(time, ignoreLatency)
   if mmp.movetimer then
     killTimer(mmp.movetimer)
   end
@@ -6268,9 +6268,10 @@ function mmp.setmovetimer(time)
   end
   local laglevel = mmp.settings.laglevel or 1
   time = time or mmp.lagtable[laglevel].time
+  local latency = ignoreLatency and 0 or getNetworkLatency()
   mmp.movetimer =
     tempTimer(
-      getNetworkLatency() + time,
+      latency + time,
       function()
         mmp.movetimer = false
         mmp.move()
@@ -6698,7 +6699,7 @@ function doSpeedWalk(dashtype)
     mmp.speedWalkCounter = 1
     if mmp.canmove() then
       mmp.hasty = true
-      mmp.setmovetimer(0.1)
+      mmp.setmovetimer(0.1, true)
     else
       echo("(when we get balance back / aren't hindered)")
     end
