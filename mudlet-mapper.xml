@@ -6269,10 +6269,16 @@ function mmp.setmovetimer(time, ignoreLatency)
   local laglevel = mmp.settings.laglevel or 1
   time = time or mmp.lagtable[laglevel].time
   local latency = ignoreLatency and 0 or getNetworkLatency()
+  if mmp.debug then
+    mmp.echo(f'setting timer according to time {time} and latency {latency}')
+  end
   mmp.movetimer =
     tempTimer(
       latency + time,
       function()
+        if mmp.debug then
+          mmp.echo('move timer fired')
+        end
         mmp.movetimer = false
         mmp.move()
       end
