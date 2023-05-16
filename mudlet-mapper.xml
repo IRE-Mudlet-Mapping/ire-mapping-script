@@ -10240,7 +10240,14 @@ end
 					<packageName></packageName>
 					<script>function mmp.centerRoominfo()
   -- lusternia has gmcp.Room.Players before gmcp.Room.Info is created
-  if gmcp.Room.Info then centerview(gmcp.Room.Info.num) end
+  if gmcp.Room.Info then
+    if gmcp.Room.Info.num then
+      centerview(gmcp.Room.Info.num)
+    elseif gmcp.Room.Info.roomhash then
+    print(tostring(mmp.roomidFromHash(gmcp.Room.Info.roomhash)))
+      centerview(mmp.roomidFromHash(gmcp.Room.Info.roomhash))
+    end
+  end
 end</script>
 					<eventHandlerList>
 						<string>gmcp.Room</string>
@@ -10348,13 +10355,15 @@ local function getshiftedcoords(original, ox, oy, oz)
 end
 
 -- returns (and creates if needed) a room ID for a given hash
-function mmp.obtainHash(hash)
+function mmp.roomidFromHash(hash)
   local id = getRoomIDbyHash(hash)
   if id == -1 then 
     id = createRoomID()
     addRoom(id)
     setRoomIDbyHash(id, hash)
   end
+  
+  return id
 end
 
 function mmp.mappingNewroom(_, num)
@@ -10380,7 +10389,7 @@ function mmp.mappingNewroom(_, num)
           getRoomName, getRoomCoordinates, getRoomsByPosition
         local num = tonumber(num) or tonumber(gmcp.Room.Info.num)
         if not num and gmcp.Room.Info.roomhash then
-          num = mmp.obtainHash(gmcp.Room.Info.roomhash)
+          num = mmp.roomidFromHash(gmcp.Room.Info.roomhash)
         end
         local currentexits = gmcp.Room.Info.exits
         local s = ""
@@ -10392,7 +10401,7 @@ function mmp.mappingNewroom(_, num)
               if gmcp.Room.Info.roomhash then
                 -- in a hash-based game, the 'id' is actually a hash, not an id
                 -- turn it into a proper id:
-                id = mmp.obtainHash(id)
+                id = mmp.roomidFromHash(id)
               end
               
               if mmp.roomexists(id) then
@@ -10420,6 +10429,12 @@ function mmp.mappingNewroom(_, num)
             local x = getRoomExits(num) or {}
             -- check for missing exits
             for exit, id in pairs(currentexits) do
+              if gmcp.Room.Info.roomhash then
+                -- in a hash-based game, the 'id' is actually a hash, not an id
+                -- turn it into a proper id:
+                id = mmp.roomidFromHash(id)
+              end
+              
               if id == 0 then
                 s =
                   s ..
