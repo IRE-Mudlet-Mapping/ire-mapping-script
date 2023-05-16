@@ -2005,6 +2005,43 @@ raiseEvent("mmapper updated pdb")</script>
 				</Trigger>
 			</TriggerGroup>
 			<TriggerGroup isActive="yes" isFolder="yes" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+				<name>Astaria</name>
+				<script></script>
+				<triggerType>0</triggerType>
+				<conditonLineDelta>0</conditonLineDelta>
+				<mStayOpen>0</mStayOpen>
+				<mCommand></mCommand>
+				<packageName></packageName>
+				<mFgColor>#ff0000</mFgColor>
+				<mBgColor>#ffff00</mBgColor>
+				<mSoundFile></mSoundFile>
+				<colorTriggerFgColor>#000000</colorTriggerFgColor>
+				<colorTriggerBgColor>#000000</colorTriggerBgColor>
+				<regexCodeList />
+				<regexCodePropertyList />
+				<Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+					<name>Login</name>
+					<script>raiseEvent("mmp logged in", "Astaria")
+mmp.game = "astaria"</script>
+					<triggerType>0</triggerType>
+					<conditonLineDelta>0</conditonLineDelta>
+					<mStayOpen>0</mStayOpen>
+					<mCommand></mCommand>
+					<packageName></packageName>
+					<mFgColor>#ff0000</mFgColor>
+					<mBgColor>#ffff00</mBgColor>
+					<mSoundFile></mSoundFile>
+					<colorTriggerFgColor>#000000</colorTriggerFgColor>
+					<colorTriggerBgColor>#000000</colorTriggerBgColor>
+					<regexCodeList>
+						<string>                         The Kingdom of Astaria</string>
+					</regexCodeList>
+					<regexCodePropertyList>
+						<integer>3</integer>
+					</regexCodePropertyList>
+				</Trigger>
+			</TriggerGroup>
+			<TriggerGroup isActive="yes" isFolder="yes" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
 				<name>Asteria</name>
 				<script></script>
 				<triggerType>0</triggerType>
@@ -10604,7 +10641,6 @@ function mmp.mappingNewroom(_, num)
         end
         if #s &gt; 0 then
           mmp.echo(s)
-          mmp.debug(tostring(mmp.currentroom))
           centerview(mmp.currentroom)
         end
       end,
@@ -11871,6 +11907,104 @@ end</script>
 end</script>
 						<eventHandlerList>
 							<string>gmcp.Room.WrongDir</string>
+						</eventHandlerList>
+					</Script>
+				</Script>
+				<Script isActive="yes" isFolder="no">
+					<name>Astaria</name>
+					<packageName></packageName>
+					<script></script>
+					<eventHandlerList />
+					<Script isActive="yes" isFolder="no">
+						<name>mmp.registerAstariasEnvData</name>
+						<packageName></packageName>
+						<script>function mmp.registerAstariasEnvData(_, game)
+  if game ~= "Astaria" then return end
+  mmp.envids =
+  {
+    ["field"]                   = 3,
+    -- old ones below
+    ["a sheltered dell"]        = 68,
+    ["Arcane Temple"]           = 66,
+    ["Blackened Lands"]         = 58,
+    ["Blackstone Dungeon"]      = 65,
+    ["Blackstone Keep"]         = 62,
+    ["Constructed underground"] = 2,
+    ["Dark Forest"]             = 1,
+    ["Deep Ocean"]              = 24,
+    ["Desert Ruins"]            = 38,
+    ["Dwarven city"]            = 18,
+    ["Forestal Council"]        = 44,
+    ["Frozen Bog"]              = 76,
+    ["Lake of Fire"]            = 56,
+    ["Natural underground"]     = 3,
+    ["Noble Bar"]               = 53,
+    ["Noble Chambers"]          = 51,
+    ["Rocky Shore"]             = 77,
+    ["Sylayan city"]            = 19,
+    ["Tainted Underground"]     = 35,
+    ["Tainted Water"]           = 39,
+    ["Underground Lake"]        = 36,
+    ["Vast Ocean"]              = 26,
+    ["Wetlands Village"]        = 64,
+    ["within a tent"]           = 69,
+    Academia                    = 42,
+    Acropolis                   = 33,
+    Beach                       = 5,
+    Blighted                    = 74,
+    bog                         = 73,
+    Catacombs                   = 63,
+    Church                      = 54,
+    Cliffs                      = 67,
+    Crags                       = 32,
+    Desert                      = 6,
+    Docks                       = 30,
+    Farmland                    = 41,
+    Forest                      = 4,
+    Freshwater                  = 22,
+    Garden                      = 21,
+    garrison                    = 71,
+    Grasslands                  = 7,
+    Graveyard                   = 46,
+    Hills                       = 9,
+    Jungle                      = 17,
+    Mountains                   = 14,
+    Nobility                    = 50,
+    Ocean                       = 20,
+    Path                        = 11,
+    Polar                       = 27,
+    Pond                        = 49,
+    pyramid                     = 72,
+    quarry                      = 70,
+    River                       = 10,
+    Road                        = 12,
+    Ruins                       = 37,
+    Scrublands                  = 78,
+    Sewer                       = 23,
+    Swamp                       = 15,
+    Temple                      = 57,
+    Tower                       = 79,
+    transportation              = 48,
+    Tundra                      = 16,
+    Underworld                  = 28,
+    Urban                       = 8,
+    Valley                      = 13,
+    Villa                       = 75,
+    Village                     = 47,
+    Village                     = 55,
+    Volcano                     = 59,
+    Warrens                     = 31,
+  }
+
+  mmp.waterenvs = {}
+  local waterids = { "River", "Ocean", "Deep Ocean", "Vast Ocean", "Underground Lake", "Tainted Water", "Lake of Fire" }
+  for i = 1, #waterids do mmp.waterenvs[mmp.envids[waterids[i]]] = true end
+
+  mmp.envidsr = {};
+  for name, id in pairs(mmp.envids) do mmp.envidsr[id] = name end
+end</script>
+						<eventHandlerList>
+							<string>mmp logged in</string>
 						</eventHandlerList>
 					</Script>
 				</Script>
