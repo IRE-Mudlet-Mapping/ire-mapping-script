@@ -4616,6 +4616,7 @@ local function set(newid)
     setRoomEnv(rid, getRoomEnv(mmp.currentroom))
   end
   mmp.setExit(mmp.currentroom, rid, m)
+  clearRoomUserDataItem(newid, "hashonly")
   mmp.echo(string.format("Created new room (%d) at %dx, %dy, %dz.\n", rid, x, y, z))
   centerview(mmp.roomexists(mmp.currentroom) and mmp.currentroom or rid)
   if not mmp.roomexists(mmp.currentroom) then
@@ -6572,17 +6573,7 @@ function mmp.speedwalking(event, num)
   local num = tonumber(num) or tonumber(gmcp.Room.Info.num)
   
   if num == nil and gmcp.Room.Info.roomhash then
-    local hash = gmcp.Room.Info.roomhash
-    num = getRoomIDbyHash(hash)
-    
-    if num == -1 then
-      num = createRoomID()
-      addRoom(num)
-      setRoomIDbyHash(num, hash)
-      if mmp.debug then
-        mmp.echo(string.format("%s missing a room ID, created a new one for it: %d", hash, num))
-      end
-    end
+    num = mmp.roomidFromHash(gmcp.Room.Info.roomhash)
   end
   
   if num ~= mmp.currentroom then
@@ -9523,7 +9514,16 @@ end
 
 function mmp.roomexists(num)
   if not num then return false end
-  if roomExists then return roomExists(num) end
+  if roomExists then
+    -- in case we are in a hash-based game and the room ID got created to store a hash
+    -- and hasn't been created properly, say it doesn't exist
+    if getRoomUserData(num, "hashonly") == "true" then
+      mmp.echo("roomexists: returning false for "..num)
+      return false
+    else
+      return roomExists(num)
+    end
+  end
 
   local s,m = pcall(getRoomArea, tonumber(num))
   return (s and true or false)
@@ -9718,7 +9718,7 @@ end</script>
     for exit, leadsto in pairs(exits) do
       echo(
         string.format(
-          "  %s -&gt; %s (%d)%s%s\n",
+          "  %s -&gt; %s (%d)%s%s%s\n",
           exit,
           getRoomName(leadsto),
           leadsto,
@@ -9735,7 +9735,8 @@ end</script>
             " (weight: " ..
             exitweights[mmp.anytoshort(exit)] ..
             ")"
-          )
+          ),
+          (getRoomHashByID(num) and (" hash: ".. getRoomHashByID(leadsto)) or '')
         )
       )
     end
@@ -10313,6 +10314,8 @@ local function makeroom(oldid, newid, x, y, z)
   addRoom(newid)
   setRoomCoordinates(newid, x, y, z)
   setRoomArea(newid, getRoomArea(oldid))
+  -- in case we are in a hash-based game and the room ID already got created to store a hash, clear the flag
+  clearRoomUserDataItem(newid, "hashonly")
   local fgr, fgg, fgb = unpack(color_table.red)
   local bgr, bgg, bgb = unpack(color_table.blue)
   highlightRoom(newid, fgr, fgg, fgb, bgr, bgg, bgb, 1, 100, 100)
@@ -10391,13 +10394,17 @@ local function getshiftedcoords(original, ox, oy, oz)
   return x, y, z
 end
 
--- returns (and creates if needed) a room ID for a given hash
+-- returns a room ID for a given hash
+-- if a room doesn't exist, it'll create it in order to bind the hash to a certain createRoomID
+-- at the same time, it'll mark the userdata "hashonly" as "true" so mmp.roomExists won't say this room exists
+-- this preserves the same logic in the code as non-hash games
 function mmp.roomidFromHash(hash)
   local id = getRoomIDbyHash(hash)
   if id == -1 then 
     id = createRoomID()
     addRoom(id)
     setRoomIDbyHash(id, hash)
+    setRoomUserData(id, "hashonly", "true")
   end
   
   return id
@@ -10511,21 +10518,21 @@ function mmp.mappingNewroom(_, num)
             end
           else
             local function getshiftedcoords(direction, ox, oy, oz)
-              if direction == 'n' then
+              if direction == 'n' or direction == 'north' then
                 return ox, oy + 1, oz
-              elseif direction == 'e' then
-                return ox + 1, oy, oz
-              elseif direction == 's' then
+              elseif direction == 'e' or direction == 'east' then
+                return ox + 1, oy, oz  
+              elseif direction == 's' or direction == 'south' then
                 return ox, oy - 1, oz
-              elseif direction == 'w' then
+              elseif direction == 'w' or direction == 'west' then
                 return ox - 1, oy, oz
-              elseif direction == 'ne' then
+              elseif direction == 'ne' or direction == 'northeast' then
                 return ox + 1, oy + 1, oz
-              elseif direction == 'se' then
+              elseif direction == 'se' or direction == 'southeast' then
                 return ox + 1, oy - 1, oz
-              elseif direction == 'sw' then
+              elseif direction == 'sw' or direction == 'southwest' then
                 return ox - 1, oy - 1, oz
-              elseif direction == 'nw' then
+              elseif direction == 'nw' or direction == 'northwest' then
                 return ox - 1, oy + 1, oz
               else
                 error("getshiftedcoords: direction " .. direction .. " isn't supported yet.")
