@@ -10556,7 +10556,7 @@ function mmp.mappingNewroom(_, num)
         end
       end,
       function(error)
-        mmp.echo("Oops! Has a small problem (" .. error .. ").")
+        mmp.echo("Oops! Had a small problem (" .. error .. ").")
         echo("  ")
         echoLink(
           "view steps",
