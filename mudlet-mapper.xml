@@ -4411,7 +4411,7 @@ mmp.settings:setOption(matches[3], val)</script>
 				<packageName></packageName>
 				<regex>^area list$</regex>
 			</Alias>
-			<AliasGroup isActive="no" isFolder="yes">
+			<AliasGroup isActive="yes" isFolder="yes">
 				<name>mm Mapping</name>
 				<script></script>
 				<command></command>
@@ -6533,9 +6533,25 @@ local oldnum
 
 function mmp.speedwalking(event, num)
   local num = tonumber(num) or tonumber(gmcp.Room.Info.num)
+  
+  if num == nil and gmcp.Room.Info.roomhash then
+    local hash = gmcp.Room.Info.roomhash
+    num = getRoomIDbyHash(hash)
+    
+    if num == -1 then
+      num = createRoomID()
+      addRoom(num)
+      setRoomIDbyHash(num, hash)
+      if mmp.debug then
+        mmp.echo(f"{hash} missing a room ID, created a new one for it: {num}")
+      end
+    end
+  end
+  
   if num ~= mmp.currentroom then
     mmp.previousroom = mmp.currentroom
   end
+  
   mmp.currentroom = num
   mmp.currentroomname = getRoomName(num)
   -- Try to track if we're flying or not, for Imperian wings
@@ -9640,7 +9656,7 @@ end</script>
     -- generate a report
     mmp.echo(
       string.format(
-        "Room: %s #: %d area: %s (%d)", name, num, tostring(mmp.areatabler[areanum]), areanum
+        "Room: %s #: %d%s area: %s (%d)", name, num, (getRoomHashByID(num) and (" hash: ".. getRoomHashByID(num)) or ''), tostring(mmp.areatabler[areanum]), areanum
       )
     )
     mmp.echo(
