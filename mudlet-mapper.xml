@@ -5915,7 +5915,7 @@ function mmp.startup()
   --General settings
 
   private_settings["echocolour"] = mmp.createOption("cyan", mmp.changeEchoColour, {"string"}, "Set the color for room number echos?", function(newSetting) return color_table[newSetting] ~= nil end)
-  private_settings["crowdmap"] = mmp.createOption(false, mmp.changeMapSource, {"boolean"}, "Use a crowd-sourced map instead of IREs default?", nil, {achaea = true, starmourn = true, lusternia = true, stickmud = true, ashyria = true, asteria = true, imperian = true, aetolia = true})
+  private_settings["crowdmap"] = mmp.createOption(false, mmp.changeMapSource, {"boolean"}, "Use a crowd-sourced map instead of games default?", nil, {achaea = true, starmourn = true, lusternia = true, stickmud = true, ashyria = true, asteria = true, imperian = true, aetolia = true})
   private_settings["showcmds"] = mmp.createOption(true, mmp.changeBoolFunc, {"boolean"}, "Show walking commands?")
   private_settings["laglevel"] = mmp.createOption(1, mmp.changeLaglevel, {"number"}, "How laggy is your connection, (fast 1&lt;-&gt;5 slow)?", mmp.verifyLaglevel)
   private_settings["slowwalk"] = mmp.createOption(false, mmp.setSlowWalk, {"boolean"}, "Walk slowly instead of as quick as possible?")
