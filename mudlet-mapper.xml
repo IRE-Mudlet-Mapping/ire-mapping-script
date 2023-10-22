@@ -2043,11 +2043,12 @@ mmp.echo("We're connected to Ashyria.")</script>
 						<integer>2</integer>
 					</regexCodePropertyList>
 				</Trigger>
-				<Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+				<Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="yes" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
 					<name>Auto Pause on vehicles</name>
 					<script>if mmp.autowalking then
   mmp.pause()
-end</script>
+end
+</script>
 					<triggerType>0</triggerType>
 					<conditonLineDelta>0</conditonLineDelta>
 					<mStayOpen>0</mStayOpen>
@@ -2061,18 +2062,45 @@ end</script>
 					<regexCodeList>
 						<string>You pay the coachman for a ride to the city of Rhojidan</string>
 						<string>You pay the elven ferryman for a ride to the mainland</string>
-						<string>The carriage rolls to a stop as you arrive at the southern gate of Rhojidan. </string>
+						<string>The carriage rolls to a stop as you arrive at the southern gate of Rhojidan.</string>
 						<string>The ferry boat slowly drifts to a stop at the western shores of Alarra. </string>
 						<string>You pay the coachman for a ride to the village of Hessa</string>
 						<string>The carriage rolls to a stop as you arrive at the southern fields of Hessa.</string>
+						<string>You pay the elven ferryman for a ride to Kalmyr</string>
 					</regexCodeList>
 					<regexCodePropertyList>
 						<integer>2</integer>
 						<integer>2</integer>
+						<integer>0</integer>
 						<integer>2</integer>
 						<integer>2</integer>
 						<integer>2</integer>
 						<integer>2</integer>
+					</regexCodePropertyList>
+				</Trigger>
+				<Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+					<name>Pause speedwalk on combat</name>
+					<script>if mmp.autowalking and not mmp.paused then
+  mmp.pause()
+  mmp.echo("Can't continue walking in combat. Use 'mmp' to continue walking after combat.")
+else
+  return
+end</script>
+					<triggerType>0</triggerType>
+					<conditonLineDelta>0</conditonLineDelta>
+					<mStayOpen>0</mStayOpen>
+					<mCommand></mCommand>
+					<packageName></packageName>
+					<mFgColor>#ff0000</mFgColor>
+					<mBgColor>#ffff00</mBgColor>
+					<mSoundFile></mSoundFile>
+					<colorTriggerFgColor>#000000</colorTriggerFgColor>
+					<colorTriggerBgColor>#000000</colorTriggerBgColor>
+					<regexCodeList>
+						<string>You cannot move while in combat. RETREAT first.</string>
+					</regexCodeList>
+					<regexCodePropertyList>
+						<integer>0</integer>
 					</regexCodePropertyList>
 				</Trigger>
 			</TriggerGroup>
@@ -4149,9 +4177,7 @@ mmp.echo("We're connected to StickMUD.")</script>
 				</Trigger>
 				<Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
 					<name>Failed to open door</name>
-					<script>mmp.failpath()
-
-</script>
+					<script>mmp.failpath()</script>
 					<triggerType>0</triggerType>
 					<conditonLineDelta>0</conditonLineDelta>
 					<mStayOpen>0</mStayOpen>
@@ -4172,6 +4198,8 @@ mmp.echo("We're connected to StickMUD.")</script>
 						<string>This (?:walnut|pine|oak|iron|reinforced) door has been magically locked shut\.</string>
 						<string>You are not carrying a key for this (?:walnut|pine|oak|iron|reinforced) door\.</string>
 						<string>The door has been magically locked shut.</string>
+						<string>You must have a lockpick in order to attempt to open the exit.</string>
+						<string>You need to seek training before being able to pick locks.</string>
 					</regexCodeList>
 					<regexCodePropertyList>
 						<integer>3</integer>
@@ -4183,6 +4211,8 @@ mmp.echo("We're connected to StickMUD.")</script>
 						<integer>1</integer>
 						<integer>1</integer>
 						<integer>3</integer>
+						<integer>0</integer>
+						<integer>0</integer>
 					</regexCodePropertyList>
 				</Trigger>
 				<Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
@@ -6603,7 +6633,7 @@ function mmp.canmove(fromtimer)
   -- Lusternia
  if
     (
-      gmcp.Char and
+      gmcp.Char and mmp.game ~= "ashyria" and
       (not gmcp.Char.Vitals.bal or gmcp.Char.Vitals.bal == "1") and
       (not gmcp.Char.Vitals.eq or gmcp.Char.Vitals.eq == "1") and
       (not gmcp.Char.Vitals.balance or gmcp.Char.Vitals.balance == "1") and
