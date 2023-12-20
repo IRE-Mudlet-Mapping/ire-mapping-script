@@ -12537,7 +12537,7 @@ function mmp.installMapperScript()
   local path = getModulePath("mudlet-mapper")
   if not path then
     uninstallPackage("mudlet-mapper")
-    installPackage(mmp.downloadedscript)
+    tempTimer(1, [[installPackage(mmp.downloadedscript)]])
   else
     reloadModule("mudlet-mapper")
   end
