@@ -12218,7 +12218,6 @@ end</script>
     Valley                      = 13,
     Villa                       = 75,
     Village                     = 47,
-    Village                     = 55,
     Volcano                     = 59,
     Warrens                     = 31,
   }
