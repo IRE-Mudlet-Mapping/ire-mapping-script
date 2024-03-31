@@ -7094,7 +7094,7 @@ function mmp.gotoFeature(partialFeatureName, dashtype)
     return
   end
   raiseEvent("mmp clear externals")
-  mmp.gotoRoom(closestFeature, dashtype, "area")
+  mmp.gotoRoom(closestFeature, dashtype, "room")
 end</script>
 				<eventHandlerList>
 					<string>RoomNum</string>
