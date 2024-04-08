@@ -10379,7 +10379,6 @@ end
     if gmcp.Room.Info.num then
       centerview(gmcp.Room.Info.num)
     elseif gmcp.Room.Info.roomhash then
-    print(tostring(mmp.roomidFromHash(gmcp.Room.Info.roomhash)))
       centerview(mmp.roomidFromHash(gmcp.Room.Info.roomhash))
     end
   end
