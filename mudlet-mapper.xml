@@ -12327,7 +12327,7 @@ end</script>
     mmp.echon("------------------[ Mapper Script Update ]------------------")
     mmp.echon(" The mapper script was updated from &lt;orange&gt;"..tostring(mmp.version).."&lt;reset&gt; -&gt; &lt;green&gt;"..tostring(mmp.newmapperversion).."&lt;reset&gt;!")
     mmp.echon("")
-    cechoLink(" Would you like to install the update? &lt;u&gt;&lt;ForestGreen&gt;Click here if so&lt;/u&gt;&lt;reset&gt;.", "mmp.downloadmapperscript()", "Changelog for the latest ("..tostring(mmp.version).." -&gt; "..tostring(mmp.newmapperversion)..") update:\n"..changelog, true)
+    cechoLink(" Would you like to install the update? &lt;u&gt;&lt;ForestGreen&gt;\n Click here if so&lt;/u&gt;&lt;reset&gt;.", "mmp.downloadmapperscript()", "Changelog for the latest ("..tostring(mmp.version).." -&gt; "..tostring(mmp.newmapperversion)..") update:\n"..changelog, true)
     echo("\n\n")
 
   elseif filename == mmp.crowdchangelogfile then   -- changelog for the crowdmap
