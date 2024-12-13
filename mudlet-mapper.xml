@@ -6092,6 +6092,7 @@ function mmp.startup()
     "Clicky clicky to read up on what's this about"
   )
   echo(")\n")
+  raiseEvent("mapperScriptLoaded", "ire-mapping-script")
 end</script>
 				<eventHandlerList />
 			</Script>
