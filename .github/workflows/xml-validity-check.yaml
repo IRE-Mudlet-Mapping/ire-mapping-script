@@ -12,7 +12,9 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Install xmllint
-        run: sudo apt-get install -y libxml2-utils
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libxml2-utils
 
       - name: Validate XML
         run: xmllint --noout mudlet-mapper.xml
