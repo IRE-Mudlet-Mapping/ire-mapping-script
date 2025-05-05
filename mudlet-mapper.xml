@@ -2023,6 +2023,7 @@ raiseEvent("mmapper updated pdb")</script>
 					<name>Login</name>
 					<script>raiseEvent("mmp logged in", "ashyria")
 mmp.game = "ashyria"
+mmp.echo("We're connected to Ashyria.")</script>
 					<triggerType>0</triggerType>
 					<conditonLineDelta>0</conditonLineDelta>
 					<mStayOpen>0</mStayOpen>
