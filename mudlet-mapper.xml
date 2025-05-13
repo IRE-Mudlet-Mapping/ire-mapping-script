@@ -7323,22 +7323,24 @@ function mmp.addWingsAchaea()
   end
   --universe tarot
   if mmp.settings.universe then
-    local continent = mmp.getareacontinents(area)[1]
+    local continents = mmp.getareacontinents(area)
     
-    local universeExits = universeLocations[continent]
-    if universeExits then
-      for village, roomnum in pairs(universeExits) do
-        mmp.tempSpecialExit(
-          roomnum,
-          [=[script:
-          mmp.customwalkdelay(4.5)
-          send("fling universe at ground",false)
-          tempTimer(4,[[send("touch ]=] ..
-          village ..
-          [=[",false)]])
-          ]=],
-          10
-        )
+    for _, continent in ipairs(continents) do
+      local universeExits = universeLocations[continent]
+      if universeExits then
+        for village, roomnum in pairs(universeExits) do
+          mmp.tempSpecialExit(
+            roomnum,
+            [=[script:
+            mmp.customwalkdelay(4.5)
+            send("fling universe at ground",false)
+            tempTimer(4,[[send("touch ]=] ..
+            village ..
+            [=[",false)]])
+            ]=],
+            10
+          )
+        end
       end
     end
   end
