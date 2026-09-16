@@ -10326,6 +10326,7 @@ end</script>
 					<name>mmp.wormholesfix</name>
 					<packageName></packageName>
 					<script>function mmp.wormholesfix()
+  return mmp.localMapChanges(function()
   local c = 0
   local weight = 10
   for _, area in pairs(getAreaTable()) do
@@ -10347,6 +10348,7 @@ end</script>
   end
 
   if c &gt; 0 then mmp.echo(string.format("%s wormholes weighted to %s (so we don't take them over too short distances).", c, weight)) end
+  end)
 end</script>
 					<eventHandlerList>
 						<string>mmapper updated map</string>
@@ -11173,8 +11175,10 @@ end</script>
 	if game == "Achaea" then
 		mmp.whirlString = 'script: send("enter whirlpool") if tempWhirlTrigger then killTrigger(tempWhirlTrigger) tempWhirlTrigger = nil end if tempWhirlTimer then killTimer(killWhirlTimer) tempWhirlTimer = nil end tempWhirlTrigger = tempTrigger("What do you wish to enter?", [[if tempWhirlTimer then killTimer(tempWhirlTimer) tempWhirlTimer = nil end mmp.echo("Whirlpool not found here. Trying another room.") local x = {45817, 45780, 45903, 45868, 46254, 45866} if tempWhirlTrigger then killTrigger(tempWhirlTrigger) tempWhirlTrigger = nil end clearSpecialExits(]]..mmp.currentroom..[[) local y = table.index_of(x, ]]..mmp.currentroom..[[) + 1 if y &gt; #x then y = 1 end addSpecialExit(x[y], 793, mmp.whirlString) mmp.clearpathcache() mmp.gotoRoom(mmp.speedWalkPath[#mmp.speedWalkPath]) mmp.echo("Moved whirlpool to "..x[y]..".")]]) tempWhirlTimer = tempTimer(1, [[if tempWhirlTrigger then killTrigger(tempWhirlTrigger) tempWhirlTrigger = nil end if tempWhirlTimer then killTimer(tempWhirlTimer) tempWhirlTimer = nil end]])'
 		local x = {45817, 45780, 45903, 45868, 46254, 45866}
-		for i, v in ipairs(x) do clearSpecialExits(v) end
-		addSpecialExit(45868, 793, mmp.whirlString)
+		mmp.localMapChanges(function()
+			for i, v in ipairs(x) do clearSpecialExits(v) end
+			addSpecialExit(45868, 793, mmp.whirlString)
+		end)
 	end
 end</script>
 						<eventHandlerList>
