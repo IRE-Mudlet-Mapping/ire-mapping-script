@@ -10442,7 +10442,7 @@ end</script>
 					<name>Fix setExit</name>
 					<packageName></packageName>
 					<script>do
-local oldsetExit = setExit
+local serviceSetExit = mmp.setExit
 
 local exitmap = {
   n = 1,
@@ -10472,7 +10472,7 @@ local exitmap = {
 function mmp.setExit(from, to, direction)
   if type(direction) == "string" and not exitmap[direction] then return false end
 
-  return oldsetExit(from, to, type(direction) == "string" and exitmap[direction] or direction)
+  return serviceSetExit(from, to, type(direction) == "string" and exitmap[direction] or direction)
 end
 end</script>
 					<eventHandlerList />
