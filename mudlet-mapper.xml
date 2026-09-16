@@ -6127,6 +6127,17 @@ function service.submit(change)
   postHTTP(yajl.to_string(change), endpoint("/change"), { ["Content-Type"] = "application/json" })
 end
 
+function service.localOnly(callback)
+  local wasSuspended = service.suspended
+  service.suspended = true
+  local result = {pcall(callback)}
+  service.suspended = wasSuspended
+  if not result[1] then error(result[2]) end
+  return unpack(result, 2)
+end
+
+mmp.localMapChanges = service.localOnly
+
 function service.versionUrl()
   return endpoint("/map/version?timesSeen=" .. mmp.settings.crowdmapservicereports)
 end
@@ -7433,17 +7444,17 @@ function mmp.tempSpecialExit(start, destination, command, weight)
     start, destination, command, weight = mmp.currentroom, start, destination, command
   end
   table.insert(exitsCreated, {room = start, command = command})
-  addSpecialExit(start, destination, command)
-  if weight then
-    setExitWeight(start, command, weight)
-  end
+  mmp.localMapChanges(function()
+    addSpecialExit(start, destination, command)
+    if weight then setExitWeight(start, command, weight) end
+  end)
 end
 
 function mmp.removeWings()
   --remove all special exits that were created by addWings, then resets the table.
-  for _, exit in ipairs(exitsCreated) do
-    removeSpecialExit(exit.room, exit.command)
-  end
+  mmp.localMapChanges(function()
+    for _, exit in ipairs(exitsCreated) do removeSpecialExit(exit.room, exit.command) end
+  end)
   exitsCreated = {}
 end
 
@@ -9649,31 +9660,33 @@ end
 
 function mmp.lockPathways()
   local lock = mmp.settings.lockpathways and true or false
-  mmp.doLock("pathways", lock, "pathfind")
+  mmp.localMapChanges(function() mmp.doLock("pathways", lock, "pathfind") end)
 end
 
 function mmp.lockSewers()
   local lock = mmp.settings.locksewers and true or false
-  return mmp.doLock("sewer grates", lock, "enter grate")
+  return mmp.localMapChanges(function() return mmp.doLock("sewer grates", lock, "enter grate") end)
 end
 
 function mmp.lockWormholes()
   local lock = mmp.settings.lockwormholes and true or false
-  return mmp.doLock("wormholes", lock, "worm warp")
+  return mmp.localMapChanges(function() return mmp.doLock("wormholes", lock, "worm warp") end)
 end
 tempTimer(0, function() if mmp.firstRun then mmp.lockWormholes() end end)
 
 function mmp.lockPebble()
   local disabled = (not mmp.settings.pebble) and true or false
-  mmp.doLock(nil, disabled, "touch 116998")
-  mmp.doLock(nil, disabled, "touch 277930")
+  mmp.localMapChanges(function()
+    mmp.doLock(nil, disabled, "touch 116998")
+    mmp.doLock(nil, disabled, "touch 277930")
+  end)
 
   mmp.echo(string.format("Use of pebble %s.", disabled and "disabled" or "enabled"))
 end
 
 function mmp.lockSpecials()
   local lock = mmp.settings.lockspecials and true or false
-  mmp.doLock("special exits", lock)
+  mmp.localMapChanges(function() mmp.doLock("special exits", lock) end)
 end
 
 
@@ -9710,6 +9723,7 @@ function mmp.setSlowWalk()
 end
 
 function mmp.disableWaterWalk()
+  return mmp.localMapChanges(function()
   local c = 0
   local getRoomEnv, setRoomWeight = getRoomEnv, setRoomWeight
   for roomid, roomname in pairs(getRooms()) do
@@ -9720,9 +9734,11 @@ function mmp.disableWaterWalk()
   end
 
   return c
+  end)
 end
 
 function mmp.enableWaterWalk()
+  return mmp.localMapChanges(function()
   local c = 0
   local getRoomEnv, setRoomWeight = getRoomEnv, setRoomWeight
   for roomid, roomname in pairs(getRooms()) do
@@ -9733,6 +9749,7 @@ function mmp.enableWaterWalk()
   end
 
   return c
+  end)
 end
 
 function mmp.setWaterWalk()
