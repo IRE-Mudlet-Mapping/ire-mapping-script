@@ -12647,7 +12647,9 @@ end</script>
       end
 
       for k,v in pairs(oldmaptable) do newmaptable[k] = v end
-      setRoomUserData(1, "gotoMapping", yajl.to_string(newmaptable))
+      mmp.localMapChanges(function()
+        setRoomUserData(1, "gotoMapping", yajl.to_string(newmaptable))
+      end)
       mmp.echo("Marks from the old map migrated successfully.")
 
       raiseEvent("mmapper updated map")
@@ -12680,7 +12682,9 @@ end</script>
             newmaptable = yajl.to_value(tmp)
           end
           for k,v in pairs(oldmaptable) do newmaptable[k] = v end
-          setRoomUserData(1, "gotoMapping", yajl.to_string(newmaptable))
+          mmp.localMapChanges(function()
+            setRoomUserData(1, "gotoMapping", yajl.to_string(newmaptable))
+          end)
           mmp.echo("Marks from the old map migrated successfully.")
           raiseEvent("mmapper updated map")
         else mmp.echo("Nope, didn't work. Open the map and try again?") end
