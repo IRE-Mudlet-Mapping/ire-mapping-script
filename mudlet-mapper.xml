@@ -5947,6 +5947,10 @@ function mmp.startup()
 
   private_settings["echocolour"] = mmp.createOption("cyan", mmp.changeEchoColour, {"string"}, "Set the color for room number echos?", function(newSetting) return color_table[newSetting] ~= nil end)
   private_settings["crowdmap"] = mmp.createOption(false, mmp.changeMapSource, {"boolean"}, "Use a crowd-sourced map instead of games default?", nil, {achaea = true, starmourn = true, lusternia = true, stickmud = true, ashyria = true, asteria = true, imperian = true, aetolia = true})
+  private_settings["crowdmapservicesend"] = mmp.createOption(false, mmp.changeBoolFunc, {"boolean"}, "Send local map changes to a crowdmap service?")
+  private_settings["crowdmapserviceurl"] = mmp.createOption("https://achaea-crowdmap.schova.de", nil, {"string"}, "Crowdmap service endpoint URL.", function(value) return value:match("^https?://") ~= nil end)
+  private_settings["crowdmapservicesource"] = mmp.createOption(false, function() if mmp.settings.crowdmapservicesource then mmp.checkforupdate() end end, {"boolean"}, "Source map updates from the configured crowdmap service?")
+  private_settings["crowdmapservicereports"] = mmp.createOption(2, nil, {"number"}, "Required independent reports for changes sourced from the crowdmap service.", function(value) return value >= 0 and value == math.floor(value) end)
   private_settings["showcmds"] = mmp.createOption(true, mmp.changeBoolFunc, {"boolean"}, "Show walking commands?")
   private_settings["laglevel"] = mmp.createOption(1, mmp.changeLaglevel, {"number"}, "How laggy is your connection, (fast 1&lt;-&gt;5 slow)?", mmp.verifyLaglevel)
   private_settings["slowwalk"] = mmp.createOption(false, mmp.setSlowWalk, {"boolean"}, "Walk slowly instead of as quick as possible?")
@@ -6095,6 +6099,209 @@ function mmp.startup()
   echo(")\n")
   raiseEvent("mapperScriptLoaded", "ire-mapping-script")
 end</script>
+				<eventHandlerList />
+			</Script>
+			<Script isActive="yes" isFolder="no">
+				<name>Crowdmap service</name>
+				<packageName></packageName>
+				<script>mmp.crowdmapService = mmp.crowdmapService or {}
+local service = mmp.crowdmapService
+
+local function endpoint(path)
+  return mmp.settings.crowdmapserviceurl:gsub("/+$", "") .. path
+end
+
+local function reporter()
+  if gmcp and gmcp.Char and gmcp.Char.Status and gmcp.Char.Status.name then
+    return gmcp.Char.Status.name
+  end
+  return getProfileName and getProfileName() or "anonymous"
+end
+
+function service.submit(change)
+  if not mmp.settings.crowdmapservicesend or service.suspended then return end
+  change.reporter = reporter()
+  postHTTP(yajl.to_string(change), endpoint("/change"), { ["Content-Type"] = "application/json" })
+end
+
+function service.versionUrl()
+  return endpoint("/map/version?timesSeen=" .. mmp.settings.crowdmapservicereports)
+end
+
+function service.mapUrl()
+  return endpoint("/map?format=binary&amp;timesSeen=" .. mmp.settings.crowdmapservicereports)
+end
+
+local directions = {
+  [1] = "north", [2] = "northeast", [3] = "northwest", [4] = "east",
+  [5] = "west", [6] = "south", [7] = "southeast", [8] = "southwest",
+  [9] = "up", [10] = "down", [11] = "in", [12] = "out",
+  n = "north", ne = "northeast", nw = "northwest", e = "east",
+  w = "west", s = "south", se = "southeast", sw = "southwest",
+  u = "up", d = "down", north = "north", northeast = "northeast",
+  northwest = "northwest", east = "east", west = "west", south = "south",
+  southeast = "southeast", southwest = "southwest", up = "up", down = "down",
+  ["in"] = "in", out = "out"
+}
+
+if not service.wrappersInstalled then
+  service.wrappersInstalled = true
+  service.original = {
+    addAreaName = addAreaName, setAreaName = setAreaName, deleteArea = deleteArea,
+    addRoom = addRoom, deleteRoom = deleteRoom, setRoomName = setRoomName,
+    setRoomCoordinates = setRoomCoordinates, setRoomArea = setRoomArea,
+    setRoomWeight = setRoomWeight, setRoomChar = setRoomChar, setRoomEnv = setRoomEnv,
+    setRoomIDbyHash = setRoomIDbyHash,
+    setRoomUserData = setRoomUserData, clearRoomUserDataItem = clearRoomUserDataItem,
+    addSpecialExit = addSpecialExit, removeSpecialExit = removeSpecialExit,
+    clearSpecialExits = clearSpecialExits, lockSpecialExit = lockSpecialExit,
+    setExitWeight = setExitWeight, setExit = mmp.setExit
+  }
+  local original = service.original
+
+  function addAreaName(name)
+    local areaId = original.addAreaName(name)
+    if areaId then service.submit({ type = "create-area", areaId = areaId, name = name }) end
+    return areaId
+  end
+
+  function setAreaName(areaId, name)
+    local result = original.setAreaName(areaId, name)
+    if result ~= false then service.submit({ type = "rename-area", areaId = areaId, name = name }) end
+    return result
+  end
+
+  function deleteArea(areaId)
+    local result = original.deleteArea(areaId)
+    if result ~= false then service.submit({ type = "delete-area", areaId = tonumber(areaId) }) end
+    return result
+  end
+
+  function addRoom(roomNumber)
+    local result = original.addRoom(roomNumber)
+    if result ~= false then service.submit({ type = "create-room", roomNumber = tonumber(roomNumber) }) end
+    return result
+  end
+
+  function deleteRoom(roomNumber)
+    local result = original.deleteRoom(roomNumber)
+    if result ~= false then service.submit({ type = "delete-room", roomNumber = tonumber(roomNumber) }) end
+    return result
+  end
+
+  function setRoomName(roomNumber, name)
+    local result = original.setRoomName(roomNumber, name)
+    if result ~= false then service.submit({ type = "room-name", roomNumber = tonumber(roomNumber), name = name }) end
+    return result
+  end
+
+  function setRoomCoordinates(roomNumber, x, y, z)
+    local result = original.setRoomCoordinates(roomNumber, x, y, z)
+    if result ~= false then service.submit({ type = "set-room-coordinates", roomNumber = tonumber(roomNumber), x = x, y = y, z = z }) end
+    return result
+  end
+
+  function setRoomArea(roomNumber, areaId)
+    local result = original.setRoomArea(roomNumber, areaId)
+    if result ~= false then service.submit({ type = "set-room-area", roomNumber = tonumber(roomNumber), areaId = tonumber(areaId) }) end
+    return result
+  end
+
+  function setRoomWeight(roomNumber, weight)
+    local result = original.setRoomWeight(roomNumber, weight)
+    if result ~= false then service.submit({ type = "set-room-weight", roomNumber = tonumber(roomNumber), weight = weight }) end
+    return result
+  end
+
+  function setRoomChar(roomNumber, symbol)
+    local result = original.setRoomChar(roomNumber, symbol)
+    if result ~= false then service.submit({ type = "set-room-symbol", roomNumber = tonumber(roomNumber), symbol = symbol }) end
+    return result
+  end
+
+  function setRoomEnv(roomNumber, environmentId)
+    local result = original.setRoomEnv(roomNumber, environmentId)
+    if result ~= false then service.submit({ type = "set-room-environment", roomNumber = tonumber(roomNumber), environmentId = environmentId }) end
+    return result
+  end
+
+  function setRoomIDbyHash(roomNumber, hash)
+    local result = original.setRoomIDbyHash(roomNumber, hash)
+    if result ~= false then service.submit({ type = "set-room-hash", roomNumber = tonumber(roomNumber), hash = hash }) end
+    return result
+  end
+
+  function setRoomUserData(roomNumber, key, value)
+    local result = original.setRoomUserData(roomNumber, key, value)
+    if result ~= false then service.submit({ type = "modify-room-user-data", roomNumber = tonumber(roomNumber), key = key, value = value }) end
+    return result
+  end
+
+  function clearRoomUserDataItem(roomNumber, key)
+    local result = original.clearRoomUserDataItem(roomNumber, key)
+    if result ~= false then service.submit({ type = "delete-room-user-data", roomNumber = tonumber(roomNumber), key = key }) end
+    return result
+  end
+
+  function addSpecialExit(roomNumber, destination, command)
+    local result = original.addSpecialExit(roomNumber, destination, command)
+    if result ~= false then service.submit({ type = "modify-special-exit", roomNumber = tonumber(roomNumber), destination = tonumber(destination), exitCommand = command }) end
+    return result
+  end
+
+  function removeSpecialExit(roomNumber, command)
+    local result = original.removeSpecialExit(roomNumber, command)
+    if result ~= false then service.submit({ type = "delete-special-exit", roomNumber = tonumber(roomNumber), exitCommand = command }) end
+    return result
+  end
+
+  function clearSpecialExits(roomNumber)
+    local exits = getSpecialExits(roomNumber) or {}
+    local result = original.clearSpecialExits(roomNumber)
+    if result ~= false then
+      for _, command in pairs(exits) do
+        if type(command) == "table" then command = next(command) end
+        service.submit({ type = "delete-special-exit", roomNumber = tonumber(roomNumber), exitCommand = command })
+      end
+    end
+    return result
+  end
+
+  function lockSpecialExit(roomNumber, destination, command, locked)
+    local result = original.lockSpecialExit(roomNumber, destination, command, locked)
+    if result ~= false then
+      service.submit({ type = locked and "lock-special-exit" or "unlock-special-exit", roomNumber = tonumber(roomNumber), destination = tonumber(destination), exitCommand = command })
+    end
+    return result
+  end
+
+  function setExitWeight(roomNumber, exit, weight)
+    local result = original.setExitWeight(roomNumber, exit, weight)
+    if result ~= false then
+      local direction = directions[exit]
+      local change = { roomNumber = tonumber(roomNumber), weight = weight }
+      if direction then change.type, change.direction = "modify-exit-weight", direction
+      else change.type, change.exitCommand = "modify-special-exit-weight", tostring(exit) end
+      service.submit(change)
+    end
+    return result
+  end
+
+  function mmp.setExit(roomNumber, destination, direction)
+    local result = original.setExit(roomNumber, destination, direction)
+    if result ~= false then
+      local change = { roomNumber = tonumber(roomNumber), direction = directions[direction] }
+      if tonumber(destination) == -1 then change.type = "delete-exit"
+      else change.type, change.destination = "modify-exit", tonumber(destination) end
+      service.submit(change)
+    end
+    return result
+  end
+end
+
+registerNamedEventHandler("mapper", "crowdmapServicePostError", "sysPostHttpError", function(_, error, url)
+  if url == endpoint("/change") then mmp.echo("Could not send map change to crowdmap service: " .. error) end
+end)</script>
 				<eventHandlerList />
 			</Script>
 			<Script isActive="yes" isFolder="no">
@@ -12459,7 +12666,7 @@ end</script>
 	mmp.checkingupdates = false
 
     local function needupdate(currentmd5, oldmd5)
-      if not mmp.settings.crowdmap then
+      if not mmp.settings.crowdmap and not mmp.settings.crowdmapservicesource then
         mmp.echon("The games map was ")
         echoLink("updated", '', "New MD5: "..tostring(currentmd5)..", previous MD5: "..(oldmd5 or "(none)"), true)
         echo(" - you should update yours! Go to Settings -&gt; Mapper tab and click on the 'Download' button there. Once you've updated, ")
@@ -12473,6 +12680,10 @@ end</script>
 
     local f, s = io.open(filename)
     if f then s = f:read("*a"); io.close(f) end
+    if mmp.settings.crowdmapservicesource and s:sub(1, 1) == '"' then
+      local ok, decoded = pcall(yajl.to_value, s)
+      if ok and type(decoded) == "string" then s = decoded end
+    end
     local currentmd5 = string.match(s, "([a-z0-9]+)  map%.xml")
 
     -- using crowdsourced map
@@ -12529,7 +12740,9 @@ function mmp.checkforupdate()
         return
       end
     end
-    if mmp.settings.crowdmap then
+    if mmp.settings.crowdmapservicesource then
+      downloadFile(mmp.mapfile, mmp.crowdmapService.versionUrl())
+    elseif mmp.settings.crowdmap then
       if game == "achaea" then
         downloadFile(
           mmp.mapfile, "http://ire-mudlet-mapping.github.io/AchaeaCrowdmap/Map/version.txt"
@@ -12598,7 +12811,9 @@ end
 
 function mmp.retrievecrowdchangelog()
   mmp.crowdchangelogfile = downloadfolder .. "crowdchangelogfile"
-  if mmp.game == "achaea" then
+  if mmp.settings.crowdmapservicesource then
+    mmp.downloadcrowdmap(mmp.newversion)
+  elseif mmp.game == "achaea" then
     downloadFile(
       mmp.crowdchangelogfile, "http://ire-mudlet-mapping.github.io/AchaeaCrowdmap/Map/changelog.txt"
     )
@@ -12671,7 +12886,9 @@ function mmp.downloadcrowdmap(newversion)
   end
   f:write(newversion)
   f:close()
-  if mmp.game == "achaea" then
+  if mmp.settings.crowdmapservicesource then
+    downloadFile(mmp.crowdmapfile, mmp.crowdmapService.mapUrl())
+  elseif mmp.game == "achaea" then
     downloadFile(mmp.crowdmapfile, "http://ire-mudlet-mapping.github.io/AchaeaCrowdmap/Map/map")
   elseif mmp.game == "starmourn" then
     downloadFile(mmp.crowdmapfile, "http://ire-mudlet-mapping.github.io/StarmournCrowdmap/Map/map")
