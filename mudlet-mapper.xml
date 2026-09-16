@@ -368,7 +368,9 @@ disableTrigger"Mudlet Mapper prompt trigger"</script>
 				<script>if mmp.speedWalkDir and mmp.speedWalkDir[mmp.speedWalkCounter] and mmp.speedWalkDir[mmp.speedWalkCounter]=="worm warp" then
   mmp.echo("Missing wormhole detected, removing wormhole and trying new path...")
 
+  local wormholeDestination = mmp.speedWalkPath[mmp.speedWalkCounter]
   removeSpecialExit(mmp.currentroom, "worm warp")
+  removeSpecialExit(wormholeDestination, "worm warp")
 
   local destination = mmp.speedWalkPath[#mmp.speedWalkPath]
 
