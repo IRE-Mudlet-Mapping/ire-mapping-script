@@ -5950,6 +5950,7 @@ function mmp.startup()
   private_settings["echocolour"] = mmp.createOption("cyan", mmp.changeEchoColour, {"string"}, "Set the color for room number echos?", function(newSetting) return color_table[newSetting] ~= nil end)
   private_settings["crowdmap"] = mmp.createOption(false, mmp.changeMapSource, {"boolean"}, "Use a crowd-sourced map instead of games default?", nil, {achaea = true, starmourn = true, lusternia = true, stickmud = true, ashyria = true, asteria = true, imperian = true, aetolia = true})
   private_settings["crowdmapservicesend"] = mmp.createOption(false, mmp.changeBoolFunc, {"boolean"}, "Send local map changes to a crowdmap service?")
+  private_settings["gmcpmapupdates"] = mmp.createOption(false, mmp.changeBoolFunc, {"boolean"}, "Apply safe GMCP room information to existing map rooms, even when mapping mode is off?")
   private_settings["crowdmapserviceurl"] = mmp.createOption("https://achaea-crowdmap.schova.de", nil, {"string"}, "Crowdmap service endpoint URL.", function(value) return value:match("^https?://") ~= nil end)
   private_settings["crowdmapservicesource"] = mmp.createOption(false, function() if mmp.settings.crowdmapservicesource then mmp.checkforupdate() end end, {"boolean"}, "Source map updates from the configured crowdmap service?")
   private_settings["crowdmapservicereports"] = mmp.createOption(2, nil, {"number"}, "Required independent reports for changes sourced from the crowdmap service.", function(value) return value >= 0 and value == math.floor(value) end)
@@ -6303,6 +6304,63 @@ end
 
 registerNamedEventHandler("mapper", "crowdmapServicePostError", "sysPostHttpError", function(_, error, url)
   if url == endpoint("/change") then mmp.echo("Could not send map change to crowdmap service: " .. error) end
+end)</script>
+				<eventHandlerList />
+			</Script>
+			<Script isActive="yes" isFolder="no">
+				<name>Sync safe Room.Info fields</name>
+				<packageName></packageName>
+				<script>function mmp.syncSafeRoomInfo(roomNumber)
+  if not gmcp.Room or not gmcp.Room.Info then
+    return
+  end
+
+  local info = gmcp.Room.Info
+  roomNumber = roomNumber or tonumber(info.num)
+  if not roomNumber and info.roomhash then
+    roomNumber = getRoomIDbyHash(info.roomhash)
+  end
+  if not roomNumber or roomNumber == -1 or not mmp.roomexists(roomNumber) then
+    return
+  end
+
+  if info.name then
+    local roomName = mmp.cleanroomname(info.name)
+    if getRoomName(roomNumber) ~= roomName then
+      setRoomName(roomNumber, roomName)
+      unHighlightRoom(roomNumber)
+    end
+  end
+
+  if mmp.envids and info.environment and mmp.envids[info.environment] and mmp.envids[info.environment] ~= getRoomEnv(roomNumber) then
+    setRoomEnv(roomNumber, mmp.envids[info.environment])
+  end
+
+  local details = info.details or {}
+  if mmp.game ~= "asteria" and mmp.game ~= "ashyria" then
+    local indoors = table.contains(details, "indoors")
+    if indoors and (getRoomUserData(roomNumber, "indoors") == "" or getRoomUserData(roomNumber, "outdoors") ~= "") then
+      setRoomUserData(roomNumber, "indoors", "y")
+      clearRoomUserDataItem(roomNumber, "outdoors")
+    elseif not indoors and (getRoomUserData(roomNumber, "indoors") ~= "" or getRoomUserData(roomNumber, "outdoors") == "") then
+      clearRoomUserDataItem(roomNumber, "indoors")
+      setRoomUserData(roomNumber, "outdoors", "y")
+    end
+  end
+
+  if mmp.game == "achaea" and info.area and info.area ~= getRoomUserData(roomNumber, "Game Area") then
+    setRoomUserData(roomNumber, "Game Area", info.area)
+  end
+
+  if getRoomChar(roomNumber) ~= "W" and table.contains(details, "wilderness") then
+    setRoomChar(roomNumber, "W")
+  end
+end
+
+registerNamedEventHandler("mapper", "syncSafeRoomInfo", "gmcp.Room.Info", function()
+  if not mmp.editing and mmp.settings and mmp.settings.gmcpmapupdates then
+    mmp.syncSafeRoomInfo()
+  end
 end)</script>
 				<eventHandlerList />
 			</Script>
@@ -10780,14 +10838,6 @@ function mmp.mappingNewroom(_, num)
         end
         -- if we created it, and some data could be filled in
         if mmp.roomexists(num) then
-          -- cleanup the room name
-          local rootroomname = mmp.cleanroomname(gmcp.Room.Info.name)
-          -- match exact case, so mappers alertness' works properly
-          if getRoomName(num) ~= rootroomname then
-            setRoomName(num, rootroomname)
-            unHighlightRoom(num)
-            s = s .. (#s &gt; 0 and " " or "") .. "Updated room name to '" .. rootroomname .. "'."
-          end
           -- autolink exits
           if not inwilderness() then
             local x = getRoomExits(num) or {}
@@ -10925,46 +10975,7 @@ function mmp.mappingNewroom(_, num)
               end
             end
           end
-          -- check for environment update, if we have environments mapped out
-          if
-            mmp.envids[gmcp.Room.Info.environment] and
-            mmp.envids[gmcp.Room.Info.environment] ~= getRoomEnv(num)
-          then
-            setRoomEnv(num, mmp.envids[gmcp.Room.Info.environment])
-            s =
-              s ..
-              (#s &gt; 0 and " " or "") ..
-              "Updated environment name to " ..
-              gmcp.Room.Info.environment ..
-              "."
-          end
-          -- check indoors status
-          if mmp.game ~= "asteria" or mmp.game ~= "ashyria" then
-            local indoors = table.contains(gmcp.Room.Info.details, "indoors")
-            if indoors and (getRoomUserData(num, "indoors") == '' or getRoomUserData(num,"outdoors") ~= '') then
-            setRoomUserData(num, "indoors", "y")
-            clearRoomUserDataItem(num, "outdoors")
-            s = s .. (#s &gt; 0 and " " or "") .. "Updated room to be indoors."
-          elseif not indoors and (getRoomUserData(num, "indoors") ~= '' or getRoomUserData(num, "outdoors") == '') then
-            clearRoomUserDataItem(num, "indoors")
-            setRoomUserData(num, "outdoors", "y")
-            s = s .. (#s &gt; 0 and " " or "") .. "Updated room to be outdoors."
-          end
-        end
-
-          -- check server area name (Achaea only for now)
-          if mmp.game == "achaea" then
-            local serverArea = gmcp.Room.Info.area
-            if serverArea ~= getRoomUserData(num, "Game Area") then
-              setRoomUserData(num, "Game Area", serverArea)
-              s = s .. (#s &gt; 0 and " " or "") .. "Updated game area to " .. serverArea .. "."
-            end
-          end
-          -- check for wilderness exits
-          if getRoomChar(num) ~= "W" and table.contains(gmcp.Room.Info.details, "wilderness") then
-            setRoomChar(num, "W")
-            s = s .. (#s &gt; 0 and " " or "") .. "Added the wilderness mark."
-          end
+          mmp.syncSafeRoomInfo(num)
         end
         if #s &gt; 0 then
           mmp.echo(s)
