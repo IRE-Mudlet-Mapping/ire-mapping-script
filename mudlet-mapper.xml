@@ -6169,7 +6169,7 @@ if not service.wrappersInstalled then
     setRoomUserData = setRoomUserData, clearRoomUserDataItem = clearRoomUserDataItem,
     addSpecialExit = addSpecialExit, removeSpecialExit = removeSpecialExit,
     clearSpecialExits = clearSpecialExits, lockSpecialExit = lockSpecialExit,
-    setExitWeight = setExitWeight, setExit = mmp.setExit
+    setExitWeight = setExitWeight
   }
   local original = service.original
 
@@ -6303,15 +6303,17 @@ if not service.wrappersInstalled then
     return result
   end
 
-  function mmp.setExit(roomNumber, destination, direction)
-    local result = original.setExit(roomNumber, destination, direction)
-    if result ~= false then
-      local change = { roomNumber = tonumber(roomNumber), direction = directions[direction] }
-      if tonumber(destination) == -1 then change.type = "delete-exit"
-      else change.type, change.destination = "modify-exit", tonumber(destination) end
-      service.submit(change)
+  function service.wrapSetExit(originalSetExit)
+    function mmp.setExit(roomNumber, destination, direction)
+      local result = originalSetExit(roomNumber, destination, direction)
+      if result ~= false then
+        local change = { roomNumber = tonumber(roomNumber), direction = directions[direction] }
+        if tonumber(destination) == -1 then change.type = "delete-exit"
+        else change.type, change.destination = "modify-exit", tonumber(destination) end
+        service.submit(change)
+      end
+      return result
     end
-    return result
   end
 end
 
@@ -10444,7 +10446,7 @@ end</script>
 					<name>Fix setExit</name>
 					<packageName></packageName>
 					<script>do
-local serviceSetExit = mmp.setExit
+local oldsetExit = setExit
 
 local exitmap = {
   n = 1,
@@ -10474,8 +10476,9 @@ local exitmap = {
 function mmp.setExit(from, to, direction)
   if type(direction) == "string" and not exitmap[direction] then return false end
 
-  return serviceSetExit(from, to, type(direction) == "string" and exitmap[direction] or direction)
+  return oldsetExit(from, to, type(direction) == "string" and exitmap[direction] or direction)
 end
+mmp.crowdmapService.wrapSetExit(mmp.setExit)
 end</script>
 					<eventHandlerList />
 				</Script>
