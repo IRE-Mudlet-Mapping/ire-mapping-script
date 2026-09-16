@@ -6259,13 +6259,13 @@ if not service.wrappersInstalled then
 
   function addSpecialExit(roomNumber, destination, command)
     local result = original.addSpecialExit(roomNumber, destination, command)
-    if result ~= false then service.submit({ type = "modify-special-exit", roomNumber = tonumber(roomNumber), destination = tonumber(destination), exitCommand = command }) end
+    if result ~= false and command ~= mmp.whirlString then service.submit({ type = "modify-special-exit", roomNumber = tonumber(roomNumber), destination = tonumber(destination), exitCommand = command }) end
     return result
   end
 
   function removeSpecialExit(roomNumber, command)
     local result = original.removeSpecialExit(roomNumber, command)
-    if result ~= false then service.submit({ type = "delete-special-exit", roomNumber = tonumber(roomNumber), exitCommand = command }) end
+    if result ~= false and command ~= mmp.whirlString then service.submit({ type = "delete-special-exit", roomNumber = tonumber(roomNumber), exitCommand = command }) end
     return result
   end
 
@@ -6275,7 +6275,9 @@ if not service.wrappersInstalled then
     if result ~= false then
       for _, command in pairs(exits) do
         if type(command) == "table" then command = next(command) end
-        service.submit({ type = "delete-special-exit", roomNumber = tonumber(roomNumber), exitCommand = command })
+        if command ~= mmp.whirlString then
+          service.submit({ type = "delete-special-exit", roomNumber = tonumber(roomNumber), exitCommand = command })
+        end
       end
     end
     return result
