@@ -366,9 +366,9 @@ disableTrigger"Mudlet Mapper prompt trigger"</script>
 			<Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
 				<name>No wormhole</name>
 				<script>if mmp.speedWalkDir and mmp.speedWalkDir[mmp.speedWalkCounter] and mmp.speedWalkDir[mmp.speedWalkCounter]=="worm warp" then
-  mmp.echo("Missing wormhole detected, locking wormhole and trying new path...")
+  mmp.echo("Missing wormhole detected, removing wormhole and trying new path...")
 
-  lockSpecialExit(mmp.currentroom, mmp.speedWalkPath[mmp.speedWalkCounter], "worm warp", true)
+  removeSpecialExit(mmp.currentroom, "worm warp")
 
   local destination = mmp.speedWalkPath[#mmp.speedWalkPath]
 
