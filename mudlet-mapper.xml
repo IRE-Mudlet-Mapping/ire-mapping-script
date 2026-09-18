@@ -6109,6 +6109,7 @@ end</script>
 				<packageName></packageName>
 				<script>mmp.crowdmapService = mmp.crowdmapService or {}
 local service = mmp.crowdmapService
+service.pendingChanges = service.pendingChanges or {}
 
 local function endpoint(path)
   return mmp.settings.crowdmapserviceurl:gsub("/+$", "") .. path
@@ -6121,10 +6122,17 @@ local function reporter()
   return getProfileName and getProfileName() or "anonymous"
 end
 
+function service.sendNext()
+  if service.inFlight or #service.pendingChanges == 0 then return end
+  service.inFlight = true
+  postHTTP(yajl.to_string(table.remove(service.pendingChanges, 1)), endpoint("/change"), { ["Content-Type"] = "application/json" })
+end
+
 function service.submit(change)
   if not mmp.settings.crowdmapservicesend or service.suspended then return end
   change.reporter = reporter()
-  postHTTP(yajl.to_string(change), endpoint("/change"), { ["Content-Type"] = "application/json" })
+  table.insert(service.pendingChanges, change)
+  service.sendNext()
 end
 
 function service.localOnly(callback)
@@ -6318,7 +6326,18 @@ if not service.wrappersInstalled then
 end
 
 registerNamedEventHandler("mapper", "crowdmapServicePostError", "sysPostHttpError", function(_, error, url)
-  if url == endpoint("/change") then mmp.echo("Could not send map change to crowdmap service: " .. error) end
+  if url == endpoint("/change") then
+    service.inFlight = false
+    mmp.echo("Could not send map change to crowdmap service: " .. error)
+    service.sendNext()
+  end
+end)
+
+registerNamedEventHandler("mapper", "crowdmapServicePostDone", "sysPostHttpDone", function(_, url)
+  if url == endpoint("/change") then
+    service.inFlight = false
+    service.sendNext()
+  end
 end)</script>
 				<eventHandlerList />
 			</Script>
