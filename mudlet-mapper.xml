@@ -5944,16 +5944,17 @@ function mmp.startup()
     return
   end
   local private_settings = {}
+  local crowdmapGames = {achaea = true, starmourn = true, lusternia = true, stickmud = true, ashyria = true, asteria = true, imperian = true, aetolia = true}
 
   --General settings
 
   private_settings["echocolour"] = mmp.createOption("cyan", mmp.changeEchoColour, {"string"}, "Set the color for room number echos?", function(newSetting) return color_table[newSetting] ~= nil end)
-  private_settings["crowdmap"] = mmp.createOption(false, mmp.changeMapSource, {"boolean"}, "Use a crowd-sourced map instead of games default?", nil, {achaea = true, starmourn = true, lusternia = true, stickmud = true, ashyria = true, asteria = true, imperian = true, aetolia = true})
-  private_settings["crowdmapservicesend"] = mmp.createOption(false, mmp.changeBoolFunc, {"boolean"}, "Send local map changes to a crowdmap service?")
+  private_settings["crowdmap"] = mmp.createOption(false, mmp.changeMapSource, {"boolean"}, "Use a crowd-sourced map instead of games default?", nil, crowdmapGames)
+  private_settings["crowdmapservicesend"] = mmp.createOption(false, mmp.changeBoolFunc, {"boolean"}, "Send local map changes to a crowdmap service?", nil, crowdmapGames)
   private_settings["gmcpmapupdates"] = mmp.createOption(false, mmp.changeBoolFunc, {"boolean"}, "Apply safe GMCP room information to existing map rooms, even when mapping mode is off?")
-  private_settings["crowdmapserviceurl"] = mmp.createOption("https://achaea-crowdmap.schova.de", nil, {"string"}, "Crowdmap service endpoint URL.", function(value) return value:match("^https?://") ~= nil end)
-  private_settings["crowdmapservicesource"] = mmp.createOption(false, function() if mmp.settings.crowdmapservicesource then mmp.checkforupdate() end end, {"boolean"}, "Source map updates from the configured crowdmap service?")
-  private_settings["crowdmapservicereports"] = mmp.createOption(2, nil, {"number"}, "Required independent reports for changes sourced from the crowdmap service.", function(value) return value >= 0 and value == math.floor(value) end)
+  private_settings["crowdmapserviceurl"] = mmp.createOption("https://&lt;game&gt;.mudmaps.community", nil, {"string"}, "Crowdmap service endpoint URL. Use &lt;game&gt; to derive the subdomain from the connected game.", function(value) return value:match("^https?://") ~= nil end, crowdmapGames)
+  private_settings["crowdmapservicesource"] = mmp.createOption(false, function() if mmp.settings.crowdmapservicesource then mmp.checkforupdate() end end, {"boolean"}, "Source map updates from the configured crowdmap service?", nil, crowdmapGames)
+  private_settings["crowdmapservicereports"] = mmp.createOption(2, nil, {"number"}, "Required independent reports for changes sourced from the crowdmap service.", function(value) return value >= 0 and value == math.floor(value) end, crowdmapGames)
   private_settings["showcmds"] = mmp.createOption(true, mmp.changeBoolFunc, {"boolean"}, "Show walking commands?")
   private_settings["laglevel"] = mmp.createOption(1, mmp.changeLaglevel, {"number"}, "How laggy is your connection, (fast 1&lt;-&gt;5 slow)?", mmp.verifyLaglevel)
   private_settings["slowwalk"] = mmp.createOption(false, mmp.setSlowWalk, {"boolean"}, "Walk slowly instead of as quick as possible?")
@@ -6112,7 +6113,12 @@ local service = mmp.crowdmapService
 service.pendingChanges = service.pendingChanges or {}
 
 local function endpoint(path)
-  return mmp.settings.crowdmapserviceurl:gsub("/+$", "") .. path
+  local url = mmp.settings.crowdmapserviceurl
+  if url == "https://&lt;game&gt;.mudmaps.community" then
+    if type(mmp.game) ~= "string" then error("Cannot derive the crowdmap service URL before the game is known.") end
+    url = "https://" .. mmp.game .. ".mudmaps.community"
+  end
+  return url:gsub("/+$", "") .. path
 end
 
 local function reporter()
