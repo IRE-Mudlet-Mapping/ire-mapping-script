@@ -5949,12 +5949,11 @@ function mmp.startup()
   --General settings
 
   private_settings["echocolour"] = mmp.createOption("cyan", mmp.changeEchoColour, {"string"}, "Set the color for room number echos?", function(newSetting) return color_table[newSetting] ~= nil end)
-  private_settings["crowdmap"] = mmp.createOption(false, mmp.changeMapSource, {"boolean"}, "Use a crowd-sourced map instead of games default?", nil, crowdmapGames)
-  private_settings["crowdmapservicesend"] = mmp.createOption(false, mmp.changeBoolFunc, {"boolean"}, "Send local map changes to a crowdmap service?", nil, crowdmapGames)
+  private_settings["mapsource"] = mmp.createOption("game", mmp.changeMapSource, {"string"}, "Map source: game, published, or service.", function(value) return value == "game" or value == "published" or value == "service" end, crowdmapGames)
+  private_settings["crowdmapservicesend"] = mmp.createOption(false, mmp.changeBoolFunc, {"boolean"}, "Send local map changes to the service?", nil, crowdmapGames, function() return mmp.settings.mapsource == "service" end)
   private_settings["gmcpmapupdates"] = mmp.createOption(false, mmp.changeBoolFunc, {"boolean"}, "Apply safe GMCP room information to existing map rooms, even when mapping mode is off?")
-  private_settings["crowdmapserviceurl"] = mmp.createOption("https://&lt;game&gt;.mudmaps.community", nil, {"string"}, "Crowdmap service endpoint URL. Use &lt;game&gt; to derive the subdomain from the connected game.", function(value) return value:match("^https?://") ~= nil end, crowdmapGames)
-  private_settings["crowdmapservicesource"] = mmp.createOption(false, function() if mmp.settings.crowdmapservicesource then mmp.checkforupdate() end end, {"boolean"}, "Source map updates from the configured crowdmap service?", nil, crowdmapGames)
-  private_settings["crowdmapservicereports"] = mmp.createOption(2, nil, {"number"}, "Required independent reports for changes sourced from the crowdmap service.", function(value) return value >= 0 and value == math.floor(value) end, crowdmapGames)
+  private_settings["crowdmapserviceurl"] = mmp.createOption("https://&lt;game&gt;.mudmaps.community", nil, {"string"}, "Crowdmap service endpoint URL. Use &lt;game&gt; to derive the subdomain from the connected game.", function(value) return value:match("^https?://") ~= nil end, crowdmapGames, function() return mmp.settings.mapsource == "service" end)
+  private_settings["crowdmapservicereports"] = mmp.createOption(2, nil, {"number"}, "Required independent reports for changes sourced from the service.", function(value) return value >= 0 and value == math.floor(value) end, crowdmapGames, function() return mmp.settings.mapsource == "service" end)
   private_settings["showcmds"] = mmp.createOption(true, mmp.changeBoolFunc, {"boolean"}, "Show walking commands?")
   private_settings["laglevel"] = mmp.createOption(1, mmp.changeLaglevel, {"number"}, "How laggy is your connection, (fast 1&lt;-&gt;5 slow)?", mmp.verifyLaglevel)
   private_settings["slowwalk"] = mmp.createOption(false, mmp.setSlowWalk, {"boolean"}, "Walk slowly instead of as quick as possible?")
@@ -6135,7 +6134,7 @@ function service.sendNext()
 end
 
 function service.submit(change)
-  if not mmp.settings.crowdmapservicesend or service.suspended then return end
+  if mmp.settings.mapsource ~= "service" or not mmp.settings.crowdmapservicesend or service.suspended then return end
   change.reporter = reporter()
   table.insert(service.pendingChanges, change)
   service.sendNext()
@@ -6493,7 +6492,7 @@ local spairs = spairs or function(tbl, order)
 end
 
 
-function mmp.createOption(startingValue, onChangeFunc, allowedVarTypes, use, checkOption, games)
+function mmp.createOption(startingValue, onChangeFunc, allowedVarTypes, use, checkOption, games, visibleWhen)
 	if allowedVarTypes then -- make sure our starting Value follows type rules
 		if not table.contains(allowedVarTypes, type(startingValue)) then
 			echo("Starting type is not of allowed type!\n")
@@ -6509,6 +6508,7 @@ function mmp.createOption(startingValue, onChangeFunc, allowedVarTypes, use, che
 		allowedVarTypes = allowedVarTypes,
 		use = use or "",
 		games = games,
+		visibleWhen = visibleWhen,
 		checkOption = checkOption or function() return true end
 	}
 
@@ -6537,7 +6537,7 @@ function mmp.createOptionsTable(defaultTable)
 	function proxyTable:showAllOptions(game)
 		proxyTable.disp("Available options: \n")
 		for k, v in spairs(self[index]) do
-			if not game or not v.games or v.games[game] then
+			if (not game or not v.games or v.games[game]) and (not v.visibleWhen or v.visibleWhen()) then
 				self.dispOption(k, v)
 			end
 		end
@@ -7977,7 +7977,7 @@ function mmp.achaeaBetterWings()
   if
     (mmp.game ~= "achaea") or
     (not mmp.settings.betterwings) or
-    (not mmp.settings.crowdmap) or
+    (mmp.settings.mapsource ~= "published") or
     (getRoomUserData(mmp.currentroom, "outdoors") == "y" and orbedBlackList()(mmp.currentroom))
   then
     return
@@ -9783,15 +9783,18 @@ end
 
 
 function mmp.changeMapSource()
-  local use = mmp.settings.crowdmap and true or false
-  if use and not (mmp.game == "achaea" or mmp.game == "starmourn" or mmp.game == "lusternia" or mmp.game == "stickmud" or mmp.game == "ashyria" or mmp.game == "asteria" or mmp.game == "imperian" or mmp.game == "aetolia") then
+  local source = mmp.settings.mapsource
+  if source ~= "game" and not (mmp.game == "achaea" or mmp.game == "starmourn" or mmp.game == "lusternia" or mmp.game == "stickmud" or mmp.game == "ashyria" or mmp.game == "asteria" or mmp.game == "imperian" or mmp.game == "aetolia") then
     mmp.echo("Sorry - the crowdsourced map is only available for use in Achaea, Starmourn, Lusternia, StickMUD, Ashyria and Asteria. If you'd like to help start one for your game, please post at http://forums.mudlet.org/viewtopic.php?f=13&amp;t=1696. If you are playing one of the games, then it is likely that you just downloaded the script - and it doesn't know what you are playing. Reconnect and it'll know.")
-    mmp.settings.crowdmap = false
-  elseif use and not loadMap then
+    mmp.settings:setOption("mapsource", "game", true)
+  elseif source ~= "game" and not loadMap then
    mmp.echo("Sorry - your Mudlet is too old and can't load maps. Please update: http://forums.mudlet.org/viewtopic.php?f=5&amp;t=1874")
-   mmp.settings.crowdmap = false
-  elseif use then
-    mmp.echo("Will use the crowdsourced map for updates instead!")
+   mmp.settings:setOption("mapsource", "game", true)
+  elseif source == "published" then
+    mmp.echo("Will use the published crowdsourced map for updates instead!")
+    mmp.checkforupdate()
+  elseif source == "service" then
+    mmp.echo("Will use the live crowdmap service for updates instead!")
     mmp.checkforupdate()
   else
     mmp.echo("Will use the default game map for updates.")
@@ -11134,10 +11137,37 @@ end</script>
 				<Script isActive="yes" isFolder="no">
 					<name>mmp.loadOptions</name>
 					<packageName></packageName>
-					<script>function mmp.loadOptions()
+					<script>function mmp.migrateOptions(options)
+	if type(options) ~= "table" then return end
+
+	-- Pre-PR profiles only know the published Crowdmap toggle. PR #202 added a
+	-- second service-source toggle. Fold both historical settings into one enum;
+	-- the live service wins if both were enabled, matching the former download
+	-- precedence. Remove old keys so later loads remain quiet and deterministic.
+	if options.mapsource == nil then
+		if options.crowdmapservicesource then
+			options.mapsource = "service"
+		elseif options.crowdmap then
+			options.mapsource = "published"
+		else
+			options.mapsource = "game"
+		end
+	end
+	options.crowdmap = nil
+	options.crowdmapservicesource = nil
+
+	-- PR #202 originally used this Achaea-specific endpoint as its default. Only
+	-- replace that exact value: every other value is a user-selected endpoint.
+	if options.crowdmapserviceurl == "https://achaea-crowdmap.schova.de" then
+		options.crowdmapserviceurl = "https://&lt;game&gt;.mudmaps.community"
+	end
+end
+
+function mmp.loadOptions()
 	local loadTable = mmp.loadLocks()
 
 	if loadTable.options then
+		mmp.migrateOptions(loadTable.options)
 		for k, v in pairs(loadTable.options) do
 			mmp.settings:setOption(k, v, true)
 		end
@@ -11313,7 +11343,7 @@ registerAnonymousEventHandler("started speedwalk", "mmp.unwearShackle")</script>
 function mmp.getAchaeaOrbTable()
   return
   --first table is areas in each org for the crowdmap, second is for the game provided map.
-    mmp.settings.crowdmap and
+    mmp.settings.mapsource ~= "game" and
     {
       ashtan = {49, 53},
       cyrene = {57, 59, 62, 63, 68, 70},
@@ -12797,7 +12827,7 @@ end</script>
 	mmp.checkingupdates = false
 
     local function needupdate(currentmd5, oldmd5)
-      if not mmp.settings.crowdmap and not mmp.settings.crowdmapservicesource then
+      if mmp.settings.mapsource == "game" then
         mmp.echon("The games map was ")
         echoLink("updated", '', "New MD5: "..tostring(currentmd5)..", previous MD5: "..(oldmd5 or "(none)"), true)
         echo(" - you should update yours! Go to Settings -&gt; Mapper tab and click on the 'Download' button there. Once you've updated, ")
@@ -12811,7 +12841,7 @@ end</script>
 
     local f, s = io.open(filename)
     if f then s = f:read("*a"); io.close(f) end
-    if mmp.settings.crowdmapservicesource and s:sub(1, 1) == '"' then
+    if mmp.settings.mapsource == "service" and s:sub(1, 1) == '"' then
       local ok, decoded = pcall(yajl.to_value, s)
       if ok and type(decoded) == "string" then s = decoded end
     end
@@ -12871,9 +12901,9 @@ function mmp.checkforupdate()
         return
       end
     end
-    if mmp.settings.crowdmapservicesource then
+    if mmp.settings.mapsource == "service" then
       downloadFile(mmp.mapfile, mmp.crowdmapService.versionUrl())
-    elseif mmp.settings.crowdmap then
+    elseif mmp.settings.mapsource == "published" then
       if game == "achaea" then
         downloadFile(
           mmp.mapfile, "http://ire-mudlet-mapping.github.io/AchaeaCrowdmap/Map/version.txt"
@@ -12942,7 +12972,7 @@ end
 
 function mmp.retrievecrowdchangelog()
   mmp.crowdchangelogfile = downloadfolder .. "crowdchangelogfile"
-  if mmp.settings.crowdmapservicesource then
+  if mmp.settings.mapsource == "service" then
     mmp.downloadcrowdmap(mmp.newversion)
   elseif mmp.game == "achaea" then
     downloadFile(
@@ -13017,7 +13047,7 @@ function mmp.downloadcrowdmap(newversion)
   end
   f:write(newversion)
   f:close()
-  if mmp.settings.crowdmapservicesource then
+  if mmp.settings.mapsource == "service" then
     downloadFile(mmp.crowdmapfile, mmp.crowdmapService.mapUrl())
   elseif mmp.game == "achaea" then
     downloadFile(mmp.crowdmapfile, "http://ire-mudlet-mapping.github.io/AchaeaCrowdmap/Map/map")
