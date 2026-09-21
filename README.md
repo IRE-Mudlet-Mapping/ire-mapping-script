@@ -1,15 +1,53 @@
 # IRE Mapping Script
 
-## Crowdmap service
+## Map sources and the Crowdmap service
 
-The mapper can optionally submit map edits to, and source maps from, a crowdmap
-service. Both behaviors are disabled by default and can be configured
-independently with `mconfig`:
+The mapper can download maps from one of three sources. Set the source with
+`mconfig mapsource &lt;source&gt;`:
 
-- `crowdmapservicesend`: send local map mutations to the service.
-- `crowdmapserviceurl`: base URL of the crowdmap service.
-- `crowdmapservicesource`: download map versions and maps from the service.
-- `crowdmapservicereports`: number of independent reports required in sourced maps.
+| Source | Command | What it uses |
+| --- | --- | --- |
+| Game | `mconfig mapsource game` | The map provided by the game. This is the default. |
+| Published Crowdmap | `mconfig mapsource published` | The established, periodically published community map. |
+| Crowdmap service | `mconfig mapsource service` | A live map assembled by the Crowdmap service from player reports. |
+
+The published Crowdmap and the live service are different layers. The published
+map is the conservative, static community release. The service map is updated
+as reports arrive, so it will generally be more current, but it can also be
+more fragile while a recent change has not yet been corroborated. Choose
+`published` when you prefer the established release; choose `service` when you
+want the most up-to-date shared map and are comfortable with that trade-off.
+
+When `mapsource` is `service`, these additional settings appear in `mconfig`:
+
+- `crowdmapserviceurl` is the service endpoint. Its default is
+  `https://&lt;game&gt;.mudmaps.community`, which automatically uses the connected
+  game's subdomain. Set an explicit URL only when using a different service.
+- `crowdmapservicereports` is the number of independent reports required before
+  a reported change is included in the map you download. The default is `2`;
+  a higher value is more conservative, while `0` includes reports immediately.
+- `crowdmapservicesend` controls whether your local mapping changes are sent to
+  the service. It is off by default.
+
+With sending enabled, normal mapper operations that change the map—such as
+recording room information, adding or removing exits, changing room and area
+details, doors, labels, or other supported map data—are submitted as reports.
+The mapper identifies the reporter from GMCP character data when available,
+falling back to the Mudlet profile name. A successful local mapping operation
+does not depend on the service: your local map is changed first. If submitting
+the report fails, the mapper displays an error and the local edit remains.
+
+The service only works well when people participate. If you use the service,
+please enable `crowdmapservicesend`: your reports help keep the shared map
+current and give other players the independent confirmation needed for their
+report thresholds. You do not need to map deliberately to help: also enable
+`gmcpmapupdates` and safe room information learned through normal gameplay can
+be applied and contributed without a dedicated mapping session.
+
+The service does not make a report universal by itself. Other reports and your
+`crowdmapservicereports` threshold determine when it appears in the service map
+you download. Review the source selection and report threshold before relying
+on newly reported map changes for navigation.
 
 ## GMCP map updates
 
