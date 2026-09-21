@@ -6177,7 +6177,9 @@ if not service.wrappersInstalled then
     setRoomUserData = setRoomUserData, clearRoomUserDataItem = clearRoomUserDataItem,
     addSpecialExit = addSpecialExit, removeSpecialExit = removeSpecialExit,
     clearSpecialExits = clearSpecialExits, lockSpecialExit = lockSpecialExit,
-    setExitWeight = setExitWeight
+    setExitWeight = setExitWeight, setDoor = setDoor,
+    setMapUserData = setMapUserData, clearMapUserDataItem = clearMapUserDataItem,
+    createMapLabel = createMapLabel, deleteMapLabel = deleteMapLabel
   }
   local original = service.original
 
@@ -6309,6 +6311,67 @@ if not service.wrappersInstalled then
       service.submit(change)
     end
     return result
+  end
+
+  if original.setDoor then
+    function setDoor(roomNumber, exit, status)
+      local result = original.setDoor(roomNumber, exit, status)
+      local direction = directions[exit]
+      if result ~= false and direction then
+        service.submit({ type = "set-exit-door", roomNumber = tonumber(roomNumber), direction = direction, status = tonumber(status) })
+      end
+      return result
+    end
+  end
+
+  if original.setMapUserData then
+    function setMapUserData(key, value)
+      local result = original.setMapUserData(key, value)
+      if result ~= false then service.submit({ type = "set-map-user-data", key = key, value = value }) end
+      return result
+    end
+  end
+
+  if original.clearMapUserDataItem then
+    function clearMapUserDataItem(key)
+      local result = original.clearMapUserDataItem(key)
+      if result ~= false then service.submit({ type = "delete-map-user-data", key = key }) end
+      return result
+    end
+  end
+
+  if original.createMapLabel and getMapLabel then
+    function createMapLabel(...)
+      local arguments, argumentCount = {...}, select("#", ...)
+      local areaId, showOnTop, noScaling = arguments[1], arguments[14], arguments[15]
+      local foregroundTransparency, backgroundTransparency = arguments[17], arguments[18]
+      local labelId = original.createMapLabel(unpack(arguments, 1, argumentCount))
+      if labelId ~= false and labelId ~= nil then
+        local label = getMapLabel(areaId, labelId)
+        if label and label.FgColor and label.BgColor then
+          service.submit({
+            type = "set-map-label", areaId = tonumber(areaId), labelId = labelId,
+            label = {
+              text = label.Text, x = label.X, y = label.Y, z = label.Z,
+              width = label.Width, height = label.Height,
+              fgColor = { alpha = foregroundTransparency or 255, r = label.FgColor.r, g = label.FgColor.g, b = label.FgColor.b },
+              bgColor = { alpha = backgroundTransparency or 50, r = label.BgColor.r, g = label.BgColor.g, b = label.BgColor.b },
+              noScaling = noScaling == nil and true or noScaling,
+              showOnTop = showOnTop == nil and true or showOnTop
+            }
+          })
+        end
+      end
+      return labelId
+    end
+  end
+
+  if original.deleteMapLabel then
+    function deleteMapLabel(areaId, labelId)
+      local result = original.deleteMapLabel(areaId, labelId)
+      if result ~= false then service.submit({ type = "delete-map-label", areaId = tonumber(areaId), labelId = tonumber(labelId) }) end
+      return result
+    end
   end
 
   function service.wrapSetExit(originalSetExit)
