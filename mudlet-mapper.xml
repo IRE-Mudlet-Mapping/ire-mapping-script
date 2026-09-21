@@ -6127,6 +6127,12 @@ local function reporter()
   return getProfileName and getProfileName() or "anonymous"
 end
 
+local function queryValue(value)
+  return tostring(value):gsub("([^%w%-_%.~])", function(character)
+    return string.format("%%%02X", string.byte(character))
+  end)
+end
+
 function service.sendNext()
   if service.inFlight or #service.pendingChanges == 0 then return end
   service.inFlight = true
@@ -6152,11 +6158,11 @@ end
 mmp.localMapChanges = service.localOnly
 
 function service.versionUrl()
-  return endpoint("/map/version?timesSeen=" .. mmp.settings.crowdmapservicereports)
+  return endpoint("/map/version?timesSeen=" .. mmp.settings.crowdmapservicereports .. "&amp;reporter=" .. queryValue(reporter()))
 end
 
 function service.mapUrl()
-  return endpoint("/map?format=binary&amp;timesSeen=" .. mmp.settings.crowdmapservicereports)
+  return endpoint("/map?format=binary&amp;timesSeen=" .. mmp.settings.crowdmapservicereports .. "&amp;reporter=" .. queryValue(reporter()))
 end
 
 local directions = {

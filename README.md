@@ -24,8 +24,10 @@ When `mapsource` is `service`, these additional settings appear in `mconfig`:
   `https://&lt;game&gt;.mudmaps.community`, which automatically uses the connected
   game's subdomain. Set an explicit URL only when using a different service.
 - `crowdmapservicereports` is the number of independent reports required before
-  a reported change is included in the map you download. The default is `2`;
-  a higher value is more conservative, while `0` includes reports immediately.
+  another mapper's reported change is included in the map you download. The
+  default is `2`; a higher value is more conservative, while `0` includes
+  reports immediately. Your own reports are always included, so they remain in
+  your downloaded map while awaiting independent confirmation.
 - `crowdmapservicesend` controls whether your local mapping changes are sent to
   the service. It is off by default.
 
@@ -45,8 +47,9 @@ report thresholds. You do not need to map deliberately to help: also enable
 be applied and contributed without a dedicated mapping session.
 
 The service does not make a report universal by itself. Other reports and your
-`crowdmapservicereports` threshold determine when it appears in the service map
-you download. Review the source selection and report threshold before relying
+`crowdmapservicereports` threshold determine when it appears in other mappers'
+service maps. Your own reports remain in your service map while awaiting
+confirmation. Review the source selection and report threshold before relying
 on newly reported map changes for navigation.
 
 ## GMCP map updates
