@@ -371,7 +371,7 @@ disableTrigger"Mudlet Mapper prompt trigger"</script>
   local wormholeDestination = mmp.speedWalkPath[mmp.speedWalkCounter]
   removeSpecialExit(mmp.currentroom, "worm warp")
   local reverseExits = getSpecialExits(wormholeDestination) or {}
-  if reverseExits[mmp.currentroom] and next(reverseExits[mmp.currentroom]) == "worm warp" then
+  if reverseExits[mmp.currentroom] and reverseExits[mmp.currentroom]["worm warp"] then
     removeSpecialExit(wormholeDestination, "worm warp")
   end
 
@@ -5645,7 +5645,9 @@ tempTimer(10, [[disableTrigger'Parse wholist']])</script>
 			</Alias>
 			<Alias isActive="yes" isFolder="no">
 				<name>Add Room Mark</name>
-				<script>local visibility, first, second = matches[2] or "private", matches[3], matches[4]
+				<script>local visibility, first, second = matches[2], matches[3], matches[4]
+visibility = visibility ~= "" and visibility or "private"
+second = second ~= "" and second or nil
 local location, markname
 if not second then
   markname, location = first, mmp.currentroom
@@ -5661,7 +5663,7 @@ mmp.setRoomMark(markname, location, visibility)</script>
 			</Alias>
 			<Alias isActive="yes" isFolder="no">
 				<name>Remove Room Mark</name>
-				<script>mmp.removeRoomMark(matches[3], matches[2] or "private")</script>
+				<script>mmp.removeRoomMark(matches[3], matches[2] ~= "" and matches[2] or "private")</script>
 				<command></command>
 				<packageName></packageName>
 				<regex>^room unmark (?:(private|public) )?(\w+)$</regex>
@@ -5876,6 +5878,17 @@ mmp =
     ferry_rooms = {},
   }
 mmp.speedWalkWatch = createStopWatch()
+
+function mmp.roomDetails()
+  local info = gmcp and gmcp.Room and gmcp.Room.Info
+  return info and type(info.details) == "table" and info.details or nil
+end
+
+function mmp.hasRoomDetail(detail)
+  local details = mmp.roomDetails()
+  return details and table.contains(details, detail) or false
+end
+
 -- speedWalkPath and speedWalkDir populated by Mudlet from getPath() and gotoRoom()
 speedWalkPath = speedWalkPath or {}
 speedWalkDir = speedWalkDir or {}
@@ -6146,6 +6159,14 @@ function service.submit(change)
   if mmp.settings.mapsource ~= "service" or not mmp.settings.crowdmapservicesend or service.suspended then return end
   table.insert(service.pendingChanges, { change = change, attempts = 0 })
   service.sendNext()
+end
+
+function service.promoteHashOnlyRoom(roomNumber)
+  service.submit({ type = "create-room", roomNumber = tonumber(roomNumber) })
+  local hash = getRoomHashByID(roomNumber)
+  if hash and hash ~= "" then
+    service.submit({ type = "set-room-hash", roomNumber = tonumber(roomNumber), hash = hash })
+  end
 end
 
 function service.localOnly(callback)
@@ -6550,8 +6571,8 @@ end</script>
     updates[#updates + 1] = "Updated environment name to " .. info.environment .. "."
   end
 
-  local details = info.details or {}
-  if mmp.game ~= "asteria" and mmp.game ~= "ashyria" then
+  local details = mmp.roomDetails()
+  if details and mmp.game ~= "asteria" and mmp.game ~= "ashyria" then
     local indoors = table.contains(details, "indoors")
     if indoors and (getRoomUserData(roomNumber, "indoors") == "" or getRoomUserData(roomNumber, "outdoors") ~= "") then
       setRoomUserData(roomNumber, "indoors", "y")
@@ -6569,7 +6590,7 @@ end</script>
     updates[#updates + 1] = "Updated game area to " .. info.area .. "."
   end
 
-  if getRoomChar(roomNumber) ~= "W" and table.contains(details, "wilderness") then
+  if details and getRoomChar(roomNumber) ~= "W" and table.contains(details, "wilderness") then
     setRoomChar(roomNumber, "W")
     updates[#updates + 1] = "Added the wilderness mark."
   end
@@ -7176,7 +7197,7 @@ function mmp.speedwalking(event, num)
   -- Try to track if we're flying or not, for Imperian wings
   -- This is to avoid being "off path" if we FLY due to wings.
   local madeflight = false
-  if gmcp.Room then
+  if gmcp.Room and gmcp.Room.Info then
     local flying = false
     if string.find(gmcp.Room.Info.name, "^flying above") then
       flying = true
@@ -7195,13 +7216,14 @@ function mmp.speedwalking(event, num)
     mmp.flying = false
   end
   -- track if we're inside or outside, if possible
-  if gmcp.Room then
+  local details = mmp.roomDetails()
+  if gmcp.Room and gmcp.Room.Info and details then
     local areaID = getRoomArea(mmp.currentroom)
     if
       mmp.inside and
       not (
-        table.contains(gmcp.Room.Info.details, "indoors") or
-        table.contains(gmcp.Room.Info.details, "considered indoors")
+        table.contains(details, "indoors") or
+        table.contains(details, "considered indoors")
       ) and
       not mmp.orbed()
     then
@@ -7210,8 +7232,8 @@ function mmp.speedwalking(event, num)
     elseif
       not mmp.inside and
       (
-        table.contains(gmcp.Room.Info.details, "indoors") or
-        table.contains(gmcp.Room.Info.details, "considered indoors") or
+        table.contains(details, "indoors") or
+        table.contains(details, "considered indoors") or
         mmp.orbed()
       )
     then
@@ -7264,7 +7286,7 @@ function mmp.speedwalking(event, num)
   elseif
     #mmp.speedWalkPath &gt; 0 and
     not mmp.ferry_rooms[num] and
-    not (gmcp.Room.Info.details and table.contains(gmcp.Room.Info.details, "ferry"))
+    not mmp.hasRoomDetail("ferry")
   then
     -- ended up somewhere we didn't want to be, and this isn't a ferry room?
     speedWalkMoved = false
@@ -7601,11 +7623,13 @@ end</script>
 				<script>--genericized version of the went_outside event handlers.
 --when you go outside, it sees if a shorter path can be found using external links. If so, routes you on the new path instead.
 function mmp.wentOutside()
+  local details = mmp.roomDetails()
   if
     not mmp.autowalking or
     (mmp.currentroom == mmp.speedWalkPath[#mmp.speedWalkPath]) or
-    table.contains(gmcp.Room.Info.details, "indoors") or
-    table.contains(gmcp.Room.Info.details, "considered indoors") or
+    not details or
+    table.contains(details, "indoors") or
+    table.contains(details, "considered indoors") or
     mmp.orbed(mmp.currentroom)
   then
     return
@@ -8252,7 +8276,7 @@ function mmp.addWingsLusternia()
       if mmp.usebubblix() then
         if table.contains(bubblix.areas, gmcp.Room.Info.area) then
           mmp.tempSpecialExit(mmp.currentroom, 6831, command)
-        elseif not table.contains(gmcp.Room.Info.details, "an Aetherbubble") then
+        elseif mmp.roomDetails() and not mmp.hasRoomDetail("an Aetherbubble") then
           mmp.tempSpecialExit(mmp.currentroom, bubblix.room, command)
         end
       end
@@ -8276,8 +8300,8 @@ function mmp.addWingsLusternia()
       }
     local exitScript = [[script:sendAll("outr %sbutton", "touch %sbutton", false)]]
     if
-      table.contains(gmcp.Room.Info.details, "the Prime Material Plane") and
-      table.contains(gmcp.Room.Info.details, "outdoors")
+      mmp.hasRoomDetail("the Prime Material Plane") and
+      mmp.hasRoomDetail("outdoors")
     then
       for color, room in pairs(colors) do
         mmp.tempSpecialExit(mmp.currentroom, room, exitScript:format(color, color), 20)
@@ -8331,8 +8355,9 @@ function mmp.addWingsImperian()
   if
     (mmp.settings.shekinah or mmp.settings.suriel) and
     gmcp.Room and
-    not table.contains(gmcp.Room.Info.details, "indoors") and
-    not table.contains(gmcp.Room.Info.details, "considered indoors") and
+    mmp.roomDetails() and
+    not mmp.hasRoomDetail("indoors") and
+    not mmp.hasRoomDetail("considered indoors") and
     table.contains(mmp.imperian.wingAbleAreas, getRoomArea(mmp.currentroom))
   then
     if mmp.settings.shekinah then
@@ -8648,19 +8673,19 @@ end
 function mmp.usebix()
 	if mmp.game ~= "lusternia" then return end
 
-	if (table.contains(gmcp.Room.Info.details, "the Prime Material Plane") or
-		table.contains(gmcp.Room.Info.details, "the Ethereal Plane") or
-		table.contains(gmcp.Room.Info.details, "the Water Elemental Plane") or
-		table.contains(gmcp.Room.Info.details, "the Air Elemental Plane") or
-		table.contains(gmcp.Room.Info.details, "the Fire Elemental Plane") or
-		table.contains(gmcp.Room.Info.details, "the Earth Elemental Plane") or
-		table.contains(gmcp.Room.Info.details, "Celestia, Plane of Light") or
-		table.contains(gmcp.Room.Info.details, "the Tainted Plane of Nil") or
-		table.contains(gmcp.Room.Info.details, "the Cosmic Plane of Continuum") or
-		table.contains(gmcp.Room.Info.details, "the Cosmic Plane of Vortex") or
-		table.contains(gmcp.Room.Info.details, "the Astral Plane")) and
+	if (mmp.hasRoomDetail("the Prime Material Plane") or
+		mmp.hasRoomDetail("the Ethereal Plane") or
+		mmp.hasRoomDetail("the Water Elemental Plane") or
+		mmp.hasRoomDetail("the Air Elemental Plane") or
+		mmp.hasRoomDetail("the Fire Elemental Plane") or
+		mmp.hasRoomDetail("the Earth Elemental Plane") or
+		mmp.hasRoomDetail("Celestia, Plane of Light") or
+		mmp.hasRoomDetail("the Tainted Plane of Nil") or
+		mmp.hasRoomDetail("the Cosmic Plane of Continuum") or
+		mmp.hasRoomDetail("the Cosmic Plane of Vortex") or
+		mmp.hasRoomDetail("the Astral Plane")) and
         gmcp.Room.Info.area ~= "the City of Climanti" and
-		table.contains(gmcp.Room.Info.details, "outdoors") then
+		mmp.hasRoomDetail("outdoors") then
 		return true
 	end
 	return false
@@ -8668,14 +8693,14 @@ end
 
 function mmp.useprism()
 	if mmp.game ~= "lusternia" then return end
-	if (table.contains(gmcp.Room.Info.details, "the Prime Material Plane") or
-	table.contains(gmcp.Room.Info.details, "the Ethereal Plane") or
-	table.contains(gmcp.Room.Info.details, "the Water Elemental Plane") or
-	table.contains(gmcp.Room.Info.details, "the Air Elemental Plane") or
-	table.contains(gmcp.Room.Info.details, "the Fire Elemental Plane") or
-	table.contains(gmcp.Room.Info.details, "the Earth Elemental Plane")) and
+	if (mmp.hasRoomDetail("the Prime Material Plane") or
+	mmp.hasRoomDetail("the Ethereal Plane") or
+	mmp.hasRoomDetail("the Water Elemental Plane") or
+	mmp.hasRoomDetail("the Air Elemental Plane") or
+	mmp.hasRoomDetail("the Fire Elemental Plane") or
+	mmp.hasRoomDetail("the Earth Elemental Plane")) and
     gmcp.Room.Info.area ~= "the City of Climanti" and
-	table.contains(gmcp.Room.Info.details, "outdoors") then
+	mmp.hasRoomDetail("outdoors") then
 		return true
 	end
 	return false
@@ -8683,15 +8708,15 @@ end
 function mmp.usebubblix()
 	if mmp.game ~= "lusternia" then return end
 
-	if ((table.contains(gmcp.Room.Info.details, "the Prime Material Plane") or
-		table.contains(gmcp.Room.Info.details, "the Ethereal Plane") or
-		table.contains(gmcp.Room.Info.details, "the Water Elemental Plane") or
-		table.contains(gmcp.Room.Info.details, "the Air Elemental Plane") or
-		table.contains(gmcp.Room.Info.details, "the Fire Elemental Plane") or
-		table.contains(gmcp.Room.Info.details, "the Earth Elemental Plane")) and
+	if ((mmp.hasRoomDetail("the Prime Material Plane") or
+		mmp.hasRoomDetail("the Ethereal Plane") or
+		mmp.hasRoomDetail("the Water Elemental Plane") or
+		mmp.hasRoomDetail("the Air Elemental Plane") or
+		mmp.hasRoomDetail("the Fire Elemental Plane") or
+		mmp.hasRoomDetail("the Earth Elemental Plane")) and
         gmcp.Room.Info.area ~= "the City of Climanti" and
-		table.contains(gmcp.Room.Info.details, "outdoors")) or
-		table.contains(gmcp.Room.Info.details, "an Aetherbubble") then
+		mmp.hasRoomDetail("outdoors")) or
+		mmp.hasRoomDetail("an Aetherbubble") then
 		return true
 	end
 	return false
@@ -9918,6 +9943,7 @@ function mmp.changeMapSource()
   elseif source == "service" then
     mmp.echo("Will use the live crowdmap service for updates instead!")
     mmp.checkforupdate()
+    mmp.crowdmapService.sendNext()
   else
     mmp.echo("Will use the default game map for updates.")
   end
@@ -10926,11 +10952,15 @@ local function makeroom(oldid, newid, x, y, z)
   assert(oldid, "makeroom: need the ID of the original room")
   assert(newid, "makeroom: need the ID of the room to create")
   assert(x and y and z, "makeroom: need all 3 coordinates")
-  addRoom(newid)
+  local wasHashOnly = roomExists and roomExists(newid) and getRoomUserData(newid, "hashonly") == "true"
+  if wasHashOnly then
+    clearRoomUserDataItem(newid, "hashonly")
+    mmp.crowdmapService.promoteHashOnlyRoom(newid)
+  else
+    addRoom(newid)
+  end
   setRoomCoordinates(newid, x, y, z)
   setRoomArea(newid, getRoomArea(oldid))
-  -- in case we are in a hash-based game and the room ID already got created to store a hash, clear the flag
-  clearRoomUserDataItem(newid, "hashonly")
   local fgr, fgg, fgb = unpack(color_table.red)
   local bgr, bgg, bgb = unpack(color_table.blue)
   highlightRoom(newid, fgr, fgg, fgb, bgr, bgg, bgb, 1, 100, 100)
@@ -11017,9 +11047,11 @@ function mmp.roomidFromHash(hash)
   local id = getRoomIDbyHash(hash)
   if id == -1 then 
     id = createRoomID()
-    addRoom(id)
-    setRoomIDbyHash(id, hash)
-    setRoomUserData(id, "hashonly", "true")
+    mmp.localMapChanges(function()
+      addRoom(id)
+      setRoomIDbyHash(id, hash)
+      setRoomUserData(id, "hashonly", "true")
+    end)
   end
   
   return id
@@ -12110,7 +12142,8 @@ function mmp.transverse(_, command)
   if command:sub(0, 11) == "transverse " or command == "pathfind" then
     transverseCMD = command
     transversedFrom = gmcp.Room.Info.num
-    lastPlane = planes[gmcp.Room.Info.details[1]]
+    local details = mmp.roomDetails()
+    lastPlane = details and planes[details[1]] or nil
     validTransverse = true
   end
 end
