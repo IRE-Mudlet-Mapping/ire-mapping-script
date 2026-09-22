@@ -9934,6 +9934,10 @@ end
 
 function mmp.changeMapSource()
   local source = mmp.settings.mapsource
+  if source ~= mmp.lastMapSource then
+    mmp.lastMapSource = source
+    mmp.mapSourceGeneration = (mmp.mapSourceGeneration or 0) + 1
+  end
   if source ~= "game" and not (mmp.game == "achaea" or mmp.game == "starmourn" or mmp.game == "lusternia" or mmp.game == "stickmud" or mmp.game == "ashyria" or mmp.game == "asteria" or mmp.game == "imperian" or mmp.game == "aetolia") then
     mmp.echo("Sorry - the crowdsourced map is only available for use in Achaea, Aetolia, Imperian, Starmourn, Lusternia, StickMUD, Ashyria and Asteria. If you'd like to help start one for your game, please post at http://forums.mudlet.org/viewtopic.php?f=13&amp;t=1696. If you are playing one of the games, then it is likely that you just downloaded the script - and it doesn't know what you are playing. Reconnect and it'll know.")
     mmp.settings:setOption("mapsource", "game", true)
@@ -12885,6 +12889,10 @@ end</script>
     echo("\n\n")
 
   elseif filename == mmp.crowdchangelogfile then   -- changelog for the crowdmap
+    if mmp.crowdmapDownloadSource ~= mmp.settings.mapsource or mmp.crowdmapDownloadGeneration ~= (mmp.mapSourceGeneration or 0) then
+      os.remove(filename)
+      return
+    end
     local f, s = io.open(filename)
     if f then s = f:read("*a"); io.close(f) end
 
@@ -12915,6 +12923,10 @@ end</script>
     mmp.downloadcrowdmap(mmp.newversion)
 
   elseif filename == mmp.crowdmapfile then    -- crowdmap map
+    if mmp.crowdmapDownloadSource ~= mmp.settings.mapsource or mmp.crowdmapDownloadGeneration ~= (mmp.mapSourceGeneration or 0) then
+      os.remove(filename)
+      return
+    end
     mmp.echo("Map downloaded, loading it in...")
 
     local tmp = getRoomUserData(1, "gotoMapping")
@@ -12942,7 +12954,7 @@ end</script>
       if mmp.settings.waterwalk then mmp.enableWaterWalk() else mmp.disableWaterWalk() end
 
       mmp.echo("Map loaded fine - enjoy!")
-      mmp.recordCrowdmapVersion(mmp.newversion)
+      mmp.recordCrowdmapVersion(mmp.crowdmapDownloadVersion)
 
       tmp = getRoomUserData(1, "gotoMapping")
       local newmaptable = {}
@@ -12986,7 +12998,7 @@ end</script>
         if mmp.settings.waterwalk then mmp.enableWaterWalk() else mmp.disableWaterWalk() end
 
         mmp.echo("Map loaded successfully!")
-        mmp.recordCrowdmapVersion(mmp.newversion)
+        mmp.recordCrowdmapVersion(mmp.crowdmapDownloadVersion)
 
           tmp = getRoomUserData(1, "gotoMapping")
           local newmaptable = {}
@@ -13015,8 +13027,12 @@ end</script>
   elseif filename == tostring(mmp.mapfile) then   -- map version #, either IRE's or crowd
 	mmp.checkingupdates = false
 
+    if mmp.mapDownloadSource ~= mmp.settings.mapsource or mmp.mapDownloadGeneration ~= (mmp.mapSourceGeneration or 0) then
+      return mmp.checkforupdate()
+    end
+
     local function needupdate(currentmd5, oldmd5)
-      if mmp.settings.mapsource == "game" then
+      if mmp.mapDownloadSource == "game" then
         mmp.echon("The games map was ")
         echoLink("updated", '', "New MD5: "..tostring(currentmd5)..", previous MD5: "..(oldmd5 or "(none)"), true)
         echo(" - you should update yours! Go to Settings -&gt; Mapper tab and click on the 'Download' button there. Once you've updated, ")
@@ -13030,7 +13046,7 @@ end</script>
 
     local f, s = io.open(filename)
     if f then s = f:read("*a"); io.close(f) end
-    if mmp.settings.mapsource == "service" and s:sub(1, 1) == '"' then
+    if mmp.mapDownloadSource == "service" and s:sub(1, 1) == '"' then
       local ok, decoded = pcall(yajl.to_value, s)
       if ok and type(decoded) == "string" then s = decoded end
     end
@@ -13073,7 +13089,10 @@ function mmp.checkforupdate()
     return
   end
   local game = mmp.game
-  mmp.mapfile = downloadfolder .. "MD5"
+  mmp.mapDownloadId = (mmp.mapDownloadId or 0) + 1
+  mmp.mapfile = downloadfolder .. "MD5-" .. mmp.mapDownloadId
+  mmp.mapDownloadSource = mmp.settings.mapsource
+  mmp.mapDownloadGeneration = mmp.mapSourceGeneration or 0
   mmp.mapperfile = downloadfolder .. "mapper"
   if not downloadFile then
     mmp.echo("Your version of Mudlet doesn't support downloading files - please upgrade to 2.0+")
@@ -13094,9 +13113,9 @@ function mmp.checkforupdate()
         return
       end
     end
-    if mmp.settings.mapsource == "service" then
+    if mmp.mapDownloadSource == "service" then
       downloadFile(mmp.mapfile, mmp.crowdmapService.versionUrl())
-    elseif mmp.settings.mapsource == "published" then
+    elseif mmp.mapDownloadSource == "published" then
       if game == "achaea" then
         downloadFile(
           mmp.mapfile, "http://ire-mudlet-mapping.github.io/AchaeaCrowdmap/Map/version.txt"
@@ -13164,7 +13183,10 @@ function mmp.retrievechangelog()
 end
 
 function mmp.retrievecrowdchangelog()
-  mmp.crowdchangelogfile = downloadfolder .. "crowdchangelogfile"
+  mmp.crowdmapDownloadId = (mmp.crowdmapDownloadId or 0) + 1
+  mmp.crowdchangelogfile = downloadfolder .. "crowdchangelogfile-" .. mmp.crowdmapDownloadId
+  mmp.crowdmapDownloadSource = mmp.settings.mapsource
+  mmp.crowdmapDownloadGeneration = mmp.mapSourceGeneration or 0
   if mmp.settings.mapsource == "service" then
     mmp.downloadcrowdmap(mmp.newversion)
   elseif mmp.game == "achaea" then
@@ -13237,7 +13259,11 @@ function mmp.downloadcrowdmap(newversion)
     mmp.crowdmapService.waitingForReporter = true
     return
   end
-  mmp.crowdmapfile = downloadfolder .. "crowdmap"
+  mmp.crowdmapDownloadId = (mmp.crowdmapDownloadId or 0) + 1
+  mmp.crowdmapfile = downloadfolder .. "crowdmap-" .. mmp.crowdmapDownloadId
+  mmp.crowdmapDownloadSource = mmp.settings.mapsource
+  mmp.crowdmapDownloadGeneration = mmp.mapSourceGeneration or 0
+  mmp.crowdmapDownloadVersion = newversion
   if mmp.settings.mapsource == "service" then
     downloadFile(mmp.crowdmapfile, mmp.crowdmapService.mapUrl())
   elseif mmp.game == "achaea" then
