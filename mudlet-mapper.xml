@@ -6291,13 +6291,15 @@ if not service.wrappersInstalled then
 
   function setRoomUserData(roomNumber, key, value)
     local result = original.setRoomUserData(roomNumber, key, value)
-    if result then service.submit({ type = "modify-room-user-data", roomNumber = tonumber(roomNumber), key = key, value = value }) end
+    -- hashonly is local bookkeeping for a placeholder room created to bind a
+    -- hash before the room itself is known; it is not map data.
+    if result and key ~= "hashonly" then service.submit({ type = "modify-room-user-data", roomNumber = tonumber(roomNumber), key = key, value = value }) end
     return result
   end
 
   function clearRoomUserDataItem(roomNumber, key)
     local result = original.clearRoomUserDataItem(roomNumber, key)
-    if result then service.submit({ type = "delete-room-user-data", roomNumber = tonumber(roomNumber), key = key }) end
+    if result and key ~= "hashonly" then service.submit({ type = "delete-room-user-data", roomNumber = tonumber(roomNumber), key = key }) end
     return result
   end
 
@@ -6407,9 +6409,9 @@ if not service.wrappersInstalled then
 
   if original.deleteMapLabel then
     function deleteMapLabel(areaId, labelId)
-      local existed = not getMapLabel or getMapLabel(areaId, labelId) ~= nil
+      local label = getMapLabel and getMapLabel(areaId, labelId)
       local result = original.deleteMapLabel(areaId, labelId)
-      if existed and (not getMapLabel or not getMapLabel(areaId, labelId)) then
+      if label and not label.Temporary and not getMapLabel(areaId, labelId) then
         service.submit({ type = "delete-map-label", areaId = tonumber(areaId), labelId = tonumber(labelId) })
       end
       return result
@@ -11419,7 +11421,7 @@ end</script>
 						<packageName></packageName>
 						<script>function mmp.achaeaGaiaWhirlpoolReset(event, game)
 	if game == "Achaea" then
-		mmp.whirlString = 'script: send("enter whirlpool") if tempWhirlTrigger then killTrigger(tempWhirlTrigger) tempWhirlTrigger = nil end if tempWhirlTimer then killTimer(killWhirlTimer) tempWhirlTimer = nil end tempWhirlTrigger = tempTrigger("What do you wish to enter?", [[if tempWhirlTimer then killTimer(tempWhirlTimer) tempWhirlTimer = nil end mmp.echo("Whirlpool not found here. Trying another room.") local x = {45817, 45780, 45903, 45868, 46254, 45866} if tempWhirlTrigger then killTrigger(tempWhirlTrigger) tempWhirlTrigger = nil end clearSpecialExits(]]..mmp.currentroom..[[) local y = table.index_of(x, ]]..mmp.currentroom..[[) + 1 if y &gt; #x then y = 1 end addSpecialExit(x[y], 793, mmp.whirlString) mmp.clearpathcache() mmp.gotoRoom(mmp.speedWalkPath[#mmp.speedWalkPath]) mmp.echo("Moved whirlpool to "..x[y]..".")]]) tempWhirlTimer = tempTimer(1, [[if tempWhirlTrigger then killTrigger(tempWhirlTrigger) tempWhirlTrigger = nil end if tempWhirlTimer then killTimer(tempWhirlTimer) tempWhirlTimer = nil end]])'
+		mmp.whirlString = 'script: send("enter whirlpool") if tempWhirlTrigger then killTrigger(tempWhirlTrigger) tempWhirlTrigger = nil end if tempWhirlTimer then killTimer(killWhirlTimer) tempWhirlTimer = nil end tempWhirlTrigger = tempTrigger("What do you wish to enter?", [[if tempWhirlTimer then killTimer(tempWhirlTimer) tempWhirlTimer = nil end mmp.echo("Whirlpool not found here. Trying another room.") local x = {45817, 45780, 45903, 45868, 46254, 45866} if tempWhirlTrigger then killTrigger(tempWhirlTrigger) tempWhirlTrigger = nil end local y = table.index_of(x, ]]..mmp.currentroom..[[) + 1 if y &gt; #x then y = 1 end mmp.localMapChanges(function() clearSpecialExits(]]..mmp.currentroom..[[) addSpecialExit(x[y], 793, mmp.whirlString) end) mmp.clearpathcache() mmp.gotoRoom(mmp.speedWalkPath[#mmp.speedWalkPath]) mmp.echo("Moved whirlpool to "..x[y]..".")]]) tempWhirlTimer = tempTimer(1, [[if tempWhirlTrigger then killTrigger(tempWhirlTrigger) tempWhirlTrigger = nil end if tempWhirlTimer then killTimer(tempWhirlTimer) tempWhirlTimer = nil end]])'
 		local x = {45817, 45780, 45903, 45868, 46254, 45866}
 		mmp.localMapChanges(function()
 			for i, v in ipairs(x) do clearSpecialExits(v) end
