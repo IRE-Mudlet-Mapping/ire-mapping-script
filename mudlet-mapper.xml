@@ -5914,7 +5914,10 @@ function mmp.startup()
 
   private_settings["echocolour"] = mmp.createOption("cyan", mmp.changeEchoColour, {"string"}, "Set the color for room number echos?", function(newSetting) return color_table[newSetting] ~= nil end)
   private_settings["mapsource"] = mmp.createOption("game", mmp.changeMapSource, {"string"}, "Map source: game, published, or service.", function(value) return value == "game" or value == "published" or value == "service" end, crowdmapGames)
-  private_settings["crowdmapservicesend"] = mmp.createOption(false, mmp.changeBoolFunc, {"boolean"}, "Send local map changes to the service?", nil, crowdmapGames, function() return mmp.settings.mapsource == "service" end)
+  private_settings["crowdmapservicesend"] = mmp.createOption(false, function(name, option)
+    mmp.changeBoolFunc(name, option)
+    if option and mmp.crowdmapService then mmp.crowdmapService.sendNext() end
+  end, {"boolean"}, "Send local map changes to the service?", nil, crowdmapGames, function() return mmp.settings.mapsource == "service" end)
   private_settings["gmcpmapupdates"] = mmp.createOption(false, mmp.changeBoolFunc, {"boolean"}, "Apply safe GMCP room information to existing map rooms, even when mapping mode is off?")
   private_settings["crowdmapserviceurl"] = mmp.createOption("https://&lt;game&gt;.mudmaps.community", nil, {"string"}, "Crowdmap service endpoint URL. Use &lt;game&gt; to derive the subdomain from the connected game.", function(value) return value:match("^https?://") ~= nil end, crowdmapGames, function() return mmp.settings.mapsource == "service" end)
   private_settings["crowdmapservicereports"] = mmp.createOption(2, nil, {"number"}, "Required independent reports for changes sourced from the service.", function(value) return value >= 0 and value == math.floor(value) end, crowdmapGames, function() return mmp.settings.mapsource == "service" end)
@@ -6074,6 +6077,7 @@ end</script>
 				<script>mmp.crowdmapService = mmp.crowdmapService or {}
 local service = mmp.crowdmapService
 service.pendingChanges = service.pendingChanges or {}
+service.maxAttempts = 3
 
 local function endpoint(path)
   local url = mmp.settings.crowdmapserviceurl
@@ -6099,38 +6103,48 @@ end
 function service.sendNext()
   if service.inFlight or #service.pendingChanges == 0 then return end
   -- Retain queued reports while sending is disabled or another map source is
-  -- selected; they are only sent after the user enables service sending again.
+  -- selected; a later submission or enabling service sending retries them.
   if service.suspended or not mmp.settings or mmp.settings.mapsource ~= "service" or not mmp.settings.crowdmapservicesend then return end
   local reporterName = service.reporter()
   if not reporterName then return end
-  local change = service.pendingChanges[1]
+  local entry = service.pendingChanges[1]
+  -- Normalize entries that were queued by an earlier script load.
+  if not entry.change then
+    entry = { change = entry, attempts = 0 }
+    service.pendingChanges[1] = entry
+  end
+  entry.attempts = (entry.attempts or 0) + 1
+  local change = entry.change
   change.reporter = reporterName
-  local ok, url = pcall(endpoint, "/change")
+  service.requestId = (service.requestId or 0) + 1
+  local requestId = service.requestId
+  local ok, url = pcall(endpoint, "/change?request=" .. requestId)
   if not ok then
-    mmp.echo("Could not send map change to crowdmap service: " .. url)
+    table.remove(service.pendingChanges, 1)
+    service.handleFailure(entry, "Could not send map change to crowdmap service: " .. url)
     return
   end
   local posted, requestUrl = postHTTP(yajl.to_string(change), url, { ["Content-Type"] = "application/json" })
   if not posted then
-    mmp.echo("Could not send map change to crowdmap service.")
+    table.remove(service.pendingChanges, 1)
+    service.handleFailure(entry, "Could not send map change to crowdmap service.")
     return
   end
   table.remove(service.pendingChanges, 1)
   service.inFlight, service.requestUrl = true, requestUrl or url
-  service.requestId = (service.requestId or 0) + 1
-  local requestId = service.requestId
+  service.inFlightEntry = entry
   tempTimer(30, function()
     if service.inFlight and service.requestId == requestId then
-      service.inFlight, service.requestUrl = false, nil
-      mmp.echo("Timed out sending map change to crowdmap service.")
-      service.sendNext()
+      local timedOutEntry = service.inFlightEntry
+      service.inFlight, service.requestUrl, service.inFlightEntry = false, nil, nil
+      service.handleFailure(timedOutEntry, "Timed out sending map change to crowdmap service.")
     end
   end)
 end
 
 function service.submit(change)
   if mmp.settings.mapsource ~= "service" or not mmp.settings.crowdmapservicesend or service.suspended then return end
-  table.insert(service.pendingChanges, change)
+  table.insert(service.pendingChanges, { change = change, attempts = 0 })
   service.sendNext()
 end
 
@@ -6416,11 +6430,23 @@ if not service.wrappersInstalled then
   end
 end
 
+function service.handleFailure(entry, message)
+  if entry.attempts &lt; service.maxAttempts then
+    table.insert(service.pendingChanges, 1, entry)
+    mmp.echo(message .. " Retrying (" .. entry.attempts .. "/" .. service.maxAttempts .. ").")
+  else
+    mmp.echo(message .. " Discarded after " .. service.maxAttempts .. " attempts.")
+  end
+  tempTimer(1, function() service.sendNext() end)
+end
+
 local function completeRequest(url, error)
   if service.inFlight and url == service.requestUrl then
-    service.inFlight, service.requestUrl = false, nil
+    local entry = service.inFlightEntry
+    service.inFlight, service.requestUrl, service.inFlightEntry = false, nil, nil
     if error then
-    mmp.echo("Could not send map change to crowdmap service: " .. error)
+      service.handleFailure(entry, "Could not send map change to crowdmap service: " .. error)
+      return
     end
     service.sendNext()
   end
@@ -12045,15 +12071,17 @@ function mmp.wildnodes(create)
   if mmp.game ~= "lusternia" then
     return
   end
-  for k, v in pairs(astralExits) do
-    if create then
-      mmp.setExit(v[1], v[2], v[3])
-      mmp.setExit(v[2], v[1], mirrorExits[v[3]])
-    else
-      mmp.setExit(v[1], -1, v[3])
-      mmp.setExit(v[2], -1, mirrorExits[v[3]])
+  mmp.localMapChanges(function()
+    for k, v in pairs(astralExits) do
+      if create then
+        mmp.setExit(v[1], v[2], v[3])
+        mmp.setExit(v[2], v[1], mirrorExits[v[3]])
+      else
+        mmp.setExit(v[1], -1, v[3])
+        mmp.setExit(v[2], -1, mirrorExits[v[3]])
+      end
     end
-  end
+  end)
 end</script>
 						<eventHandlerList />
 					</Script>
@@ -12885,7 +12913,7 @@ end</script>
       end
 
       for markname, location in pairs(oldmaptable) do
-        if tostring(newmaptable[markname]) ~= tostring(location) then
+        if oldPrivateMarks[markname] == nil and tostring(newmaptable[markname]) ~= tostring(location) then
           oldPrivateMarks[markname] = location
         end
       end
@@ -12926,7 +12954,7 @@ end</script>
             newmaptable = yajl.to_value(tmp)
           end
           for markname, location in pairs(oldmaptable) do
-            if tostring(newmaptable[markname]) ~= tostring(location) then
+            if oldPrivateMarks[markname] == nil and tostring(newmaptable[markname]) ~= tostring(location) then
               oldPrivateMarks[markname] = location
             end
           end
