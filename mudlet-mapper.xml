@@ -5826,17 +5826,19 @@ end
 if not gmcp.Room.Info.area:find("(manse)") then
 	mmp.echo("You are not in a manse")
 else
-	if	searchRoom(gmcp.Room.Info.num):sub(0,11)=="searchRoom:" then
-		addRoom(gmcp.Room.Info.num)
-	end
-	if getRoomArea(gmcp.Room.Info.num)==-1 then
-		setRoomArea(gmcp.Room.Info.num,addAreaName(manse:title().." Manse"))
-	end
-	setRoomChar(gmcp.Room.Info.num,"A")
-	addSpecialExit(portalRooms[city],gmcp.Room.Info.num,"Portal enter "..manse)
-	addSpecialExit(portalRooms["aetherplex"],gmcp.Room.Info.num,"Portal enter "..manse)
-	addSpecialExit(gmcp.Room.Info.num,portalRooms["aetherplex"],"portal exit aetherplex")
-	addSpecialExit(gmcp.Room.Info.num,portalRooms[city],"portal exit "..city)
+	mmp.localMapChanges(function()
+		if searchRoom(gmcp.Room.Info.num):sub(0,11)=="searchRoom:" then
+			addRoom(gmcp.Room.Info.num)
+		end
+		if getRoomArea(gmcp.Room.Info.num)==-1 then
+			setRoomArea(gmcp.Room.Info.num,addAreaName(manse:title().." Manse"))
+		end
+		setRoomChar(gmcp.Room.Info.num,"A")
+		addSpecialExit(portalRooms[city],gmcp.Room.Info.num,"Portal enter "..manse)
+		addSpecialExit(portalRooms["aetherplex"],gmcp.Room.Info.num,"Portal enter "..manse)
+		addSpecialExit(gmcp.Room.Info.num,portalRooms["aetherplex"],"portal exit aetherplex")
+		addSpecialExit(gmcp.Room.Info.num,portalRooms[city],"portal exit "..city)
+	end)
 	mmp.echo(city:title().." has been linked to the Aetherplex through "..manse:title())
 end</script>
 						<command></command>
@@ -12940,6 +12942,7 @@ end</script>
       if mmp.settings.waterwalk then mmp.enableWaterWalk() else mmp.disableWaterWalk() end
 
       mmp.echo("Map loaded fine - enjoy!")
+      mmp.recordCrowdmapVersion(mmp.newversion)
 
       tmp = getRoomUserData(1, "gotoMapping")
       local newmaptable = {}
@@ -12983,6 +12986,7 @@ end</script>
         if mmp.settings.waterwalk then mmp.enableWaterWalk() else mmp.disableWaterWalk() end
 
         mmp.echo("Map loaded successfully!")
+        mmp.recordCrowdmapVersion(mmp.newversion)
 
           tmp = getRoomUserData(1, "gotoMapping")
           local newmaptable = {}
@@ -13234,12 +13238,6 @@ function mmp.downloadcrowdmap(newversion)
     return
   end
   mmp.crowdmapfile = downloadfolder .. "crowdmap"
-  local f, err = io.open(downloadfolder .. "current", "w")
-  if not f then
-    return mmp.echo("Couldn't write to the update file, because: " .. err)
-  end
-  f:write(newversion)
-  f:close()
   if mmp.settings.mapsource == "service" then
     downloadFile(mmp.crowdmapfile, mmp.crowdmapService.mapUrl())
   elseif mmp.game == "achaea" then
@@ -13260,6 +13258,15 @@ function mmp.downloadcrowdmap(newversion)
     downloadFile(mmp.crowdmapfile, "http://stickmud.github.io/StickMUDCrowdmap/Map/map")
   end
   mmp.echo("Downloading the latest crowdmap...")
+end
+
+function mmp.recordCrowdmapVersion(version)
+  local f, err = io.open(downloadfolder .. "current", "w")
+  if not f then
+    return mmp.echo("Couldn't write to the update file, because: " .. err)
+  end
+  f:write(tostring(version))
+  f:close()
 end
 
 function mmp.showcrowdchangelog()
