@@ -6098,6 +6098,9 @@ end
 
 function service.sendNext()
   if service.inFlight or #service.pendingChanges == 0 then return end
+  -- Retain queued reports while sending is disabled or another map source is
+  -- selected; they are only sent after the user enables service sending again.
+  if service.suspended or not mmp.settings or mmp.settings.mapsource ~= "service" or not mmp.settings.crowdmapservicesend then return end
   local reporterName = service.reporter()
   if not reporterName then return end
   local change = service.pendingChanges[1]
@@ -6300,10 +6303,16 @@ if not service.wrappersInstalled then
     local exits = getSpecialExits(roomNumber) or {}
     local result = original.clearSpecialExits(roomNumber)
     if not next(getSpecialExits(roomNumber) or {}) then
-      for _, command in pairs(exits) do
-        if type(command) == "table" then command = next(command) end
+      local function submitExit(command)
         if command ~= mmp.whirlString then
           service.submit({ type = "delete-special-exit", roomNumber = tonumber(roomNumber), exitCommand = command })
+        end
+      end
+      for _, commands in pairs(exits) do
+        if type(commands) == "table" then
+          for command in pairs(commands) do submitExit(command) end
+        else
+          submitExit(commands)
         end
       end
     end
@@ -9870,7 +9879,7 @@ end
 function mmp.changeMapSource()
   local source = mmp.settings.mapsource
   if source ~= "game" and not (mmp.game == "achaea" or mmp.game == "starmourn" or mmp.game == "lusternia" or mmp.game == "stickmud" or mmp.game == "ashyria" or mmp.game == "asteria" or mmp.game == "imperian" or mmp.game == "aetolia") then
-    mmp.echo("Sorry - the crowdsourced map is only available for use in Achaea, Starmourn, Lusternia, StickMUD, Ashyria and Asteria. If you'd like to help start one for your game, please post at http://forums.mudlet.org/viewtopic.php?f=13&amp;t=1696. If you are playing one of the games, then it is likely that you just downloaded the script - and it doesn't know what you are playing. Reconnect and it'll know.")
+    mmp.echo("Sorry - the crowdsourced map is only available for use in Achaea, Aetolia, Imperian, Starmourn, Lusternia, StickMUD, Ashyria and Asteria. If you'd like to help start one for your game, please post at http://forums.mudlet.org/viewtopic.php?f=13&amp;t=1696. If you are playing one of the games, then it is likely that you just downloaded the script - and it doesn't know what you are playing. Reconnect and it'll know.")
     mmp.settings:setOption("mapsource", "game", true)
   elseif source ~= "game" and not loadMap then
    mmp.echo("Sorry - your Mudlet is too old and can't load maps. Please update: http://forums.mudlet.org/viewtopic.php?f=5&amp;t=1874")
