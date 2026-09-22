@@ -31,13 +31,19 @@ When `mapsource` is `service`, these additional settings appear in `mconfig`:
 - `crowdmapservicesend` controls whether your local mapping changes are sent to
   the service. It is off by default.
 
-With sending enabled, normal mapper operations that change the map—such as
-recording room information, adding or removing exits, changing room and area
-details, doors, labels, or other supported map data—are submitted as reports.
-The mapper identifies the reporter from GMCP character data when available,
-falling back to the Mudlet profile name. A successful local mapping operation
-does not depend on the service: your local map is changed first. If submitting
-the report fails, the mapper displays an error and the local edit remains.
+With sending enabled, successful persistent mapper operations—such as recording
+room information, adding or removing exits, changing room and area details,
+doors, labels, or other supported map data—are submitted as reports. Personal
+or temporary mapper state, including private room marks, temporary travel
+exits, and temporary labels, remains local. A successful local mapping
+operation does not depend on the service: your local map is changed first. If
+submitting the report fails, the mapper displays an error and the local edit
+remains.
+
+The service waits for a non-empty `gmcp.Char.Status.name` before checking or
+downloading a service map, and uses that character name consistently for both
+map requests and submitted reports. This avoids treating a Mudlet profile name
+or a pre-login placeholder as a reporter.
 
 The service only works well when people participate. If you use the service,
 please enable `crowdmapservicesend`: your reports help keep the shared map
@@ -56,6 +62,21 @@ on newly reported map changes for navigation.
 
 `gmcpmapupdates` applies safe GMCP Room.Info fields to existing map rooms even
 when mapping mode is disabled. It is disabled by default.
+
+## Room marks
+
+Room marks are private by default and stay only in your local map:
+
+- `room mark home` creates a private mark at your current room.
+- `room mark private home 1234` creates a private mark for room 1234.
+- `room mark public bank 5678` creates a public mark that is reported when
+  service sending is enabled.
+- `room unmark home` removes a private mark; use `room unmark public bank` for
+  a public one.
+
+`room marks` lists both kinds. When downloading a new map, legacy marks that
+are absent from, or differ from, the downloaded public marks are migrated to
+the private set; matching marks remain public.
 
 This script allows [Mudlet's](http://www.mudlet.org) mapper to do autowalking on Achaea, Aetolia, Lusternia, Imperian, Starmourn or StickMUD. See the [download section](http://wiki.mudlet.org/w/IRE_mapping_script#Download) to get started!
 
