@@ -12972,7 +12972,7 @@ end</script>
     echo("\n\n")
 
   elseif filename == mmp.crowdchangelogfile then   -- changelog for the crowdmap
-    if mmp.crowdmapDownloadSource ~= mmp.settings.mapsource or mmp.crowdmapDownloadGeneration ~= (mmp.mapSourceGeneration or 0) or (mmp.crowdmapDownloadSource == "service" and mmp.crowdmapDownloadEndpoint ~= mmp.crowdmapService.baseUrl()) then
+    if mmp.crowdmapDownloadSource ~= mmp.settings.mapsource or mmp.crowdmapDownloadGeneration ~= (mmp.mapSourceGeneration or 0) or mmp.crowdmapDownloadIdentity ~= mmp.mapSourceIdentity(mmp.settings.mapsource) then
       os.remove(filename)
       return
     end
@@ -13006,7 +13006,7 @@ end</script>
     mmp.downloadcrowdmap(mmp.newversion)
 
   elseif filename == mmp.crowdmapfile then    -- crowdmap map
-    if mmp.crowdmapDownloadSource ~= mmp.settings.mapsource or mmp.crowdmapDownloadGeneration ~= (mmp.mapSourceGeneration or 0) or (mmp.crowdmapDownloadSource == "service" and mmp.crowdmapDownloadEndpoint ~= mmp.crowdmapService.baseUrl()) then
+    if mmp.crowdmapDownloadSource ~= mmp.settings.mapsource or mmp.crowdmapDownloadGeneration ~= (mmp.mapSourceGeneration or 0) or mmp.crowdmapDownloadIdentity ~= mmp.mapSourceIdentity(mmp.settings.mapsource) then
       os.remove(filename)
       return mmp.checkforupdate()
     end
@@ -13116,7 +13116,7 @@ end</script>
   elseif filename == tostring(mmp.mapfile) then   -- map version #, either IRE's or crowd
 	mmp.checkingupdates = false
 
-    if mmp.mapDownloadSource ~= mmp.settings.mapsource or mmp.mapDownloadGeneration ~= (mmp.mapSourceGeneration or 0) or (mmp.mapDownloadSource == "service" and mmp.mapDownloadEndpoint ~= mmp.crowdmapService.baseUrl()) then
+    if mmp.mapDownloadSource ~= mmp.settings.mapsource or mmp.mapDownloadGeneration ~= (mmp.mapSourceGeneration or 0) or mmp.mapDownloadIdentity ~= mmp.mapSourceIdentity(mmp.settings.mapsource) then
       return mmp.checkforupdate()
     end
 
@@ -13176,9 +13176,9 @@ end</script>
 					<packageName></packageName>
 					<script>local downloadfolder = getMudletHomeDir() .. "/map downloads/"
 
-function mmp.mapSourceIdentity(source, endpointUrl)
+function mmp.mapSourceIdentity(source)
   if source == "service" then
-    return "service:" .. tostring(endpointUrl or mmp.crowdmapService.baseUrl() or "")
+    return "service:" .. tostring(mmp.crowdmapService.mapUrl() or "")
   end
   return tostring(source) .. ":" .. tostring(mmp.game)
 end
@@ -13207,8 +13207,7 @@ function mmp.checkforupdate()
   mmp.mapfile = downloadfolder .. "MD5-" .. mmp.mapDownloadId
   mmp.mapDownloadSource = mmp.settings.mapsource
   mmp.mapDownloadGeneration = mmp.mapSourceGeneration or 0
-  mmp.mapDownloadEndpoint = mmp.mapDownloadSource == "service" and mmp.crowdmapService.baseUrl() or nil
-  mmp.mapDownloadIdentity = mmp.mapSourceIdentity(mmp.mapDownloadSource, mmp.mapDownloadEndpoint)
+  mmp.mapDownloadIdentity = mmp.mapSourceIdentity(mmp.mapDownloadSource)
   mmp.mapperfile = downloadfolder .. "mapper"
   if not downloadFile then
     mmp.echo("Your version of Mudlet doesn't support downloading files - please upgrade to 2.0+")
@@ -13298,8 +13297,7 @@ function mmp.retrievecrowdchangelog()
   mmp.crowdchangelogfile = downloadfolder .. "crowdchangelogfile-" .. mmp.crowdmapDownloadId
   mmp.crowdmapDownloadSource = mmp.settings.mapsource
   mmp.crowdmapDownloadGeneration = mmp.mapSourceGeneration or 0
-  mmp.crowdmapDownloadEndpoint = mmp.crowdmapDownloadSource == "service" and mmp.crowdmapService.baseUrl() or nil
-  mmp.crowdmapDownloadIdentity = mmp.mapSourceIdentity(mmp.crowdmapDownloadSource, mmp.crowdmapDownloadEndpoint)
+  mmp.crowdmapDownloadIdentity = mmp.mapSourceIdentity(mmp.crowdmapDownloadSource)
   if mmp.settings.mapsource == "service" then
     mmp.downloadcrowdmap(mmp.newversion)
   elseif mmp.game == "achaea" then
@@ -13376,8 +13374,7 @@ function mmp.downloadcrowdmap(newversion)
   mmp.crowdmapfile = downloadfolder .. "crowdmap-" .. mmp.crowdmapDownloadId
   mmp.crowdmapDownloadSource = mmp.settings.mapsource
   mmp.crowdmapDownloadGeneration = mmp.mapSourceGeneration or 0
-  mmp.crowdmapDownloadEndpoint = mmp.crowdmapDownloadSource == "service" and mmp.crowdmapService.baseUrl() or nil
-  mmp.crowdmapDownloadIdentity = mmp.mapSourceIdentity(mmp.crowdmapDownloadSource, mmp.crowdmapDownloadEndpoint)
+  mmp.crowdmapDownloadIdentity = mmp.mapSourceIdentity(mmp.crowdmapDownloadSource)
   mmp.crowdmapDownloadVersion = newversion
   if mmp.settings.mapsource == "service" then
     downloadFile(mmp.crowdmapfile, mmp.crowdmapService.mapUrl())
