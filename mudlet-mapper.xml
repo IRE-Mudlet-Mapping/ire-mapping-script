@@ -5920,9 +5920,10 @@ end
 mmp.version = newversion
 
 function mmp.startup()
-  if not mmp.firstRun then
-    return
-  end
+  local firstRun = mmp.firstRun
+  local previousSettings = mmp.settings
+  local previousValues = previousSettings and previousSettings.getAllOptions and previousSettings:getAllOptions() or nil
+  local customOptions = previousSettings and rawget(previousSettings, "_customOptions") or nil
   local private_settings = {}
   local crowdmapGames = {achaea = true, starmourn = true, lusternia = true, stickmud = true, ashyria = true, asteria = true, imperian = true, aetolia = true}
 
@@ -6058,9 +6059,15 @@ function mmp.startup()
 
 
 
+  if previousValues and mmp.migrateOptions then mmp.migrateOptions(previousValues) end
   mmp.settings = mmp.createOptionsTable(private_settings)
+  for name, value in pairs(previousValues or {}) do
+    if private_settings[name] then mmp.settings:setOption(name, value, true) end
+  end
+  for name, option in pairs(customOptions or {}) do
+    if not private_settings[name] then mmp.settings[name] = option end
+  end
   mmp.settings.disp = mmp.echo
-  mmp.game = false
   mmp.settings.dispOption =
     function(opt, val)
       cecho(
@@ -6078,6 +6085,8 @@ function mmp.startup()
     function()
       mmp.echo("Please use the mconfig alias to set options!")
     end
+  if not firstRun then return end
+  mmp.game = false
   raiseEvent("mmp areas changed")
   mmp.firstRun = false
   mmp.echon("Mudlet Mapper script for IREs (" .. tostring(mmp.version) .. ") loaded! (")
@@ -6097,13 +6106,15 @@ end</script>
 				<script>mmp.crowdmapService = mmp.crowdmapService or {}
 local service = mmp.crowdmapService
 service.pendingChanges = service.pendingChanges or {}
-service.maxAttempts = 3
+service.maxAttempts = 6
+service.unsentChanges = service.unsentChanges or 0
+service.retryPending = false
 
 local function endpoint(path)
   local url = mmp.settings.crowdmapserviceurl
-  if url == "https://&lt;game&gt;.mudmaps.community" then
+  if url:find("&lt;game&gt;", 1, true) then
     if type(mmp.game) ~= "string" then error("Cannot derive the crowdmap service URL before the game is known.") end
-    url = "https://" .. mmp.game .. ".mudmaps.community"
+    url = url:gsub("&lt;game&gt;", mmp.game)
   end
   return url:gsub("/+$", "") .. path
 end
@@ -6121,7 +6132,7 @@ local function queryValue(value)
 end
 
 function service.sendNext()
-  if service.inFlight or #service.pendingChanges == 0 then return end
+  if service.inFlight or service.retryPending or #service.pendingChanges == 0 then return end
   -- Retain queued reports while sending is disabled or another map source is
   -- selected; a later submission or enabling service sending retries them.
   if service.suspended or not mmp.settings or mmp.settings.mapsource ~= "service" or not mmp.settings.crowdmapservicesend then return end
@@ -6226,9 +6237,17 @@ local directions = {
   ["in"] = "in", out = "out"
 }
 
-if not service.wrappersInstalled then
+local function pack(...)
+  return { n = select("#", ...), ... }
+end
+
+local function unpackResults(results)
+  return unpack(results, 1, results.n)
+end
+
+do
   service.wrappersInstalled = true
-  service.original = {
+  service.original = service.original or {
     addAreaName = addAreaName, setAreaName = setAreaName, deleteArea = deleteArea,
     addRoom = addRoom, deleteRoom = deleteRoom, setRoomName = setRoomName,
     setRoomCoordinates = setRoomCoordinates, setRoomArea = setRoomArea,
@@ -6243,109 +6262,116 @@ if not service.wrappersInstalled then
   }
   local original = service.original
 
-  function addAreaName(name)
-    local areaId = original.addAreaName(name)
+  function addAreaName(name, ...)
+    local results = pack(original.addAreaName(name, ...))
+    local areaId = results[1]
     if areaId then service.submit({ type = "create-area", areaId = areaId, name = name }) end
-    return areaId
+    return unpackResults(results)
   end
 
-  function setAreaName(areaId, name)
-    local result = original.setAreaName(areaId, name)
-    if result then service.submit({ type = "rename-area", areaId = areaId, name = name }) end
-    return result
+  function setAreaName(areaId, name, ...)
+    local results = pack(original.setAreaName(areaId, name, ...))
+    if results[1] then service.submit({ type = "rename-area", areaId = areaId, name = name }) end
+    return unpackResults(results)
   end
 
-  function deleteArea(areaId)
-    local result = original.deleteArea(areaId)
-    if result then service.submit({ type = "delete-area", areaId = tonumber(areaId) }) end
-    return result
+  function deleteArea(areaId, ...)
+    local results = pack(original.deleteArea(areaId, ...))
+    if results[1] then service.submit({ type = "delete-area", areaId = tonumber(areaId) }) end
+    return unpackResults(results)
   end
 
-  function addRoom(roomNumber)
-    local result = original.addRoom(roomNumber)
-    if result then service.submit({ type = "create-room", roomNumber = tonumber(roomNumber) }) end
-    return result
+  function addRoom(roomNumber, ...)
+    local results = pack(original.addRoom(roomNumber, ...))
+    if results[1] then
+      service.submit({ type = "create-room", roomNumber = tonumber(roomNumber) })
+      local areaId = select(1, ...)
+      if areaId ~= nil then
+        service.submit({ type = "set-room-area", roomNumber = tonumber(roomNumber), areaId = tonumber(areaId) })
+      end
+    end
+    return unpackResults(results)
   end
 
-  function deleteRoom(roomNumber)
-    local result = original.deleteRoom(roomNumber)
-    if result then service.submit({ type = "delete-room", roomNumber = tonumber(roomNumber) }) end
-    return result
+  function deleteRoom(roomNumber, ...)
+    local results = pack(original.deleteRoom(roomNumber, ...))
+    if results[1] then service.submit({ type = "delete-room", roomNumber = tonumber(roomNumber) }) end
+    return unpackResults(results)
   end
 
-  function setRoomName(roomNumber, name)
-    local result = original.setRoomName(roomNumber, name)
-    if result then service.submit({ type = "room-name", roomNumber = tonumber(roomNumber), name = name }) end
-    return result
+  function setRoomName(roomNumber, name, ...)
+    local results = pack(original.setRoomName(roomNumber, name, ...))
+    if results[1] then service.submit({ type = "room-name", roomNumber = tonumber(roomNumber), name = name }) end
+    return unpackResults(results)
   end
 
-  function setRoomCoordinates(roomNumber, x, y, z)
-    local result = original.setRoomCoordinates(roomNumber, x, y, z)
-    if result then service.submit({ type = "set-room-coordinates", roomNumber = tonumber(roomNumber), x = x, y = y, z = z }) end
-    return result
+  function setRoomCoordinates(roomNumber, x, y, z, ...)
+    local results = pack(original.setRoomCoordinates(roomNumber, x, y, z, ...))
+    if results[1] then service.submit({ type = "set-room-coordinates", roomNumber = tonumber(roomNumber), x = x, y = y, z = z }) end
+    return unpackResults(results)
   end
 
-  function setRoomArea(roomNumber, areaId)
-    local result = original.setRoomArea(roomNumber, areaId)
-    if result then service.submit({ type = "set-room-area", roomNumber = tonumber(roomNumber), areaId = tonumber(areaId) }) end
-    return result
+  function setRoomArea(roomNumber, areaId, ...)
+    local results = pack(original.setRoomArea(roomNumber, areaId, ...))
+    if results[1] then service.submit({ type = "set-room-area", roomNumber = tonumber(roomNumber), areaId = tonumber(areaId) }) end
+    return unpackResults(results)
   end
 
-  function setRoomWeight(roomNumber, weight)
-    local result = original.setRoomWeight(roomNumber, weight)
-    if result then service.submit({ type = "set-room-weight", roomNumber = tonumber(roomNumber), weight = weight }) end
-    return result
+  function setRoomWeight(roomNumber, weight, ...)
+    local results = pack(original.setRoomWeight(roomNumber, weight, ...))
+    if results[1] then service.submit({ type = "set-room-weight", roomNumber = tonumber(roomNumber), weight = weight }) end
+    return unpackResults(results)
   end
 
-  function setRoomChar(roomNumber, symbol)
-    local result = original.setRoomChar(roomNumber, symbol)
-    if result then service.submit({ type = "set-room-symbol", roomNumber = tonumber(roomNumber), symbol = symbol }) end
-    return result
+  function setRoomChar(roomNumber, symbol, ...)
+    local results = pack(original.setRoomChar(roomNumber, symbol, ...))
+    if results[1] then service.submit({ type = "set-room-symbol", roomNumber = tonumber(roomNumber), symbol = symbol }) end
+    return unpackResults(results)
   end
 
-  function setRoomEnv(roomNumber, environmentId)
-    local result = original.setRoomEnv(roomNumber, environmentId)
-    if result then service.submit({ type = "set-room-environment", roomNumber = tonumber(roomNumber), environmentId = environmentId }) end
-    return result
+  function setRoomEnv(roomNumber, environmentId, ...)
+    local results = pack(original.setRoomEnv(roomNumber, environmentId, ...))
+    if results[1] then service.submit({ type = "set-room-environment", roomNumber = tonumber(roomNumber), environmentId = environmentId }) end
+    return unpackResults(results)
   end
 
-  function setRoomIDbyHash(roomNumber, hash)
-    local result = original.setRoomIDbyHash(roomNumber, hash)
+  function setRoomIDbyHash(roomNumber, hash, ...)
+    local results = pack(original.setRoomIDbyHash(roomNumber, hash, ...))
     if getRoomIDbyHash(hash) == tonumber(roomNumber) then
       service.submit({ type = "set-room-hash", roomNumber = tonumber(roomNumber), hash = hash })
     end
-    return result
+    return unpackResults(results)
   end
 
-  function setRoomUserData(roomNumber, key, value)
-    local result = original.setRoomUserData(roomNumber, key, value)
+  function setRoomUserData(roomNumber, key, value, ...)
+    local results = pack(original.setRoomUserData(roomNumber, key, value, ...))
     -- hashonly is local bookkeeping for a placeholder room created to bind a
     -- hash before the room itself is known; it is not map data.
-    if result and key ~= "hashonly" then service.submit({ type = "modify-room-user-data", roomNumber = tonumber(roomNumber), key = key, value = value }) end
-    return result
+    if results[1] and key ~= "hashonly" then service.submit({ type = "modify-room-user-data", roomNumber = tonumber(roomNumber), key = key, value = value }) end
+    return unpackResults(results)
   end
 
-  function clearRoomUserDataItem(roomNumber, key)
-    local result = original.clearRoomUserDataItem(roomNumber, key)
-    if result and key ~= "hashonly" then service.submit({ type = "delete-room-user-data", roomNumber = tonumber(roomNumber), key = key }) end
-    return result
+  function clearRoomUserDataItem(roomNumber, key, ...)
+    local results = pack(original.clearRoomUserDataItem(roomNumber, key, ...))
+    if results[1] and key ~= "hashonly" then service.submit({ type = "delete-room-user-data", roomNumber = tonumber(roomNumber), key = key }) end
+    return unpackResults(results)
   end
 
-  function addSpecialExit(roomNumber, destination, command)
-    local result = original.addSpecialExit(roomNumber, destination, command)
-    if result and command ~= mmp.whirlString then service.submit({ type = "modify-special-exit", roomNumber = tonumber(roomNumber), destination = tonumber(destination), exitCommand = command }) end
-    return result
+  function addSpecialExit(roomNumber, destination, command, ...)
+    local results = pack(original.addSpecialExit(roomNumber, destination, command, ...))
+    if results[1] and command ~= mmp.whirlString then service.submit({ type = "modify-special-exit", roomNumber = tonumber(roomNumber), destination = tonumber(destination), exitCommand = command }) end
+    return unpackResults(results)
   end
 
-  function removeSpecialExit(roomNumber, command)
-    local result = original.removeSpecialExit(roomNumber, command)
-    if result and command ~= mmp.whirlString then service.submit({ type = "delete-special-exit", roomNumber = tonumber(roomNumber), exitCommand = command }) end
-    return result
+  function removeSpecialExit(roomNumber, command, ...)
+    local results = pack(original.removeSpecialExit(roomNumber, command, ...))
+    if results[1] and command ~= mmp.whirlString then service.submit({ type = "delete-special-exit", roomNumber = tonumber(roomNumber), exitCommand = command }) end
+    return unpackResults(results)
   end
 
-  function clearSpecialExits(roomNumber)
+  function clearSpecialExits(roomNumber, ...)
     local exits = getSpecialExits(roomNumber) or {}
-    local result = original.clearSpecialExits(roomNumber)
+    local results = pack(original.clearSpecialExits(roomNumber, ...))
     if not next(getSpecialExits(roomNumber) or {}) then
       local function submitExit(command)
         if command ~= mmp.whirlString then
@@ -6360,61 +6386,62 @@ if not service.wrappersInstalled then
         end
       end
     end
-    return result
+    return unpackResults(results)
   end
 
-  function lockSpecialExit(roomNumber, destination, command, locked)
-    local result = original.lockSpecialExit(roomNumber, destination, command, locked)
-    if result then
+  function lockSpecialExit(roomNumber, destination, command, locked, ...)
+    local results = pack(original.lockSpecialExit(roomNumber, destination, command, locked, ...))
+    if results[1] then
       service.submit({ type = locked and "lock-special-exit" or "unlock-special-exit", roomNumber = tonumber(roomNumber), destination = tonumber(destination), exitCommand = command })
     end
-    return result
+    return unpackResults(results)
   end
 
-  function setExitWeight(roomNumber, exit, weight)
-    local result = original.setExitWeight(roomNumber, exit, weight)
-    if result then
+  function setExitWeight(roomNumber, exit, weight, ...)
+    local results = pack(original.setExitWeight(roomNumber, exit, weight, ...))
+    if results[1] then
       local direction = directions[exit]
       local change = { roomNumber = tonumber(roomNumber), weight = weight }
       if direction then change.type, change.direction = "modify-exit-weight", direction
       else change.type, change.exitCommand = "modify-special-exit-weight", tostring(exit) end
       service.submit(change)
     end
-    return result
+    return unpackResults(results)
   end
 
   if original.setDoor then
-    function setDoor(roomNumber, exit, status)
-      local result = original.setDoor(roomNumber, exit, status)
+    function setDoor(roomNumber, exit, status, ...)
+      local results = pack(original.setDoor(roomNumber, exit, status, ...))
       local direction = directions[exit]
-      if result and direction then
+      if results[1] and direction then
         service.submit({ type = "set-exit-door", roomNumber = tonumber(roomNumber), direction = direction, status = tonumber(status) })
       end
-      return result
+      return unpackResults(results)
     end
   end
 
   if original.setMapUserData then
-    function setMapUserData(key, value)
-      local result = original.setMapUserData(key, value)
-      if result then service.submit({ type = "set-map-user-data", key = key, value = value }) end
-      return result
+    function setMapUserData(key, value, ...)
+      local results = pack(original.setMapUserData(key, value, ...))
+      if results[1] then service.submit({ type = "set-map-user-data", key = key, value = value }) end
+      return unpackResults(results)
     end
   end
 
   if original.clearMapUserDataItem then
-    function clearMapUserDataItem(key)
-      local result = original.clearMapUserDataItem(key)
-      if result then service.submit({ type = "delete-map-user-data", key = key }) end
-      return result
+    function clearMapUserDataItem(key, ...)
+      local results = pack(original.clearMapUserDataItem(key, ...))
+      if results[1] then service.submit({ type = "delete-map-user-data", key = key }) end
+      return unpackResults(results)
     end
   end
 
   if original.createMapLabel and getMapLabel then
     function createMapLabel(...)
-      local arguments, argumentCount = {...}, select("#", ...)
+      local arguments = pack(...)
       local areaId = arguments[1]
-      local labelId = original.createMapLabel(unpack(arguments, 1, argumentCount))
+      local results = pack(original.createMapLabel(unpack(arguments, 1, arguments.n)))
+      local labelId = results[1]
       if labelId ~= false and labelId ~= nil then
         local label = getMapLabel(areaId, labelId)
         if label and label.FgColor and label.BgColor and not label.Temporary then
@@ -6431,31 +6458,32 @@ if not service.wrappersInstalled then
           })
         end
       end
-      return labelId
+      return unpackResults(results)
     end
   end
 
   if original.deleteMapLabel then
-    function deleteMapLabel(areaId, labelId)
+    function deleteMapLabel(areaId, labelId, ...)
       local label = getMapLabel and getMapLabel(areaId, labelId)
-      local result = original.deleteMapLabel(areaId, labelId)
-      if label and not label.Temporary and not getMapLabel(areaId, labelId) then
+      local results = pack(original.deleteMapLabel(areaId, labelId, ...))
+      local remainingLabel = getMapLabel and getMapLabel(areaId, labelId)
+      if type(label) == "table" and next(label) and not label.Temporary and (type(remainingLabel) ~= "table" or not next(remainingLabel)) then
         service.submit({ type = "delete-map-label", areaId = tonumber(areaId), labelId = tonumber(labelId) })
       end
-      return result
+      return unpackResults(results)
     end
   end
 
   function service.wrapSetExit(originalSetExit)
-    function mmp.setExit(roomNumber, destination, direction)
-      local result = originalSetExit(roomNumber, destination, direction)
-      if result then
+    function mmp.setExit(roomNumber, destination, direction, ...)
+      local results = pack(originalSetExit(roomNumber, destination, direction, ...))
+      if results[1] then
         local change = { roomNumber = tonumber(roomNumber), direction = directions[direction] }
         if tonumber(destination) == -1 then change.type = "delete-exit"
         else change.type, change.destination = "modify-exit", tonumber(destination) end
         service.submit(change)
       end
-      return result
+      return unpackResults(results)
     end
   end
 end
@@ -6463,11 +6491,33 @@ end
 function service.handleFailure(entry, message)
   if entry.attempts &lt; service.maxAttempts then
     table.insert(service.pendingChanges, 1, entry)
-    mmp.echo(message .. " Retrying (" .. entry.attempts .. "/" .. service.maxAttempts .. ").")
+    local delay = math.min(2 ^ (entry.attempts - 1), 30)
+    mmp.echo(message .. " Retrying in " .. delay .. " seconds (" .. entry.attempts .. "/" .. service.maxAttempts .. ").")
+    service.retryPending = true
+    tempTimer(delay, function()
+      service.retryPending = false
+      service.sendNext()
+    end)
   else
-    mmp.echo(message .. " Discarded after " .. service.maxAttempts .. " attempts.")
+    service.unsentChanges = service.unsentChanges + 1
+    mmp.echo(message .. " Discarded after " .. service.maxAttempts .. " attempts. The local edit remains, but a later map download may overwrite it.")
+    tempTimer(0, function() service.sendNext() end)
   end
-  tempTimer(1, function() service.sendNext() end)
+end
+
+function service.warnBeforeMapLoad()
+  local count = service.unsentCount()
+  if count &gt; 0 then
+    mmp.echo(string.format("Warning: %d local map edit%s have not been confirmed by the crowdmap service and may be overwritten by this map download.", count, count == 1 and "" or "s"))
+  end
+end
+
+function service.unsentCount()
+  return service.unsentChanges + #service.pendingChanges + (service.inFlightEntry and 1 or 0)
+end
+
+function service.mapLoaded()
+  service.unsentChanges = 0
 end
 
 local function completeRequest(url, error)
@@ -6502,7 +6552,13 @@ function mmp.getRoomMarks(visibility)
   local key = mmp.roomMarkKeys[visibility]
   assert(key, "Unknown room mark visibility: " .. tostring(visibility))
   local raw = getRoomUserData(1, key)
-  return raw ~= "" and yajl.to_value(raw) or {}
+  if raw == "" then return {} end
+  local ok, marks = pcall(yajl.to_value, raw)
+  if not ok or type(marks) ~= "table" then
+    mmp.echo("Could not read " .. visibility .. " room marks because their map data is invalid.")
+    return {}
+  end
+  return marks
 end
 
 function mmp.getAllRoomMarks()
@@ -11304,7 +11360,8 @@ end</script>
 					<script>function mmp.saveOptions()
 	local saveTable = {
 		locked_areas = mmp.locked,
-		options = mmp.settings:getAllOptions()
+		options = mmp.settings:getAllOptions(),
+		unsent_crowdmap_changes = mmp.crowdmapService and mmp.crowdmapService.unsentCount() or 0
 	}
   local _sep
 	if string.char(getMudletHomeDir():byte()) == "/" then _sep = "/" else  _sep = "\\" end
@@ -11347,6 +11404,9 @@ end
 
 function mmp.loadOptions()
 	local loadTable = mmp.loadLocks()
+	if mmp.crowdmapService then
+		mmp.crowdmapService.unsentChanges = tonumber(loadTable.unsent_crowdmap_changes) or 0
+	end
 
 	if loadTable.options then
 		mmp.migrateOptions(loadTable.options)
@@ -12945,6 +13005,7 @@ end</script>
       os.remove(filename)
       return
     end
+    mmp.crowdmapService.warnBeforeMapLoad()
     mmp.echo("Map downloaded, loading it in...")
 
     local tmp = getRoomUserData(1, "gotoMapping")
@@ -12959,6 +13020,7 @@ end</script>
     local ok = loadMap(filename)
 
     if ok then
+      mmp.crowdmapService.mapLoaded()
       if mmp.game ~= "starmourn" then
         local wc = mmp.lockWormholes()
   	local ws = mmp.lockSewers()
@@ -13003,8 +13065,10 @@ end</script>
           oldmaptable = yajl.to_value(tmp)
         end
 
+        mmp.crowdmapService.warnBeforeMapLoad()
         local ok = loadMap(']]..filename..[[')
         if ok then
+        mmp.crowdmapService.mapLoaded()
         local wc = mmp.lockWormholes()
 	    local ws = mmp.lockSewers()
         mmp.lockPebble()

@@ -3,7 +3,7 @@
 ## Map sources and the Crowdmap service
 
 The mapper can download maps from one of three sources. Set the source with
-`mconfig mapsource &lt;source&gt;`:
+`mconfig mapsource <source>`:
 
 | Source | Command | What it uses |
 | --- | --- | --- |
@@ -21,7 +21,7 @@ want the most up-to-date shared map and are comfortable with that trade-off.
 When `mapsource` is `service`, these additional settings appear in `mconfig`:
 
 - `crowdmapserviceurl` is the service endpoint. Its default is
-  `https://&lt;game&gt;.mudmaps.community`, which automatically uses the connected
+  `https://<game>.mudmaps.community`, which automatically uses the connected
   game's subdomain. Set an explicit URL only when using a different service.
 - `crowdmapservicereports` is the number of independent reports required before
   another mapper's reported change is included in the map you download. The
@@ -38,7 +38,8 @@ or temporary mapper state, including private room marks, temporary travel
 exits, and temporary labels, remains local. A successful local mapping
 operation does not depend on the service: your local map is changed first. If
 submitting the report fails, the mapper displays an error and the local edit
-remains.
+remains. Reports are retried with a bounded backoff. If all attempts fail, the
+mapper warns again before a later map download can overwrite unsent edits.
 
 The service waits for a non-empty `gmcp.Char.Status.name` before checking or
 downloading a service map, and uses that character name consistently for both
@@ -52,11 +53,11 @@ report thresholds. You do not need to map deliberately to help: also enable
 `gmcpmapupdates` and safe room information learned through normal gameplay can
 be applied and contributed without a dedicated mapping session.
 
-The service does not make a report universal by itself. Other reports and your
-`crowdmapservicereports` threshold determine when it appears in other mappers'
-service maps. Your own reports remain in your service map while awaiting
-confirmation. Review the source selection and report threshold before relying
-on newly reported map changes for navigation.
+The service does not make a report universal by itself. Other reports and each
+mapper's own `crowdmapservicereports` threshold determine whether it appears in
+that mapper's service map. Your own reports remain in your service map while
+awaiting confirmation. Review the source selection and report threshold before
+relying on newly reported map changes for navigation.
 
 ## GMCP map updates
 
@@ -74,9 +75,9 @@ Room marks are private by default and stay only in your local map:
 - `room unmark home` removes a private mark; use `room unmark public bank` for
   a public one.
 
-`room marks` lists both kinds. When downloading a new map, legacy marks that
-are absent from, or differ from, the downloaded public marks are migrated to
-the private set; matching marks remain public.
+`room marks` lists both kinds. When downloading a new map, locally held public
+marks that are absent from, or differ from, the downloaded public marks are
+copied to the private set so they are not lost; matching marks remain public.
 
 This script allows [Mudlet's](http://www.mudlet.org) mapper to do autowalking on Achaea, Aetolia, Lusternia, Imperian, Starmourn or StickMUD. See the [download section](http://wiki.mudlet.org/w/IRE_mapping_script#Download) to get started!
 
