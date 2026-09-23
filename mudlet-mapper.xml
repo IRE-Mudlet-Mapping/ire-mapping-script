@@ -13125,7 +13125,7 @@ end</script>
         mmp.echon("The games map was ")
         echoLink("updated", '', "New MD5: "..tostring(currentmd5)..", previous MD5: "..(oldmd5 or "(none)"), true)
         echo(" - you should update yours! Go to Settings -&gt; Mapper tab and click on the 'Download' button there. Once you've updated, ")
-        echoLink("click here", "mmp.updatedmap('"..currentmd5.."')", "Click here to quiet the update reminder")
+        echoLink("click here", string.format("mmp.updatedmap(%q, %q)", currentmd5, mmp.mapDownloadIdentity), "Click here to quiet the update reminder")
         echo(" to remove the reminder.")
       else
         mmp.newversion, mmp.oldversion = currentmd5, oldmd5
@@ -13155,7 +13155,16 @@ end</script>
     local f, s = io.open(getMudletHomeDir().."/map downloads/current")
     if f then s = f:read("*a"); io.close(f) end
 
-    if s ~= currentmd5 then needupdate(currentmd5, s) end
+    local storedVersion, storedIdentity = s, nil
+    local decodedOk, storedMarker = pcall(yajl.to_value, s)
+    if decodedOk and type(storedMarker) == "table" then
+      storedVersion = tostring(storedMarker.version or "")
+      storedIdentity = storedMarker.identity
+    end
+
+    if storedVersion ~= currentmd5 or storedIdentity ~= mmp.mapDownloadIdentity then
+      needupdate(currentmd5, storedVersion)
+    end
   end
 end</script>
 					<eventHandlerList>
@@ -13166,6 +13175,22 @@ end</script>
 					<name>Check for updates</name>
 					<packageName></packageName>
 					<script>local downloadfolder = getMudletHomeDir() .. "/map downloads/"
+
+function mmp.mapSourceIdentity(source, endpointUrl)
+  if source == "service" then
+    return "service:" .. tostring(endpointUrl or mmp.crowdmapService.baseUrl() or "")
+  end
+  return tostring(source) .. ":" .. tostring(mmp.game)
+end
+
+function mmp.writeMapVersion(version, identity)
+  local f, err = io.open(downloadfolder .. "current", "w")
+  if not f then
+    return mmp.echo("Couldn't write to the update file, because: " .. err)
+  end
+  f:write(yajl.to_string({ version = tostring(version), identity = identity }))
+  f:close()
+end
 
 -- this should get called at start and every hour after that
 
@@ -13183,6 +13208,7 @@ function mmp.checkforupdate()
   mmp.mapDownloadSource = mmp.settings.mapsource
   mmp.mapDownloadGeneration = mmp.mapSourceGeneration or 0
   mmp.mapDownloadEndpoint = mmp.mapDownloadSource == "service" and mmp.crowdmapService.baseUrl() or nil
+  mmp.mapDownloadIdentity = mmp.mapSourceIdentity(mmp.mapDownloadSource, mmp.mapDownloadEndpoint)
   mmp.mapperfile = downloadfolder .. "mapper"
   if not downloadFile then
     mmp.echo("Your version of Mudlet doesn't support downloading files - please upgrade to 2.0+")
@@ -13251,14 +13277,9 @@ end
 
 -- called by the user when the map is updated to register the fact that it was
 
-function mmp.updatedmap(currentmd5)
+function mmp.updatedmap(currentmd5, identity)
   assert(currentmd5, "need md5 sum to write to file")
-  local f, err = io.open(downloadfolder .. "current", "w")
-  if not f then
-    return mmp.echo("Couldn't write to the update file, because: " .. err)
-  end
-  f:write(currentmd5)
-  f:close()
+  mmp.writeMapVersion(currentmd5, identity or mmp.mapSourceIdentity(mmp.settings.mapsource))
   local t = {"Go you for updating!", "Thanks for updating the map!", "Alright, map updated!"}
   mmp.echo(t[math.random(1, #t)])
 end
@@ -13278,6 +13299,7 @@ function mmp.retrievecrowdchangelog()
   mmp.crowdmapDownloadSource = mmp.settings.mapsource
   mmp.crowdmapDownloadGeneration = mmp.mapSourceGeneration or 0
   mmp.crowdmapDownloadEndpoint = mmp.crowdmapDownloadSource == "service" and mmp.crowdmapService.baseUrl() or nil
+  mmp.crowdmapDownloadIdentity = mmp.mapSourceIdentity(mmp.crowdmapDownloadSource, mmp.crowdmapDownloadEndpoint)
   if mmp.settings.mapsource == "service" then
     mmp.downloadcrowdmap(mmp.newversion)
   elseif mmp.game == "achaea" then
@@ -13355,6 +13377,7 @@ function mmp.downloadcrowdmap(newversion)
   mmp.crowdmapDownloadSource = mmp.settings.mapsource
   mmp.crowdmapDownloadGeneration = mmp.mapSourceGeneration or 0
   mmp.crowdmapDownloadEndpoint = mmp.crowdmapDownloadSource == "service" and mmp.crowdmapService.baseUrl() or nil
+  mmp.crowdmapDownloadIdentity = mmp.mapSourceIdentity(mmp.crowdmapDownloadSource, mmp.crowdmapDownloadEndpoint)
   mmp.crowdmapDownloadVersion = newversion
   if mmp.settings.mapsource == "service" then
     downloadFile(mmp.crowdmapfile, mmp.crowdmapService.mapUrl())
@@ -13379,12 +13402,7 @@ function mmp.downloadcrowdmap(newversion)
 end
 
 function mmp.recordCrowdmapVersion(version)
-  local f, err = io.open(downloadfolder .. "current", "w")
-  if not f then
-    return mmp.echo("Couldn't write to the update file, because: " .. err)
-  end
-  f:write(tostring(version))
-  f:close()
+  mmp.writeMapVersion(version, mmp.crowdmapDownloadIdentity)
 end
 
 function mmp.showcrowdchangelog()
