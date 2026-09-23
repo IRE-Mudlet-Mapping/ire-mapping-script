@@ -5964,9 +5964,13 @@ function mmp.startup()
   private_settings["removewings"] = mmp.createOption(true, mmp.setWingsRemoval, {"boolean"}, "Remove Wings after using them?", nil, {achaea = true, imperian = true})
   private_settings["harness"] = mmp.createOption(false, mmp.setHarness, {"boolean"}, "Use Stratospheric Harness?", nil, {achaea = true})
   private_settings["duantahar"] = mmp.createOption(false, mmp.changeBoolFunc, {"boolean"}, "Use Chenubian Wings?", nil, {achaea = true})
+  private_settings["duantaharid"] = mmp.createOption("", nil, {"string", "number"}, "Item ID of your Chenubian Wings, if you own more than one pair of wings?", nil, {achaea = true})
   private_settings["duanatharan"] = mmp.createOption(false, mmp.changeBoolFunc, {"boolean"}, "Use Atavian Wings?", nil, {achaea = true, aetolia = true})
+  private_settings["duanatharanid"] = mmp.createOption("", nil, {"string", "number"}, "Item ID of your Atavian Wings, if you own more than one pair of wings?", nil, {achaea = true, aetolia = true})
   private_settings["duanathar"] = mmp.createOption(false, mmp.changeBoolFunc, {"boolean"}, "Use Eagle Wings?", nil, {achaea = true, aetolia = true})
+  private_settings["duanatharid"] = mmp.createOption("", nil, {"string", "number"}, "Item ID of your Eagle Wings, if you own more than one pair of wings?", nil, {achaea = true, aetolia = true})
   private_settings["duanatharic"] = mmp.createOption(false, mmp.changeBoolFunc, {"boolean"}, "Use Island Wings?", nil, {achaea = true})
+  private_settings["duanatharicid"] = mmp.createOption("", nil, {"string", "number"}, "Item ID of your Island Wings, if you own more than one pair of wings?", nil, {achaea = true})
   private_settings["soar"] = mmp.createOption(false, mmp.changeBoolFunc, {"boolean"}, "Use Aero Soar?", nil, {achaea = true})
   private_settings["shackle"] = mmp.createOption(false, mmp.changeBoolFunc, {"boolean"}, "Take off shackle?", nil, {achaea = true})
   private_settings["universe"] = mmp.createOption(false, mmp.changeBoolFunc, {"boolean"}, "Use Universe Tarot?", nil, {achaea = true})
@@ -7735,13 +7739,16 @@ local universeLocations = {
 function mmp.addWingsAchaea()
   --Trimmed down version of the original function, meant to only be used for wings. (Where the command varies based on several MCONFIGS)
 
-  local function getcmd(word)
+  local function getcmd(word, id)
+    local target = (id and id ~= "") and ("wings." .. tostring(id)) or "wings"
     return
       mmp.settings.removewings and
       string.format(
-        [[script:sendAll("wear wings", "say *%s %s", "remove wings", false)]],
+        [[script:sendAll("wear %s", "say *%s %s", "remove %s", false)]],
+        target,
         (mmp.settings.winglanguage and mmp.settings.winglanguage or ""),
-        word
+        word,
+        target
       ) or
       string.format(
         [[script:send("say *%s %s", false)]],
@@ -7763,24 +7770,28 @@ function mmp.addWingsAchaea()
     --Sarapis wings.
     if mmp.oncontinent(area, "Main") then
       if mmp.settings.duanatharan then
-        mmp.tempSpecialExit(4882, getcmd("duanatharan"))
-        mmp.tempSpecialExit(3885, getcmd("duanathar"))
+        local wid = mmp.settings.duanatharanid
+        mmp.tempSpecialExit(4882, getcmd("duanatharan", wid))
+        mmp.tempSpecialExit(3885, getcmd("duanathar", wid))
       elseif mmp.settings.duantahar then
-        mmp.tempSpecialExit(42319, getcmd("duanathar"))
-        mmp.tempSpecialExit(4882, getcmd("duanatharan"))
+        local wid = mmp.settings.duantaharid
+        mmp.tempSpecialExit(42319, getcmd("duanathar", wid))
+        mmp.tempSpecialExit(4882, getcmd("duanatharan", wid))
       else
-        mmp.tempSpecialExit(3885, getcmd("duanathar"))
+        mmp.tempSpecialExit(3885, getcmd("duanathar", mmp.settings.duanatharid))
       end
       --Meropis Wings
     elseif mmp.oncontinent(area, "Meropis") then
       if mmp.settings.duanatharan then
-        mmp.tempSpecialExit(51603, getcmd("duanatharan"))
-        mmp.tempSpecialExit(51188, getcmd("duanathar"))
+        local wid = mmp.settings.duanatharanid
+        mmp.tempSpecialExit(51603, getcmd("duanatharan", wid))
+        mmp.tempSpecialExit(51188, getcmd("duanathar", wid))
       elseif mmp.settings.duantahar then
-        mmp.tempSpecialExit(42319, getcmd("duanathar"))
-        mmp.tempSpecialExit(51603, getcmd("duanatharan"))
+        local wid = mmp.settings.duantaharid
+        mmp.tempSpecialExit(42319, getcmd("duanathar", wid))
+        mmp.tempSpecialExit(51603, getcmd("duanatharan", wid))
       else
-        mmp.tempSpecialExit(51188, getcmd("duanathar"))
+        mmp.tempSpecialExit(51188, getcmd("duanathar", mmp.settings.duanatharid))
       end
     end
   end
@@ -7794,7 +7805,7 @@ function mmp.addWingsAchaea()
       mmp.oncontinent(area, "Island") or
       mmp.oncontinent(area, "North")
     then
-      mmp.tempSpecialExit(47571, getcmd("duanatharic"))
+      mmp.tempSpecialExit(47571, getcmd("duanatharic", mmp.settings.duanatharicid))
     end
   end
   -- Stratospheric Harness support -- PapaGuacamole
@@ -8019,13 +8030,16 @@ end
 --of searching for a valid outdoors room.
 
 local function linkWingsRemote(room)
-  local function getcmd(word)
+  local function getcmd(word, id)
+    local target = (id and id ~= "") and ("wings." .. tostring(id)) or "wings"
     return
       mmp.settings.removewings and
       string.format(
-        [[script:sendAll("wear wings", "say *%s %s", "remove wings", false)]],
+        [[script:sendAll("wear %s", "say *%s %s", "remove %s", false)]],
+        target,
         (mmp.settings.winglanguage and mmp.settings.winglanguage or ""),
-        word
+        word,
+        target
       ) or
       string.format(
         [[script:send("say *%s %s", false)]],
@@ -8040,24 +8054,28 @@ local function linkWingsRemote(room)
   if (mmp.settings.duanathar or mmp.settings.duanatharan or mmp.settings.duantahar) then
     if mmp.oncontinent(area, "Main") then
       if mmp.settings.duanatharan then
-        mmp.tempSpecialExit(room, 4882, getcmd("duanatharan"))
-        mmp.tempSpecialExit(room, 3885, getcmd("duanathar"))
+        local wid = mmp.settings.duanatharanid
+        mmp.tempSpecialExit(room, 4882, getcmd("duanatharan", wid))
+        mmp.tempSpecialExit(room, 3885, getcmd("duanathar", wid))
       elseif mmp.settings.duantahar then
-        mmp.tempSpecialExit(room, 42319, getcmd("duanathar"))
-        mmp.tempSpecialExit(room, 4882, getcmd("duanatharan"))
+        local wid = mmp.settings.duantaharid
+        mmp.tempSpecialExit(room, 42319, getcmd("duanathar", wid))
+        mmp.tempSpecialExit(room, 4882, getcmd("duanatharan", wid))
       else
-        mmp.tempSpecialExit(room, 3885, getcmd("duanathar"))
+        mmp.tempSpecialExit(room, 3885, getcmd("duanathar", mmp.settings.duanatharid))
       end
       --Meropis Wings
     elseif mmp.oncontinent(area, "Meropis") then
       if mmp.settings.duanatharan then
-        mmp.tempSpecialExit(room, 51603, getcmd("duanatharan"))
-        mmp.tempSpecialExit(room, 51188, getcmd("duanathar"))
+        local wid = mmp.settings.duanatharanid
+        mmp.tempSpecialExit(room, 51603, getcmd("duanatharan", wid))
+        mmp.tempSpecialExit(room, 51188, getcmd("duanathar", wid))
       elseif mmp.settings.duantahar then
-        mmp.tempSpecialExit(room, 42319, getcmd("duanathar"))
-        mmp.tempSpecialExit(room, 51603, getcmd("duanatharan"))
+        local wid = mmp.settings.duantaharid
+        mmp.tempSpecialExit(room, 42319, getcmd("duanathar", wid))
+        mmp.tempSpecialExit(room, 51603, getcmd("duanatharan", wid))
       else
-        mmp.tempSpecialExit(room, 51188, getcmd("duanathar"))
+        mmp.tempSpecialExit(room, 51188, getcmd("duanathar", mmp.settings.duanatharid))
       end
     end
   end
@@ -8073,7 +8091,7 @@ local function linkWingsRemote(room)
       mmp.oncontinent(area, "North")
     )
   then
-    mmp.tempSpecialExit(room, 47571, getcmd("duanatharic"))
+    mmp.tempSpecialExit(room, 47571, getcmd("duanatharic", mmp.settings.duanatharicid))
   end
   if mmp.settings.harness then
     -- eastern isles
