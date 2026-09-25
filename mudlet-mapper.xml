@@ -6107,6 +6107,7 @@ end</script>
 local service = mmp.crowdmapService
 service.pendingChanges = service.pendingChanges or {}
 service.maxAttempts = 6
+service.maxPersistSeconds = 24 * 60 * 60
 service.unsentChanges = service.unsentChanges or 0
 service.retryPending = false
 
@@ -6180,8 +6181,39 @@ end
 
 function service.submit(change)
   if mmp.settings.mapsource ~= "service" or not mmp.settings.crowdmapservicesend or service.suspended then return end
-  table.insert(service.pendingChanges, { change = change, attempts = 0 })
+  table.insert(service.pendingChanges, { change = change, attempts = 0, expiresAt = os.time() + service.maxPersistSeconds })
   service.sendNext()
+end
+
+function service.pendingForSave()
+  local result = {}
+  local function append(entry)
+    if type(entry) ~= "table" or type(entry.change) ~= "table" then return end
+    entry.expiresAt = tonumber(entry.expiresAt) or (os.time() + service.maxPersistSeconds)
+    table.insert(result, {
+      change = entry.change,
+      attempts = tonumber(entry.attempts) or 0,
+      expiresAt = entry.expiresAt
+    })
+  end
+  append(service.inFlightEntry)
+  for _, entry in ipairs(service.pendingChanges) do append(entry) end
+  return result
+end
+
+function service.restorePendingChanges(entries)
+  if type(entries) ~= "table" or service.inFlightEntry or #service.pendingChanges &gt; 0 then return end
+  local now = os.time()
+  for _, entry in ipairs(entries) do
+    local attempts = type(entry) == "table" and tonumber(entry.attempts) or nil
+    local expiresAt = type(entry) == "table" and tonumber(entry.expiresAt) or nil
+    if type(entry) == "table" and type(entry.change) == "table" and attempts and attempts &gt;= 0
+        and attempts &lt; service.maxAttempts and expiresAt and expiresAt &gt; now then
+      table.insert(service.pendingChanges, { change = entry.change, attempts = attempts, expiresAt = expiresAt })
+    elseif type(entry) == "table" and type(entry.change) == "table" then
+      service.unsentChanges = service.unsentChanges + 1
+    end
+  end
 end
 
 function service.promoteHashOnlyRoom(roomNumber)
@@ -11366,7 +11398,8 @@ end</script>
 	local saveTable = {
 		locked_areas = mmp.locked,
 		options = mmp.settings:getAllOptions(),
-		unsent_crowdmap_changes = mmp.crowdmapService and mmp.crowdmapService.unsentCount() or 0
+		unsent_crowdmap_changes = mmp.crowdmapService and mmp.crowdmapService.unsentChanges or 0,
+		pending_crowdmap_changes = mmp.crowdmapService and mmp.crowdmapService.pendingForSave() or {}
 	}
   local _sep
 	if string.char(getMudletHomeDir():byte()) == "/" then _sep = "/" else  _sep = "\\" end
@@ -11411,6 +11444,7 @@ function mmp.loadOptions()
 	local loadTable = mmp.loadLocks()
 	if mmp.crowdmapService then
 		mmp.crowdmapService.unsentChanges = tonumber(loadTable.unsent_crowdmap_changes) or 0
+		mmp.crowdmapService.restorePendingChanges(loadTable.pending_crowdmap_changes)
 	end
 
 	if loadTable.options then
@@ -11419,6 +11453,7 @@ function mmp.loadOptions()
 			mmp.settings:setOption(k, v, true)
 		end
 	end
+	if mmp.crowdmapService then mmp.crowdmapService.sendNext() end
 end
 
 function mmp.loadLocks()
