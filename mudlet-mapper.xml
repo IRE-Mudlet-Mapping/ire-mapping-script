@@ -6260,6 +6260,22 @@ function service.untrackTemporarySpecialExit(roomNumber, destination, command)
   if not next(roomExits) then service.temporarySpecialExits[roomKey] = nil end
 end
 
+function service.untrackTemporarySpecialExitCommand(roomNumber, command)
+  local roomKey = tostring(roomNumber)
+  local roomExits = service.temporarySpecialExits[roomKey]
+  if not roomExits then return false end
+  local suffix = "\0" .. tostring(command)
+  local found = false
+  for key in pairs(roomExits) do
+    if key:sub(-#suffix) == suffix then
+      roomExits[key] = nil
+      found = true
+    end
+  end
+  if not next(roomExits) then service.temporarySpecialExits[roomKey] = nil end
+  return found
+end
+
 function service.versionUrl()
   local reporterName = service.reporter()
   if not reporterName then return end
@@ -6431,7 +6447,10 @@ do
 
   function removeSpecialExit(roomNumber, command, ...)
     local results = pack(original.removeSpecialExit(roomNumber, command, ...))
-    if results[1] and command ~= mmp.whirlString then service.submit({ type = "delete-special-exit", roomNumber = tonumber(roomNumber), exitCommand = command }) end
+    local wasTemporary = service.untrackTemporarySpecialExitCommand(roomNumber, command)
+    if results[1] and command ~= mmp.whirlString and not wasTemporary then
+      service.submit({ type = "delete-special-exit", roomNumber = tonumber(roomNumber), exitCommand = command })
+    end
     return unpackResults(results)
   end
 
@@ -13013,7 +13032,74 @@ end</script>
 				<Script isActive="yes" isFolder="no">
 					<name>mmp.downloadedFile</name>
 					<packageName></packageName>
-					<script>function mmp.downloadedFile(_, filename)
+					<script>mmp.crowdmapLoadRetries = mmp.crowdmapLoadRetries or {}
+
+local function crowdmapDownloadIsCurrent(context)
+  return context.filename == mmp.crowdmapfile
+      and context.source == mmp.settings.mapsource
+      and context.generation == (mmp.mapSourceGeneration or 0)
+      and context.identity == mmp.mapSourceIdentity(mmp.settings.mapsource)
+end
+
+local function finishCrowdmapLoad(context, successMessage)
+  os.remove(context.filename)
+  mmp.crowdmapService.mapLoaded()
+  if mmp.game ~= "starmourn" then
+    local wc = mmp.lockWormholes()
+    local ws = mmp.lockSewers()
+    mmp.lockPebble()
+    if mmp.game == "achaea" and wc == 0 and ws == 0 then
+      mmp.echo("Sorry, it seems your Mudlet isn't compatible with the new crowdmap format - and the map cannot be loaded fully. Please update your Mudlet:\n  http://www.mudlet.org/download/")
+      return
+    end
+  end
+
+  if mmp.settings.waterwalk then mmp.enableWaterWalk() else mmp.disableWaterWalk() end
+
+  mmp.echo(successMessage)
+  mmp.recordCrowdmapVersion(context.version, context.identity)
+
+  local newPublicMarks = mmp.getRoomMarks("public")
+  for markname, location in pairs(context.publicMarks) do
+    if context.privateMarks[markname] == nil and tostring(newPublicMarks[markname]) ~= tostring(location) then
+      context.privateMarks[markname] = location
+    end
+  end
+  mmp.localMapChanges(function()
+    setRoomUserData(1, "gotoMapping-private", yajl.to_string(context.privateMarks))
+  end)
+  mmp.echo("Private marks from the old map migrated successfully.")
+  raiseEvent("mmapper updated map")
+end
+
+local function loadCrowdmapDownload(context, successMessage)
+  mmp.crowdmapService.warnBeforeMapLoad()
+  if not loadMap(context.filename) then return false end
+  finishCrowdmapLoad(context, successMessage)
+  return true
+end
+
+function mmp.retryCrowdmapLoad(filename)
+  local context = mmp.crowdmapLoadRetries[filename]
+  if not context then return mmp.echo("That map download is no longer available to retry.") end
+  if not crowdmapDownloadIsCurrent(context) then
+    mmp.crowdmapLoadRetries[filename] = nil
+    os.remove(filename)
+    mmp.echo("That map download is stale; checking for the current map instead.")
+    return mmp.checkforupdate()
+  end
+  if not io.exists(filename) then
+    mmp.crowdmapLoadRetries[filename] = nil
+    return mmp.echo("That map download is no longer available to retry.")
+  end
+  if loadCrowdmapDownload(context, "Map loaded successfully!") then
+    mmp.crowdmapLoadRetries[filename] = nil
+  else
+    mmp.echo("Nope, didn't work. Open the map and try again?")
+  end
+end
+
+function mmp.downloadedFile(_, filename)
   if not io.exists(filename) then return end
 
   -- workaround for https://bugs.launchpad.net/mudlet/+bug/1092769
@@ -13083,101 +13169,21 @@ end</script>
       os.remove(filename)
       return mmp.checkforupdate()
     end
-    mmp.crowdmapService.warnBeforeMapLoad()
     mmp.echo("Map downloaded, loading it in...")
+    local context = {
+      filename = filename,
+      version = mmp.crowdmapDownloadVersion,
+      source = mmp.crowdmapDownloadSource,
+      generation = mmp.crowdmapDownloadGeneration,
+      identity = mmp.crowdmapDownloadIdentity,
+      publicMarks = mmp.getRoomMarks("public"),
+      privateMarks = mmp.getRoomMarks("private")
+    }
 
-    local tmp = getRoomUserData(1, "gotoMapping")
-    local oldmaptable = {}
-    local oldPrivateMarks = mmp.getRoomMarks("private")
-
-    if tmp ~= "" then
-      oldmaptable = yajl.to_value(tmp)
-    end
-
-    local ok = loadMap(filename)
-
-    if ok then
-      os.remove(filename)
-      mmp.crowdmapService.mapLoaded()
-      if mmp.game ~= "starmourn" then
-        local wc = mmp.lockWormholes()
-  	local ws = mmp.lockSewers()
-        mmp.lockPebble()
-        if mmp.game == "achaea" and wc == 0 and ws == 0 then -- in achaea, using crowdmap, if we didn't get any special exits - it means Mudlet needs to be updated
-          mmp.echo("Sorry, it seems your Mudlet isn't compatible with the new crowdmap format - and the map cannot be loaded fully. Please update your Mudlet:\n  http://www.mudlet.org/download/")
-          return
-        end
-      end
-
-      if mmp.settings.waterwalk then mmp.enableWaterWalk() else mmp.disableWaterWalk() end
-
-      mmp.echo("Map loaded fine - enjoy!")
-      mmp.recordCrowdmapVersion(mmp.crowdmapDownloadVersion)
-
-      tmp = getRoomUserData(1, "gotoMapping")
-      local newmaptable = {}
-
-      if tmp ~= "" then
-        newmaptable = yajl.to_value(tmp)
-      end
-
-      for markname, location in pairs(oldmaptable) do
-        if oldPrivateMarks[markname] == nil and tostring(newmaptable[markname]) ~= tostring(location) then
-          oldPrivateMarks[markname] = location
-        end
-      end
-      mmp.localMapChanges(function()
-        setRoomUserData(1, "gotoMapping-private", yajl.to_string(oldPrivateMarks))
-      end)
-      mmp.echo("Private marks from the old map migrated successfully.")
-
-      raiseEvent("mmapper updated map")
-    else
+    if not loadCrowdmapDownload(context, "Map loaded fine - enjoy!") then
+      mmp.crowdmapLoadRetries[filename] = context
       mmp.echon("Map failed to load - you need to have the mapper open. Please open it, and then ")
-      echoLink("click here", [[
-        local tmp = getRoomUserData(1, "gotoMapping")
-        local oldmaptable = {}
-        local oldPrivateMarks = mmp.getRoomMarks("private")
-        if tmp ~= "" then
-          oldmaptable = yajl.to_value(tmp)
-        end
-
-        mmp.crowdmapService.warnBeforeMapLoad()
-        local ok = loadMap(']]..filename..[[')
-        if ok then
-        os.remove(']]..filename..[[')
-        mmp.crowdmapService.mapLoaded()
-        local wc = mmp.lockWormholes()
-	    local ws = mmp.lockSewers()
-        mmp.lockPebble()
-        if mmp.game == "achaea" and wc == 0 and ws == 0 then -- in achaea, using crowdmap, if we didn't get any special exits - it means Mudlet needs to be updated
-          mmp.echo("Sorry, it seems your Mudlet isn't compatible with the new crowdmap format - and the map cannot be loaded fully. Please update your Mudlet:\n  http://www.mudlet.org/download/")
-          return
-        end
-
-        if mmp.settings.waterwalk then mmp.enableWaterWalk() else mmp.disableWaterWalk() end
-
-        mmp.echo("Map loaded successfully!")
-        mmp.recordCrowdmapVersion(mmp.crowdmapDownloadVersion)
-
-          tmp = getRoomUserData(1, "gotoMapping")
-          local newmaptable = {}
-          if tmp ~= "" then
-            newmaptable = yajl.to_value(tmp)
-          end
-          for markname, location in pairs(oldmaptable) do
-            if oldPrivateMarks[markname] == nil and tostring(newmaptable[markname]) ~= tostring(location) then
-              oldPrivateMarks[markname] = location
-            end
-          end
-          mmp.localMapChanges(function()
-            setRoomUserData(1, "gotoMapping-private", yajl.to_string(oldPrivateMarks))
-          end)
-          mmp.echo("Private marks from the old map migrated successfully.")
-          raiseEvent("mmapper updated map")
-        else mmp.echo("Nope, didn't work. Open the map and try again?") end
-      ]],
-      "Click here to try loading the map again")
+      echoLink("click here", string.format("mmp.retryCrowdmapLoad(%q)", filename), "Click here to try loading the map again")
       echo(" to try loading it in again.\n")
     end
 
@@ -13474,8 +13480,8 @@ function mmp.downloadcrowdmap(newversion)
   mmp.echo("Downloading the latest crowdmap...")
 end
 
-function mmp.recordCrowdmapVersion(version)
-  mmp.writeMapVersion(version, mmp.crowdmapDownloadIdentity)
+function mmp.recordCrowdmapVersion(version, identity)
+  mmp.writeMapVersion(version, identity or mmp.crowdmapDownloadIdentity)
 end
 
 function mmp.showcrowdchangelog()
