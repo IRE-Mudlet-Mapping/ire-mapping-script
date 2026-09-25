@@ -5936,8 +5936,8 @@ function mmp.startup()
     if option and mmp.crowdmapService then mmp.crowdmapService.sendNext() end
   end, {"boolean"}, "Send local map changes to the service?", nil, crowdmapGames, function() return mmp.settings.mapsource == "service" end)
   private_settings["gmcpmapupdates"] = mmp.createOption(false, mmp.changeBoolFunc, {"boolean"}, "Apply safe GMCP room information to existing map rooms, even when mapping mode is off?")
-  private_settings["crowdmapserviceurl"] = mmp.createOption("https://&lt;game&gt;.mudmaps.community", nil, {"string"}, "Crowdmap service endpoint URL. Use &lt;game&gt; to derive the subdomain from the connected game.", function(value) return value:match("^https?://") ~= nil end, crowdmapGames, function() return mmp.settings.mapsource == "service" end)
-  private_settings["crowdmapservicereports"] = mmp.createOption(2, nil, {"number"}, "Required independent reports for changes sourced from the service.", function(value) return value >= 0 and value == math.floor(value) end, crowdmapGames, function() return mmp.settings.mapsource == "service" end)
+  private_settings["crowdmapserviceurl"] = mmp.createOption("https://&lt;game&gt;.mudmaps.community", mmp.changeCrowdmapServiceMapOption, {"string"}, "Crowdmap service endpoint URL. Use &lt;game&gt; to derive the subdomain from the connected game.", function(value) return value:match("^https?://") ~= nil end, crowdmapGames, function() return mmp.settings.mapsource == "service" end)
+  private_settings["crowdmapservicereports"] = mmp.createOption(2, mmp.changeCrowdmapServiceMapOption, {"number"}, "Required independent reports for changes sourced from the service.", function(value) return value >= 0 and value == math.floor(value) end, crowdmapGames, function() return mmp.settings.mapsource == "service" end)
   private_settings["showcmds"] = mmp.createOption(true, mmp.changeBoolFunc, {"boolean"}, "Show walking commands?")
   private_settings["laglevel"] = mmp.createOption(1, mmp.changeLaglevel, {"number"}, "How laggy is your connection, (fast 1&lt;-&gt;5 slow)?", mmp.verifyLaglevel)
   private_settings["slowwalk"] = mmp.createOption(false, mmp.setSlowWalk, {"boolean"}, "Walk slowly instead of as quick as possible?")
@@ -10100,6 +10100,12 @@ function mmp.lockSpecials()
 end
 
 
+function mmp.changeCrowdmapServiceMapOption()
+  if mmp.settings.mapsource ~= "service" then return end
+  mmp.mapSourceGeneration = (mmp.mapSourceGeneration or 0) + 1
+  mmp.checkforupdate()
+end
+
 function mmp.changeMapSource()
   local source = mmp.settings.mapsource
   if source ~= mmp.lastMapSource then
@@ -10114,14 +10120,13 @@ function mmp.changeMapSource()
    mmp.settings:setOption("mapsource", "game", true)
   elseif source == "published" then
     mmp.echo("Will use the published crowdsourced map for updates instead!")
-    mmp.checkforupdate()
   elseif source == "service" then
     mmp.echo("Will use the live crowdmap service for updates instead!")
-    mmp.checkforupdate()
     mmp.crowdmapService.sendNext()
   else
     mmp.echo("Will use the default game map for updates.")
   end
+  mmp.checkforupdate()
 end
 
 function mmp.setWingsLanguage()
