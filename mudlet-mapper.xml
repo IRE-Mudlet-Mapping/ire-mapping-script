@@ -13015,8 +13015,7 @@ end</script>
 
     local tmp = getRoomUserData(1, "gotoMapping")
     local oldmaptable = {}
-    local privateTmp = getRoomUserData(1, "gotoMapping-private")
-    local oldPrivateMarks = privateTmp ~= "" and yajl.to_value(privateTmp) or {}
+    local oldPrivateMarks = mmp.getRoomMarks("private")
 
     if tmp ~= "" then
       oldmaptable = yajl.to_value(tmp)
@@ -13065,8 +13064,7 @@ end</script>
       echoLink("click here", [[
         local tmp = getRoomUserData(1, "gotoMapping")
         local oldmaptable = {}
-        local privateTmp = getRoomUserData(1, "gotoMapping-private")
-        local oldPrivateMarks = privateTmp ~= "" and yajl.to_value(privateTmp) or {}
+        local oldPrivateMarks = mmp.getRoomMarks("private")
         if tmp ~= "" then
           oldmaptable = yajl.to_value(tmp)
         end
@@ -13178,7 +13176,7 @@ end</script>
 
 function mmp.mapSourceIdentity(source)
   if source == "service" then
-    return "service:" .. tostring(mmp.crowdmapService.mapUrl() or "")
+    return "service:" .. tostring(mmp.game) .. ":" .. tostring(mmp.crowdmapService.mapUrl() or "")
   end
   return tostring(source) .. ":" .. tostring(mmp.game)
 end
