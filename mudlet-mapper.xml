@@ -6865,7 +6865,10 @@ function mmp.createOptionsTable(defaultTable)
                         "Possible values: game | published | service ")
         return
       end
-      proxyTable.disp("'crowdmap' has been replaced by 'mapsource'. Using '" .. value .. "'.")
+      if not silent then
+        proxyTable.disp("'crowdmap' has been replaced by 'mapsource'. Using '" .. value .. "'. "  ..
+                        "(mconfig mapsource " .. value .. ")")
+      end
     end
 
 		if self[option] == nil then
