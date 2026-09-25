@@ -6852,7 +6852,22 @@ function mmp.createOptionsTable(defaultTable)
 		return t
 	end
 
-   function proxyTable:setOption(option, value, silent)
+  function proxyTable:setOption(option, value, silent)
+
+    if option:lower() == "crowdmap" then
+      option = "mapsource"
+      if value == true then
+        value = "published"
+      elseif value == false then
+        value = "game"
+      else
+        proxyTable.disp("'crowdmap' has been replaced by 'mapsource'. "..
+                        "Possible values: game | published | service ")
+        return
+      end
+      proxyTable.disp("'crowdmap' has been replaced by 'mapsource'. Using '" .. value .. "'.")
+    end
+
 		if self[option] == nil then
 			proxyTable.disp("No such option!\n")
 			return
