@@ -7827,9 +7827,8 @@ function mmp.removeWings()
   --remove all special exits that were created by addWings, then resets the table.
   mmp.localMapChanges(function()
     for _, exit in ipairs(exitsCreated) do
-      if removeSpecialExit(exit.room, exit.command) then
-        mmp.crowdmapService.untrackTemporarySpecialExit(exit.room, exit.destination, exit.command)
-      end
+      removeSpecialExit(exit.room, exit.command)
+      mmp.crowdmapService.untrackTemporarySpecialExit(exit.room, exit.destination, exit.command)
     end
   end)
   exitsCreated = {}
