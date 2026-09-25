@@ -6235,6 +6235,31 @@ end
 
 mmp.localMapChanges = service.localOnly
 
+service.temporarySpecialExits = service.temporarySpecialExits or {}
+
+local function specialExitKey(destination, command)
+  return tostring(destination) .. "\0" .. tostring(command)
+end
+
+function service.trackTemporarySpecialExit(roomNumber, destination, command)
+  local roomKey = tostring(roomNumber)
+  service.temporarySpecialExits[roomKey] = service.temporarySpecialExits[roomKey] or {}
+  service.temporarySpecialExits[roomKey][specialExitKey(destination, command)] = true
+end
+
+function service.isTemporarySpecialExit(roomNumber, destination, command)
+  local roomExits = service.temporarySpecialExits[tostring(roomNumber)]
+  return roomExits and roomExits[specialExitKey(destination, command)] or false
+end
+
+function service.untrackTemporarySpecialExit(roomNumber, destination, command)
+  local roomKey = tostring(roomNumber)
+  local roomExits = service.temporarySpecialExits[roomKey]
+  if not roomExits then return end
+  roomExits[specialExitKey(destination, command)] = nil
+  if not next(roomExits) then service.temporarySpecialExits[roomKey] = nil end
+end
+
 function service.versionUrl()
   local reporterName = service.reporter()
   if not reporterName then return end
@@ -6283,20 +6308,24 @@ local function unpackResults(results)
 end
 
 do
+  -- Keep the native functions across module reloads and always rebuild wrappers
+  -- against them, never against wrappers installed by a previous load.
+  if not service.original then
+    service.original = {
+      addAreaName = addAreaName, setAreaName = setAreaName, deleteArea = deleteArea,
+      addRoom = addRoom, deleteRoom = deleteRoom, setRoomName = setRoomName,
+      setRoomCoordinates = setRoomCoordinates, setRoomArea = setRoomArea,
+      setRoomWeight = setRoomWeight, setRoomChar = setRoomChar, setRoomEnv = setRoomEnv,
+      setRoomIDbyHash = setRoomIDbyHash,
+      setRoomUserData = setRoomUserData, clearRoomUserDataItem = clearRoomUserDataItem,
+      addSpecialExit = addSpecialExit, removeSpecialExit = removeSpecialExit,
+      clearSpecialExits = clearSpecialExits, lockSpecialExit = lockSpecialExit,
+      setExitWeight = setExitWeight, setDoor = setDoor,
+      setMapUserData = setMapUserData, clearMapUserDataItem = clearMapUserDataItem,
+      createMapLabel = createMapLabel, deleteMapLabel = deleteMapLabel
+    }
+  end
   service.wrappersInstalled = true
-  service.original = service.original or {
-    addAreaName = addAreaName, setAreaName = setAreaName, deleteArea = deleteArea,
-    addRoom = addRoom, deleteRoom = deleteRoom, setRoomName = setRoomName,
-    setRoomCoordinates = setRoomCoordinates, setRoomArea = setRoomArea,
-    setRoomWeight = setRoomWeight, setRoomChar = setRoomChar, setRoomEnv = setRoomEnv,
-    setRoomIDbyHash = setRoomIDbyHash,
-    setRoomUserData = setRoomUserData, clearRoomUserDataItem = clearRoomUserDataItem,
-    addSpecialExit = addSpecialExit, removeSpecialExit = removeSpecialExit,
-    clearSpecialExits = clearSpecialExits, lockSpecialExit = lockSpecialExit,
-    setExitWeight = setExitWeight, setDoor = setDoor,
-    setMapUserData = setMapUserData, clearMapUserDataItem = clearMapUserDataItem,
-    createMapLabel = createMapLabel, deleteMapLabel = deleteMapLabel
-  }
   local original = service.original
 
   function addAreaName(name, ...)
@@ -6410,18 +6439,19 @@ do
     local exits = getSpecialExits(roomNumber) or {}
     local results = pack(original.clearSpecialExits(roomNumber, ...))
     if not next(getSpecialExits(roomNumber) or {}) then
-      local function submitExit(command)
-        if command ~= mmp.whirlString then
+      local function submitExit(destination, command)
+        if command ~= mmp.whirlString and not service.isTemporarySpecialExit(roomNumber, destination, command) then
           service.submit({ type = "delete-special-exit", roomNumber = tonumber(roomNumber), exitCommand = command })
         end
       end
-      for _, commands in pairs(exits) do
+      for destination, commands in pairs(exits) do
         if type(commands) == "table" then
-          for command in pairs(commands) do submitExit(command) end
+          for command in pairs(commands) do submitExit(destination, command) end
         else
-          submitExit(commands)
+          submitExit(destination, commands)
         end
       end
+      service.temporarySpecialExits[tostring(roomNumber)] = nil
     end
     return unpackResults(results)
   end
@@ -6512,8 +6542,9 @@ do
   end
 
   function service.wrapSetExit(originalSetExit)
+    service.originalMmpSetExit = service.originalMmpSetExit or originalSetExit
     function mmp.setExit(roomNumber, destination, direction, ...)
-      local results = pack(originalSetExit(roomNumber, destination, direction, ...))
+      local results = pack(service.originalMmpSetExit(roomNumber, destination, direction, ...))
       if results[1] then
         local change = { roomNumber = tonumber(roomNumber), direction = directions[direction] }
         if tonumber(destination) == -1 then change.type = "delete-exit"
@@ -7781,17 +7812,25 @@ function mmp.tempSpecialExit(start, destination, command, weight)
     -- no start room given, so shift all arguments one to the right
     start, destination, command, weight = mmp.currentroom, start, destination, command
   end
-  table.insert(exitsCreated, {room = start, command = command})
+  local added
   mmp.localMapChanges(function()
-    addSpecialExit(start, destination, command)
+    added = addSpecialExit(start, destination, command)
     if weight then setExitWeight(start, command, weight) end
   end)
+  if added then
+    table.insert(exitsCreated, {room = start, destination = destination, command = command})
+    mmp.crowdmapService.trackTemporarySpecialExit(start, destination, command)
+  end
 end
 
 function mmp.removeWings()
   --remove all special exits that were created by addWings, then resets the table.
   mmp.localMapChanges(function()
-    for _, exit in ipairs(exitsCreated) do removeSpecialExit(exit.room, exit.command) end
+    for _, exit in ipairs(exitsCreated) do
+      if removeSpecialExit(exit.room, exit.command) then
+        mmp.crowdmapService.untrackTemporarySpecialExit(exit.room, exit.destination, exit.command)
+      end
+    end
   end)
   exitsCreated = {}
 end
@@ -13188,15 +13227,20 @@ end</script>
     local f, s = io.open(getMudletHomeDir().."/map downloads/current")
     if f then s = f:read("*a"); io.close(f) end
 
-    local storedVersion, storedIdentity = s, nil
+    local storedVersion, storedIdentity, structuredMarker = s, nil, false
     local decodedOk, storedMarker = pcall(yajl.to_value, s)
     if decodedOk and type(storedMarker) == "table" then
       storedVersion = tostring(storedMarker.version or "")
       storedIdentity = storedMarker.identity
+      structuredMarker = true
     end
 
-    if storedVersion ~= currentmd5 or storedIdentity ~= mmp.mapDownloadIdentity then
+    if storedVersion ~= currentmd5 or (structuredMarker and storedIdentity ~= mmp.mapDownloadIdentity) then
       needupdate(currentmd5, storedVersion)
+    elseif not structuredMarker then
+      -- A matching legacy marker is already current. Add its source identity
+      -- silently instead of showing a false one-time update reminder.
+      mmp.writeMapVersion(currentmd5, mmp.mapDownloadIdentity)
     end
   end
 end</script>
