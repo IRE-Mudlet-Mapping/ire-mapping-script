@@ -51,6 +51,10 @@ and deleted within the session produce no reports. Deleting existing rooms or
 areas also records affected incoming exits and contained rooms. Safe GMCP
 updates outside mapping mode continue to submit immediately.
 
+Edits made before the game, character, and service endpoint are identified
+remain local, with a message explaining why. Start contributing after login;
+pre-identification edits are not assigned to a later character or project.
+
 Disconnecting ends mapping mode and saves the final changes for delivery after
 login. Closing the profile also saves unfinished work and outstanding requests.
 The mapper checkpoints each tracked mutation to `mapper.crowdmap-journal.json`

@@ -44,6 +44,14 @@ function getSpecialExits(id)
 end
 function getExitWeights(id) return clone(rooms[id].weights) end
 function getDoors(id) return clone(rooms[id].doors) end
+function getAllRoomEntrances(destination)
+  local result = {}
+  for id, room in pairs(rooms) do
+    for _, target in pairs(room.exits) do if target == destination then result[#result + 1] = id end end
+    for _, target in pairs(room.special) do if target == destination then result[#result + 1] = id end end
+  end
+  return result
+end
 function getRooms() local result = {}; for id, r in pairs(rooms) do result[id] = r.name end; return result end
 function getAreaTableSwap() return clone(areas) end
 function getAreaTable() local result = {}; for id, name in pairs(areas) do result[name] = id end; return result end
@@ -421,6 +429,100 @@ test('switching back to the saved endpoint resumes delivery', function()
   mmp.changeCrowdmapServiceMapOption(); assert(#requests == 0 and #service.pendingChanges == 1)
   settings.crowdmapserviceurl = 'https://example.test'; mmp.changeCrowdmapServiceMapOption()
   assert(#requests == 1 and requests[1].change.name == 'Final')
+end)
+
+test('hash reassignment undo reconciles every projected owner without private fields', function()
+  local service, batch = reset(); rooms[1], rooms[2], rooms[3] = freshRoom(1, 1), freshRoom(2, 1), freshRoom(3, 1)
+  rooms[1].hash = 'H'; toggle('on')
+  setRoomIDbyHash(2, 'H'); setRoomIDbyHash(3, 'H')
+  service.localOnly(function() setRoomIDbyHash(1, 'H'); setRoomName(2, 'Private') end)
+  setRoomIDbyHash(1, 'H')
+  assert(#batch.changes(service.batch) == 0)
+  assert(service.batch.rooms['2'].after.hash == '' and service.batch.rooms['3'].after.hash == '')
+end)
+test('unopenable primary journal is preserved and never replaced by a backup', function()
+  local service = reset(); rooms[1] = freshRoom(1, 1); toggle('on'); setRoomName(1, 'Saved')
+  local path, nativeOpen = folder .. '/mapper.crowdmap-journal.json', io.open
+  local file = assert(nativeOpen(path, 'r')); local original = file:read('*a'); file:close()
+  file = assert(nativeOpen(path .. '.bak', 'w')); file:write(original); file:close()
+  service = reset(true); local backupReads = 0
+  io.open = function(name, mode)
+    if name == path and mode == 'r' then return nil, 'Permission denied', 13 end
+    if name == path .. '.bak' and mode == 'r' then backupReads = backupReads + 1 end
+    return nativeOpen(name, mode)
+  end
+  service.batching.restore()
+  assert(service.batching.corrupt and service.batching.hasJournal and backupReads == 0)
+  rooms[1] = freshRoom(1, 1); setRoomName(1, 'Another'); assert(#requests == 0 and not service.batching.checkpoint())
+  io.open = nativeOpen
+  file = assert(nativeOpen(path, 'r')); assert(file:read('*a') == original); file:close()
+end)
+test('unopenable backup after a missing primary also blocks checkpointing', function()
+  local service = reset(); local path, nativeOpen = folder .. '/mapper.crowdmap-journal.json', io.open
+  local file = assert(nativeOpen(path .. '.bak', 'w')); file:write('saved backup'); file:close()
+  io.open = function(name, mode)
+    if name == path .. '.bak' and mode == 'r' then return nil, 'Permission denied', 13 end
+    return nativeOpen(name, mode)
+  end
+  service.batching.restore(); assert(service.batching.corrupt and not service.batching.checkpoint())
+  io.open = nativeOpen
+  file = nativeOpen(path, 'r'); assert(not file)
+  file = assert(nativeOpen(path .. '.bak', 'r')); assert(file:read('*a') == 'saved backup'); file:close()
+end)
+test('non-ENOENT journal errors without a code are not treated as missing', function()
+  local service = reset(); local nativeOpen = io.open
+  io.open = function(name, mode)
+    if mode == 'r' then return nil, 'Unknown open failure' end
+    return nativeOpen(name, mode)
+  end
+  service.batching.restore(); assert(service.batching.hasJournal and service.batching.corrupt)
+  assert(not service.batching.checkpoint()); io.open = nativeOpen
+end)
+test('edits before game identification remain local and cannot poison later batches', function()
+  local service, batch = reset(); rooms[1] = freshRoom(1, 1)
+  mmp.game, settings.crowdmapserviceurl = false, 'https://<game>.mudmaps.community'
+  toggle('on'); local messagesBefore = #messages
+  setRoomName(1, 'Before login'); assert(rooms[1].name == 'Before login')
+  assert(not service.batch and #service.pendingChanges == 0 and #requests == 0 and #messages == messagesBefore + 1)
+  setRoomCoordinates(1, 4, 5, 6); assert(#messages == messagesBefore + 1)
+  mmp.game = 'achaea'; event('gmcp.Char.Status'); setRoomName(1, 'After login'); toggle('off')
+  assert(#requests == 1 and requests[1].change.name == 'After login')
+  assert(requests[1].url:find('https://achaea.mudmaps.community/', 1, true))
+end)
+test('pre-identification shutdown does not recover an unbound queue', function()
+  local service = reset(); rooms[1] = freshRoom(1, 1)
+  mmp.game, settings.crowdmapserviceurl = false, 'https://<game>.mudmaps.community'
+  toggle('on'); setRoomName(1, 'Local'); event('sysExitEvent')
+  service = reset(true); service.batching.restore(); assert(#service.pendingChanges == 0)
+  rooms[1] = freshRoom(1, 1); toggle('on'); setRoomName(1, 'New session'); toggle('off'); assert(#requests == 1)
+end)
+test('unidentified reporter and invalid endpoint do not create pending reports', function()
+  local service = reset(); rooms[1] = freshRoom(1, 1); gmcp.Char.Status.name = nil
+  toggle('on'); setRoomName(1, 'Local'); assert(not service.batch and #service.pendingChanges == 0)
+  gmcp.Char.Status.name = 'Mapper'; settings.crowdmapserviceurl = nil
+  setRoomName(1, 'Still local'); assert(not service.batch and #service.pendingChanges == 0)
+end)
+test('bulk room deletion uses incoming lookups without enumerating unrelated rooms', function()
+  local service, batch = reset(); for id = 1, 1000 do rooms[id] = freshRoom(id, 1) end
+  rooms[900].exits.north, rooms[901].special.enter = 1, 1
+  local nativeEntrances, nativeExits, nativeRooms = getAllRoomEntrances, getRoomExits, getRooms
+  local entranceCalls, unrelatedReads = 0, 0
+  getAllRoomEntrances = function(id) entranceCalls = entranceCalls + 1; return nativeEntrances(id) end
+  getRoomExits = function(id) if id == 1000 then unrelatedReads = unrelatedReads + 1 end; return nativeExits(id) end
+  getRooms = function() error('Full-map scan during bulk deletion') end
+  toggle('on'); for id = 1, 20 do deleteRoom(id) end
+  local changes = batch.changes(service.batch)
+  assert(entranceCalls == 20 and unrelatedReads == 0 and count(changes, 'delete-room') == 20)
+  assert(count(changes, 'delete-exit', 900) == 1 and count(changes, 'delete-special-exit', 901) == 1)
+  getAllRoomEntrances, getRoomExits, getRooms = nativeEntrances, nativeExits, nativeRooms
+end)
+test('incoming lookups include newly added, redirected and local-only exits', function()
+  local service, batch = reset(); rooms[1], rooms[2], rooms[3] = freshRoom(1, 1), freshRoom(2, 1), freshRoom(3, 1)
+  rooms[1].exits.north = 3; toggle('on'); mmp.setExit(1, 2, 'north')
+  service.localOnly(function() addSpecialExit(1, 2, 'private-enter') end)
+  deleteRoom(2); local changes = batch.changes(service.batch)
+  assert(count(changes, 'delete-exit', 1) == 1 and count(changes, 'delete-room', 2) == 1)
+  assert(count(changes, 'delete-special-exit', 1) == 0)
 end)
 
 print(string.format('%d batching tests passed', tests))

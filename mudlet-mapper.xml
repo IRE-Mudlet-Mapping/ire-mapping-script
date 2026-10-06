@@ -6219,9 +6219,20 @@ local function roomState(id)
     weight = getRoomWeight(id), symbol = getRoomChar(id), environmentId = getRoomEnv(id),
     hash = getRoomHashByID(id) or "", userData = data, exits = exits, special = special, weights = weights, doors = doors }
 end
+function batch.identityReady()
+  return type(mmp.game) == "string" and mmp.game ~= "" and service.baseUrl() ~= nil
+    and service.reporter() ~= nil and not batch.awaitingReporter and not batch.disconnected and not batch.closing
+end
+function batch.warnUnknownIdentity()
+  if not batch.identityWarning then
+    mmp.echo("Map edits remain local until the game, character and service are identified. Begin mapping after login to contribute them.")
+    batch.identityWarning = true
+  end
+end
 function batch.enabled()
   return mmp.editing and mmp.settings and mmp.settings.mapsource == "service"
     and mmp.settings.crowdmapservicesend and not service.suspended and not batch.closing
+    and batch.identityReady()
 end
 local function identity()
   return { url = service.baseUrl(), reporter = service.reporter(), game = mmp.game }
@@ -6280,13 +6291,13 @@ function batch.before(operation, ...)
     if operation == "setRoomIDbyHash" then room(getRoomIDbyHash(args[2])) end
   end
   if touched.deletedRooms then
-    -- Native deletion also removes incoming normal and special exits.
-    for id in pairs(getRooms() or {}) do
-      for _, destination in pairs(getRoomExits(id) or {}) do
-        if touched.deletedRooms[tostring(destination)] ~= nil then room(id); break end
-      end
-      for destination in pairs(getSpecialExits(id, true) or {}) do
-        if touched.deletedRooms[tostring(destination)] ~= nil then room(id); break end
+    -- Mudlet maintains an entrance hash for both normal and special exits.
+    -- Query affected sources directly rather than scanning the whole map for
+    -- every room in a chunked area deletion. Native/localOnly edits keep this
+    -- index current as well, so no second Lua index needs synchronizing.
+    for id in pairs(touched.deletedRooms) do
+      for _, source in pairs(getAllRoomEntrances(tonumber(id)) or {}) do
+        if touched.rooms[tostring(source)] == nil then room(source) end
       end
     end
   end
@@ -6334,6 +6345,16 @@ local function publishTarget(touched, result)
   end
   local key = path[#path]
   if key then projected[key] = copy(current[key]) end
+  if operation == "setRoomIDbyHash" and args[2] ~= "" then
+    -- The native owner may have changed inside localOnly, while a previously
+    -- tracked room still owns this hash in the shared projection. A verified
+    -- public assignment reconciles all projected owners, touching only hash.
+    for id, other in pairs(session.rooms) do
+      if id ~= tostring(tonumber(args[1])) and other.after and other.after.hash == args[2] then
+        other.after.hash = ""
+      end
+    end
+  end
 end
 function batch.after(touched, result)
   if not touched then return end
@@ -6516,8 +6537,18 @@ end
 function batch.restore()
   if batch.restored then return end
   batch.restored = true
-  local file = io.open(journalPath(), "r") or io.open(journalPath() .. ".bak", "r")
-  if not file then return end
+  local path = journalPath()
+  local file, openError, errorCode = io.open(path, "r")
+  if not file and errorCode == 2 then -- ENOENT: only a missing primary permits backup recovery
+    file, openError, errorCode = io.open(path .. ".bak", "r")
+  end
+  if not file then
+    if errorCode ~= 2 then
+      batch.hasJournal, batch.corrupt = true, true
+      mmp.echo("Could not open the crowdmap journal; it has been retained for recovery: " .. tostring(openError))
+    end
+    return
+  end
   batch.hasJournal = true
   local contents = file:read("*a")
   file:close()
@@ -6663,6 +6694,11 @@ end
 
 function service.submit(change)
   if mmp.settings.mapsource ~= "service" or not mmp.settings.crowdmapservicesend or service.suspended then return end
+  if not service.batching.identityReady() then
+    service.batching.warnUnknownIdentity()
+    return
+  end
+  service.batching.identityWarning = nil
   if service.batching.enabled() then return end
   table.insert(service.pendingChanges, { change = change, attempts = 0, expiresAt = os.time() + service.maxPersistSeconds })
   if service.batching.checkpoint() then service.sendNext() end
