@@ -41,6 +41,40 @@ submitting the report fails, the mapper displays an error and the local edit
 remains. Reports are retried with a bounded backoff. If all attempts fail, the
 mapper warns again before a later map download can overwrite unsent edits.
 
+### Mapping sessions
+
+With service sending enabled, `mc on` (or `map create on`) starts a mapping
+session. The mapper records the original supported state of affected rooms and
+areas and keeps their latest state. `mc off` submits only the differences:
+repeated room moves become one move, complete undos disappear, and rooms created
+and deleted within the session produce no reports. Deleting existing rooms or
+areas also records affected incoming exits and contained rooms. Safe GMCP
+updates outside mapping mode continue to submit immediately.
+
+Disconnecting ends mapping mode and saves the final changes for delivery after
+login. Closing the profile also saves unfinished work and outstanding requests.
+The mapper checkpoints each tracked mutation to `mapper.crowdmap-journal.json`
+in the Mudlet profile directory, so recovery does not depend on the binary map
+and options being saved at the same time. After a restart, recovered sessions
+are finalized using their saved final state and submitted once the original
+character and service are available. A crash during an edit or a failed disk
+write can still lose changes after the last successful checkpoint; save errors
+are displayed and sending waits until the queue can be checkpointed.
+
+Requests already attempted are kept unchanged for retries. Session reports
+remain saved without the legacy queue's 24-hour expiry. After six failed
+attempts, sending pauses with the queue retained; `map submit` retries it.
+`map submit` can also publish the current session without turning mapping mode
+off, starting a new batch at the next edit. Further undos can only cancel edits
+within the current, unsubmitted batch. Changing the map source, endpoint, or
+sending setting finalizes the batch; saved session reports are never redirected
+to a different service or character. A downloaded service map waits until the
+active session is finished, preventing it from replacing the map under a batch.
+
+Snapshots cover the existing service-supported Lua mapper operations, not
+arbitrary native GUI edits or unsupported map fields. Local-only operations,
+private marks, hash-only placeholders, and temporary exits/labels are excluded.
+
 The service waits for a non-empty `gmcp.Char.Status.name` before checking or
 downloading a service map, and uses that character name consistently for both
 map requests and submitted reports. This avoids treating a Mudlet profile name
@@ -95,3 +129,10 @@ Are you a game admin and would like to add another game to the script? [See here
 Notable mappers:
 - Qwindor (Achaea)
 - you?
+
+## Development checks
+
+Run `python3 tests/run.py` with LuaJIT or Lua 5.1 installed. The runner parses
+the package XML, checks all embedded Lua syntax, and exercises the shipped
+service scripts against a fake Mudlet map, including shutdown/recovery and
+replaying a mixed batch to reproduce its final supported state.

@@ -5508,6 +5508,7 @@ end</script>
 				<name>Toggle mapping mode</name>
 				<script>if (matches[2] and matches[2] == "on") or (not matches[2] and not mmp.editing) then
   mmp.editing = true
+  if mmp.crowdmapService then mmp.crowdmapService.batching.begin() end
   enableAlias("mm Mapping")
 
   mmp.regenerateAreas()
@@ -5516,12 +5517,20 @@ end</script>
   mmp.echo("Mapping mode enabled. Happy mapping!")
 elseif (matches[2] and matches[2] == "off") or (not matches[2] and mmp.editing) then
   mmp.editing = false
+  if mmp.crowdmapService then mmp.crowdmapService.batching.finish() end
   disableAlias("mm Mapping")
   mmp.echo("Mapping mode disabled.")
 end</script>
 				<command></command>
 				<packageName></packageName>
 				<regex>^(?:mc|map create) ?(on|off)?$</regex>
+			</Alias>
+			<Alias isActive="yes" isFolder="no">
+				<name>Submit saved map changes</name>
+				<script>mmp.crowdmapService.retrySavedChanges()</script>
+				<command></command>
+				<packageName></packageName>
+				<regex>^map submit$</regex>
 			</Alias>
 			<Alias isActive="yes" isFolder="no">
 				<name>List map features</name>
@@ -5933,7 +5942,10 @@ function mmp.startup()
   private_settings["mapsource"] = mmp.createOption("game", mmp.changeMapSource, {"string"}, "Map source: game, published, or service.", function(value) return value == "game" or value == "published" or value == "service" end, crowdmapGames)
   private_settings["crowdmapservicesend"] = mmp.createOption(false, function(name, option)
     mmp.changeBoolFunc(name, option)
-    if option and mmp.crowdmapService then mmp.crowdmapService.sendNext() end
+    if mmp.crowdmapService then
+      if option then mmp.crowdmapService.sendNext()
+      else mmp.crowdmapService.batching.finish(true) end
+    end
   end, {"boolean"}, "Send local map changes to the service?", nil, crowdmapGames, function() return mmp.settings.mapsource == "service" end)
   private_settings["gmcpmapupdates"] = mmp.createOption(false, mmp.changeBoolFunc, {"boolean"}, "Apply safe GMCP room information to existing map rooms, even when mapping mode is off?")
   private_settings["crowdmapserviceurl"] = mmp.createOption("https://&lt;game&gt;.mudmaps.community", mmp.changeCrowdmapServiceMapOption, {"string"}, "Crowdmap service endpoint URL. Use &lt;game&gt; to derive the subdomain from the connected game.", function(value) return value:match("^https?://") ~= nil end, crowdmapGames, function() return mmp.settings.mapsource == "service" end)
@@ -6101,6 +6113,411 @@ end</script>
 				<eventHandlerList />
 			</Script>
 			<Script isActive="yes" isFolder="no">
+				<name>Crowdmap session batching</name>
+				<packageName></packageName>
+				<script>-- A session stores supported map state, not an edit log. Snapshots are taken
+-- before native mutations, and refreshed afterwards for restart recovery.
+mmp.crowdmapService = mmp.crowdmapService or {}
+local service = mmp.crowdmapService
+local batch = {}
+service.batching = batch
+local directions = { n = "north", ne = "northeast", nw = "northwest", e = "east", w = "west",
+  s = "south", se = "southeast", sw = "southwest", u = "up", d = "down", ["in"] = "in", out = "out" }
+for _, direction in ipairs({ "north", "northeast", "northwest", "east", "west", "south", "southeast", "southwest", "up", "down", "in", "out" }) do
+  directions[direction] = direction
+end
+local unpack = unpack or table.unpack
+
+local function copy(value)
+  if type(value) ~= "table" then return value end
+  local result = {}
+  for key, item in pairs(value) do result[key] = copy(item) end
+  return result
+end
+local function equal(a, b)
+  if type(a) ~= type(b) then return false end
+  if type(a) ~= "table" then return a == b end
+  for key, value in pairs(a) do if not equal(value, b[key]) then return false end end
+  for key in pairs(b) do if a[key] == nil then return false end end
+  return true
+end
+-- Apply only this mutation's delta to the shared projection. This keeps
+-- unrelated localOnly changes out, even when their room is already tracked.
+local function mergeDelta(before, after, projected, parent)
+  if equal(before, after) then return copy(projected) end
+  if type(before) ~= "table" or type(after) ~= "table" then return copy(after) end
+  local result = type(projected) == "table" and copy(projected) or {}
+  for key, value in pairs(after) do
+    if not equal(before[key], value) then
+      if key == "coordinates" or parent == "special" or parent == "labels" then
+        result[key] = copy(value) -- these values are atomic in the service API
+      else
+        result[key] = mergeDelta(before[key], value, result[key], key)
+      end
+    end
+  end
+  for key in pairs(before) do if after[key] == nil then result[key] = nil end end
+  return result
+end
+local function keys(a, b)
+  local found, result = {}, {}
+  for key in pairs(a or {}) do found[key] = true end
+  for key in pairs(b or {}) do found[key] = true end
+  for key in pairs(found) do result[#result + 1] = key end
+  table.sort(result, function(x, y) return tostring(x) &lt; tostring(y) end)
+  return result
+end
+local function labelState(areaId, labelId)
+  local label = getMapLabel(areaId, labelId)
+  if not label or not label.FgColor or not label.BgColor or label.Temporary then return nil end
+  return { text = label.Text, x = label.X, y = label.Y, z = label.Z,
+    width = label.Width, height = label.Height,
+    fgColor = { alpha = label.FgColor.alpha or 255, r = label.FgColor.r, g = label.FgColor.g, b = label.FgColor.b },
+    bgColor = { alpha = label.BgColor.alpha or 50, r = label.BgColor.r, g = label.BgColor.g, b = label.BgColor.b },
+    noScaling = label.Scaling == false, showOnTop = label.OnTop == true }
+end
+local function areaState(id)
+  local name = (getAreaTableSwap() or {})[id]
+  if not name then return false end
+  local labels = {}
+  if getMapLabels and getMapLabel then
+    for labelId in pairs(getMapLabels(id) or {}) do labels[tostring(labelId)] = labelState(id, labelId) end
+  end
+  return { name = name, labels = labels }
+end
+local function roomState(id)
+  if not mmp.roomexists(id) or getRoomUserData(id, "hashonly") == "true" then return false end
+  local data = copy(getAllRoomUserData(id) or {})
+  data.hashonly, data["gotoMapping-private"] = nil, nil
+  local exits, special, weights, doors = {}, {}, {}, {}
+  for direction, destination in pairs(getRoomExits(id) or {}) do
+    exits[directions[direction] or direction] = tonumber(destination)
+  end
+  -- Request every command, including multiple exits to the same destination.
+  for destination, commands in pairs(getSpecialExits(id, true) or {}) do
+    if type(commands) == "string" then commands = { [commands] = "0" } end
+    for command, locked in pairs(commands) do
+      if command ~= mmp.whirlString and not service.isTemporarySpecialExit(id, destination, command) then
+        special[command] = { destination = tonumber(destination), locked = tonumber(locked) == 1 }
+      end
+    end
+  end
+  for exit, weight in pairs(getExitWeights and getExitWeights(id) or {}) do
+    local direction = directions[exit]
+    if (direction and exits[direction]) or special[exit] then
+      weights[direction or exit] = weight ~= 0 and weight or nil
+    end
+  end
+  if getDoors then
+    for direction, status in pairs(getDoors(id) or {}) do
+      direction = directions[direction] or direction
+      if exits[direction] and status ~= 0 then doors[direction] = status end
+    end
+  end
+  local x, y, z = getRoomCoordinates(id)
+  return { name = getRoomName(id), coordinates = { x = x, y = y, z = z }, areaId = getRoomArea(id),
+    weight = getRoomWeight(id), symbol = getRoomChar(id), environmentId = getRoomEnv(id),
+    hash = getRoomHashByID(id) or "", userData = data, exits = exits, special = special, weights = weights, doors = doors }
+end
+function batch.enabled()
+  return mmp.editing and mmp.settings and mmp.settings.mapsource == "service"
+    and mmp.settings.crowdmapservicesend and not service.suspended and not batch.closing
+end
+local function identity()
+  return { url = service.baseUrl(), reporter = service.reporter(), game = mmp.game }
+end
+function batch.begin()
+  if service.batch or not batch.enabled() then return end
+  service.batch = { rooms = {}, areas = {}, scope = identity() }
+end
+local function capture(group, id, read, touched, before)
+  if not id or id == -1 then return end
+  id = tostring(id)
+  if group[id] == nil then
+    local state = before
+    if state == nil then state = read(tonumber(id)) end
+    group[id] = { before = copy(state), after = copy(state) }
+  end
+  touched[id] = copy(read(tonumber(id)))
+end
+function batch.before(operation, ...)
+  if not batch.enabled() then return end
+  batch.begin()
+  local session, args = service.batch, {...}
+  local current = identity()
+  if session.scope.url ~= current.url or session.scope.game ~= current.game
+      or (session.scope.reporter and current.reporter and session.scope.reporter ~= current.reporter) then
+    batch.finish(true)
+    batch.begin()
+    session = service.batch
+  end
+  session.scope.reporter = session.scope.reporter or current.reporter
+  local touched = { rooms = {}, areas = {} }
+  local function room(id) capture(session.rooms, tonumber(id), roomState, touched.rooms) end
+  local function area(id) capture(session.areas, tonumber(id), areaState, touched.areas) end
+  if operation == "addAreaName" then
+    touched.newArea = true
+  elseif operation == "setAreaName" or operation == "deleteArea" or operation == "createMapLabel" or operation == "deleteMapLabel" then
+    local id = tonumber(args[1]) or (getAreaTable() or {})[args[1]]
+    area(id)
+    if operation == "deleteArea" then
+      for _, roomId in pairs(getAreaRooms(id) or {}) do room(roomId) end
+      touched.deletedRooms = copy(touched.rooms)
+    end
+  elseif operation == "setMapUserData" or operation == "clearMapUserDataItem" then
+    if not session.mapData then
+      local state = copy(getAllMapUserData() or {})
+      session.mapData = { before = state, after = copy(state) }
+    end
+    touched.mapData = copy(getAllMapUserData() or {})
+  else
+    room(args[1])
+    if operation == "deleteRoom" then touched.deletedRooms = copy(touched.rooms) end
+    if operation == "setRoomArea" then area(args[2]) end
+    if operation == "setRoomIDbyHash" then room(getRoomIDbyHash(args[2])) end
+  end
+  if touched.deletedRooms then
+    -- Native deletion also removes incoming normal and special exits.
+    for id in pairs(getRooms() or {}) do
+      for _, destination in pairs(getRoomExits(id) or {}) do
+        if touched.deletedRooms[tostring(destination)] ~= nil then room(id); break end
+      end
+      for destination in pairs(getSpecialExits(id, true) or {}) do
+        if touched.deletedRooms[tostring(destination)] ~= nil then room(id); break end
+      end
+    end
+  end
+  return touched
+end
+function batch.after(touched, result)
+  if not touched then return end
+  local session = service.batch
+  if touched.newArea and tonumber(result) and tonumber(result) &gt; 0 then
+    capture(session.areas, result, areaState, touched.areas, false)
+    touched.areas[tostring(result)] = false
+  end
+  for id, before in pairs(touched.rooms) do
+    session.rooms[id].after = mergeDelta(before, roomState(tonumber(id)), session.rooms[id].after)
+  end
+  for id, before in pairs(touched.areas) do
+    session.areas[id].after = mergeDelta(before, areaState(tonumber(id)), session.areas[id].after)
+  end
+  if touched.mapData then
+    session.mapData.after = mergeDelta(touched.mapData, getAllMapUserData() or {}, session.mapData.after)
+  end
+  batch.checkpoint()
+end
+local function pack(...) return { n = select("#", ...), ... } end
+function batch.wrap(fn, operation)
+  return function(...)
+    local touched = batch.before(operation, ...)
+    local results = pack(fn(...))
+    batch.after(touched, results[1])
+    return unpack(results, 1, results.n)
+  end
+end
+
+-- Pure state diff: creates precede references; removals precede area deletion.
+function batch.changes(session)
+  local changes = {}
+  local function emit(kind, values)
+    local change = copy(values or {})
+    change.type = kind
+    changes[#changes + 1] = change
+  end
+  for _, id in ipairs(keys(session.rooms)) do
+    local entry = session.rooms[id]
+    if entry.before and not entry.after then emit("delete-room", { roomNumber = tonumber(id) }) end
+  end
+  for _, id in ipairs(keys(session.areas)) do
+    local entry = session.areas[id]
+    if not entry.before and entry.after then
+      emit("create-area", { areaId = tonumber(id), name = entry.after.name })
+    elseif entry.before and entry.after and entry.before.name ~= entry.after.name then
+      emit("rename-area", { areaId = tonumber(id), name = entry.after.name })
+    end
+  end
+  for _, id in ipairs(keys(session.rooms)) do
+    local entry = session.rooms[id]
+    if not entry.before and entry.after then emit("create-room", { roomNumber = tonumber(id) }) end
+  end
+  -- Match the existing service create-room defaults; initializing a new
+  -- room to those values should not generate additional no-op reports.
+  local createdRoom = { name = "", coordinates = { x = 0, y = 0, z = 0 }, areaId = -1,
+    weight = 0, symbol = "", environmentId = -1, hash = "", userData = {},
+    exits = {}, special = {}, weights = {}, doors = {} }
+  local fields = { name = "room-name", areaId = "set-room-area", weight = "set-room-weight",
+    symbol = "set-room-symbol", environmentId = "set-room-environment", hash = "set-room-hash" }
+  for _, id in ipairs(keys(session.rooms)) do
+    local entry, roomNumber = session.rooms[id], tonumber(id)
+    local before, after = entry.before or createdRoom, entry.after
+    if after then
+      for _, field in ipairs(keys(fields)) do
+        if not equal(before[field], after[field]) and after[field] ~= nil and (field ~= "hash" or after.hash ~= "" or (before.hash and before.hash ~= "")) then
+          emit(fields[field], { roomNumber = roomNumber, [field] = after[field] })
+        end
+      end
+      if not equal(before.coordinates, after.coordinates) then
+        emit("set-room-coordinates", { roomNumber = roomNumber, x = after.coordinates.x, y = after.coordinates.y, z = after.coordinates.z })
+      end
+      for _, key in ipairs(keys(before.userData, after.userData)) do
+        if (before.userData or {})[key] ~= after.userData[key] then
+          emit(after.userData[key] ~= nil and "modify-room-user-data" or "delete-room-user-data",
+            { roomNumber = roomNumber, key = key, value = after.userData[key] })
+        end
+      end
+      for _, direction in ipairs(keys(before.exits, after.exits)) do
+        if (before.exits or {})[direction] ~= after.exits[direction] then
+          emit(after.exits[direction] and "modify-exit" or "delete-exit",
+            { roomNumber = roomNumber, direction = direction, destination = after.exits[direction] })
+        end
+      end
+      for _, command in ipairs(keys(before.special, after.special)) do
+        local old, new = (before.special or {})[command], after.special[command]
+        if not new then
+          emit("delete-special-exit", { roomNumber = roomNumber, exitCommand = command })
+        else
+          if not old or old.destination ~= new.destination then
+            emit("modify-special-exit", { roomNumber = roomNumber, exitCommand = command, destination = new.destination })
+          end
+          if (old and old.locked or false) ~= new.locked then
+            emit(new.locked and "lock-special-exit" or "unlock-special-exit",
+              { roomNumber = roomNumber, exitCommand = command, destination = new.destination })
+          end
+        end
+      end
+      for _, exit in ipairs(keys(before.weights, after.weights)) do
+        if (before.weights or {})[exit] ~= after.weights[exit] and (after.exits[exit] or after.special[exit]) then
+          local direction = directions[exit]
+          emit(direction and "modify-exit-weight" or "modify-special-exit-weight",
+            { roomNumber = roomNumber, direction = direction, exitCommand = not direction and exit or nil, weight = after.weights[exit] or 0 })
+        end
+      end
+      for _, direction in ipairs(keys(before.doors, after.doors)) do
+        if (before.doors or {})[direction] ~= after.doors[direction] and after.exits[direction] then
+          emit("set-exit-door", { roomNumber = roomNumber, direction = direction, status = after.doors[direction] or 0 })
+        end
+      end
+    end
+  end
+  for _, id in ipairs(keys(session.areas)) do
+    local entry = session.areas[id]
+    local before, after = entry.before and entry.before.labels or {}, entry.after and entry.after.labels or {}
+    for _, labelId in ipairs(keys(before, after)) do
+      if not equal(before[labelId], after[labelId]) then
+        emit(after[labelId] and "set-map-label" or "delete-map-label",
+          { areaId = tonumber(id), labelId = tonumber(labelId), label = after[labelId] })
+      end
+    end
+    if entry.before and not entry.after then emit("delete-area", { areaId = tonumber(id) }) end
+  end
+  if session.mapData then
+    for _, key in ipairs(keys(session.mapData.before, session.mapData.after)) do
+      if session.mapData.before[key] ~= session.mapData.after[key] then
+        emit(session.mapData.after[key] ~= nil and "set-map-user-data" or "delete-map-user-data",
+          { key = key, value = session.mapData.after[key] })
+      end
+    end
+  end
+  return changes
+end
+function batch.finish(deferSending)
+  if not service.batch then return end
+  local session = service.batch
+  -- Use the checkpointed final state; it remains valid after restart even if
+  -- Mudlet saved its binary map at a different time.
+  local changes = batch.changes(session)
+  for _, change in ipairs(changes) do
+    service.pendingChanges[#service.pendingChanges + 1] = {
+      change = change, attempts = 0, scope = copy(session.scope) }
+  end
+  service.batch = nil
+  batch.checkpoint()
+  if not deferSending then service.sendNext() end
+end
+local function journalPath() return getMudletHomeDir() .. "/mapper.crowdmap-journal.json" end
+function batch.checkpoint()
+  if batch.loading then return true end
+  if batch.corrupt then return false end
+  local ok, error = pcall(function()
+    local path = journalPath()
+    local file = assert(io.open(path .. ".tmp", "w"))
+    local written, writeError = file:write(yajl.to_string({ version = 1, session = service.batch,
+      pending = service.pendingForSave(), unsent = service.unsentChanges }))
+    local closed, closeError = file:close()
+    assert(written, writeError)
+    assert(closed, closeError)
+    local renamed, renameError = os.rename(path .. ".tmp", path)
+    if not renamed then
+      -- Windows cannot rename over an existing file. Retain the previous
+      -- checkpoint as a backup throughout replacement and restore from it
+      -- if the process exits between these two renames.
+      local existing = io.open(path, "r")
+      if existing then
+        existing:close()
+        os.remove(path .. ".bak")
+        assert(os.rename(path, path .. ".bak"))
+        renamed, renameError = os.rename(path .. ".tmp", path)
+        if not renamed then os.rename(path .. ".bak", path) end
+      end
+    end
+    assert(renamed, renameError)
+  end)
+  if not ok then mmp.echo("Could not save pending crowdmap edits: " .. tostring(error)) end
+  return ok
+end
+function batch.restore()
+  if batch.restored then return end
+  batch.restored = true
+  local file = io.open(journalPath(), "r") or io.open(journalPath() .. ".bak", "r")
+  if not file then return end
+  batch.hasJournal = true
+  local contents = file:read("*a")
+  file:close()
+  local ok, saved = pcall(yajl.to_value, contents)
+  if not ok or type(saved) ~= "table" or saved.version ~= 1 then
+    mmp.echo("Could not read the crowdmap journal; it has been retained for recovery.")
+    batch.corrupt = true
+    return
+  end
+  batch.loading = true
+  service.unsentChanges = saved.unsent or 0
+  service.restorePendingChanges(saved.pending)
+  service.batch = saved.session
+  -- Closing the previous process ended that session. Queue its saved net state
+  -- instead of comparing it with a possibly older map loaded on this startup.
+  batch.finish(true)
+  batch.loading = false
+  batch.checkpoint()
+end
+function batch.install()
+  for _, operation in ipairs({ "addAreaName", "setAreaName", "deleteArea", "addRoom", "deleteRoom", "setRoomName",
+    "setRoomCoordinates", "setRoomArea", "setRoomWeight", "setRoomChar", "setRoomEnv", "setRoomIDbyHash",
+    "setRoomUserData", "clearRoomUserDataItem", "addSpecialExit", "removeSpecialExit", "clearSpecialExits",
+    "lockSpecialExit", "setExitWeight", "setDoor", "setMapUserData", "clearMapUserDataItem", "createMapLabel", "deleteMapLabel" }) do
+    if _G[operation] then _G[operation] = batch.wrap(_G[operation], operation) end
+  end
+end
+registerNamedEventHandler("mapper", "crowdmapBatchDisconnect", "sysDisconnectionEvent", function()
+  batch.disconnected = true
+  mmp.editing = false
+  disableAlias("mm Mapping")
+  batch.finish(true)
+  batch.checkpoint()
+end)
+registerNamedEventHandler("mapper", "crowdmapBatchConnected", "sysConnectionEvent", function()
+  batch.disconnected = false
+  batch.awaitingReporter = true
+end)
+registerNamedEventHandler("mapper", "crowdmapBatchExit", "sysExitEvent", function()
+  batch.closing = true
+  batch.finish(true)
+  batch.checkpoint()
+end)
+</script>
+				<eventHandlerList />
+			</Script>
+			<Script isActive="yes" isFolder="no">
 				<name>Crowdmap service</name>
 				<packageName></packageName>
 				<script>mmp.crowdmapService = mmp.crowdmapService or {}
@@ -6138,13 +6555,27 @@ local function queryValue(value)
 end
 
 function service.sendNext()
-  if service.inFlight or service.retryPending or #service.pendingChanges == 0 then return end
+  if service.inFlight or service.retryPending or #service.pendingChanges == 0
+      or service.batching.closing or service.batching.disconnected or service.batching.awaitingReporter then return end
   -- Retain queued reports while sending is disabled or another map source is
   -- selected; a later submission or enabling service sending retries them.
   if service.suspended or not mmp.settings or mmp.settings.mapsource ~= "service" or not mmp.settings.crowdmapservicesend then return end
   local reporterName = service.reporter()
   if not reporterName then return end
   local entry = service.pendingChanges[1]
+  if entry.blocked then return end
+  if entry.scope then
+    if entry.scope.url ~= service.baseUrl() or (entry.scope.game and entry.scope.game ~= mmp.game)
+        or (entry.scope.reporter and entry.scope.reporter ~= reporterName) then
+      if not service.scopeWarning then
+        mmp.echo("Saved map changes belong to another character or service. Switch back to submit them.")
+        service.scopeWarning = true
+      end
+      return
+    end
+    service.scopeWarning = nil
+    entry.scope.reporter = reporterName
+  end
   -- Normalize entries that were queued by an earlier script load.
   if not entry.change then
     entry = { change = entry, attempts = 0 }
@@ -6153,6 +6584,7 @@ function service.sendNext()
   entry.attempts = (entry.attempts or 0) + 1
   local change = entry.change
   change.reporter = reporterName
+  if not service.batching.checkpoint() then return end
   service.requestId = (service.requestId or 0) + 1
   local requestId = service.requestId
   local ok, url = pcall(endpoint, "/change?request=" .. requestId)
@@ -6181,6 +6613,7 @@ end
 
 function service.submit(change)
   if mmp.settings.mapsource ~= "service" or not mmp.settings.crowdmapservicesend or service.suspended then return end
+  if service.batching.enabled() then return end
   table.insert(service.pendingChanges, { change = change, attempts = 0, expiresAt = os.time() + service.maxPersistSeconds })
   service.sendNext()
 end
@@ -6193,7 +6626,8 @@ function service.pendingForSave()
     table.insert(result, {
       change = entry.change,
       attempts = tonumber(entry.attempts) or 0,
-      expiresAt = entry.expiresAt
+      expiresAt = entry.expiresAt,
+      scope = entry.scope, blocked = entry.blocked
     })
   end
   append(service.inFlightEntry)
@@ -6208,8 +6642,9 @@ function service.restorePendingChanges(entries)
     local attempts = type(entry) == "table" and tonumber(entry.attempts) or nil
     local expiresAt = type(entry) == "table" and tonumber(entry.expiresAt) or nil
     if type(entry) == "table" and type(entry.change) == "table" and attempts and attempts &gt;= 0
-        and attempts &lt; service.maxAttempts and expiresAt and expiresAt &gt; now then
-      table.insert(service.pendingChanges, { change = entry.change, attempts = attempts, expiresAt = expiresAt })
+        and (entry.scope or (attempts &lt; service.maxAttempts and expiresAt and expiresAt &gt; now)) then
+      table.insert(service.pendingChanges, { change = entry.change, attempts = attempts, expiresAt = expiresAt,
+        scope = entry.scope, blocked = entry.blocked or (attempts &gt;= service.maxAttempts) })
     elseif type(entry) == "table" and type(entry.change) == "table" then
       service.unsentChanges = service.unsentChanges + 1
     end
@@ -6217,6 +6652,15 @@ function service.restorePendingChanges(entries)
 end
 
 function service.promoteHashOnlyRoom(roomNumber)
+  -- Hash-only placeholders are deliberately absent from shared snapshots.
+  local id = tostring(roomNumber)
+  local alreadyTracked = service.batch and service.batch.rooms[id]
+  local touched = service.batching.before("addRoom", roomNumber)
+  if touched then
+    if not alreadyTracked then service.batch.rooms[id].before = false end
+    touched.rooms[id] = false
+    service.batching.after(touched)
+  end
   service.submit({ type = "create-room", roomNumber = tonumber(roomNumber) })
   local hash = getRoomHashByID(roomNumber)
   if hash and hash ~= "" then
@@ -6290,6 +6734,7 @@ end
 
 registerNamedEventHandler("mapper", "crowdmapServiceReporterReady", "gmcp.Char.Status", function()
   local reporterName = service.reporter()
+  if reporterName then service.batching.awaitingReporter = false end
   if reporterName and reporterName ~= service.lastReporter then
     service.lastReporter = reporterName
     service.sendNext()
@@ -6563,7 +7008,9 @@ do
   function service.wrapSetExit(originalSetExit)
     service.originalMmpSetExit = service.originalMmpSetExit or originalSetExit
     function mmp.setExit(roomNumber, destination, direction, ...)
+      local touched = service.batching.before("setExit", roomNumber)
       local results = pack(service.originalMmpSetExit(roomNumber, destination, direction, ...))
+      service.batching.after(touched)
       if results[1] then
         local change = { roomNumber = tonumber(roomNumber), direction = directions[direction] }
         if tonumber(destination) == -1 then change.type = "delete-exit"
@@ -6585,11 +7032,25 @@ function service.handleFailure(entry, message)
       service.retryPending = false
       service.sendNext()
     end)
+  elseif entry.scope then
+    entry.blocked = true
+    table.insert(service.pendingChanges, 1, entry)
+    mmp.echo(message .. " Sending paused after " .. service.maxAttempts .. " attempts. Pending changes are saved; use 'map submit' to retry.")
   else
     service.unsentChanges = service.unsentChanges + 1
     mmp.echo(message .. " Discarded after " .. service.maxAttempts .. " attempts. The local edit remains, but a later map download may overwrite it.")
     tempTimer(0, function() service.sendNext() end)
   end
+  service.batching.checkpoint()
+end
+
+function service.retrySavedChanges()
+  service.batching.finish(true)
+  for _, entry in ipairs(service.pendingChanges) do
+    if entry.blocked then entry.blocked, entry.attempts = nil, 0 end
+  end
+  service.batching.checkpoint()
+  service.sendNext()
 end
 
 function service.warnBeforeMapLoad()
@@ -6601,6 +7062,7 @@ end
 
 function service.unsentCount()
   return service.unsentChanges + #service.pendingChanges + (service.inFlightEntry and 1 or 0)
+    + (service.batch and #service.batching.changes(service.batch) or 0)
 end
 
 function service.mapLoaded()
@@ -6615,9 +7077,12 @@ local function completeRequest(url, error)
       service.handleFailure(entry, "Could not send map change to crowdmap service: " .. error)
       return
     end
+    service.batching.checkpoint()
     service.sendNext()
   end
 end
+
+service.batching.install()
 
 registerNamedEventHandler("mapper", "crowdmapServicePostError", "sysPostHttpError", function(_, error, url)
   completeRequest(url, error)
@@ -10119,12 +10584,14 @@ end
 
 
 function mmp.changeCrowdmapServiceMapOption()
+  if mmp.crowdmapService then mmp.crowdmapService.batching.finish(true) end
   if mmp.settings.mapsource ~= "service" then return end
   mmp.mapSourceGeneration = (mmp.mapSourceGeneration or 0) + 1
   mmp.checkforupdate()
 end
 
 function mmp.changeMapSource()
+  if mmp.crowdmapService then mmp.crowdmapService.batching.finish(true) end
   local source = mmp.settings.mapsource
   if source ~= mmp.lastMapSource then
     mmp.lastMapSource = source
@@ -11475,6 +11942,10 @@ end</script>
 					<name>mmp.saveOptions</name>
 					<packageName></packageName>
 					<script>function mmp.saveOptions()
+  if mmp.crowdmapService then
+    mmp.crowdmapService.batching.finish(true)
+    mmp.crowdmapService.batching.checkpoint()
+  end
 	local saveTable = {
 		locked_areas = mmp.locked,
 		options = mmp.settings:getAllOptions(),
@@ -11523,8 +11994,11 @@ end
 function mmp.loadOptions()
 	local loadTable = mmp.loadLocks()
 	if mmp.crowdmapService then
-		mmp.crowdmapService.unsentChanges = tonumber(loadTable.unsent_crowdmap_changes) or 0
-		mmp.crowdmapService.restorePendingChanges(loadTable.pending_crowdmap_changes)
+		mmp.crowdmapService.batching.restore()
+		if not mmp.crowdmapService.batching.hasJournal then
+			mmp.crowdmapService.unsentChanges = tonumber(loadTable.unsent_crowdmap_changes) or 0
+			mmp.crowdmapService.restorePendingChanges(loadTable.pending_crowdmap_changes)
+		end
 	end
 
 	if loadTable.options then
@@ -13096,6 +13570,10 @@ local function finishCrowdmapLoad(context, successMessage)
 end
 
 local function loadCrowdmapDownload(context, successMessage)
+  if mmp.crowdmapService.batch then
+    mmp.echo("Finish mapping before loading a downloaded map. Use 'mc off', then check for updates again.")
+    return false
+  end
   mmp.crowdmapService.warnBeforeMapLoad()
   if not loadMap(context.filename) then return false end
   finishCrowdmapLoad(context, successMessage)
