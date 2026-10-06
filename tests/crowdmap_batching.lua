@@ -640,4 +640,131 @@ test('recovery retains reconciled shared deletions instead of native private rou
   assert(#changes == 2 and count(changes, 'delete-room', 2) == 1 and count(changes, 'delete-exit', 1) == 1)
 end)
 
+test('first-touch private redirects retain the shared destination for public locks', function()
+  local service, batch = reset()
+  rooms[1], rooms[2], rooms[3] = freshRoom(1, 1), freshRoom(2, 1), freshRoom(3, 1)
+  rooms[1].special.enter = 3
+  toggle('on'); service.localOnly(function() addSpecialExit(1, 2, 'enter') end)
+  lockSpecialExit(1, 2, 'enter', true)
+  local changes = batch.changes(service.batch)
+  assert(#changes == 1 and changes[1].type == 'lock-special-exit' and changes[1].destination == 3)
+end)
+test('first-touch private additions cannot be published by locking them', function()
+  local service, batch = reset(); rooms[1], rooms[2] = freshRoom(1, 1), freshRoom(2, 1)
+  toggle('on'); service.localOnly(function() addSpecialExit(1, 2, 'private') end)
+  lockSpecialExit(1, 2, 'private', true)
+  assert(#batch.changes(service.batch) == 0)
+end)
+test('first-touch private properties and area moves stay out of public edits', function()
+  local service, batch = reset(); rooms[1] = freshRoom(1, 1); areas[2] = 'Other'
+  toggle('on'); service.localOnly(function()
+    setRoomCoordinates(1, 9, 9, 9); setRoomName(1, 'Private'); setRoomArea(1, 2)
+    setRoomUserData(1, 'private', 'secret'); setAreaName(1, 'Private area'); setMapUserData('private', 'secret')
+  end)
+  setRoomWeight(1, 2); setAreaName(1, 'Public area'); setMapUserData('public', 'visible')
+  local changes = batch.changes(service.batch)
+  assert(#changes == 3 and count(changes, 'set-room-weight') == 1 and count(changes, 'rename-area') == 1 and count(changes, 'set-map-user-data') == 1)
+  assert(service.batch.rooms['1'].after.areaId == 1 and service.batch.rooms['1'].after.name == '')
+end)
+test('private creations stay absent when public setters target them', function()
+  local service, batch = reset(); toggle('on'); local area
+  service.localOnly(function() addRoom(1); area = addAreaName('Private') end)
+  setRoomName(1, 'Public'); setRoomWeight(1, 2); setAreaName(area, 'Public')
+  assert(service.batch.rooms['1'].after == false and service.batch.areas[tostring(area)].after == false)
+  assert(#batch.changes(service.batch) == 0)
+end)
+test('first-touch private area moves cannot hide shared members from deletion', function()
+  local service, batch = reset(); rooms[1], rooms[2] = freshRoom(1, 1), freshRoom(2, 1); areas[2] = 'Other'
+  rooms[2].exits.north = 1
+  toggle('on'); service.localOnly(function() setRoomArea(1, 2) end)
+  deleteArea(1)
+  local changes = batch.changes(service.batch)
+  assert(count(changes, 'delete-room') == 2 and count(changes, 'delete-area') == 1)
+  assert(service.batch.rooms['1'].after == false and count(changes, 'set-room-area') == 0)
+end)
+test('first-touch private baselines survive restart without publishing private edits', function()
+  local service = reset(); rooms[1], rooms[2], rooms[3] = freshRoom(1, 1), freshRoom(2, 1), freshRoom(3, 1)
+  rooms[1].special.enter = 3
+  toggle('on'); service.localOnly(function() addSpecialExit(1, 2, 'enter'); setRoomName(1, 'Private') end)
+  lockSpecialExit(1, 2, 'enter', true)
+  service = reset(true); service.batching.restore()
+  local changes = pending(service)
+  assert(#changes == 1 and changes[1].type == 'lock-special-exit' and changes[1].destination == 3)
+end)
+
+-- Exercise the shipped download callbacks, including their retry links and
+-- mark migration, instead of duplicating the download state machine.
+local function downloadFixture()
+  local service, batch = reset(); rooms[1] = freshRoom(1, 1)
+  mmp.game = 'starmourn'
+  local fixture = {public = {}, private = {}, incoming = {}, attempts = 0, warnings = 0, links = {}, fail = false}
+  local filename = folder .. '/downloaded-map.dat'
+  local file = assert(io.open(filename, 'w')); file:write('map'); file:close()
+  mmp.crowdmapfile = filename
+  mmp.crowdmapDownloadSource, mmp.crowdmapDownloadGeneration, mmp.crowdmapDownloadIdentity = 'service', 0, 'current'
+  mmp.crowdmapDownloadVersion = 'v2'
+  mmp.mapSourceIdentity = function() return 'current' end
+  mmp.getRoomMarks = function(kind) return clone(fixture[kind]) end
+  mmp.echon = mmp.echo
+  mmp.disableWaterWalk = function() end
+  mmp.enableWaterWalk = function() end
+  mmp.recordCrowdmapVersion = function() end
+  service.warnBeforeMapLoad = function() fixture.warnings = fixture.warnings + 1 end
+  service.mapLoaded = function() end
+  function raiseEvent() end
+  function echo(s) messages[#messages + 1] = s end
+  function echoLink(label, callback) fixture.links[#fixture.links + 1] = callback end
+  io.exists = function(path) local f = io.open(path); if not f then return false end; f:close(); return true end
+  function loadMap(path)
+    assert(path == filename); fixture.attempts = fixture.attempts + 1
+    if fixture.fail then return false end
+    fixture.public, fixture.private = clone(fixture.incoming), {}
+    rooms = {[1] = freshRoom(1, 1)}
+    return true
+  end
+  assert(loadfile(folder .. '/download.lua'))()
+  return service, batch, fixture, filename
+end
+local function assertNoLoadFailureMessage()
+  for _, message in ipairs(messages) do
+    assert(not message:find('failed to load') and not message:find('mapper open') and not message:find("Nope, didn't work"))
+  end
+end
+test('active sessions defer downloads and retries without load-failure instructions', function()
+  local service, batch, fixture, filename = downloadFixture()
+  toggle('on'); mmp.downloadedFile(nil, filename)
+  assert(fixture.attempts == 0 and fixture.warnings == 0 and io.exists(filename))
+  assert(mmp.crowdmapLoadRetries[filename] and #fixture.links == 1)
+  assertNoLoadFailureMessage()
+  local context = mmp.crowdmapLoadRetries[filename]
+  assert(loadstring(fixture.links[1]))()
+  assert(fixture.attempts == 0 and mmp.crowdmapLoadRetries[filename] == context)
+  assertNoLoadFailureMessage()
+end)
+test('deferred download retry preserves current private marks and current public moves', function()
+  local service, batch, fixture, filename = downloadFixture()
+  fixture.private = {deleted = 2, moved = 3}; fixture.public = {oldPublic = 4}
+  toggle('on'); mmp.downloadedFile(nil, filename)
+  fixture.private = {moved = 5, added = 6}; fixture.public = {newPublic = 7}
+  fixture.incoming = {oldPublic = 4}
+  toggle('off'); assert(loadstring(fixture.links[1]))()
+  assert(fixture.attempts == 1 and not mmp.crowdmapLoadRetries[filename] and not io.exists(filename))
+  local migrated = yajl.to_value(rooms[1].userData['gotoMapping-private'])
+  assert(migrated.deleted == nil and migrated.moved == 5 and migrated.added == 6)
+  assert(migrated.oldPublic == nil and migrated.newPublic == 7)
+end)
+test('failed download attempts refresh marks again before a successful retry', function()
+  local service, batch, fixture, filename = downloadFixture()
+  fixture.private = {deleted = 2, moved = 3}; fixture.public = {oldPublic = 4}; fixture.fail = true
+  mmp.downloadedFile(nil, filename)
+  assert(fixture.attempts == 1 and mmp.crowdmapLoadRetries[filename] and #fixture.links == 1)
+  local found = false; for _, message in ipairs(messages) do if message:find('mapper open') then found = true end end; assert(found)
+  mmp.retryCrowdmapLoad(filename); assert(fixture.attempts == 2 and mmp.crowdmapLoadRetries[filename])
+  fixture.private = {moved = 5, added = 6}; fixture.public = {newPublic = 7}; fixture.fail = false
+  mmp.retryCrowdmapLoad(filename)
+  assert(fixture.attempts == 3 and not mmp.crowdmapLoadRetries[filename])
+  local migrated = yajl.to_value(rooms[1].userData['gotoMapping-private'])
+  assert(migrated.deleted == nil and migrated.moved == 5 and migrated.added == 6 and migrated.oldPublic == nil and migrated.newPublic == 7)
+end)
+
 print(string.format('%d batching tests passed', tests))

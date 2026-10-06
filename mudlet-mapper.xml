@@ -6145,6 +6145,9 @@ end
 -- unrelated localOnly changes out, even when their room is already tracked.
 local function mergeDelta(before, after, projected, parent)
   if equal(before, after) then return copy(projected) end
+  -- A setter on a privately created object cannot publish a partial object.
+  -- Only a public creation (native absent -> present) can introduce it.
+  if projected == false and type(before) == "table" and type(after) == "table" then return false end
   if type(before) ~= "table" or type(after) ~= "table" then return copy(after) end
   local result = type(projected) == "table" and copy(projected) or {}
   for key, value in pairs(after) do
@@ -6229,16 +6232,18 @@ function batch.warnUnknownIdentity()
     batch.identityWarning = true
   end
 end
-function batch.enabled()
+local function trackingEnabled()
   return mmp.editing and mmp.settings and mmp.settings.mapsource == "service"
-    and mmp.settings.crowdmapservicesend and not service.suspended and not batch.closing
-    and batch.identityReady()
+    and mmp.settings.crowdmapservicesend and not batch.closing and batch.identityReady()
+end
+function batch.enabled()
+  return trackingEnabled() and not service.suspended
 end
 local function identity()
   return { url = service.baseUrl(), reporter = service.reporter(), game = mmp.game }
 end
 function batch.begin()
-  if service.batch or not batch.enabled() then return end
+  if service.batch or not trackingEnabled() then return end
   service.batch = { rooms = {}, areas = {}, scope = identity() }
 end
 local function capture(group, id, read, touched, before)
@@ -6252,7 +6257,7 @@ local function capture(group, id, read, touched, before)
   touched[id] = copy(read(tonumber(id)))
 end
 function batch.before(operation, ...)
-  if not batch.enabled() then return end
+  if not trackingEnabled() then return end
   batch.begin()
   local session, args = service.batch, {...}
   local current = identity()
@@ -6263,7 +6268,7 @@ function batch.before(operation, ...)
     session = service.batch
   end
   session.scope.reporter = session.scope.reporter or current.reporter
-  local touched = { rooms = {}, areas = {}, operation = operation, args = args }
+  local touched = { rooms = {}, areas = {}, operation = operation, args = args, localOnly = service.suspended }
   local function room(id)
     id = tonumber(id)
     if id and id ~= -1 then capture(session.rooms, id, roomState, touched.rooms) end
@@ -6418,6 +6423,12 @@ function batch.after(touched, result)
   if touched.newArea and tonumber(result) and tonumber(result) &gt; 0 then
     capture(session.areas, result, areaState, touched.areas, false)
     touched.areas[tostring(result)] = false
+  end
+  if touched.localOnly then
+    -- Capture first-touch baselines, including private creations, but never
+    -- apply their mutations to the shared projection.
+    batch.checkpoint()
+    return
   end
   if touched.deletedRooms then
     projectDeletion(touched, result)
@@ -13725,11 +13736,15 @@ end
 
 local function loadCrowdmapDownload(context, successMessage)
   if mmp.crowdmapService.batch then
-    mmp.echo("Finish mapping before loading a downloaded map. Use 'mc off', then check for updates again.")
-    return false
+    mmp.echo("Finish mapping with 'mc off', then retry this downloaded map.")
+    return false, "deferred"
   end
   mmp.crowdmapService.warnBeforeMapLoad()
-  if not loadMap(context.filename) then return false end
+  -- The download may have waited through edits or previous load failures.
+  -- Preserve marks from the map being replaced at this actual attempt.
+  context.publicMarks = mmp.getRoomMarks("public")
+  context.privateMarks = mmp.getRoomMarks("private")
+  if not loadMap(context.filename) then return false, "failed" end
   finishCrowdmapLoad(context, successMessage)
   return true
 end
@@ -13747,9 +13762,10 @@ function mmp.retryCrowdmapLoad(filename)
     mmp.crowdmapLoadRetries[filename] = nil
     return mmp.echo("That map download is no longer available to retry.")
   end
-  if loadCrowdmapDownload(context, "Map loaded successfully!") then
+  local loaded, reason = loadCrowdmapDownload(context, "Map loaded successfully!")
+  if loaded then
     mmp.crowdmapLoadRetries[filename] = nil
-  else
+  elseif reason ~= "deferred" then
     mmp.echo("Nope, didn't work. Open the map and try again?")
   end
 end
@@ -13830,14 +13846,17 @@ function mmp.downloadedFile(_, filename)
       version = mmp.crowdmapDownloadVersion,
       source = mmp.crowdmapDownloadSource,
       generation = mmp.crowdmapDownloadGeneration,
-      identity = mmp.crowdmapDownloadIdentity,
-      publicMarks = mmp.getRoomMarks("public"),
-      privateMarks = mmp.getRoomMarks("private")
+      identity = mmp.crowdmapDownloadIdentity
     }
 
-    if not loadCrowdmapDownload(context, "Map loaded fine - enjoy!") then
+    local loaded, reason = loadCrowdmapDownload(context, "Map loaded fine - enjoy!")
+    if not loaded then
       mmp.crowdmapLoadRetries[filename] = context
-      mmp.echon("Map failed to load - you need to have the mapper open. Please open it, and then ")
+      if reason == "deferred" then
+        mmp.echon("Download kept. After finishing mapping, ")
+      else
+        mmp.echon("Map failed to load - you need to have the mapper open. Please open it, and then ")
+      end
       echoLink("click here", string.format("mmp.retryCrowdmapLoad(%q)", filename), "Click here to try loading the map again")
       echo(" to try loading it in again.\n")
     end

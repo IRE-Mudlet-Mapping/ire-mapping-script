@@ -23,6 +23,7 @@ with tempfile.TemporaryDirectory(prefix='mapper-batching-tests-') as directory:
         'save': scripts['mmp.saveOptions'],
         'load': scripts['mmp.loadOptions'],
         'settings': scripts['mconfig settings functions'],
+        'download': scripts['mmp.downloadedFile'],
     }.items():
         (folder / (name + '.lua')).write_text(code)
     # Parse every shipped script/alias/trigger with the actual target Lua version.

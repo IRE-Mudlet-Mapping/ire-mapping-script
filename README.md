@@ -74,10 +74,14 @@ within the current, unsubmitted batch. Changing the map source, endpoint, or
 sending setting finalizes the batch; saved session reports are never redirected
 to a different service or character. A downloaded service map waits until the
 active session is finished, preventing it from replacing the map under a batch.
+Use its retry link after `mc off`; each load attempt preserves the marks present
+at that time.
 
 Snapshots cover the existing service-supported Lua mapper operations, not
 arbitrary native GUI edits or unsupported map fields. Local-only operations,
 private marks, hash-only placeholders, and temporary exits/labels are excluded.
+Wrapped local-only edits still capture the state before their first mutation,
+so later public edits cannot accidentally include their private changes.
 For tracked rooms, public deletion follows the shared state: deleting an area
 removes its shared members and deleting a room removes its shared incoming
 exits, even if private moves or redirects changed the native map. Special-exit
