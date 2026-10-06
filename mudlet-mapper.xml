@@ -6149,7 +6149,7 @@ local function mergeDelta(before, after, projected, parent)
   local result = type(projected) == "table" and copy(projected) or {}
   for key, value in pairs(after) do
     if not equal(before[key], value) then
-      if key == "coordinates" or parent == "special" or parent == "labels" then
+      if key == "coordinates" or parent == "labels" then
         result[key] = copy(value) -- these values are atomic in the service API
       else
         result[key] = mergeDelta(before[key], value, result[key], key)
@@ -6276,7 +6276,13 @@ function batch.before(operation, ...)
     area(id)
     if operation == "deleteArea" then
       for _, roomId in pairs(getAreaRooms(id) or {}) do room(roomId) end
+      touched.deletedAreaId = id
       touched.deletedRooms = copy(touched.rooms)
+      -- Projected members may have been moved out privately. Their native
+      -- entrances still need snapshots before the public area deletion.
+      for roomId, entry in pairs(session.rooms) do
+        if entry.after and entry.after.areaId == id then touched.deletedRooms[roomId] = true end
+      end
     end
   elseif operation == "setMapUserData" or operation == "clearMapUserDataItem" then
     if not session.mapData then
@@ -6330,9 +6336,26 @@ local function publishTarget(touched, result)
     elseif operation == "setExit" and directions[args[3]] then path = { "exits", directions[args[3]] }
     elseif operation == "setExitWeight" then path = { "weights", directions[args[2]] or tostring(args[2]) }
     elseif operation == "setDoor" and directions[args[2]] then path = { "doors", directions[args[2]] }
-    elseif operation == "addSpecialExit" then path = { "special", args[3], "destination" }
+    elseif operation == "addSpecialExit" or operation == "lockSpecialExit" then
+      if not entry or not entry.after or not current then return end
+      local command = args[3]
+      local native = current.special[command]
+      if not native then return end -- temporary/private commands stay excluded
+      local projected = entry.after.special[command]
+      if operation == "addSpecialExit" then
+        -- Adding a shared command publishes its destination, never a private
+        -- lock. Existing shared locks survive a public redirect.
+        if not projected then
+          projected = { locked = false }
+          entry.after.special[command] = projected
+        end
+        projected.destination = native.destination
+      elseif projected then
+        -- A lock cannot introduce an exit which exists only locally.
+        projected.locked = native.locked
+      end
+      return
     elseif operation == "removeSpecialExit" then path = { "special", args[2] }
-    elseif operation == "lockSpecialExit" then path = { "special", args[3], "locked" }
     elseif operation == "clearSpecialExits" then path = { "special" } end
   end
   if not path or not entry or not entry.after or not current then return end
@@ -6356,6 +6379,39 @@ local function publishTarget(touched, result)
     end
   end
 end
+-- Deletions operate on the shared projection. Native side effects can
+-- reflect private redirects/moves, so they must not be merged as public edits.
+local function projectDeletion(touched, result)
+  if result ~= true then return end
+  local session, deleted = service.batch, {}
+  if touched.operation == "deleteRoom" then
+    deleted[tostring(tonumber(touched.args[1]))] = true
+  else
+    local areaId = touched.deletedAreaId
+    for id, entry in pairs(session.rooms) do
+      if entry.after and entry.after.areaId == areaId then deleted[id] = true end
+    end
+    if session.areas[tostring(areaId)] then session.areas[tostring(areaId)].after = false end
+  end
+  for id in pairs(deleted) do
+    if session.rooms[id] then session.rooms[id].after = false end
+  end
+  for _, entry in pairs(session.rooms) do
+    local room = entry.after
+    if room then
+      for direction, destination in pairs(room.exits) do
+        if deleted[tostring(destination)] then
+          room.exits[direction], room.weights[direction], room.doors[direction] = nil, nil, nil
+        end
+      end
+      for command, exit in pairs(room.special) do
+        if deleted[tostring(exit.destination)] then
+          room.special[command], room.weights[command] = nil, nil
+        end
+      end
+    end
+  end
+end
 function batch.after(touched, result)
   if not touched then return end
   local session = service.batch
@@ -6363,11 +6419,20 @@ function batch.after(touched, result)
     capture(session.areas, result, areaState, touched.areas, false)
     touched.areas[tostring(result)] = false
   end
-  for id, before in pairs(touched.rooms) do
-    session.rooms[id].after = mergeDelta(before, roomState(tonumber(id)), session.rooms[id].after)
-  end
-  for id, before in pairs(touched.areas) do
-    session.areas[id].after = mergeDelta(before, areaState(tonumber(id)), session.areas[id].after)
+  if touched.deletedRooms then
+    projectDeletion(touched, result)
+  else
+    for id, before in pairs(touched.rooms) do
+      local after = roomState(tonumber(id))
+      if after and before and (touched.operation == "addSpecialExit" or touched.operation == "lockSpecialExit") then
+        -- These APIs publish independent fields, handled by publishTarget.
+        after.special = copy(before.special)
+      end
+      session.rooms[id].after = mergeDelta(before, after, session.rooms[id].after)
+    end
+    for id, before in pairs(touched.areas) do
+      session.areas[id].after = mergeDelta(before, areaState(tonumber(id)), session.areas[id].after)
+    end
   end
   if touched.mapData then
     session.mapData.after = mergeDelta(touched.mapData, getAllMapUserData() or {}, session.mapData.after)

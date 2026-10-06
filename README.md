@@ -78,6 +78,11 @@ active session is finished, preventing it from replacing the map under a batch.
 Snapshots cover the existing service-supported Lua mapper operations, not
 arbitrary native GUI edits or unsupported map fields. Local-only operations,
 private marks, hash-only placeholders, and temporary exits/labels are excluded.
+For tracked rooms, public deletion follows the shared state: deleting an area
+removes its shared members and deleting a room removes its shared incoming
+exits, even if private moves or redirects changed the native map. Special-exit
+destinations and locks are tracked independently; locking a private-only exit
+does not publish it.
 
 The service waits for a non-empty `gmcp.Char.Status.name` before checking or
 downloading a service map, and uses that character name consistently for both
