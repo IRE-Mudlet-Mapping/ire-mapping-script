@@ -351,4 +351,76 @@ test('generated changes reproduce final supported state across mixed mutations',
   assert(same(rooms, finishRooms) and same(areas, finishAreas) and same(mapData, finishData))
 end)
 
+test('Default area labels are snapshotted for creation, deletion and undo', function()
+  local service, batch = reset(); local original = createMapLabel(-1, 'Original')
+  -- Finish this immediate observation before starting the mapping session.
+  event('sysPostHttpDone', requests[1].url)
+  toggle('on'); local added = createMapLabel(-1, 'Added'); deleteMapLabel(-1, original)
+  local changes = batch.changes(service.batch)
+  assert(#changes == 2 and count(changes, 'set-map-label') == 1 and count(changes, 'delete-map-label') == 1)
+  for _, change in ipairs(changes) do assert(change.areaId == -1) end
+  deleteMapLabel(-1, added)
+  assert(count(batch.changes(service.batch), 'set-map-label') == 0)
+  local _, error = setRoomCoordinates(-1, 1, 1, 0)
+  assert(error == 'missing' and service.batch.rooms['-1'] == nil)
+end)
+test('immediate edits queued behind a request survive restart', function()
+  local service = reset(); rooms[1], rooms[2] = freshRoom(1, 1), freshRoom(2, 1)
+  setRoomName(1, 'First'); setRoomName(2, 'Second'); assert(#requests == 1)
+  service = reset(true); service.batching.restore()
+  assert(#service.pendingChanges == 2 and service.pendingChanges[2].change.name == 'Second')
+end)
+test('immediate edits queued during retry backoff survive restart', function()
+  local service = reset(); rooms[1], rooms[2] = freshRoom(1, 1), freshRoom(2, 1)
+  setRoomName(1, 'First'); event('sysPostHttpError', 'Network failure', requests[1].url)
+  assert(service.retryPending); setRoomName(2, 'Second')
+  service = reset(true); service.batching.restore()
+  assert(#service.pendingChanges == 2 and service.pendingChanges[2].change.name == 'Second')
+end)
+test('successful public setters cancel edits already undone with localOnly', function()
+  local service, batch = reset(); rooms[1], rooms[2], rooms[3] = freshRoom(1, 1), freshRoom(2, 1), freshRoom(3, 1)
+  areas[2] = 'Other'; rooms[1].name, rooms[1].userData.key = 'Original', 'Old'
+  rooms[1].exits.north, rooms[1].special.enter = 2, 2; mapData.key = 'Old'
+  toggle('on')
+  setRoomCoordinates(1, 1, 1, 0); setRoomName(1, 'New'); setRoomWeight(1, 5); setRoomUserData(1, 'key', 'New')
+  setRoomArea(1, 2); setMapUserData('key', 'New'); mmp.setExit(1, 3, 'north'); addSpecialExit(1, 3, 'enter')
+  lockSpecialExit(1, 3, 'enter', true); setExitWeight(1, 'north', 3); setDoor(1, 'north', 2); setAreaName(1, 'Renamed')
+  service.localOnly(function()
+    setRoomCoordinates(1, 0, 0, 0); setRoomName(1, 'Original'); setRoomWeight(1, 1); setRoomUserData(1, 'key', 'Old')
+    setRoomArea(1, 1); setMapUserData('key', 'Old'); mmp.setExit(1, 2, 'north'); addSpecialExit(1, 2, 'enter')
+    lockSpecialExit(1, 2, 'enter', false); setExitWeight(1, 'north', 0); setDoor(1, 'north', 0); setAreaName(1, 'Test')
+    setRoomUserData(1, 'unrelated-private', 'secret')
+  end)
+  setRoomCoordinates(1, 0, 0, 0); setRoomName(1, 'Original'); setRoomWeight(1, 1); setRoomUserData(1, 'key', 'Old')
+  setRoomArea(1, 1); setMapUserData('key', 'Old'); mmp.setExit(1, 2, 'north'); addSpecialExit(1, 2, 'enter')
+  lockSpecialExit(1, 2, 'enter', false); setExitWeight(1, 'north', 0); setDoor(1, 'north', 0); setAreaName(1, 'Test')
+  assert(#batch.changes(service.batch) == 0)
+end)
+test('failed checkpoints do not consume the request retry budget', function()
+  local service = reset(); rooms[1] = freshRoom(1, 1); toggle('on'); setRoomName(1, 'Saved')
+  service.batching.finish(true); mmp.editing = false
+  local nativeOpen = io.open
+  io.open = function(path, mode) if mode == 'w' then return nil, 'disk full' end; return nativeOpen(path, mode) end
+  for _ = 1, service.maxAttempts + 2 do service.sendNext() end
+  assert(#requests == 0 and service.pendingChanges[1].attempts == 0)
+  io.open = nativeOpen; service.batching.checkpoint()
+  service = reset(true); service.batching.restore(); assert(not service.pendingChanges[1].blocked)
+  service.sendNext(); assert(#requests == 1 and service.inFlightEntry.attempts == 1)
+end)
+test('report threshold changes finalize and start delivering the batch', function()
+  local service = reset(); rooms[1] = freshRoom(1, 1)
+  assert(loadfile(folder .. '/settings.lua'))(); mmp.checkforupdate = function() end
+  toggle('on'); setRoomName(1, 'Final'); settings.crowdmapservicereports = 3
+  mmp.changeCrowdmapServiceMapOption(); assert(not service.batch and #requests == 1)
+  toggle('off'); assert(#requests == 1)
+end)
+test('switching back to the saved endpoint resumes delivery', function()
+  local service = reset(); rooms[1] = freshRoom(1, 1)
+  assert(loadfile(folder .. '/settings.lua'))(); mmp.checkforupdate = function() end
+  toggle('on'); setRoomName(1, 'Final'); settings.crowdmapserviceurl = 'https://other.test'
+  mmp.changeCrowdmapServiceMapOption(); assert(#requests == 0 and #service.pendingChanges == 1)
+  settings.crowdmapserviceurl = 'https://example.test'; mmp.changeCrowdmapServiceMapOption()
+  assert(#requests == 1 and requests[1].change.name == 'Final')
+end)
+
 print(string.format('%d batching tests passed', tests))

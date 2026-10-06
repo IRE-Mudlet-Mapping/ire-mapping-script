@@ -6123,8 +6123,8 @@ local batch = {}
 service.batching = batch
 local directions = { n = "north", ne = "northeast", nw = "northwest", e = "east", w = "west",
   s = "south", se = "southeast", sw = "southwest", u = "up", d = "down", ["in"] = "in", out = "out" }
-for _, direction in ipairs({ "north", "northeast", "northwest", "east", "west", "south", "southeast", "southwest", "up", "down", "in", "out" }) do
-  directions[direction] = direction
+for index, direction in ipairs({ "north", "northeast", "northwest", "east", "west", "south", "southeast", "southwest", "up", "down", "in", "out" }) do
+  directions[direction], directions[index] = direction, direction
 end
 local unpack = unpack or table.unpack
 
@@ -6231,7 +6231,7 @@ function batch.begin()
   service.batch = { rooms = {}, areas = {}, scope = identity() }
 end
 local function capture(group, id, read, touched, before)
-  if not id or id == -1 then return end
+  if not id then return end
   id = tostring(id)
   if group[id] == nil then
     local state = before
@@ -6252,8 +6252,11 @@ function batch.before(operation, ...)
     session = service.batch
   end
   session.scope.reporter = session.scope.reporter or current.reporter
-  local touched = { rooms = {}, areas = {} }
-  local function room(id) capture(session.rooms, tonumber(id), roomState, touched.rooms) end
+  local touched = { rooms = {}, areas = {}, operation = operation, args = args }
+  local function room(id)
+    id = tonumber(id)
+    if id and id ~= -1 then capture(session.rooms, id, roomState, touched.rooms) end
+  end
   local function area(id) capture(session.areas, tonumber(id), areaState, touched.areas) end
   if operation == "addAreaName" then
     touched.newArea = true
@@ -6289,6 +6292,49 @@ function batch.before(operation, ...)
   end
   return touched
 end
+-- Successful setters publish their targeted fields even when native state
+-- is unchanged (e.g. an undo after localOnly already restored the value).
+-- Other fields still use mutation deltas to preserve local-only exclusions.
+local roomSetterFields = { setRoomName = "name", setRoomCoordinates = "coordinates", setRoomArea = "areaId",
+  setRoomWeight = "weight", setRoomChar = "symbol", setRoomEnv = "environmentId", setRoomIDbyHash = "hash" }
+local function publishTarget(touched, result)
+  local operation, args, session = touched.operation, touched.args, service.batch
+  local succeeded = result == true
+    or (operation == "setRoomIDbyHash" and getRoomIDbyHash(args[2]) == tonumber(args[1]))
+    or (operation == "clearSpecialExits" and not next(getSpecialExits(args[1]) or {}))
+  if not succeeded then return end
+  local entry, current, path
+  if operation == "setAreaName" then
+    local id = tostring(tonumber(args[1]) or (getAreaTable() or {})[args[1]])
+    entry, current, path = session.areas[id], areaState(tonumber(id)), { "name" }
+  elseif operation == "setMapUserData" or operation == "clearMapUserDataItem" then
+    entry, current, path = session.mapData, getAllMapUserData() or {}, { args[1] }
+  else
+    local id = tonumber(args[1])
+    if not id or id == -1 then return end
+    entry, current = session.rooms[tostring(id)], roomState(id)
+    if roomSetterFields[operation] then path = { roomSetterFields[operation] }
+    elseif operation == "setRoomUserData" or operation == "clearRoomUserDataItem" then
+      if args[2] ~= "hashonly" and args[2] ~= "gotoMapping-private" then path = { "userData", args[2] } end
+    elseif operation == "setExit" and directions[args[3]] then path = { "exits", directions[args[3]] }
+    elseif operation == "setExitWeight" then path = { "weights", directions[args[2]] or tostring(args[2]) }
+    elseif operation == "setDoor" and directions[args[2]] then path = { "doors", directions[args[2]] }
+    elseif operation == "addSpecialExit" then path = { "special", args[3], "destination" }
+    elseif operation == "removeSpecialExit" then path = { "special", args[2] }
+    elseif operation == "lockSpecialExit" then path = { "special", args[3], "locked" }
+    elseif operation == "clearSpecialExits" then path = { "special" } end
+  end
+  if not path or not entry or not entry.after or not current then return end
+  local projected = entry.after
+  for index = 1, #path - 1 do
+    local key = path[index]
+    if not key or type(current[key]) ~= "table" then return end
+    if type(projected[key]) ~= "table" then projected[key] = copy(current[key]) end
+    projected, current = projected[key], current[key]
+  end
+  local key = path[#path]
+  if key then projected[key] = copy(current[key]) end
+end
 function batch.after(touched, result)
   if not touched then return end
   local session = service.batch
@@ -6305,6 +6351,7 @@ function batch.after(touched, result)
   if touched.mapData then
     session.mapData.after = mergeDelta(touched.mapData, getAllMapUserData() or {}, session.mapData.after)
   end
+  publishTarget(touched, result)
   batch.checkpoint()
 end
 local function pack(...) return { n = select("#", ...), ... } end
@@ -6584,7 +6631,10 @@ function service.sendNext()
   entry.attempts = (entry.attempts or 0) + 1
   local change = entry.change
   change.reporter = reporterName
-  if not service.batching.checkpoint() then return end
+  if not service.batching.checkpoint() then
+    entry.attempts = entry.attempts - 1
+    return
+  end
   service.requestId = (service.requestId or 0) + 1
   local requestId = service.requestId
   local ok, url = pcall(endpoint, "/change?request=" .. requestId)
@@ -6615,7 +6665,7 @@ function service.submit(change)
   if mmp.settings.mapsource ~= "service" or not mmp.settings.crowdmapservicesend or service.suspended then return end
   if service.batching.enabled() then return end
   table.insert(service.pendingChanges, { change = change, attempts = 0, expiresAt = os.time() + service.maxPersistSeconds })
-  service.sendNext()
+  if service.batching.checkpoint() then service.sendNext() end
 end
 
 function service.pendingForSave()
@@ -7008,9 +7058,9 @@ do
   function service.wrapSetExit(originalSetExit)
     service.originalMmpSetExit = service.originalMmpSetExit or originalSetExit
     function mmp.setExit(roomNumber, destination, direction, ...)
-      local touched = service.batching.before("setExit", roomNumber)
+      local touched = service.batching.before("setExit", roomNumber, destination, direction)
       local results = pack(service.originalMmpSetExit(roomNumber, destination, direction, ...))
-      service.batching.after(touched)
+      service.batching.after(touched, results[1])
       if results[1] then
         local change = { roomNumber = tonumber(roomNumber), direction = directions[direction] }
         if tonumber(destination) == -1 then change.type = "delete-exit"
@@ -10584,7 +10634,10 @@ end
 
 
 function mmp.changeCrowdmapServiceMapOption()
-  if mmp.crowdmapService then mmp.crowdmapService.batching.finish(true) end
+  if mmp.crowdmapService then
+    mmp.crowdmapService.batching.finish(true)
+    mmp.crowdmapService.sendNext()
+  end
   if mmp.settings.mapsource ~= "service" then return end
   mmp.mapSourceGeneration = (mmp.mapSourceGeneration or 0) + 1
   mmp.checkforupdate()
