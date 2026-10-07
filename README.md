@@ -57,14 +57,18 @@ pre-identification edits are not assigned to a later character or project.
 
 Disconnecting ends mapping mode and saves the final changes for delivery after
 login. Closing the profile also saves unfinished work and outstanding requests.
-The mapper checkpoints each tracked mutation to `mapper.crowdmap-journal.json`
-in the Mudlet profile directory, so recovery does not depend on the binary map
-and options being saved at the same time. After a restart, recovered sessions
+The mapper checkpoints each tracked mutation in the Mudlet profile directory.
+`mapper.crowdmap-journal.json` holds the full checkpoint; its `.log` companion
+appends affected-object snapshots and is periodically compacted. Finalizing a
+session or sending a report requires a full checkpoint. Recovery therefore
+does not depend on the binary map and options being saved at the same time. After a restart, recovered sessions
 are finalized using their saved final state and submitted once the original
 character and service are available. A crash during an edit or a failed disk
 write can still lose changes after the last successful checkpoint; save errors
 are displayed and sending waits until the queue can be checkpointed.
 
+Immediate and session reports are bound to their original character, game,
+and endpoint. Immediate reports retain their 24-hour expiry and retry limits.
 Requests already attempted are kept unchanged for retries. Session reports
 remain saved without the legacy queue's 24-hour expiry. After six failed
 attempts, sending pauses with the queue retained; `map submit` retries it.

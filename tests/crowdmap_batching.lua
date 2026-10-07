@@ -120,7 +120,7 @@ local function loadScripts()
 end
 local function reset(keepJournal)
   if not keepJournal then
-    os.remove(folder .. '/mapper.crowdmap-journal.json'); os.remove(folder .. '/mapper.crowdmap-journal.json.bak')
+    os.remove(folder .. '/mapper.crowdmap-journal.json'); os.remove(folder .. '/mapper.crowdmap-journal.json.bak'); os.remove(folder .. '/mapper.crowdmap-journal.json.log')
   end
   rooms, areas, labels, mapData, handlers, timers, requests, messages = {}, {[-1] = 'Default', [1] = 'Test'}, {}, {}, {}, {}, {}, {}
   settings.crowdmapservicesend, settings.mapsource, settings.crowdmapserviceurl = true, 'service', 'https://example.test'
@@ -140,8 +140,13 @@ end
 local function count(changes, kind, room)
   local result = 0; for _, c in ipairs(changes) do if c.type == kind and (not room or c.roomNumber == room) then result = result + 1 end end; return result
 end
-local tests = 0
-local function test(name, fn) fn(); tests = tests + 1; print('PASS ' .. name) end
+local tests, failures = 0, 0
+local function test(name, fn)
+  local ok, err = pcall(fn)
+  tests = tests + 1
+  if ok then print('PASS ' .. name)
+  else failures = failures + 1; print('FAIL ' .. name .. ': ' .. tostring(err)) end
+end
 
 test('repeated moves, interleaved edits and full undo', function()
   local service, batch = reset(); rooms[1], rooms[2] = freshRoom(1, 1), freshRoom(2, 1)
@@ -268,7 +273,7 @@ end)
 test('failed journal writes retain the previous checkpoint and prevent posting', function()
   local service = reset(); rooms[1] = freshRoom(1, 1); toggle('on'); setRoomName(1, 'First')
   local nativeOpen = io.open
-  io.open = function(path, mode) if mode == 'w' then return nil, 'disk full' end; return nativeOpen(path, mode) end
+  io.open = function(path, mode) if mode:sub(1, 1) == 'w' or mode:sub(1, 1) == 'a' then return nil, 'disk full' end; return nativeOpen(path, mode) end
   setRoomName(1, 'Second'); toggle('off'); assert(#requests == 0 and #service.pendingChanges == 1)
   io.open = nativeOpen
   service = reset(true); service.batching.restore(); service.sendNext(); assert(requests[1].change.name == 'First')
@@ -408,7 +413,7 @@ test('failed checkpoints do not consume the request retry budget', function()
   local service = reset(); rooms[1] = freshRoom(1, 1); toggle('on'); setRoomName(1, 'Saved')
   service.batching.finish(true); mmp.editing = false
   local nativeOpen = io.open
-  io.open = function(path, mode) if mode == 'w' then return nil, 'disk full' end; return nativeOpen(path, mode) end
+  io.open = function(path, mode) if mode:sub(1, 1) == 'w' or mode:sub(1, 1) == 'a' then return nil, 'disk full' end; return nativeOpen(path, mode) end
   for _ = 1, service.maxAttempts + 2 do service.sendNext() end
   assert(#requests == 0 and service.pendingChanges[1].attempts == 0)
   io.open = nativeOpen; service.batching.checkpoint()
@@ -767,4 +772,191 @@ test('failed download attempts refresh marks again before a successful retry', f
   assert(migrated.deleted == nil and migrated.moved == 5 and migrated.added == 6 and migrated.oldPublic == nil and migrated.newPublic == 7)
 end)
 
-print(string.format('%d batching tests passed', tests))
+test('route restoration cannot import hidden private special-exit weights', function()
+  local service, batch = reset(); rooms[1], rooms[2], rooms[3] = freshRoom(1, 1), freshRoom(2, 1), freshRoom(3, 1)
+  rooms[1].special.enter, rooms[1].weights.enter = 2, 4
+  toggle('on'); service.localOnly(function()
+    addSpecialExit(1, 3, 'enter'); service.trackTemporarySpecialExit(1, 3, 'enter'); setExitWeight(1, 'enter', 9)
+  end)
+  addSpecialExit(1, 2, 'enter')
+  local changes = batch.changes(service.batch)
+  assert(#changes == 0, 'restoring a route published hidden private metadata')
+end)
+test('replaying redirect then destination deletion preserves unchanged exit metadata', function()
+  local service, batch = reset(); rooms[1], rooms[2], rooms[3] = freshRoom(1, 1), freshRoom(2, 1), freshRoom(3, 1)
+  rooms[1].special.enter, rooms[1].locks.enter, rooms[1].weights.enter = 2, true, 4
+  local baseline = clone(rooms)
+  toggle('on'); addSpecialExit(1, 3, 'enter'); deleteRoom(2)
+  local changes = batch.changes(service.batch)
+  rooms = baseline; mmp.editing = false; service.suspended = true
+  for _, change in ipairs(changes) do
+    if change.type == 'delete-room' then deleteRoom(change.roomNumber)
+    elseif change.type == 'modify-special-exit' then addSpecialExit(change.roomNumber, change.destination, change.exitCommand)
+    elseif change.type == 'lock-special-exit' then lockSpecialExit(change.roomNumber, change.destination, change.exitCommand, true)
+    elseif change.type == 'modify-special-exit-weight' then setExitWeight(change.roomNumber, change.exitCommand, change.weight)
+    else error('Unexpected replay change ' .. change.type) end
+  end
+  assert(rooms[1].special.enter == 3 and rooms[1].locks.enter and rooms[1].weights.enter == 4,
+    'room deletion erased unchanged lock/weight during replay')
+end)
+test('recovered immediate edits retain their original reporter and endpoint', function()
+  local service = reset(); rooms[1] = freshRoom(1, 1); setRoomName(1, 'Immediate')
+  assert(#requests == 1)
+  service = reset(true); gmcp.Char.Status.name = 'Another'; service.batching.restore(); service.sendNext()
+  assert(#requests == 0, 'attempted immediate report sent under another character')
+  gmcp.Char.Status.name = 'Mapper'; settings.crowdmapserviceurl = 'https://other.test'; service.sendNext()
+  assert(#requests == 0, 'immediate report sent to another endpoint')
+  settings.crowdmapserviceurl = 'https://example.test'; service.sendNext()
+  assert(#requests == 1 and requests[1].change.reporter == 'Mapper')
+end)
+test('unknown area names preserve native unsuccessful deletion results', function()
+  local service, batch = reset(); toggle('on')
+  local original = getAreaRooms
+  -- Mudlet's numeric-ID API rejects nil, unlike a permissive fake lookup.
+  getAreaRooms = function(id) assert(type(id) == 'number', 'getAreaRooms requires a numeric area ID'); return original(id) end
+  local ok, result = pcall(deleteArea, 'No such area')
+  getAreaRooms = original
+  assert(ok and result == false, 'snapshot lookup threw before native deleteArea could return false')
+  assert(#batch.changes(service.batch) == 0)
+end)
+test('bulk local-only mutations serialize bounded object counts', function()
+  local service, batch = reset(); local size = 120
+  for id = 1, size do rooms[id] = freshRoom(id, 1) end
+  toggle('on')
+  local stringify, serializedRooms = yajl.to_string, 0
+  yajl.to_string = function(value)
+    local entries = value.session and value.session.rooms or value.rooms or {}
+    for _ in pairs(entries) do serializedRooms = serializedRooms + 1 end
+    return stringify(value)
+  end
+  local ok, err = pcall(function()
+    service.localOnly(function() for id = 1, size do setRoomWeight(id, 2) end end)
+  end)
+  yajl.to_string = stringify
+  assert(ok, err)
+  assert(serializedRooms <= size * 4, 'serialized ' .. serializedRooms .. ' room entries for ' .. size .. ' edits')
+  assert(#batch.changes(service.batch) == 0)
+end)
+test('temporary markers retire when deleted rooms or areas recreate their routes', function()
+  for _, mode in ipairs({'source', 'destination', 'area'}) do
+    local service, batch = reset(); areas[2] = 'Other'; rooms[1], rooms[2] = freshRoom(1, 1), freshRoom(2, 2)
+    rooms[1].special.enter = 2; service.trackTemporarySpecialExit(1, 2, 'enter'); toggle('on')
+    if mode == 'source' then deleteRoom(1); addRoom(1)
+    elseif mode == 'destination' then deleteRoom(2); addRoom(2)
+    else deleteArea(2); addRoom(2) end
+    addSpecialExit(1, 2, 'enter')
+    assert(count(batch.changes(service.batch), 'modify-special-exit', 1) == 1,
+      mode .. ' deletion left a stale marker filtering the recreated public exit')
+  end
+end)
+
+test('incremental recovery ignores a torn tail and keeps complete object updates', function()
+  local service = reset(); rooms[1], rooms[2] = freshRoom(1, 1), freshRoom(2, 1)
+  toggle('on'); setRoomName(1, 'First'); setRoomName(2, 'Second')
+  local file = assert(io.open(folder .. '/mapper.crowdmap-journal.json.log', 'a'))
+  file:write('000000000100partial'); file:close()
+  service = reset(true); service.batching.restore()
+  local changes = pending(service)
+  assert(count(changes, 'room-name', 1) == 1 and count(changes, 'room-name', 2) == 1)
+  assert(not service.batching.corrupt)
+end)
+test('complete malformed incremental records block overwrite and sending', function()
+  local service = reset(); rooms[1] = freshRoom(1, 1); toggle('on'); setRoomName(1, 'First')
+  local path = folder .. '/mapper.crowdmap-journal.json.log'
+  local file = assert(io.open(path, 'a')); file:write('000000000003bad'); file:close()
+  service = reset(true); service.batching.restore(); service.sendNext()
+  assert(service.batching.corrupt and not service.batching.checkpoint() and #requests == 0)
+  file = assert(io.open(path)); assert(file:read('*a') == '000000000003bad'); file:close()
+end)
+test('old log frames cannot resurrect a finalized session after failed truncation', function()
+  local service, batch = reset(); rooms[1], rooms[2] = freshRoom(1, 1), freshRoom(2, 1)
+  toggle('on'); setRoomName(1, 'First'); setRoomName(2, 'Second')
+  local original = io.open
+  io.open = function(path, mode)
+    if path == folder .. '/mapper.crowdmap-journal.json.log' and mode == 'wb' then return nil, 'disk full' end
+    return original(path, mode)
+  end
+  batch.finish(true); io.open = original
+  service = reset(true); service.batching.restore()
+  local changes = pending(service)
+  assert(#changes == 2 and count(changes, 'room-name', 1) == 1 and count(changes, 'room-name', 2) == 1)
+  assert(not service.batch)
+end)
+test('failed append retains dirty objects and the next full checkpoint recovers them', function()
+  local service, batch = reset(); rooms[1], rooms[2] = freshRoom(1, 1), freshRoom(2, 1)
+  toggle('on'); setRoomName(1, 'First')
+  local original = io.open
+  io.open = function(path, mode) if mode == 'ab' then return nil, 'disk full' end; return original(path, mode) end
+  setRoomName(2, 'Second'); io.open = original
+  assert(batch.logBroken and batch.dirty.rooms['2'])
+  setRoomName(1, 'Final')
+  assert(not batch.logBroken)
+  service = reset(true); service.batching.restore()
+  local changes = pending(service)
+  assert(#changes == 2)
+  for _, change in ipairs(changes) do assert(change.name == (change.roomNumber == 1 and 'Final' or 'Second')) end
+end)
+test('incremental recovery captures deletion effects on projected sources outside native entrances', function()
+  local service = reset(); rooms[1], rooms[2], rooms[3] = freshRoom(1, 1), freshRoom(2, 1), freshRoom(3, 1)
+  rooms[1].exits.north = 3
+  toggle('on'); mmp.setExit(1, 2, 'north')
+  service.localOnly(function() mmp.setExit(1, 3, 'north') end)
+  deleteRoom(2)
+  service = reset(true); service.batching.restore()
+  local changes = pending(service)
+  assert(#changes == 2 and count(changes, 'delete-exit', 1) == 1 and count(changes, 'delete-room', 2) == 1)
+end)
+test('incremental recovery reconciles hash owners absent from native lookup', function()
+  local service = reset(); rooms[1], rooms[2] = freshRoom(1, 1), freshRoom(2, 1); rooms[1].hash = 'H'
+  toggle('on'); setRoomIDbyHash(2, 'H')
+  service.localOnly(function() setRoomIDbyHash(1, 'H') end)
+  setRoomIDbyHash(1, 'H')
+  service = reset(true); service.batching.restore()
+  assert(#pending(service) == 0)
+end)
+test('growing-session compaction keeps aggregate serialization linear', function()
+  local service = reset(); local size = 1200
+  for id = 1, size do rooms[id] = freshRoom(id, 1) end
+  toggle('on')
+  local stringify, serializedRooms = yajl.to_string, 0
+  yajl.to_string = function(value)
+    for _ in pairs(value.session and value.session.rooms or value.rooms or {}) do serializedRooms = serializedRooms + 1 end
+    return stringify(value)
+  end
+  local ok, err = pcall(function() service.localOnly(function() for id = 1, size do setRoomWeight(id, 2) end end) end)
+  yajl.to_string = stringify
+  assert(ok, err)
+  assert(serializedRooms <= size * 4, 'serialized ' .. serializedRooms .. ' room entries for ' .. size .. ' edits')
+end)
+test('immediate identity scopes retain legacy expiry and retry limits', function()
+  local service = reset(); rooms[1] = freshRoom(1, 1); setRoomName(1, 'Immediate')
+  local saved = service.pendingForSave(); saved[1].expiresAt = os.time() - 1
+  service = reset(); service.restorePendingChanges(saved)
+  assert(#service.pendingChanges == 0 and service.unsentChanges == 1)
+  local entry = saved[1]; entry.expiresAt = os.time() + 60; entry.attempts = service.maxAttempts
+  service.handleFailure(entry, 'Failed')
+  assert(#service.pendingChanges == 0 and service.unsentChanges == 2)
+end)
+test('public normal routes preserve shared metadata after private removal', function()
+  local service, batch = reset(); rooms[1], rooms[2] = freshRoom(1, 1), freshRoom(2, 1)
+  rooms[1].exits.north, rooms[1].weights.north, rooms[1].doors.north = 2, 4, 2
+  toggle('on'); service.localOnly(function()
+    mmp.setExit(1, -1, 'north'); setExitWeight(1, 'north', 9); setDoor(1, 'north', 3)
+  end)
+  mmp.setExit(1, 2, 'north')
+  assert(#batch.changes(service.batch) == 0)
+  service.localOnly(function() mmp.setExit(1, -1, 'north') end)
+  mmp.setExit(1, -1, 'north')
+  local projected = service.batch.rooms['1'].after
+  assert(not projected.exits.north and not projected.weights.north and not projected.doors.north)
+end)
+test('failed deletion preserves temporary markers and non-mapping successful deletion retires them', function()
+  local service = reset(); rooms[1], rooms[2] = freshRoom(1, 1), freshRoom(2, 1)
+  rooms[1].special.enter = 2; service.trackTemporarySpecialExit(1, 2, 'enter')
+  assert(deleteRoom(999) == false and service.isTemporarySpecialExit(1, 2, 'enter'))
+  service.localOnly(function() deleteRoom(2) end)
+  assert(not service.isTemporarySpecialExit(1, 2, 'enter'))
+end)
+
+print(string.format('%d batching tests passed; %d failed', tests - failures, failures))
+if failures > 0 then os.exit(1) end
