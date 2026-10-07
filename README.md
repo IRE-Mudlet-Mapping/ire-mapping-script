@@ -48,7 +48,10 @@ session. The mapper records the original supported state of affected rooms and
 areas and keeps their latest state. `mc off` submits only the differences:
 repeated room moves become one move, complete undos disappear, and rooms created
 and deleted within the session produce no reports. Deleting existing rooms or
-areas also records affected incoming exits and contained rooms. Safe GMCP
+areas also records affected incoming exits and contained rooms. Chunked area
+deletion captures shared membership before its native chunks run, preserving
+rooms moved into the area with local-only edits. Shared incoming routes and
+memberships are indexed so deletion checks only affected snapshots. Safe GMCP
 updates outside mapping mode continue to submit immediately.
 
 Edits made before the game, character, and service endpoint are identified

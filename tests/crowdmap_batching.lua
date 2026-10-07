@@ -958,5 +958,97 @@ test('failed deletion preserves temporary markers and non-mapping successful del
   assert(not service.isTemporarySpecialExit(1, 2, 'enter'))
 end)
 
+local function loadAreaDeletion()
+  table.size = function(t) local n = 0; for _ in pairs(t) do n = n + 1 end; return n end
+  function centerview() end
+  assert(loadfile(folder .. '/mapper_aliases.lua'))()
+end
+local function drainDeletionTimers()
+  local index = 1
+  while index <= #timers do
+    local timer = timers[index]; index = index + 1
+    if timer.delay == 0.010 then timer.fn() end
+  end
+end
+test('shipped chunked area deletion preserves shared rooms privately moved into the area', function()
+  local service, batch = reset(); areas[2] = 'Target'
+  rooms[1], rooms[2], rooms[3] = freshRoom(1, 2), freshRoom(2, 1), freshRoom(3, 1)
+  rooms[3].exits.north = 2
+  toggle('on'); service.localOnly(function() setRoomArea(2, 2) end)
+  loadAreaDeletion()
+  local original = getAreaRooms
+  getAreaRooms = function(id) local ids = original(id); table.sort(ids); return ids end
+  local ok, err = pcall(function() mmp.doareadelete(2); drainDeletionTimers() end)
+  getAreaRooms = original
+  assert(ok, err)
+  local changes = batch.changes(service.batch)
+  assert(service.batch.rooms['2'].after and service.batch.rooms['2'].after.areaId == 1,
+    'chunk deleted a room whose shared area was outside the target')
+  assert(count(changes, 'delete-room', 2) == 0 and count(changes, 'delete-exit', 3) == 0)
+  assert(count(changes, 'delete-room', 1) == 1 and count(changes, 'delete-area') == 1)
+end)
+test('bulk room deletion visits bounded projected snapshots', function()
+  local service = reset(); local size = 200
+  for id = 1, size do rooms[id] = freshRoom(id, 1) end
+  toggle('on')
+  local original, visits = pairs, 0
+  pairs = function(t)
+    local iterator, state, initial = original(t)
+    if not service.batch or t ~= service.batch.rooms then return iterator, state, initial end
+    return function(state, last)
+      local key, value = iterator(state, last)
+      if key then visits = visits + 1 end
+      return key, value
+    end, state, initial
+  end
+  local ok, err = pcall(function() for id = 1, size do deleteRoom(id) end end)
+  pairs = original
+  assert(ok, err)
+  assert(visits <= size * 4, 'visited ' .. visits .. ' accumulated snapshots for ' .. size .. ' deletions')
+end)
+
+test('projected incoming index retains duplicate destinations when one command is removed', function()
+  local service, batch = reset(); rooms[1], rooms[2], rooms[3] = freshRoom(1, 1), freshRoom(2, 1), freshRoom(3, 1)
+  rooms[1].special.first, rooms[1].special.second, rooms[1].special.other, rooms[1].exits.north = 2, 2, 3, 2
+  toggle('on'); removeSpecialExit(1, 'first')
+  service.localOnly(function() addSpecialExit(1, 3, 'second'); mmp.setExit(1, 3, 'north') end)
+  deleteRoom(2)
+  local room = service.batch.rooms['1'].after
+  assert(not room.special.first and not room.special.second and not room.exits.north)
+  assert(room.special.other.destination == 3)
+  local changes = batch.changes(service.batch)
+  assert(count(changes, 'delete-special-exit', 1) == 2 and count(changes, 'delete-exit', 1) == 1)
+end)
+test('projection membership index follows public moves independently of private native moves', function()
+  local service, batch = reset(); areas[2] = 'Target'; rooms[1], rooms[2] = freshRoom(1, 2), freshRoom(2, 1)
+  toggle('on'); setRoomArea(1, 1); setRoomArea(2, 2)
+  service.localOnly(function() setRoomArea(1, 2); setRoomArea(2, 1) end)
+  deleteArea(2)
+  assert(service.batch.rooms['1'].after.areaId == 1 and service.batch.rooms['2'].after == false)
+  local changes = batch.changes(service.batch)
+  assert(count(changes, 'delete-room', 1) == 0 and count(changes, 'delete-room', 2) == 1)
+end)
+test('projected incoming index updates across source deletion and recreation', function()
+  local service, batch = reset(); rooms[1], rooms[2], rooms[3] = freshRoom(1, 1), freshRoom(2, 1), freshRoom(3, 1)
+  rooms[1].exits.north = 2
+  toggle('on'); deleteRoom(1); addRoom(1); mmp.setExit(1, 3, 'north'); deleteRoom(2)
+  assert(service.batch.rooms['1'].after.exits.north == 3)
+  local changes = batch.changes(service.batch)
+  assert(count(changes, 'modify-exit', 1) == 1 and count(changes, 'delete-exit', 1) == 0)
+end)
+test('chunked area deletion checkpoints only its shared members for crash recovery', function()
+  local service = reset(); areas[2] = 'Target'; rooms[1], rooms[2], rooms[3] = freshRoom(1, 2), freshRoom(2, 1), freshRoom(3, 1)
+  rooms[3].special.enter = 2
+  toggle('on'); service.localOnly(function() setRoomArea(2, 2) end)
+  loadAreaDeletion(); local original = getAreaRooms
+  getAreaRooms = function(id) local ids = original(id); table.sort(ids); return ids end
+  local ok, err = pcall(function() mmp.doareadelete(2); drainDeletionTimers() end)
+  getAreaRooms = original; assert(ok, err)
+  service = reset(true); service.batching.restore()
+  local changes = pending(service)
+  assert(count(changes, 'delete-room', 1) == 1 and count(changes, 'delete-area') == 1)
+  assert(count(changes, 'delete-room', 2) == 0 and count(changes, 'delete-special-exit', 3) == 0)
+end)
+
 print(string.format('%d batching tests passed; %d failed', tests - failures, failures))
 if failures > 0 then os.exit(1) end

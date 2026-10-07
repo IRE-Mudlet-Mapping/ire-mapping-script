@@ -24,6 +24,7 @@ with tempfile.TemporaryDirectory(prefix='mapper-batching-tests-') as directory:
         'load': scripts['mmp.loadOptions'],
         'settings': scripts['mconfig settings functions'],
         'download': scripts['mmp.downloadedFile'],
+        'mapper_aliases': next(code for code in scripts.values() if 'function mmp.doareadelete(' in code),
     }.items():
         (folder / (name + '.lua')).write_text(code)
     # Parse every shipped script/alias/trigger with the actual target Lua version.
@@ -32,7 +33,7 @@ with tempfile.TemporaryDirectory(prefix='mapper-batching-tests-') as directory:
         code = element.text or ''
         path = folder / f'syntax-{i}.lua'
         path.write_text(code)
-        syntax_checks.append('assert(loadfile(' + json.dumps(str(path)) + '))')
+        syntax_checks.append('assert(loadfile(' + json.dumps(str(path), ensure_ascii=False) + '))')
     (folder / 'syntax.lua').write_text('\n'.join(syntax_checks))
     subprocess.run([runtime, str(folder / 'syntax.lua')], check=True)
     subprocess.run([runtime, str(root / 'tests/crowdmap_batching.lua'), directory], check=True)

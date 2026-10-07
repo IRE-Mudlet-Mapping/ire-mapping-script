@@ -6242,9 +6242,46 @@ end
 local function identity()
   return { url = service.baseUrl(), reporter = service.reporter(), game = mmp.game }
 end
+-- These indexes describe shared projections, which may differ from native
+-- entrances/memberships after local-only edits. They are derived, not journaled.
+local function indexRoom(index, id, room)
+  for destination in pairs(index.outgoing[id] or {}) do
+    local sources = index.incoming[destination]
+    sources[id] = nil
+    if not next(sources) then index.incoming[destination] = nil end
+  end
+  local oldArea = index.roomAreas[id]
+  if oldArea then
+    index.members[oldArea][id] = nil
+    if not next(index.members[oldArea]) then index.members[oldArea] = nil end
+  end
+  index.outgoing[id], index.roomAreas[id] = nil, nil
+  if not room then return end
+  local destinations = {}
+  for _, destination in pairs(room.exits) do destinations[tostring(destination)] = true end
+  for _, exit in pairs(room.special) do destinations[tostring(exit.destination)] = true end
+  for destination in pairs(destinations) do
+    index.incoming[destination] = index.incoming[destination] or {}
+    index.incoming[destination][id] = true
+  end
+  index.outgoing[id] = destinations
+  local area = tostring(room.areaId)
+  index.roomAreas[id] = area
+  index.members[area] = index.members[area] or {}
+  index.members[area][id] = true
+end
+local function projectionIndex()
+  local session = service.batch
+  if not batch.projection or batch.projection.session ~= session then
+    batch.projection = { session = session, incoming = {}, outgoing = {}, members = {}, roomAreas = {} }
+    for id, entry in pairs(session.rooms) do indexRoom(batch.projection, id, entry.after) end
+  end
+  return batch.projection
+end
 function batch.begin()
   if service.batch or not trackingEnabled() then return end
   service.batch = { rooms = {}, areas = {}, scope = identity() }
+  batch.projection = { session = service.batch, incoming = {}, outgoing = {}, members = {}, roomAreas = {} }
 end
 local function dirty(group, id)
   batch.dirty = batch.dirty or { rooms = {}, areas = {} }
@@ -6258,6 +6295,7 @@ local function capture(group, id, read, touched, before)
     if state == nil then state = read(tonumber(id)) end
     group[id] = { before = copy(state), after = copy(state) }
     service.batch.objectCount = (service.batch.objectCount or 0) + 1
+    if group == service.batch.rooms then indexRoom(projectionIndex(), id, group[id].after) end
   end
   dirty(group == service.batch.rooms and "rooms" or "areas", id)
   touched[id] = copy(read(tonumber(id)))
@@ -6274,7 +6312,9 @@ function batch.before(operation, ...)
     session = service.batch
   end
   session.scope.reporter = session.scope.reporter or current.reporter
-  local touched = { rooms = {}, areas = {}, operation = operation, args = args, localOnly = service.suspended }
+  local touched = { rooms = {}, areas = {}, operation = operation, args = args, localOnly = service.suspended,
+    areaPlan = batch.areaPlan }
+  if touched.areaPlan and touched.areaPlan.session ~= session then touched.localOnly = true end
   local function room(id)
     id = tonumber(id)
     if id and id ~= -1 then capture(session.rooms, id, roomState, touched.rooms) end
@@ -6291,8 +6331,8 @@ function batch.before(operation, ...)
       touched.deletedRooms = copy(touched.rooms)
       -- Projected members may have been moved out privately. Their native
       -- entrances still need snapshots before the public area deletion.
-      for roomId, entry in pairs(session.rooms) do
-        if entry.after and entry.after.areaId == id then touched.deletedRooms[roomId] = true end
+      for roomId in pairs(projectionIndex().members[tostring(id)] or {}) do
+        touched.deletedRooms[roomId] = true
       end
     end
   elseif operation == "setMapUserData" or operation == "clearMapUserDataItem" then
@@ -6312,8 +6352,8 @@ function batch.before(operation, ...)
   if touched.deletedRooms then
     -- Mudlet maintains an entrance hash for both normal and special exits.
     -- Query affected sources directly rather than scanning the whole map for
-    -- every room in a chunked area deletion. Native/localOnly edits keep this
-    -- index current as well, so no second Lua index needs synchronizing.
+    -- every room in a chunked area deletion. The projection index separately
+    -- covers tracked shared routes hidden by private native redirects.
     for id in pairs(touched.deletedRooms) do
       for _, source in pairs(getAllRoomEntrances(tonumber(id)) or {}) do
         if touched.rooms[tostring(source)] == nil then room(source) end
@@ -6407,24 +6447,32 @@ end
 -- reflect private redirects/moves, so they must not be merged as public edits.
 local function projectDeletion(touched, result)
   if result ~= true then return end
-  local session, deleted = service.batch, {}
+  local session, index, deleted = service.batch, projectionIndex(), {}
   if touched.operation == "deleteRoom" then
-    deleted[tostring(tonumber(touched.args[1]))] = true
+    local id = tostring(tonumber(touched.args[1]))
+    -- A chunk deletes native area members as an implementation detail. Only
+    -- members of the operation's shared area plan are public room deletions.
+    if touched.areaPlan and not touched.areaPlan.members[id] then return end
+    deleted[id] = true
   else
     local areaId = touched.deletedAreaId
-    for id, entry in pairs(session.rooms) do
-      if entry.after and entry.after.areaId == areaId then deleted[id] = true end
-    end
+    deleted = copy(index.members[tostring(areaId)] or {})
     if session.areas[tostring(areaId)] then
       session.areas[tostring(areaId)].after = false
       dirty("areas", areaId)
     end
   end
+  local affected = {}
   for id in pairs(deleted) do
-    if session.rooms[id] then session.rooms[id].after = false; dirty("rooms", id) end
+    for source in pairs(index.incoming[id] or {}) do affected[source] = true end
+    if session.rooms[id] then
+      session.rooms[id].after = false
+      dirty("rooms", id)
+      affected[id] = true
+    end
   end
-  for id, entry in pairs(session.rooms) do
-    local room = entry.after
+  for id in pairs(affected) do
+    local room = session.rooms[id].after
     if room then
       for direction, destination in pairs(room.exits) do
         if deleted[tostring(destination)] then
@@ -6439,7 +6487,24 @@ local function projectDeletion(touched, result)
         end
       end
     end
+    indexRoom(index, id, room)
   end
+end
+-- Snapshot the whole shared operation before asynchronous native chunks start.
+function batch.planAreaDeletion(areaId)
+  local touched = batch.before("deleteArea", areaId)
+  if not touched or touched.localOnly then return end
+  batch.checkpoint(true)
+  return { session = service.batch, members = copy(projectionIndex().members[tostring(areaId)] or {}) }
+end
+function batch.deleteAreaRoom(plan, roomId)
+  if not plan then return deleteRoom(roomId) end
+  local previous, suppressed = batch.areaPlan, service.suppressAreaRoom
+  batch.areaPlan, service.suppressAreaRoom = plan, true
+  local ok, result = pcall(deleteRoom, roomId)
+  batch.areaPlan, service.suppressAreaRoom = previous, suppressed
+  if not ok then error(result) end
+  return result
 end
 function batch.after(touched, result)
   if not touched then return end
@@ -6478,6 +6543,10 @@ function batch.after(touched, result)
     session.mapData.after = mergeDelta(touched.mapData, getAllMapUserData() or {}, session.mapData.after)
   end
   publishTarget(touched, result)
+  -- Successful setters and room recreation can change projected references.
+  -- Reindex only the touched sources, preserving private native differences.
+  local index = projectionIndex()
+  for id in pairs(touched.rooms) do indexRoom(index, id, session.rooms[id].after) end
   batch.checkpoint(true)
 end
 local function pack(...) return { n = select("#", ...), ... } end
@@ -6605,6 +6674,7 @@ function batch.finish(deferSending)
       change = change, attempts = 0, scope = copy(session.scope), batch = true }
   end
   service.batch = nil
+  batch.projection = nil
   batch.checkpoint()
   if not deferSending then service.sendNext() end
 end
@@ -6871,6 +6941,7 @@ function service.sendNext()
 end
 
 function service.submit(change)
+  if service.suppressAreaRoom then return end
   if mmp.settings.mapsource ~= "service" or not mmp.settings.crowdmapservicesend or service.suspended then return end
   if not service.batching.identityReady() then
     service.batching.warnUnknownIdentity()
@@ -10246,6 +10317,7 @@ function mmp.doareadelete(areaid)
   t.currentbatch = 1
   t.areaid = areaid
   t.areaname = getAreaTableSwap()[areaid]
+  t.crowdmapPlan = mmp.crowdmapService.batching.planAreaDeletion(areaid)
   -- delete the area right away if there's nothing in it
   if t.roomcount == 0 then
     deleteArea(t.areaid)
@@ -10275,9 +10347,8 @@ function mmp.doareadelete(areaid)
       centerview(mmp.currentroom)
       return
     end
-    local deleteRoom = deleteRoom
     for i = 1, #currentbatch do
-      deleteRoom(currentbatch[i])
+      mmp.crowdmapService.batching.deleteAreaRoom(t.crowdmapPlan, currentbatch[i])
     end
     mmp.echo(
       string.format(
