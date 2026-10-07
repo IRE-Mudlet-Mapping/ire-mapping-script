@@ -53,7 +53,11 @@ deletion captures shared membership before its native chunks run, preserving
 rooms moved into the area with local-only edits. Shared incoming routes and
 memberships are indexed so deletion checks only affected snapshots. If chunks
 are still running, `mc off` and `map submit` wait for them before finalizing the
-session; disconnect and shutdown save completed work without waiting. Safe GMCP
+session; disconnect and shutdown save completed work without waiting. Same-identity
+updates continue to join that session while it waits. Changing the endpoint
+keeps planned deletion under its original scope; unrelated edits are not added
+to that old session. `cancel area deletion` releases the pending plan and
+submits only completed work if submission was requested. Safe GMCP
 updates outside mapping mode continue to submit immediately.
 
 Edits made before the game, character, and service endpoint are identified
@@ -92,7 +96,9 @@ private marks, hash-only placeholders, and temporary exits/labels are excluded.
 Wrapped local-only edits still capture the state before their first mutation,
 so later public edits cannot accidentally include their private changes. Routes
 to rooms created only locally and moves into areas created only locally remain
-local too; referencing them does not make them shared.
+local too; referencing them does not make them shared. These exclusions are
+saved across submissions and restarts until public recreation or a service map
+replacement reconciles them.
 For tracked rooms, public deletion follows the shared state: deleting an area
 removes its shared members and deleting a room removes its shared incoming
 exits, even if private moves or redirects changed the native map. Special-exit

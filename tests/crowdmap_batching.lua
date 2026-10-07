@@ -1140,5 +1140,128 @@ test('local references and memberships remain excluded after journal recovery', 
   assert(#changes == 1 and changes[1].type == 'room-name' and changes[1].name == 'Public')
 end)
 
+test('safe GMCP updates during deferred mapping-off cannot be rolled back by stale snapshots', function()
+  local service = reset(); areas[2] = 'Target'; rooms[1], rooms[3] = freshRoom(1, 2), freshRoom(3, 1)
+  toggle('on'); setRoomName(3, 'Old'); loadAreaDeletion(); mmp.doareadelete(2); toggle('off')
+  mmp.cleanroomname = function(name) return name end; mmp.roomDetails = function() end
+  function unHighlightRoom() end
+  settings.gmcpmapupdates = true; gmcp.Room = {Info = {num = 3, name = 'New'}}
+  assert(loadfile(folder .. '/safe_gmcp.lua'))(); event('gmcp.Room.Info'); drainDeletionTimers()
+  local changes = pending(service); if service.inFlightEntry then changes[#changes + 1] = service.inFlightEntry.change end
+  local names = 0
+  for _, change in ipairs(changes) do
+    if change.type == 'room-name' and change.roomNumber == 3 then
+      names = names + 1; assert(change.name == 'New', 'deferred batch publishes stale room name ' .. change.name)
+    end
+  end
+  assert(names == 1)
+end)
+test('changing endpoint preserves completion of originally scoped area deletion', function()
+  local service = reset(); areas[2] = 'Target'; rooms[1], rooms[2] = freshRoom(1, 2), freshRoom(2, 2)
+  assert(loadfile(folder .. '/settings.lua'))(); mmp.checkforupdate = function() end
+  toggle('on'); loadAreaDeletion(); mmp.doareadelete(2)
+  settings.crowdmapserviceurl = 'https://other.test'; mmp.changeCrowdmapServiceMapOption(); drainDeletionTimers()
+  local changes = pending(service)
+  assert(count(changes, 'delete-room') == 2 and count(changes, 'delete-area') == 1, 'endpoint change dropped native deletion work')
+  assert(#requests == 0)
+  for _, entry in ipairs(service.pendingChanges) do assert(entry.scope.url == 'https://example.test') end
+end)
+test('shipped cancellation clears pending plan and honors deferred submission', function()
+  local service, batch = reset(); areas[2] = 'Target'; rooms[1], rooms[2] = freshRoom(1, 2), freshRoom(2, 2)
+  toggle('on'); loadAreaDeletion(); mmp.doareadelete(2); service.retrySavedChanges()
+  assert(loadfile(folder .. '/cancel_area.lua'))(); drainDeletionTimers(); batch.finish(true)
+  assert(not batch.pendingArea and not service.batch, 'cancellation left deferred finalization stuck')
+  assert(rooms[1] and rooms[2] and areas[2] and #requests == 0)
+end)
+test('private-only room existence exclusions survive map submit boundaries', function()
+  local service, batch = reset(); rooms[1] = freshRoom(1, 1)
+  toggle('on'); service.localOnly(function() addRoom(2) end); service.retrySavedChanges()
+  mmp.setExit(1, 2, 'north'); addSpecialExit(1, 2, 'enter')
+  assert(#batch.changes(service.batch) == 0, 'new batch forgot private-only destination room')
+end)
+test('private-only area existence exclusions survive map submit boundaries', function()
+  local service, batch = reset(); rooms[1] = freshRoom(1, 1); local area
+  toggle('on'); service.localOnly(function() area = addAreaName('Private') end); service.retrySavedChanges()
+  setRoomArea(1, area)
+  assert(#batch.changes(service.batch) == 0, 'new batch forgot private-only destination area')
+end)
+test('public hash assignment cannot clear a previous native owners unrelated shared hash', function()
+  local service, batch = reset(); rooms[1], rooms[2], rooms[3] = freshRoom(1, 1), freshRoom(2, 1), freshRoom(3, 1)
+  rooms[1].hash, rooms[2].hash = 'H', 'K'
+  toggle('on'); service.localOnly(function() setRoomIDbyHash(2, 'H') end); setRoomIDbyHash(3, 'H')
+  assert(service.batch.rooms['2'].after.hash == 'K', 'native side effect erased unrelated projected hash K')
+  local changes = batch.changes(service.batch)
+  assert(count(changes, 'set-room-hash', 2) == 0 and count(changes, 'set-room-hash') == 2)
+end)
+
+test('cancelling after a chunk submits completed room deletions and leaves remaining area intact', function()
+  local service = reset(); areas[2] = 'Target'; local size = 205
+  for id = 1, size do rooms[id] = freshRoom(id, 2) end
+  toggle('on'); loadAreaDeletion(); local original = getAreaRooms
+  getAreaRooms = function(id) local ids = original(id); table.sort(ids); return ids end
+  local ok, err = pcall(function()
+    mmp.doareadelete(2); service.retrySavedChanges()
+    for _, timer in ipairs(timers) do if timer.delay == 0.010 then timer.fn(); break end end
+    assert(loadfile(folder .. '/cancel_area.lua'))(); drainDeletionTimers()
+  end)
+  getAreaRooms = original; assert(ok, err)
+  assert(not service.batch and not service.batching.pendingArea and areas[2])
+  assert(#getAreaRooms(2) == size - 100)
+  local changes = pending(service); changes[#changes + 1] = service.inFlightEntry.change
+  assert(count(changes, 'delete-room') == 100 and count(changes, 'delete-area') == 0)
+end)
+test('private-only existence exclusions survive recovery after session finalization', function()
+  local service = reset(); rooms[1] = freshRoom(1, 1); local area
+  toggle('on'); service.localOnly(function() addRoom(2); area = addAreaName('Private') end); service.retrySavedChanges()
+  service = reset(true); rooms[1], rooms[2] = freshRoom(1, 1), freshRoom(2, 1); areas[area] = 'Private'
+  service.batching.restore(); toggle('on'); mmp.setExit(1, 2, 'north'); setRoomArea(1, area); setRoomName(2, 'Private update')
+  assert(#service.batching.changes(service.batch) == 0)
+end)
+test('incremental log persists local-only exclusions before finalization', function()
+  local service = reset(); rooms[1] = freshRoom(1, 1); local area
+  toggle('on'); setRoomName(1, 'Public')
+  service.localOnly(function() addRoom(2); area = addAreaName('Private') end)
+  service = reset(true); rooms[1], rooms[2] = freshRoom(1, 1), freshRoom(2, 1); areas[area] = 'Private'
+  service.batching.restore()
+  assert(service.sharedExclusions.rooms['2'] and service.sharedExclusions.areas[tostring(area)])
+  toggle('on'); addSpecialExit(1, 2, 'enter'); setRoomArea(1, area)
+  assert(#service.batching.changes(service.batch) == 0)
+end)
+test('public recreation clears exclusions durably in the incremental log', function()
+  local service = reset(); rooms[1] = freshRoom(1, 1); local area
+  toggle('on'); setRoomName(1, 'Public')
+  service.localOnly(function() addRoom(2); area = addAreaName('Private'); deleteRoom(2); deleteArea(area) end)
+  addRoom(2); local publicArea = addAreaName('Public')
+  service = reset(true); rooms[1], rooms[2] = freshRoom(1, 1), freshRoom(2, 1); areas[publicArea] = 'Public'
+  service.batching.restore()
+  assert(not service.sharedExclusions.rooms['2'] and not service.sharedExclusions.areas[tostring(publicArea)])
+  toggle('on'); mmp.setExit(1, 2, 'north'); setRoomArea(1, publicArea)
+  local changes = service.batching.changes(service.batch)
+  assert(count(changes, 'modify-exit', 1) == 1 and count(changes, 'set-room-area', 1) == 1)
+end)
+test('immediate setters also respect persistent local-only destination exclusions', function()
+  local service = reset(); rooms[1] = freshRoom(1, 1); local area
+  toggle('on'); service.localOnly(function() addRoom(2); area = addAreaName('Private') end); toggle('off')
+  mmp.setExit(1, 2, 'north'); addSpecialExit(1, 2, 'enter'); setRoomArea(1, area); setRoomName(2, 'Private')
+  assert(#requests == 0 and #pending(service) == 0)
+end)
+test('successful service map replacement clears saved exclusions', function()
+  local service = reset(); rooms[1] = freshRoom(1, 1)
+  toggle('on'); service.localOnly(function() addRoom(2) end); toggle('off')
+  service.mapLoaded()
+  service = reset(true); rooms[1], rooms[2] = freshRoom(1, 1), freshRoom(2, 1); service.batching.restore()
+  assert(not next(service.sharedExclusions.rooms))
+  toggle('on'); mmp.setExit(1, 2, 'north')
+  assert(count(service.batching.changes(service.batch), 'modify-exit', 1) == 1)
+end)
+test('unrelated shared hash survives native ownership side effects after recovery', function()
+  local service = reset(); rooms[1], rooms[2], rooms[3] = freshRoom(1, 1), freshRoom(2, 1), freshRoom(3, 1)
+  rooms[1].hash, rooms[2].hash = 'H', 'K'
+  toggle('on'); service.localOnly(function() setRoomIDbyHash(2, 'H') end); setRoomIDbyHash(3, 'H')
+  service = reset(true); service.batching.restore()
+  local changes = pending(service)
+  assert(count(changes, 'set-room-hash', 2) == 0 and count(changes, 'set-room-hash') == 2)
+end)
+
 print(string.format('%d batching tests passed; %d failed', tests - failures, failures))
 if failures > 0 then os.exit(1) end

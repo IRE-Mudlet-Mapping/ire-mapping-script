@@ -24,6 +24,8 @@ with tempfile.TemporaryDirectory(prefix='mapper-batching-tests-') as directory:
         'load': scripts['mmp.loadOptions'],
         'settings': scripts['mconfig settings functions'],
         'download': scripts['mmp.downloadedFile'],
+        'safe_gmcp': scripts['Sync safe Room.Info fields'],
+        'cancel_area': aliases['Cancel area deletion'],
         'mapper_aliases': next(code for code in scripts.values() if 'function mmp.doareadelete(' in code),
     }.items():
         (folder / (name + '.lua')).write_text(code)
