@@ -6311,6 +6311,7 @@ local function dirty(group, id)
   batch.dirty[group][tostring(id)] = true
 end
 function batch.recordCreation(group, id, localOnly)
+  localOnly = localOnly or not batch.identityReady()
   id = tostring(id)
   local excluded = service.sharedExclusions[group]
   local value = localOnly and true or nil
@@ -6342,7 +6343,38 @@ local function capture(group, id, read, touched, before)
   dirty(group == service.batch.rooms and "rooms" or "areas", id)
   touched[id] = copy(read(tonumber(id)))
 end
+-- Disabled delivery must still retain the identity and supported state of
+-- shared objects removed privately, so a private recreation stays shared.
+local function retainDisabledDeletion(operation, args)
+  if not service.suspended or not mmp.settings
+      or mmp.settings.mapsource ~= "service" or mmp.settings.crowdmapservicesend then return end
+  if operation ~= "deleteRoom" and operation ~= "deleteArea" then return end
+  local function remember(group, id, read)
+    if not id then return end
+    local key = tostring(id)
+    if service.batch then
+      capture(service.batch[group], id, read, {})
+    elseif service.sharedState[group][key] == nil and not service.sharedExclusions[group][key] then
+      local state = read(id)
+      if state then service.sharedState[group][key] = copy(state) end
+    end
+  end
+  local victims = {}
+  if operation == "deleteRoom" then
+    victims[1] = tonumber(args[1])
+  else
+    local id = tonumber(args[1]) or (getAreaTable() or {})[args[1]]
+    remember("areas", id, areaState)
+    victims = id and getAreaRooms(id) or {}
+  end
+  for _, id in pairs(victims or {}) do
+    remember("rooms", id, roomState)
+    for _, source in pairs(getAllRoomEntrances(id) or {}) do remember("rooms", source, roomState) end
+  end
+  batch.checkpoint(service.batch ~= nil)
+end
 function batch.before(operation, ...)
+  retainDisabledDeletion(operation, {...})
   local continuingPlan = batch.areaPlan and batch.areaPlan.session == service.batch
     and not batch.closing and not batch.disconnected
   if not trackingEnabled() and not continuingPlan then
@@ -6354,7 +6386,9 @@ function batch.before(operation, ...)
     local retained = service.sharedState
     local excluded = service.sharedExclusions
     if not service.suspended and retained.rooms[roomId] == nil and retained.areas[areaId] == nil
-        and not retained.mapData and not excluded.rooms[roomId] and not excluded.areas[areaId]
+        and not retained.mapData
+        and not ((operation == "deleteRoom" or operation == "deleteArea") and next(retained.rooms))
+        and not excluded.rooms[roomId] and not excluded.areas[areaId]
         and not (args[2] and (excluded.rooms[tostring(tonumber(args[2]))] or excluded.areas[tostring(tonumber(args[2]))])) then return end
     -- Immediate edits of divergent sources use the same projection/diff path;
     -- raw submissions would otherwise overwrite unrelated retained fields.
@@ -6619,6 +6653,13 @@ function batch.after(touched, result)
   else
     for id, before in pairs(touched.rooms) do
       local after = roomState(tonumber(id))
+      if after and touched.operation == "addRoom" and touched.args[2]
+          and service.sharedExclusions.areas[tostring(tonumber(touched.args[2]))] then
+        -- Creation publishes the room, but cannot publish membership in an
+        -- area that exists only locally. Preserve its shared/default area.
+        local projected = session.rooms[id].after
+        after.areaId = projected and projected.areaId or -1
+      end
       if after and before and touched.operation == "setRoomIDbyHash" and id ~= tostring(tonumber(touched.args[1])) then
         -- Native ownership may reflect a private assignment. Only the public
         -- target and projected owners of the assigned hash are reconciled.
@@ -6816,7 +6857,7 @@ local function journalPath() return getMudletHomeDir() .. "/mapper.crowdmap-jour
 local function appendCheckpoint()
   local session, changed = service.batch, batch.dirty or { rooms = {}, areas = {} }
   local record = { version = 1, revision = (batch.revision or 0) + 1,
-    scope = session.scope, rooms = {}, areas = {} }
+    scope = session.scope, immediate = session.immediate or false, rooms = {}, areas = {} }
   for id in pairs(changed.rooms) do record.rooms[id] = session.rooms[id] end
   for id in pairs(changed.areas) do record.areas[id] = session.areas[id] end
   if changed.mapData then record.mapData = session.mapData end
@@ -6919,6 +6960,7 @@ function batch.restore()
         if record.revision &gt; (saved.revision or 0) then
           saved.session = saved.session or { rooms = {}, areas = {} }
           saved.session.scope = record.scope
+          if record.immediate ~= nil then saved.session.immediate = record.immediate end
           for id, entry in pairs(record.rooms or {}) do saved.session.rooms[id] = entry end
           for id, entry in pairs(record.areas or {}) do saved.session.areas[id] = entry end
           if record.mapData then saved.session.mapData = record.mapData end

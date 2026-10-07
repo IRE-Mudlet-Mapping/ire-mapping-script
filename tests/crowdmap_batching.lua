@@ -1386,5 +1386,92 @@ test('outside-mapping bulk local-only edits share one transient batch with bound
   assert(service.sharedState.rooms['1'].weight == 1 and service.sharedState.rooms[tostring(size)].weight == 1)
 end)
 
+for _, areaDeletion in ipairs({false, true}) do
+  test('immediate ' .. (areaDeletion and 'area' or 'room') .. ' deletion reconciles hidden retained incoming routes', function()
+    local service = reset(); areas[3] = 'Target'
+    rooms[1], rooms[2], rooms[3] = freshRoom(1, 1), freshRoom(2, 1), freshRoom(3, 3)
+    rooms[1].special.enter = 3
+    toggle('on'); service.localOnly(function() addSpecialExit(1, 2, 'enter') end); toggle('off')
+    if areaDeletion then deleteArea(3) else deleteRoom(3) end
+    assert(service.sharedState.rooms['1'] and not service.sharedState.rooms['1'].special.enter,
+      'deleted destination remains in retained shared route')
+    lockSpecialExit(1, 2, 'enter', true)
+    for _, change in ipairs(pending(service)) do
+      assert(change.type ~= 'special-exit-lock', 'lock published for deleted shared destination')
+    end
+  end)
+end
+test('incremental recovery preserves immediate expiry and retry policy after final checkpoint failure', function()
+  local service = reset(); rooms[1] = freshRoom(1, 1)
+  toggle('on'); service.localOnly(function() setRoomName(1, 'Private') end); toggle('off')
+  local open = io.open
+  io.open = function(path, mode) if mode == 'w' then return nil, 'forced full checkpoint failure' end; return open(path, mode) end
+  local ok, err = pcall(function() setRoomWeight(1, 2) end)
+  io.open = open; assert(ok, err)
+  assert(#requests == 0)
+  service = reset(true); rooms[1] = freshRoom(1, 1); rooms[1].name, rooms[1].weight = 'Private', 2
+  service.batching.restore()
+  assert(#service.pendingChanges == 1)
+  assert(service.pendingChanges[1].batch == false and service.pendingChanges[1].expiresAt,
+    'recovered immediate report has mapping retention policy')
+end)
+test('unidentified room and area creations remain unpublished across identification and restart', function()
+  local service = reset(); rooms[1] = freshRoom(1, 1); gmcp.Char.Status.name = nil
+  addRoom(2); local area = addAreaName('Unidentified')
+  assert(service.sharedExclusions.rooms['2'] and service.sharedExclusions.areas[tostring(area)],
+    'unidentified creations lack exclusions')
+  service = reset(true); rooms[1], rooms[2] = freshRoom(1, 1), freshRoom(2, area); areas[area] = 'Unidentified'
+  service.batching.restore(); toggle('on'); mmp.setExit(1, 2, 'north'); setRoomArea(1, area)
+  assert(#service.batching.changes(service.batch) == 0)
+end)
+test('disabled sending preserves shared room identity through private recreation', function()
+  local service = reset(); rooms[1] = freshRoom(1, 1); settings.crowdmapservicesend = false
+  service.localOnly(function() deleteRoom(1); addRoom(1) end)
+  assert(not service.sharedExclusions.rooms['1'], 'shared room identity lost while sending disabled')
+  settings.crowdmapservicesend = true; setRoomName(1, 'Public')
+  assert(#requests == 1 and requests[1].change.type == 'room-name')
+end)
+test('disabled sending preserves shared area identity through private recreation', function()
+  local service = reset(); areas[10] = 'Shared'; settings.crowdmapservicesend = false
+  service.localOnly(function() deleteArea(10); assert(addAreaName('Shared') == 10) end)
+  assert(not service.sharedExclusions.areas['10'], 'shared area identity lost while sending disabled')
+  settings.crowdmapservicesend = true; setAreaName(10, 'Public')
+  assert(#requests == 1 and requests[1].change.type == 'rename-area')
+end)
+test('addRoom with an unpublished initial area preserves default shared membership', function()
+  local service = reset(); toggle('on'); local area
+  service.localOnly(function() area = addAreaName('Private') end)
+  addRoom(2, area)
+  assert(rooms[2].area == area and service.batch.rooms['2'].after.areaId == -1,
+    'new shared room references unpublished area')
+  assert(count(service.batching.changes(service.batch), 'set-room-area', 2) == 0)
+end)
+test('public recreation with an unpublished initial area preserves existing shared membership', function()
+  local service = reset(); rooms[1] = freshRoom(1, 1); toggle('on'); local area
+  service.localOnly(function() area = addAreaName('Private'); deleteRoom(1) end)
+  addRoom(1, area)
+  assert(rooms[1].area == area and service.batch.rooms['1'].after.areaId == 1,
+    'recreated shared room references unpublished area')
+end)
+
+test('disabled sending preserves private deletion baselines in an already open session', function()
+  local service = reset(); rooms[1] = freshRoom(1, 1); toggle('on'); setRoomWeight(1, 2)
+  rooms[2] = freshRoom(2, 1); settings.crowdmapservicesend = false
+  service.localOnly(function() deleteRoom(2); addRoom(2) end)
+  assert(not service.sharedExclusions.rooms['2'], 'open session lost shared identity during disabled sending')
+  settings.crowdmapservicesend = true; setRoomName(2, 'Public')
+  assert(count(service.batching.changes(service.batch), 'room-name', 2) == 1)
+end)
+test('disabled private recreation retains identity after restart without promoting private objects', function()
+  local service = reset(); rooms[1] = freshRoom(1, 1); settings.crowdmapservicesend = false
+  service.localOnly(function() deleteRoom(1); addRoom(1); addRoom(2); deleteRoom(2); addRoom(2) end)
+  assert(#requests == 0)
+  service = reset(true); rooms[1], rooms[2] = freshRoom(1, 1), freshRoom(2, 1); service.batching.restore()
+  assert(not service.sharedExclusions.rooms['1'] and service.sharedExclusions.rooms['2'])
+  toggle('on'); setRoomName(1, 'Public'); setRoomName(2, 'Private')
+  assert(count(service.batching.changes(service.batch), 'room-name', 1) == 1)
+  assert(count(service.batching.changes(service.batch), 'room-name', 2) == 0)
+end)
+
 print(string.format('%d batching tests passed; %d failed', tests - failures, failures))
 if failures > 0 then os.exit(1) end
