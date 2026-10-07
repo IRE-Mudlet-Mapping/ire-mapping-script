@@ -51,7 +51,9 @@ and deleted within the session produce no reports. Deleting existing rooms or
 areas also records affected incoming exits and contained rooms. Chunked area
 deletion captures shared membership before its native chunks run, preserving
 rooms moved into the area with local-only edits. Shared incoming routes and
-memberships are indexed so deletion checks only affected snapshots. Safe GMCP
+memberships are indexed so deletion checks only affected snapshots. If chunks
+are still running, `mc off` and `map submit` wait for them before finalizing the
+session; disconnect and shutdown save completed work without waiting. Safe GMCP
 updates outside mapping mode continue to submit immediately.
 
 Edits made before the game, character, and service endpoint are identified
@@ -88,7 +90,9 @@ Snapshots cover the existing service-supported Lua mapper operations, not
 arbitrary native GUI edits or unsupported map fields. Local-only operations,
 private marks, hash-only placeholders, and temporary exits/labels are excluded.
 Wrapped local-only edits still capture the state before their first mutation,
-so later public edits cannot accidentally include their private changes.
+so later public edits cannot accidentally include their private changes. Routes
+to rooms created only locally and moves into areas created only locally remain
+local too; referencing them does not make them shared.
 For tracked rooms, public deletion follows the shared state: deleting an area
 removes its shared members and deleting a room removes its shared incoming
 exits, even if private moves or redirects changed the native map. Special-exit

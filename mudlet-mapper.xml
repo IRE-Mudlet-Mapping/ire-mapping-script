@@ -6301,13 +6301,17 @@ local function capture(group, id, read, touched, before)
   touched[id] = copy(read(tonumber(id)))
 end
 function batch.before(operation, ...)
-  if not trackingEnabled() then return end
+  local continuingPlan = batch.areaPlan and batch.areaPlan.session == service.batch
+    and batch.identityReady()
+  if not trackingEnabled() and not continuingPlan then return end
   batch.begin()
   local session, args = service.batch, {...}
   local current = identity()
+  if continuingPlan and (session.scope.url ~= current.url or session.scope.game ~= current.game
+      or session.scope.reporter ~= current.reporter) then return end
   if session.scope.url ~= current.url or session.scope.game ~= current.game
       or (session.scope.reporter and current.reporter and session.scope.reporter ~= current.reporter) then
-    batch.finish(true)
+    if batch.finish(true) == false then return end
     batch.begin()
     session = service.batch
   end
@@ -6348,6 +6352,17 @@ function batch.before(operation, ...)
     if operation == "deleteRoom" then touched.deletedRooms = copy(touched.rooms) end
     if operation == "setRoomArea" then area(args[2]) end
     if operation == "setRoomIDbyHash" then room(getRoomIDbyHash(args[2])) end
+  end
+  -- Publishing a reference does not promote an object created only locally.
+  -- Decide before the native mutation so both merging and targeted setters
+  -- retain the original shared route/membership, including its metadata.
+  if operation == "setRoomArea" then
+    local target = session.areas[tostring(tonumber(args[2]))]
+    if target and not target.after then touched.localOnly = true end
+  elseif operation == "addSpecialExit" or (operation == "setExit" and tonumber(args[2]) ~= -1) then
+    local id = tonumber(args[2])
+    local target = id and session.rooms[tostring(id)]
+    if target and not target.after then touched.localOnly = true end
   end
   if touched.deletedRooms then
     -- Mudlet maintains an entrance hash for both normal and special exits.
@@ -6495,15 +6510,30 @@ function batch.planAreaDeletion(areaId)
   local touched = batch.before("deleteArea", areaId)
   if not touched or touched.localOnly then return end
   batch.checkpoint(true)
-  return { session = service.batch, members = copy(projectionIndex().members[tostring(areaId)] or {}) }
+  local plan = { session = service.batch, members = copy(projectionIndex().members[tostring(areaId)] or {}) }
+  batch.pendingArea = plan
+  return plan
 end
-function batch.deleteAreaRoom(plan, roomId)
-  if not plan then return deleteRoom(roomId) end
+local function applyAreaPlan(plan, fn, id)
+  if not plan then return fn(id) end
   local previous, suppressed = batch.areaPlan, service.suppressAreaRoom
   batch.areaPlan, service.suppressAreaRoom = plan, true
-  local ok, result = pcall(deleteRoom, roomId)
+  local ok, result = pcall(fn, id)
   batch.areaPlan, service.suppressAreaRoom = previous, suppressed
   if not ok then error(result) end
+  return result
+end
+function batch.deleteAreaRoom(plan, roomId)
+  return applyAreaPlan(plan, deleteRoom, roomId)
+end
+function batch.completeAreaDeletion(plan, areaId)
+  local result = applyAreaPlan(plan, deleteArea, areaId)
+  if plan and batch.pendingArea == plan then
+    batch.pendingArea = nil
+    local deferred = batch.deferredFinish
+    batch.deferredFinish = nil
+    if deferred then batch.finish(deferred.deferSending) end
+  end
   return result
 end
 function batch.after(touched, result)
@@ -6665,6 +6695,16 @@ function batch.changes(session)
 end
 function batch.finish(deferSending)
   if not service.batch then return end
+  if batch.pendingArea and batch.pendingArea.session == service.batch and not batch.closing and not batch.disconnected then
+    if not batch.deferredFinish then
+      mmp.echo("Area deletion is still running. Pending map changes will be submitted when it finishes.")
+      batch.deferredFinish = { deferSending = deferSending }
+    elseif not deferSending then
+      batch.deferredFinish.deferSending = false
+    end
+    batch.checkpoint()
+    return false
+  end
   local session = service.batch
   -- Use the checkpointed final state; it remains valid after restart even if
   -- Mudlet saved its binary map at a different time.
@@ -6674,7 +6714,7 @@ function batch.finish(deferSending)
       change = change, attempts = 0, scope = copy(session.scope), batch = true }
   end
   service.batch = nil
-  batch.projection = nil
+  batch.projection, batch.pendingArea, batch.deferredFinish = nil, nil, nil
   batch.checkpoint()
   if not deferSending then service.sendNext() end
 end
@@ -7408,7 +7448,10 @@ function service.handleFailure(entry, message)
 end
 
 function service.retrySavedChanges()
-  service.batching.finish(true)
+  if service.batching.finish(true) == false then
+    -- map submit must start delivery when its deferred session finally closes.
+    service.batching.deferredFinish.deferSending = false
+  end
   for _, entry in ipairs(service.pendingChanges) do
     if entry.blocked then entry.blocked, entry.attempts = nil, 0 end
   end
@@ -10320,7 +10363,7 @@ function mmp.doareadelete(areaid)
   t.crowdmapPlan = mmp.crowdmapService.batching.planAreaDeletion(areaid)
   -- delete the area right away if there's nothing in it
   if t.roomcount == 0 then
-    deleteArea(t.areaid)
+    mmp.crowdmapService.batching.completeAreaDeletion(t.crowdmapPlan, t.areaid)
     mmp.echo("All done! The area was already gone/empty.")
   end
   local rooms_per_batch = 100
@@ -10341,7 +10384,7 @@ function mmp.doareadelete(areaid)
     end
     local currentbatch = t.roombatches[t.currentbatchi]
     if currentbatch == nil then
-      deleteArea(t.areaid)
+      mmp.crowdmapService.batching.completeAreaDeletion(t.crowdmapPlan, t.areaid)
       mmp.echo("All done! Deleted the '" .. t.areaname .. "' area.")
       mmp.deletingarea = nil
       centerview(mmp.currentroom)
