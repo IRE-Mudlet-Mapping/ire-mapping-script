@@ -41,74 +41,6 @@ submitting the report fails, the mapper displays an error and the local edit
 remains. Reports are retried with a bounded backoff. If all attempts fail, the
 mapper warns again before a later map download can overwrite unsent edits.
 
-### Mapping sessions
-
-With service sending enabled, `mc on` (or `map create on`) starts a mapping
-session. The mapper records the original supported state of affected rooms and
-areas and keeps their latest state. `mc off` submits only the differences:
-repeated room moves become one move, complete undos disappear, and rooms created
-and deleted within the session produce no reports. Deleting existing rooms or
-areas also records affected incoming exits and contained rooms. Chunked area
-deletion captures shared membership before its native chunks run, preserving
-rooms moved into the area with local-only edits. Shared incoming routes and
-memberships are indexed so deletion checks only affected snapshots. If chunks
-are still running, `mc off` and `map submit` wait for them before finalizing the
-session; disconnect and shutdown save completed work without waiting. Same-identity
-updates continue to join that session while it waits. Changing the endpoint
-keeps planned deletion under its original scope; unrelated edits are not added
-to that old session. `cancel area deletion` releases the pending plan and
-submits only completed work if submission was requested. Safe GMCP
-updates outside mapping mode continue to submit immediately.
-
-Edits made before the game, character, and service endpoint are identified
-remain local, with a message explaining why. Start contributing after login;
-pre-identification edits are not assigned to a later character or project.
-
-Disconnecting ends mapping mode and saves the final changes for delivery after
-login. Closing the profile also saves unfinished work and outstanding requests.
-The mapper checkpoints each tracked mutation in the Mudlet profile directory.
-`mapper.crowdmap-journal.json` holds the full checkpoint; its `.log` companion
-appends affected-object snapshots and is periodically compacted. Finalizing a
-session or sending a report requires a full checkpoint. Recovery therefore
-does not depend on the binary map and options being saved at the same time. After a restart, recovered sessions
-are finalized using their saved final state and submitted once the original
-character and service are available. A crash during an edit or a failed disk
-write can still lose changes after the last successful checkpoint; save errors
-are displayed and sending waits until the queue can be checkpointed.
-
-Immediate and session reports are bound to their original character, game,
-and endpoint. Immediate reports retain their 24-hour expiry and retry limits.
-Requests already attempted are kept unchanged for retries. Session reports
-remain saved without the legacy queue's 24-hour expiry. After six failed
-attempts, sending pauses with the queue retained; `map submit` retries it.
-`map submit` can also publish the current session without turning mapping mode
-off, starting a new batch at the next edit. Further undos can only cancel edits
-within the current, unsubmitted batch. Changing the map source, endpoint, or
-sending setting finalizes the batch; saved session reports are never redirected
-to a different service or character. A downloaded service map waits until the
-active session is finished, preventing it from replacing the map under a batch.
-Use its retry link after `mc off`; each load attempt preserves the marks present
-at that time.
-
-Snapshots cover the existing service-supported Lua mapper operations, not
-arbitrary native GUI edits or unsupported map fields. Local-only operations,
-private marks, hash-only placeholders, and temporary exits/labels are excluded.
-Wrapped local-only edits still capture the state before their first mutation,
-so later public edits cannot accidentally include their private changes. Routes
-to rooms created only locally and moves into areas created only locally remain
-local too; referencing them does not make them shared. These exclusions are
-saved across submissions and restarts until public recreation or a service map
-replacement reconciles them. Shared state that differs from the native map,
-including routes and memberships, is retained across submissions and recovery.
-Local-only deletion and recreation preserve an existing shared identity.
-Later edits use these retained baselines until native and shared state agree
-or a service map replacement clears them.
-For tracked rooms, public deletion follows the shared state: deleting an area
-removes its shared members and deleting a room removes its shared incoming
-exits, even if private moves or redirects changed the native map. Special-exit
-destinations and locks are tracked independently; locking a private-only exit
-does not publish it.
-
 The service waits for a non-empty `gmcp.Char.Status.name` before checking or
 downloading a service map, and uses that character name consistently for both
 map requests and submitted reports. This avoids treating a Mudlet profile name
@@ -163,10 +95,3 @@ Are you a game admin and would like to add another game to the script? [See here
 Notable mappers:
 - Qwindor (Achaea)
 - you?
-
-## Development checks
-
-Run `python3 tests/run.py` with LuaJIT or Lua 5.1 installed. The runner parses
-the package XML, checks all embedded Lua syntax, and exercises the shipped
-service scripts against a fake Mudlet map, including shutdown/recovery and
-replaying a mixed batch to reproduce its final supported state.
