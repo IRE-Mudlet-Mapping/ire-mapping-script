@@ -5945,7 +5945,10 @@ function mmp.startup()
   private_settings["crowdmapservicesend"] = mmp.createOption(false, function(name, option)
     mmp.changeBoolFunc(name, option)
     if mmp.crowdmapService then
-      if option then mmp.crowdmapService.sendNext()
+      if option then
+        local deferred = mmp.crowdmapService.batching.deferredFinish
+        if deferred then deferred.deferSending = false end
+        mmp.crowdmapService.sendNext()
       else mmp.crowdmapService.batching.finish(true) end
     end
   end, {"boolean"}, "Send local map changes to the service?", nil, crowdmapGames, function() return mmp.settings.mapsource == "service" end)
@@ -6124,6 +6127,7 @@ local service = mmp.crowdmapService
 local batch = {}
 service.batching = batch
 service.sharedExclusions = service.sharedExclusions or { rooms = {}, areas = {} }
+service.sharedState = service.sharedState or { rooms = {}, areas = {} }
 local directions = { n = "north", ne = "northeast", nw = "northwest", e = "east", w = "west",
   s = "south", se = "southeast", sw = "southwest", u = "up", d = "down", ["in"] = "in", out = "out" }
 for index, direction in ipairs({ "north", "northeast", "northwest", "east", "west", "south", "southeast", "southwest", "up", "down", "in", "out" }) do
@@ -6236,7 +6240,7 @@ function batch.warnUnknownIdentity()
   end
 end
 local function trackingEnabled()
-  return (mmp.editing or (service.batch and batch.pendingArea and batch.pendingArea.session == service.batch))
+  return (mmp.editing or batch.immediate or (service.batch and batch.pendingArea and batch.pendingArea.session == service.batch))
     and mmp.settings and mmp.settings.mapsource == "service"
     and mmp.settings.crowdmapservicesend and not batch.closing and batch.identityReady()
 end
@@ -6284,8 +6288,23 @@ local function projectionIndex()
 end
 function batch.begin()
   if service.batch or not trackingEnabled() then return end
-  service.batch = { rooms = {}, areas = {}, scope = identity() }
+  service.batch = { rooms = {}, areas = {}, scope = identity(), immediate = batch.immediate }
   batch.projection = { session = service.batch, incoming = {}, outgoing = {}, members = {}, roomAreas = {} }
+  batch.dirty = batch.dirty or { rooms = {}, areas = {} }
+  -- Seed divergent shared sources, including incoming routes hidden from the
+  -- native entrance index. Native state remains private until explicitly edited.
+  for _, group in ipairs({ "rooms", "areas" }) do
+    for id, state in pairs(service.sharedState[group]) do
+      service.batch[group][id] = { before = copy(state), after = copy(state) }
+      service.batch.objectCount = (service.batch.objectCount or 0) + 1
+      batch.dirty[group][id] = true
+      if group == "rooms" then indexRoom(batch.projection, id, state) end
+    end
+  end
+  if service.sharedState.mapData then
+    service.batch.mapData = { before = copy(service.sharedState.mapData), after = copy(service.sharedState.mapData) }
+    batch.dirty.mapData = true
+  end
 end
 local function dirty(group, id)
   batch.dirty = batch.dirty or { rooms = {}, areas = {} }
@@ -6295,6 +6314,10 @@ function batch.recordCreation(group, id, localOnly)
   id = tostring(id)
   local excluded = service.sharedExclusions[group]
   local value = localOnly and true or nil
+  local tracked = service.batch and service.batch[group][id]
+  local shared = service.sharedState[group][id]
+  if tracked then shared = tracked.after end
+  if localOnly and shared then value = nil end -- private recreation retains an existing shared identity
   if excluded[id] == value then return end
   excluded[id] = value
   batch.dirty = batch.dirty or { rooms = {}, areas = {} }
@@ -6322,7 +6345,21 @@ end
 function batch.before(operation, ...)
   local continuingPlan = batch.areaPlan and batch.areaPlan.session == service.batch
     and not batch.closing and not batch.disconnected
-  if not trackingEnabled() and not continuingPlan then return end
+  if not trackingEnabled() and not continuingPlan then
+    if not batch.identityReady() or not mmp.settings or mmp.settings.mapsource ~= "service"
+        or not mmp.settings.crowdmapservicesend then return end
+    local args = {...}
+    local roomId = tostring(tonumber(args[1]))
+    local areaId = tostring(tonumber(args[1]) or (getAreaTable() or {})[args[1]])
+    local retained = service.sharedState
+    local excluded = service.sharedExclusions
+    if not service.suspended and retained.rooms[roomId] == nil and retained.areas[areaId] == nil
+        and not retained.mapData and not excluded.rooms[roomId] and not excluded.areas[areaId]
+        and not (args[2] and (excluded.rooms[tostring(tonumber(args[2]))] or excluded.areas[tostring(tonumber(args[2]))])) then return end
+    -- Immediate edits of divergent sources use the same projection/diff path;
+    -- raw submissions would otherwise overwrite unrelated retained fields.
+    batch.immediate = true
+  end
   batch.begin()
   local session, args = service.batch, {...}
   local current = identity()
@@ -6334,7 +6371,7 @@ function batch.before(operation, ...)
   end
   if not continuingPlan then session.scope.reporter = session.scope.reporter or current.reporter end
   local touched = { rooms = {}, areas = {}, operation = operation, args = args, localOnly = service.suspended,
-    areaPlan = batch.areaPlan }
+    areaPlan = batch.areaPlan, immediate = batch.immediate }
   if touched.areaPlan and touched.areaPlan.session ~= session then touched.localOnly = true end
   local function room(id)
     id = tonumber(id)
@@ -6612,12 +6649,16 @@ function batch.after(touched, result)
   for id in pairs(touched.rooms) do indexRoom(index, id, session.rooms[id].after) end
   batch.checkpoint(true)
 end
+function batch.finishImmediate(touched)
+  if touched and touched.immediate and not service.suspended then batch.finish() end
+end
 local function pack(...) return { n = select("#", ...), ... } end
 function batch.wrap(fn, operation)
   return function(...)
     local touched = batch.before(operation, ...)
     local results = pack(fn(...))
     batch.after(touched, results[1])
+    batch.finishImmediate(touched)
     return unpack(results, 1, results.n)
   end
 end
@@ -6726,6 +6767,22 @@ function batch.changes(session)
   end
   return changes
 end
+local function retainSharedState(session)
+  for _, group in ipairs({ "rooms", "areas" }) do
+    local read = group == "rooms" and roomState or areaState
+    for id, entry in pairs(session[group]) do
+      local native = read(tonumber(id))
+      if equal(entry.after, native) then service.sharedState[group][id] = nil
+      else service.sharedState[group][id] = copy(entry.after) end
+      if entry.after then service.sharedExclusions[group][id] = nil
+      elseif native then service.sharedExclusions[group][id] = true end
+    end
+  end
+  if session.mapData then
+    local state = session.mapData.after
+    service.sharedState.mapData = not equal(state, getAllMapUserData() or {}) and copy(state) or nil
+  end
+end
 function batch.finish(deferSending)
   if not service.batch then return end
   if batch.pendingArea and batch.pendingArea.session == service.batch and not batch.closing and not batch.disconnected then
@@ -6742,12 +6799,14 @@ function batch.finish(deferSending)
   -- Use the checkpointed final state; it remains valid after restart even if
   -- Mudlet saved its binary map at a different time.
   local changes = batch.changes(session)
+  retainSharedState(session)
   for _, change in ipairs(changes) do
     service.pendingChanges[#service.pendingChanges + 1] = {
-      change = change, attempts = 0, scope = copy(session.scope), batch = true }
+      change = change, attempts = 0, scope = copy(session.scope), batch = not session.immediate,
+      expiresAt = session.immediate and (os.time() + service.maxPersistSeconds) or nil }
   end
   service.batch = nil
-  batch.projection, batch.pendingArea, batch.deferredFinish = nil, nil, nil
+  batch.projection, batch.pendingArea, batch.deferredFinish, batch.immediate = nil, nil, nil, nil
   batch.checkpoint()
   if not deferSending then service.sendNext() end
 end
@@ -6787,7 +6846,7 @@ function batch.checkpoint(incremental)
     local path = journalPath()
     local file = assert(io.open(path .. ".tmp", "w"))
     local written, writeError = file:write(yajl.to_string({ version = 1, revision = batch.revision or 0, session = service.batch,
-      pending = service.pendingForSave(), unsent = service.unsentChanges, excluded = service.sharedExclusions }))
+      pending = service.pendingForSave(), unsent = service.unsentChanges, excluded = service.sharedExclusions, sharedState = service.sharedState }))
     local closed, closeError = file:close()
     assert(written, writeError)
     assert(closed, closeError)
@@ -6888,6 +6947,7 @@ function batch.restore()
   end
   batch.loading = true
   service.sharedExclusions = saved.excluded
+  service.sharedState = saved.sharedState or { rooms = {}, areas = {} }
   service.unsentChanges = saved.unsent or 0
   service.restorePendingChanges(saved.pending)
   service.batch = saved.session
@@ -7092,6 +7152,7 @@ function service.promoteHashOnlyRoom(roomNumber)
   if hash and hash ~= "" then
     service.submit({ type = "set-room-hash", roomNumber = tonumber(roomNumber), hash = hash })
   end
+  service.batching.finishImmediate(touched)
 end
 
 function service.localOnly(callback)
@@ -7099,6 +7160,9 @@ function service.localOnly(callback)
   service.suspended = true
   local result = {pcall(callback)}
   service.suspended = wasSuspended
+  -- An outside-mapping localOnly scope shares one transient projection. This
+  -- also checkpoints completed private work if the callback raised an error.
+  if not wasSuspended and service.batching.immediate then service.batching.finish() end
   if not result[1] then error(result[2]) end
   return unpack(result, 2)
 end
@@ -7470,6 +7534,7 @@ do
         else change.type, change.destination = "modify-exit", tonumber(destination) end
         service.submit(change)
       end
+      service.batching.finishImmediate(touched)
       return unpackResults(results)
     end
   end
@@ -7524,6 +7589,7 @@ end
 function service.mapLoaded()
   service.unsentChanges = 0
   service.sharedExclusions = { rooms = {}, areas = {} }
+  service.sharedState = { rooms = {}, areas = {} }
   service.batching.checkpoint()
 end
 
@@ -11043,7 +11109,7 @@ end
 
 function mmp.changeCrowdmapServiceMapOption()
   if mmp.crowdmapService then
-    mmp.crowdmapService.batching.finish(true)
+    mmp.crowdmapService.batching.finish()
     mmp.crowdmapService.sendNext()
   end
   if mmp.settings.mapsource ~= "service" then return end

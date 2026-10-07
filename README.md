@@ -98,7 +98,11 @@ so later public edits cannot accidentally include their private changes. Routes
 to rooms created only locally and moves into areas created only locally remain
 local too; referencing them does not make them shared. These exclusions are
 saved across submissions and restarts until public recreation or a service map
-replacement reconciles them.
+replacement reconciles them. Shared state that differs from the native map,
+including routes and memberships, is retained across submissions and recovery.
+Local-only deletion and recreation preserve an existing shared identity.
+Later edits use these retained baselines until native and shared state agree
+or a service map replacement clears them.
 For tracked rooms, public deletion follows the shared state: deleting an area
 removes its shared members and deleting a room removes its shared incoming
 exits, even if private moves or redirects changed the native map. Special-exit
