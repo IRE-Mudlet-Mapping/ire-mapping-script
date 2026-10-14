@@ -46,6 +46,14 @@ downloading a service map, and uses that character name consistently for both
 map requests and submitted reports. This avoids treating a Mudlet profile name
 or a pre-login placeholder as a reporter.
 
+Service updates show the service-generated changelog before downloading the map.
+Use the “Click here” link in the update notice to see the full changelog. These
+notes describe changes from the service's base map for your report threshold and
+character, rather than changes since your previous download. The changelog and
+map requests use the checked version; if it changes during retrieval, the mapper
+checks again (up to three retries). If changelog retrieval fails, the mapper
+still attempts to download that version of the map.
+
 The service only works well when people participate. If you use the service,
 please enable `crowdmapservicesend`: your reports help keep the shared map
 current and give other players the independent confirmation needed for their
