@@ -6282,10 +6282,17 @@ function service.versionUrl()
   return endpoint("/map/version?timesSeen=" .. mmp.settings.crowdmapservicereports .. "&amp;reporter=" .. queryValue(reporterName))
 end
 
-function service.mapUrl()
+function service.changelogUrl(expectedVersion)
+  local reporterName = service.reporter()
+  if not reporterName or not expectedVersion then return end
+  return endpoint("/map/changelog?format=lua&amp;timesSeen=" .. mmp.settings.crowdmapservicereports .. "&amp;reporter=" .. queryValue(reporterName) .. "&amp;expectedVersion=" .. queryValue(expectedVersion))
+end
+
+function service.mapUrl(expectedVersion)
   local reporterName = service.reporter()
   if not reporterName then return end
-  return endpoint("/map?format=binary&amp;timesSeen=" .. mmp.settings.crowdmapservicereports .. "&amp;reporter=" .. queryValue(reporterName))
+  local versionQuery = expectedVersion and ("&amp;expectedVersion=" .. queryValue(expectedVersion)) or ""
+  return endpoint("/map?format=binary&amp;timesSeen=" .. mmp.settings.crowdmapservicereports .. "&amp;reporter=" .. queryValue(reporterName) .. versionQuery)
 end
 
 registerNamedEventHandler("mapper", "crowdmapServiceReporterReady", "gmcp.Char.Status", function()
@@ -13173,8 +13180,19 @@ function mmp.downloadedFile(_, filename)
       return pcall(untrusted_function)
     end
 
-    run(s)
-
+    local ok = s and run(s)
+    local valid = ok and type(env.changelog) == "table"
+    if valid then
+      for _, entry in pairs(env.changelog) do
+        if type(entry) ~= "string" then valid = false; break end
+      end
+    end
+    if not valid then
+      mmp.crowdchangelog = nil
+      mmp.echo("Could not read the map changelog.")
+      os.remove(filename)
+      return mmp.downloadcrowdmap(mmp.crowdmapDownloadVersion)
+    end
 	mmp.crowdchangelog = env.changelog
 
     echo("\n")
@@ -13182,16 +13200,19 @@ function mmp.downloadedFile(_, filename)
     mmp.echon(" The crowdmap map was updated from &lt;orange&gt;"..(mmp.oldversion or "(none)").." &lt;reset&gt;-&gt; &lt;green&gt;"..tostring(mmp.newversion).."&lt;reset&gt;!")
     mmp.echon(" Want to see the full changelog?")
     cechoLink(" &lt;ForestGreen&gt;Click here&lt;reset&gt;.", "mmp.showcrowdchangelog()", 'View the full changelog for mappers', true)
-    mmp.echon(" Latest changes were: &lt;LightSkyBlue&gt;"..tostring(mmp.crowdchangelog and mmp.crowdchangelog[#mmp.crowdchangelog] or '?')..".\n")
+    local latestChanges = tostring(mmp.crowdchangelog and mmp.crowdchangelog[#mmp.crowdchangelog] or '?'):gsub("%s+$", "")
+    if not latestChanges:find("[.!?]$") then latestChanges = latestChanges .. "." end
+    mmp.echon(" Latest changes were: &lt;LightSkyBlue&gt;"..latestChanges.."\n")
     echo("\n\n")
     
-    mmp.downloadcrowdmap(mmp.newversion)
+    mmp.downloadcrowdmap(mmp.crowdmapDownloadVersion)
 
   elseif filename == mmp.crowdmapfile then    -- crowdmap map
     if mmp.crowdmapDownloadSource ~= mmp.settings.mapsource or mmp.crowdmapDownloadGeneration ~= (mmp.mapSourceGeneration or 0) or mmp.crowdmapDownloadIdentity ~= mmp.mapSourceIdentity(mmp.settings.mapsource) then
       os.remove(filename)
       return mmp.checkforupdate()
     end
+    mmp.serviceMapVersionRetries = nil
     mmp.echo("Map downloaded, loading it in...")
     local context = {
       filename = filename,
@@ -13403,8 +13424,10 @@ function mmp.retrievecrowdchangelog()
   mmp.crowdmapDownloadSource = mmp.settings.mapsource
   mmp.crowdmapDownloadGeneration = mmp.mapSourceGeneration or 0
   mmp.crowdmapDownloadIdentity = mmp.mapSourceIdentity(mmp.crowdmapDownloadSource)
+  mmp.crowdmapDownloadVersion = mmp.newversion
+  mmp.crowdchangelog = nil
   if mmp.settings.mapsource == "service" then
-    mmp.downloadcrowdmap(mmp.newversion)
+    downloadFile(mmp.crowdchangelogfile, mmp.crowdmapService.changelogUrl(mmp.crowdmapDownloadVersion))
   elseif mmp.game == "achaea" then
     downloadFile(
       mmp.crowdchangelogfile, "http://ire-mudlet-mapping.github.io/AchaeaCrowdmap/Map/changelog.txt"
@@ -13447,6 +13470,30 @@ function mmp.retrievecrowdchangelog()
   end
 end
 
+-- Mudlet reports download errors as (event, message, local filename).
+registerNamedEventHandler("mapper", "serviceMapDownloadError", "sysDownloadError", function(_, message, filename)
+  if filename ~= mmp.crowdchangelogfile and filename ~= mmp.crowdmapfile then return end
+  if mmp.crowdmapDownloadSource ~= "service" then return end
+  if mmp.crowdmapDownloadIdentity ~= mmp.mapSourceIdentity(mmp.settings.mapsource)
+      or mmp.crowdmapDownloadGeneration ~= (mmp.mapSourceGeneration or 0) then return end
+  os.remove(filename)
+  if tostring(message):find("409", 1, true) then
+    mmp.serviceMapVersionRetries = (mmp.serviceMapVersionRetries or 0) + 1
+    if mmp.serviceMapVersionRetries &lt;= 3 then
+      mmp.echo("The service map changed during download; checking its version again.")
+      return mmp.checkforupdate()
+    end
+    mmp.serviceMapVersionRetries = nil
+    return mmp.echo("The service map keeps changing. Please try the update again later.")
+  end
+  if filename == mmp.crowdchangelogfile then
+    mmp.crowdchangelog = nil
+    mmp.echo("Could not download the service changelog; downloading the map.")
+    return mmp.downloadcrowdmap(mmp.crowdmapDownloadVersion)
+  end
+  mmp.echo("Could not download the service map: " .. tostring(message))
+end)
+
 -- downloads the public crowdsources map!
 
 function mmp.downloadmapperscript()
@@ -13482,7 +13529,7 @@ function mmp.downloadcrowdmap(newversion)
   mmp.crowdmapDownloadIdentity = mmp.mapSourceIdentity(mmp.crowdmapDownloadSource)
   mmp.crowdmapDownloadVersion = newversion
   if mmp.settings.mapsource == "service" then
-    downloadFile(mmp.crowdmapfile, mmp.crowdmapService.mapUrl())
+    downloadFile(mmp.crowdmapfile, mmp.crowdmapService.mapUrl(newversion))
   elseif mmp.game == "achaea" then
     downloadFile(mmp.crowdmapfile, "http://ire-mudlet-mapping.github.io/AchaeaCrowdmap/Map/map")
   elseif mmp.game == "starmourn" then
